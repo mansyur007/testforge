@@ -24,12 +24,13 @@ export async function verifyPassword(password: string, hash: string) {
   return bcrypt.compare(password, hash);
 }
 
-export async function createSession(user: {
-  id: string;
-  email: string;
-  name: string;
-  role: string;
-}) {
+// PRD §12.6.1: "Remember me" = 30 hari, default 1 hari.
+// AU-010 (refresh token rotation) masuk backlog — lihat AUDIT-PRD.md.
+export async function createSession(
+  user: { id: string; email: string; name: string; role: string },
+  rememberMe = false
+) {
+  const maxAge = rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24;
   const token = await new SignJWT({
     userId: user.id,
     email: user.email,
@@ -38,14 +39,14 @@ export async function createSession(user: {
   })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
-    .setExpirationTime("7d")
+    .setExpirationTime(rememberMe ? "30d" : "1d")
     .sign(SECRET);
 
   cookies().set(COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge,
     path: "/",
   });
 }

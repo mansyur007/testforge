@@ -12,13 +12,20 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  role         String   @default("MEMBER") // ADMIN | MEMBER | VIEWER
-  avatarUrl    String?
-  createdAt    DateTime @default(now())
+  id              String    @id @default(cuid())
+  name            String
+  email           String    @unique
+  passwordHash    String
+  role            String    @default("MEMBER") // ADMIN | MEMBER | VIEWER
+  avatarUrl       String?
+  organizationId  String?
+  emailVerifiedAt DateTime? // AU-001: wajib verifikasi sebelum login
+  onboardedAt     DateTime? // AU-006: penanda wizard onboarding selesai
+  createdAt       DateTime  @default(now())
+
+  organization Organization?       @relation(fields: [organizationId], references: [id])
+  tokens       VerificationToken[]
+  invitesSent  Invitation[]
 
   memberships    ProjectMember[]
   createdProjects Project[]      @relation("ProjectCreator")
@@ -164,6 +171,47 @@ model ApiKey {
   lastUsedAt DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// PRD §12.2: organization/workspace dengan slug unik.
+// Gap audit: entitas ini tidak ada di ERD §9 meski disyaratkan form register.
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  users       User[]
+  invitations Invitation[]
+}
+
+// PRD §12.3/§12.5/§12.6.2: token verifikasi email & reset password (hash, expiry).
+model VerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  type      String // VERIFY_EMAIL | RESET_PASSWORD
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// PRD §12.4 Step 2: undangan anggota tim dari onboarding wizard.
+model Invitation {
+  id             String   @id @default(cuid())
+  organizationId String
+  email          String
+  role           String   @default("MEMBER") // ADMIN | MEMBER
+  status         String   @default("PENDING") // PENDING | ACCEPTED
+  invitedById    String
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invitedBy    User         @relation(fields: [invitedById], references: [id])
+
+  @@unique([organizationId, email])
 }
 
 // Gap audit: PRD §5.5 mensyaratkan audit log tapi tabelnya tidak ada di ERD.

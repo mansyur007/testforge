@@ -54,7 +54,42 @@ scope** berikut.
    akan saling timpa. Perlu strategi (optimistic locking / last-write-wins yang
    disadari) sebelum fitur kolaborasi realtime.
 
-## 4. Yang sudah diimplementasikan di MVP ini
+## 4. Audit Tambahan: Section 11 (Homepage) & 12 (Register/Sign Up)
+
+Audit untuk revisi PRD yang menambahkan spesifikasi homepage dan auth
+(`TestForge_PRD_v1.0 (1).docx`). Kedua section ditulis detail dan actionable
+(copywriting siap pakai, FR ber-priority). Temuan:
+
+### 4.1 Inkonsistensi & gap baru
+
+| # | Temuan | Dampak |
+|---|--------|--------|
+| 1 | **ERD §9 tidak di-update**: §12.2 butuh entitas `organizations` (slug unik per workspace), §12.3/12.5 butuh `verification_tokens`, §12.4 butuh `invitations` — tidak satu pun ada di ERD | ✅ Ketiganya ditambahkan ke schema |
+| 2 | **SMTP tetap tidak ada di tech stack §5.1** — kini jadi blocker keras: AU-001 mewajibkan verifikasi email sebelum login, §12.5 mendetailkan email verifikasi, §12.4 butuh email undangan | Diimplementasikan dengan dev-mode fallback (link tampil di UI/log saat `SMTP_URL` kosong) |
+| 3 | **AU-010 (JWT 15 menit + refresh token rotation)** bertabrakan dengan §12.6.1 "Remember me = 30 hari" tanpa menjelaskan durasi session non-remember; rotation butuh tabel refresh_tokens yang juga tak ada di ERD | MVP: JWT cookie 1 hari / 30 hari (remember me); rotation masuk backlog |
+| 4 | **CAPTCHA (§12.6.2)** menyebut hCaptcha/reCAPTCHA — layanan eksternal yang tidak ada di tech stack, dan reCAPTCHA v3 tidak punya "tampilan setelah 5 gagal" (itu perilaku v2) | Backlog; lockout 5x/5 menit sudah jalan |
+| 5 | **Testimoni (§11.2 #8)** mensyaratkan quote early users — produk belum launch, belum ada user | Diisi placeholder berlabel "Early Adopter/Beta Tester"; ganti dengan testimoni asli sebelum launch |
+| 6 | **Social proof (§11.2 #2)** menampilkan jumlah user/install — data ini belum ada; menampilkan angka palsu merusak kredibilitas | Diganti metrik faktual (Docker setup, jumlah framework) |
+| 7 | **HP-005 GitHub stars** butuh repo publik yang belum ada | Implementasi fetch + cache 1 jam dengan fallback "—" jika repo tidak ditemukan |
+| 8 | **Login lockout**: §12.6.2 mensyaratkan per-IP **dan** per-email; §8 lama hanya per-akun | Per-email diimplementasikan; per-IP butuh trust proxy header, backlog deployment |
+| 9 | **§12.1 GitLab OAuth (P1), SAML (P2), Magic Link (P2)** | Sesuai prioritas roadmap: belum di MVP; arsitektur OAuth route sudah generik untuk menambah provider |
+| 10 | **Onboarding Step 3 (§12.4)** menyebut "klik untuk connect" Jira/Slack — integrasi ini baru ada di roadmap v0.2, jadi tidak mungkin "connect" saat MVP | Diimplementasikan sebagai pencatatan minat (interest), bukan koneksi sungguhan |
+
+### 4.2 Status functional requirements
+
+**Homepage (HP)**: HP-001 (statis+SSR, ringan) ✅ · HP-002 ✅ · HP-003 ✅
+(/docs/self-hosting) · HP-004 ✅ · HP-005 ✅ (fallback) · HP-006 sebagian
+(section demo + live demo link; video tour belum) · HP-007 ✅ (dark mode via
+prefers-color-scheme) · HP-008 ✅ (meta, OG, sitemap, robots) · HP-009 backlog
+(analytics) · HP-010 ✅ (server component, berfungsi tanpa JS).
+
+**Auth (AU)**: AU-001 ✅ · AU-002/003 ✅ (route OAuth siap; aktif saat env
+client ID/secret diisi) · AU-004 ✅ · AU-005 ✅ · AU-006 ✅ · AU-007 ✅ ·
+AU-008 ✅ · AU-009 ✅ (per email) · AU-010 sebagian (lihat 4.1 #3) · AU-011
+backlog (butuh refresh token store) · AU-012 sebagian (label + keyboard nav
+bawaan; audit ARIA menyeluruh belum).
+
+## 5. Yang sudah diimplementasikan di MVP ini
 
 Semua item **P0** §7.1: proyek (buat/arsip), CRUD test case lengkap semua field
 standar, hierarki suite+section, test run manual dengan eksekusi + keyboard
