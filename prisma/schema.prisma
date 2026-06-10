@@ -1,0 +1,180 @@
+// TestForge — Prisma schema
+// SQLite untuk development out-of-the-box; portable ke PostgreSQL
+// (ganti provider + DATABASE_URL sesuai PRD §5.1 untuk production).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("MEMBER") // ADMIN | MEMBER | VIEWER
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+
+  memberships    ProjectMember[]
+  createdProjects Project[]      @relation("ProjectCreator")
+  assignedCases  TestCase[]      @relation("CaseAssignee")
+  assignedResults TestRunResult[] @relation("ResultAssignee")
+  createdRuns    TestRun[]       @relation("RunCreator")
+  apiKeys        ApiKey[]
+  auditLogs      AuditLog[]
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  status      String   @default("ACTIVE") // ACTIVE | ARCHIVED
+  caseCounter Int      @default(0) // untuk auto-generate TC-[SLUG]-[NUMBER]
+  createdById String
+  createdAt   DateTime @default(now())
+
+  createdBy  User            @relation("ProjectCreator", fields: [createdById], references: [id])
+  members    ProjectMember[]
+  suites     TestSuite[]
+  cases      TestCase[]
+  runs       TestRun[]
+  milestones Milestone[]
+}
+
+model ProjectMember {
+  id        String @id @default(cuid())
+  projectId String
+  userId    String
+  role      String @default("MEMBER") // OWNER | ADMIN | MEMBER | VIEWER
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+// Gap audit: entitas milestone dipakai PRD §4.3.1 & §9 (test_runs.milestone_id)
+// tapi tidak ada di ERD — ditambahkan di sini.
+model Milestone {
+  id        String    @id @default(cuid())
+  projectId String
+  name      String
+  dueDate   DateTime?
+  status    String    @default("OPEN") // OPEN | COMPLETED
+
+  project Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  runs    TestRun[]
+}
+
+model TestSuite {
+  id          String  @id @default(cuid())
+  projectId   String
+  parentId    String? // hierarki rekursif: suite -> section
+  name        String
+  description String?
+  order       Int     @default(0)
+
+  project  Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parent   TestSuite?  @relation("SuiteTree", fields: [parentId], references: [id])
+  children TestSuite[] @relation("SuiteTree")
+  cases    TestCase[]
+}
+
+model TestCase {
+  id               String    @id @default(cuid())
+  projectId        String
+  suiteId          String?
+  seq              Int // nomor urut per project, display: TC-[SLUG]-[seq]
+  title            String
+  description      String?
+  preconditions    String?
+  stepsJson        String    @default("[]") // [{action, expected}]
+  expectedResult   String?
+  priority         String    @default("MEDIUM") // CRITICAL | HIGH | MEDIUM | LOW
+  type             String    @default("FUNCTIONAL") // FUNCTIONAL | REGRESSION | SMOKE | PERFORMANCE | SECURITY | E2E
+  status           String    @default("ACTIVE") // DRAFT | ACTIVE | DEPRECATED
+  automationStatus String    @default("NOT_AUTOMATED") // NOT_AUTOMATED | IN_PROGRESS | AUTOMATED | TO_BE_UPDATED
+  tags             String    @default("") // comma-separated
+  assigneeId       String?
+  linkedIssues     String? // URL bug tracker, dipisah koma
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime? // soft delete (gap audit: recycle bin)
+
+  project  Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  suite    TestSuite?      @relation(fields: [suiteId], references: [id], onDelete: SetNull)
+  assignee User?           @relation("CaseAssignee", fields: [assigneeId], references: [id])
+  results  TestRunResult[]
+
+  @@unique([projectId, seq])
+}
+
+model TestRun {
+  id          String    @id @default(cuid())
+  projectId   String
+  name        String
+  description String?
+  status      String    @default("ACTIVE") // ACTIVE | COMPLETED
+  source      String    @default("MANUAL") // MANUAL | JUNIT | CYPRESS | PLAYWRIGHT | ...
+  milestoneId String?
+  createdById String
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  project   Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  milestone Milestone?      @relation(fields: [milestoneId], references: [id])
+  createdBy User            @relation("RunCreator", fields: [createdById], references: [id])
+  results   TestRunResult[]
+}
+
+model TestRunResult {
+  id             String   @id @default(cuid())
+  runId          String
+  caseId         String
+  assigneeId     String?
+  status         String   @default("UNTESTED") // PASSED | FAILED | BLOCKED | SKIPPED | IN_PROGRESS | UNTESTED | RETEST
+  comment        String?
+  elapsedSeconds Int?
+  defectUrl      String?
+  updatedAt      DateTime @updatedAt
+  createdAt      DateTime @default(now())
+
+  run      TestRun  @relation(fields: [runId], references: [id], onDelete: Cascade)
+  testCase TestCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  assignee User?    @relation("ResultAssignee", fields: [assigneeId], references: [id])
+
+  @@unique([runId, caseId])
+}
+
+// Gap audit: PRD §5.3 mensyaratkan API key untuk CI/CD tapi tabelnya
+// tidak ada di ERD §9 — ditambahkan, key disimpan sebagai hash (§5.5).
+model ApiKey {
+  id         String    @id @default(cuid())
+  userId     String
+  name       String
+  prefix     String // 8 char pertama, untuk identifikasi di UI
+  keyHash    String    @unique
+  createdAt  DateTime  @default(now())
+  lastUsedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Gap audit: PRD §5.5 mensyaratkan audit log tapi tabelnya tidak ada di ERD.
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String // case.create, run.complete, auth.login, dll
+  entityType String?
+  entityId   String?
+  detail     String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+}

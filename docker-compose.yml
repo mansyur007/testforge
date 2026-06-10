@@ -1,0 +1,15 @@
+# TestForge — one-command setup (PRD §5.4): docker compose up
+services:
+  testforge:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "file:/data/testforge.db"
+      AUTH_SECRET: "${AUTH_SECRET:-ganti-secret-ini-di-production}"
+    volumes:
+      - testforge-data:/data
+    restart: unless-stopped
+
+volumes:
+  testforge-data:
