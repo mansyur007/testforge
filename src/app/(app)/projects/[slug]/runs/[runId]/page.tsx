@@ -1,0 +1,120 @@
+import { notFound } from "next/navigation";
+import { db } from "@/lib/db";
+import { requireSession } from "@/lib/auth";
+import { caseDisplayId, RESULT_COLORS, type TestStep } from "@/lib/constants";
+import { ProjectTabs } from "@/components/ProjectTabs";
+import { RunExecutor } from "@/components/RunExecutor";
+import { completeRun, rerunFailed } from "@/app/actions/runs";
+
+export const dynamic = "force-dynamic";
+
+export default async function RunDetailPage({
+  params,
+}: {
+  params: { slug: string; runId: string };
+}) {
+  await requireSession();
+  const run = await db.testRun.findUnique({
+    where: { id: params.runId },
+    include: {
+      project: true,
+      milestone: true,
+      results: {
+        include: { testCase: true, assignee: true },
+        orderBy: { testCase: { seq: "asc" } },
+      },
+    },
+  });
+  if (!run || run.project.slug !== params.slug) notFound();
+
+  const total = run.results.length || 1;
+  const counts: Record<string, number> = {};
+  run.results.forEach((r) => (counts[r.status] = (counts[r.status] ?? 0) + 1));
+  const failedish =
+    (counts.FAILED ?? 0) + (counts.BLOCKED ?? 0) + (counts.RETEST ?? 0);
+
+  return (
+    <div className="space-y-6">
+      <ProjectTabs slug={run.project.slug} name={run.project.name} active="runs" />
+
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold">{run.name}</h2>
+          <p className="text-sm text-slate-400">
+            {run.description}
+            {run.milestone && <> · 🎯 {run.milestone.name}</>}
+          </p>
+        </div>
+        <div className="flex shrink-0 gap-2">
+          <a
+            href={`/api/export/run?id=${run.id}`}
+            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100"
+          >
+            ↓ Export CSV
+          </a>
+          {failedish > 0 && (
+            <form action={rerunFailed}>
+              <input type="hidden" name="runId" value={run.id} />
+              <button className="rounded-lg border border-purple-300 px-3 py-1.5 text-sm text-purple-700 hover:bg-purple-50">
+                ↻ Rerun Failed ({failedish})
+              </button>
+            </form>
+          )}
+          {run.status === "ACTIVE" && (
+            <form action={completeRun}>
+              <input type="hidden" name="runId" value={run.id} />
+              <button className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700">
+                ✓ Tandai Selesai
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+
+      {/* Summary bar */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <div className="flex h-3 overflow-hidden rounded-full bg-gray-100">
+          {Object.entries(counts).map(([st, count]) => (
+            <div
+              key={st}
+              className={RESULT_COLORS[st]}
+              style={{ width: `${(count / total) * 100}%` }}
+            />
+          ))}
+        </div>
+        <div className="mt-3 flex flex-wrap gap-4 text-sm">
+          {["PASSED", "FAILED", "BLOCKED", "SKIPPED", "RETEST", "IN_PROGRESS", "UNTESTED"].map(
+            (st) =>
+              counts[st] ? (
+                <span key={st} className="flex items-center gap-1.5">
+                  <span className={`inline-block h-2.5 w-2.5 rounded-full ${RESULT_COLORS[st]} ${st === "UNTESTED" ? "border border-gray-300" : ""}`} />
+                  {st} <b>{counts[st]}</b>
+                  <span className="text-slate-400">
+                    ({Math.round((counts[st] / total) * 100)}%)
+                  </span>
+                </span>
+              ) : null
+          )}
+        </div>
+      </div>
+
+      <RunExecutor
+        runStatus={run.status}
+        results={run.results.map((r) => ({
+          id: r.id,
+          status: r.status,
+          comment: r.comment ?? "",
+          defectUrl: r.defectUrl ?? "",
+          elapsedSeconds: r.elapsedSeconds,
+          assigneeName: r.assignee?.name ?? null,
+          displayId: caseDisplayId(run.project.slug, r.testCase.seq),
+          title: r.testCase.title,
+          priority: r.testCase.priority,
+          preconditions: r.testCase.preconditions ?? "",
+          expectedResult: r.testCase.expectedResult ?? "",
+          steps: JSON.parse(r.testCase.stepsJson || "[]") as TestStep[],
+        }))}
+      />
+    </div>
+  );
+}

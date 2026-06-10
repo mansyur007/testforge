@@ -1,0 +1,71 @@
+import { db } from "@/lib/db";
+import { requireSession } from "@/lib/auth";
+import { deleteApiKey } from "@/app/actions/apikeys";
+import { ApiKeyCreator } from "@/components/ApiKeyCreator";
+
+export const dynamic = "force-dynamic";
+
+export default async function ApiKeysPage() {
+  const session = await requireSession();
+  const keys = await db.apiKey.findMany({
+    where: { userId: session.userId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return (
+    <div className="max-w-3xl space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">API Keys</h1>
+        <p className="text-sm text-slate-500">
+          Untuk autentikasi CI/CD dan REST API. Key di-hash di database dan
+          hanya ditampilkan sekali saat dibuat.
+        </p>
+      </div>
+
+      <ApiKeyCreator />
+
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <table className="w-full text-sm">
+          <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
+            <tr>
+              <th className="px-5 py-3">Nama</th>
+              <th className="px-5 py-3">Key</th>
+              <th className="px-5 py-3">Terakhir Dipakai</th>
+              <th className="px-5 py-3"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {keys.map((k) => (
+              <tr key={k.id}>
+                <td className="px-5 py-3 font-medium">{k.name}</td>
+                <td className="px-5 py-3 font-mono text-xs text-slate-500">
+                  {k.prefix}••••••••
+                </td>
+                <td className="px-5 py-3 text-xs text-slate-500">
+                  {k.lastUsedAt
+                    ? k.lastUsedAt.toLocaleString("id-ID")
+                    : "Belum pernah"}
+                </td>
+                <td className="px-5 py-3 text-right">
+                  <form action={deleteApiKey}>
+                    <input type="hidden" name="keyId" value={k.id} />
+                    <button className="text-xs text-red-500 hover:underline">
+                      Hapus
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            ))}
+            {keys.length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-5 py-8 text-center text-slate-400">
+                  Belum ada API key.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
