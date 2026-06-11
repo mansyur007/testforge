@@ -1,3 +1,53 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Smooth scroll untuk anchor link navbar landing page */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Tipografi design system: heading memakai Space Grotesk */
+@layer base {
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display), system-ui, sans-serif;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Sistem ikon TestForge (lihat src/components/icons.tsx).
+   Token dari design system: accent #4f46e5, accent-soft rgba(79,70,229,.14) */
+svg.tficon .tf-ac {
+  stroke: #4f46e5;
+}
+svg.tficon .tf-acf {
+  fill: rgba(79, 70, 229, 0.14);
+}
+
+/* Varian currentColor — sidebar gelap / tombol berwarna */
+svg.tficon.tf-current .tf-ac {
+  stroke: currentColor;
+}
+svg.tficon.tf-current .tf-acf {
+  fill: currentColor;
+  fill-opacity: 0.18;
+}
+
+/* Varian di atas latar aksen (logo mark indigo) */
+svg.tficon.tf-onaccent {
+  stroke: #fff;
+}
+svg.tficon.tf-onaccent .tf-ac {
+  stroke: #c7d2fe;
+}
+svg.tficon.tf-onaccent .tf-acf {
+  fill: rgba(255, 255, 255, 0.28);
+}

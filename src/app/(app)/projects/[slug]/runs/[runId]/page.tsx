@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { TFIcon } from "@/components/icons";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { caseDisplayId, RESULT_COLORS, type TestStep } from "@/lib/constants";
@@ -42,7 +43,7 @@ export default async function RunDetailPage({
           <h2 className="text-xl font-bold">{run.name}</h2>
           <p className="text-sm text-slate-400">
             {run.description}
-            {run.milestone && <> · 🎯 {run.milestone.name}</>}
+            {run.milestone && <> · {run.milestone.name}</>}
           </p>
         </div>
         <div className="flex shrink-0 gap-2">
@@ -50,7 +51,7 @@ export default async function RunDetailPage({
             href={`/api/export/run?id=${run.id}`}
             className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100"
           >
-            ↓ Export CSV
+            <span className="inline-flex items-center gap-1.5"><TFIcon name="download" className="h-4 w-4" /> Export CSV</span>
           </a>
           {failedish > 0 && (
             <form action={rerunFailed}>
