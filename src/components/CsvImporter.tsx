@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { TFIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 
 type PreviewRow = { title: string; valid: boolean; error?: string };
@@ -41,7 +42,7 @@ export function CsvImporter({ projectSlug }: { projectSlug: string }) {
 
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-6">
-      <h3 className="mb-3 font-semibold">📥 Import Test Case dari CSV</h3>
+      <h3 className="mb-3 flex items-center gap-2 font-semibold"><TFIcon name="import" className="h-5 w-5" /> Import Test Case dari CSV</h3>
       <p className="mb-3 text-sm text-slate-500">
         Kolom: <code className="rounded bg-slate-100 px-1">title</code> (wajib),{" "}
         <code className="rounded bg-slate-100 px-1">description</code>,{" "}
@@ -57,7 +58,7 @@ export function CsvImporter({ projectSlug }: { projectSlug: string }) {
         href="/api/templates/cases-csv"
         className="text-sm text-indigo-600 hover:underline"
       >
-        ↓ Unduh template CSV
+        <span className="inline-flex items-center gap-1.5"><TFIcon name="download" className="h-4 w-4" /> Unduh template CSV</span>
       </a>
       <div className="mt-4 space-y-3">
         <input

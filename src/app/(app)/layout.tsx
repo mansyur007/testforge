@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireSession } from "@/lib/auth";
 import { logout } from "@/app/actions/auth";
+import { Logo, TFIcon } from "@/components/icons";
 
 export default async function AppLayout({
   children,
@@ -10,19 +11,17 @@ export default async function AppLayout({
   const session = await requireSession();
 
   const nav = [
-    { href: "/dashboard", label: "Dashboard", icon: "📊" },
-    { href: "/projects", label: "Proyek", icon: "📁" },
-    { href: "/settings/api-keys", label: "API Keys", icon: "🔑" },
-    { href: "/settings/audit-log", label: "Audit Log", icon: "📜" },
+    { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
+    { href: "/projects", label: "Proyek", icon: "nav-projects" },
+    { href: "/settings/api-keys", label: "API Keys", icon: "nav-keys" },
+    { href: "/settings/audit-log", label: "Audit Log", icon: "nav-audit" },
   ];
 
   return (
     <div className="flex min-h-screen">
       <aside className="fixed inset-y-0 flex w-60 flex-col border-r border-slate-800 bg-slate-900 text-slate-300">
         <div className="px-5 py-5">
-          <Link href="/dashboard" className="text-xl font-bold text-white">
-            ⚒️ Test<span className="text-indigo-400">Forge</span>
-          </Link>
+          <Logo href="/dashboard" size="sm" dark />
         </div>
         <nav className="flex-1 space-y-1 px-3">
           {nav.map((item) => (
@@ -31,7 +30,7 @@ export default async function AppLayout({
               href={item.href}
               className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-slate-800 hover:text-white"
             >
-              <span>{item.icon}</span>
+              <TFIcon name={item.icon} current className="h-[19px] w-[19px]" />
               {item.label}
             </Link>
           ))}

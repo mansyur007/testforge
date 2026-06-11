@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { TFIcon } from "@/components/icons";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { ProjectTabs } from "@/components/ProjectTabs";
@@ -23,7 +24,7 @@ export default async function ImportPage({
         <CsvImporter projectSlug={project.slug} />
 
         <section className="rounded-xl border border-slate-200 bg-white p-6">
-          <h3 className="mb-3 font-semibold">🤖 Upload Hasil Automation (CI/CD)</h3>
+          <h3 className="mb-3 flex items-center gap-2 font-semibold"><TFIcon name="automation" className="h-5 w-5" /> Upload Hasil Automation (CI/CD)</h3>
           <p className="mb-3 text-sm text-slate-500">
             Upload file JUnit XML dari framework apa pun (Cypress, Playwright,
             Jest, Pytest, dll). Hasil otomatis menjadi test run baru, dan test

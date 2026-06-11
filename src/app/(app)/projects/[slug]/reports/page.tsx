@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { TFIcon } from "@/components/icons";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
@@ -118,7 +119,7 @@ export default async function ReportsPage({
       </div>
 
       <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <h3 className="mb-4 font-semibold">📈 Tren Pass Rate per Run</h3>
+        <h3 className="mb-4 flex items-center gap-2 font-semibold"><TFIcon name="trend" className="h-5 w-5" /> Tren Pass Rate per Run</h3>
         {trend.length === 0 ? (
           <p className="text-sm text-slate-400">Belum ada data run.</p>
         ) : (
@@ -142,7 +143,7 @@ export default async function ReportsPage({
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-xl border border-slate-200 bg-white p-6">
-          <h3 className="mb-4 font-semibold">🎲 Flaky Tests</h3>
+          <h3 className="mb-4 flex items-center gap-2 font-semibold"><TFIcon name="flaky" className="h-5 w-5" /> Flaky Tests</h3>
           <p className="mb-3 text-xs text-slate-400">
             Test case yang berganti-ganti status pass/fail antar run (≥2 perubahan).
           </p>
@@ -171,7 +172,7 @@ export default async function ReportsPage({
         </section>
 
         <section className="rounded-xl border border-slate-200 bg-white p-6">
-          <h3 className="mb-4 font-semibold">🐛 Bug Correlation</h3>
+          <h3 className="mb-4 flex items-center gap-2 font-semibold"><TFIcon name="bug" className="h-5 w-5" /> Bug Correlation</h3>
           <p className="mb-3 text-xs text-slate-400">
             Test case yang paling sering menghasilkan bug report.
           </p>
@@ -198,7 +199,7 @@ export default async function ReportsPage({
       </div>
 
       <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <h3 className="mb-4 font-semibold">📋 Breakdown per Run</h3>
+        <h3 className="mb-4 flex items-center gap-2 font-semibold"><TFIcon name="breakdown" className="h-5 w-5" /> Breakdown per Run</h3>
         <table className="w-full text-sm">
           <thead className="text-left text-xs uppercase text-slate-500">
             <tr>

@@ -17,6 +17,13 @@ import {
   TOKEN_TYPES,
 } from "@/lib/tokens";
 import { logAudit } from "@/lib/audit";
+import { cookies } from "next/headers";
+import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
+
+// Pesan error mengikuti bahasa pilihan user (cookie tf_lang, default en)
+function msgs() {
+  return dict[resolveLang(cookies().get(LANG_COOKIE)?.value)].auth.errors;
+}
 
 const failedAttempts = new Map<string, { count: number; firstAt: number }>();
 const LOCKOUT_WINDOW_MS = 5 * 60 * 1000;
@@ -62,11 +69,10 @@ function slugifyOrg(name: string) {
 }
 
 // PRD §12.2.1: min 8 karakter, 1 huruf besar, 1 angka
-function validatePassword(password: string) {
-  if (password.length < 8) return "Password minimal 8 karakter.";
-  if (!/[A-Z]/.test(password)) return "Password harus mengandung 1 huruf besar.";
-  if (!/[0-9]/.test(password)) return "Password harus mengandung 1 angka.";
-  return null;
+function isWeakPassword(password: string) {
+  return (
+    password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)
+  );
 }
 
 export async function register(
@@ -84,29 +90,24 @@ export async function register(
   const agreed = formData.get("agreeTerms") === "on";
 
   // Validasi sesuai PRD §12.2.1
-  if (name.length < 2 || name.length > 100)
-    return { error: "Nama lengkap 2–100 karakter." };
+  const t = msgs();
+  if (name.length < 2 || name.length > 100) return { error: t.nameLength };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-    return { error: "Format email tidak valid." };
+    return { error: t.invalidEmail };
   const domain = email.split("@")[1];
-  if (BLACKLISTED_DOMAINS.includes(domain))
-    return { error: "Gunakan email kerja, bukan email sekali pakai." };
-  const pwError = validatePassword(password);
-  if (pwError) return { error: pwError };
-  if (password !== confirmPassword)
-    return { error: "Konfirmasi password tidak sama." };
+  if (BLACKLISTED_DOMAINS.includes(domain)) return { error: t.tempEmail };
+  if (isWeakPassword(password)) return { error: t.passwordWeak };
+  if (password !== confirmPassword) return { error: t.confirmMismatch };
   if (orgName.length < 2 || orgName.length > 100)
-    return { error: "Nama organisasi 2–100 karakter." };
-  if (!/^[a-z0-9-]+$/.test(orgSlug))
-    return { error: "Slug organisasi hanya huruf kecil, angka, dan strip." };
-  if (!agreed)
-    return { error: "Anda harus menyetujui Terms of Service dan Privacy Policy." };
+    return { error: t.orgLength };
+  if (!/^[a-z0-9-]+$/.test(orgSlug)) return { error: t.slugFormat };
+  if (!agreed) return { error: t.mustAgree };
 
   const existing = await db.user.findUnique({ where: { email } });
-  if (existing) return { error: "Email sudah terdaftar. Silakan login." };
+  if (existing) return { error: t.emailTaken };
 
   const slugTaken = await db.organization.findUnique({ where: { slug: orgSlug } });
-  if (slugTaken) return { error: `Slug workspace "${orgSlug}" sudah dipakai.` };
+  if (slugTaken) return { error: t.slugTaken(orgSlug) };
 
   // User pertama otomatis ADMIN
   const userCount = await db.user.count();
@@ -140,15 +141,15 @@ export async function resendVerification(
   _prev: { error?: string; ok?: string; devLink?: string } | undefined,
   formData: FormData
 ) {
+  const t = msgs();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const user = await db.user.findUnique({ where: { email } });
   // jangan bocorkan keberadaan akun
-  if (!user || user.emailVerifiedAt)
-    return { ok: "Jika email terdaftar, link verifikasi sudah dikirim ulang." };
+  if (!user || user.emailVerifiedAt) return { ok: t.resendNeutral };
 
   // PRD §12.5: cooldown 60 detik
   if (await isResendCoolingDown(user.id, TOKEN_TYPES.VERIFY_EMAIL))
-    return { error: "Tunggu 60 detik sebelum meminta ulang." };
+    return { error: t.resendCooldown };
 
   const raw = await createToken(user.id, TOKEN_TYPES.VERIFY_EMAIL);
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3456";
@@ -159,7 +160,7 @@ export async function resendVerification(
   });
 
   return {
-    ok: "Link verifikasi dikirim ulang.",
+    ok: t.resendOk,
     devLink: result.devLink, // mode dev tanpa SMTP: tampilkan link langsung
   };
 }
@@ -173,20 +174,18 @@ export async function login(
   const rememberMe = formData.get("rememberMe") === "on";
   const next = String(formData.get("next") ?? "");
 
-  if (isLockedOut(email))
-    return { error: "Terlalu banyak percobaan gagal. Coba lagi dalam 5 menit." };
+  const t = msgs();
+  if (isLockedOut(email)) return { error: t.lockedOut };
 
   const user = await db.user.findUnique({ where: { email } });
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
     recordFailure(email);
-    return { error: "Email atau password salah." };
+    return { error: t.wrongCredentials };
   }
 
   // AU-001: verifikasi email wajib sebelum login
   if (!user.emailVerifiedAt) {
-    return {
-      error: `Email belum diverifikasi. Cek inbox atau kunjungi halaman verifikasi.`,
-    };
+    return { error: t.notVerified };
   }
 
   failedAttempts.delete(email);
@@ -200,7 +199,7 @@ export async function login(
 
 export async function verifyEmailToken(rawToken: string) {
   const userId = await consumeToken(rawToken, TOKEN_TYPES.VERIFY_EMAIL);
-  if (!userId) return { error: "Link verifikasi tidak valid atau kedaluwarsa." };
+  if (!userId) return { error: msgs().invalidVerifyToken };
 
   const user = await db.user.update({
     where: { id: userId },
@@ -220,13 +219,14 @@ export async function forgotPassword(
   _prev: { error?: string; ok?: string; devLink?: string } | undefined,
   formData: FormData
 ) {
+  const t = msgs();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const user = await db.user.findUnique({ where: { email } });
   // jangan bocorkan keberadaan akun
-  if (!user) return { ok: "Jika email terdaftar, link reset sudah dikirim." };
+  if (!user) return { ok: t.forgotNeutral };
 
   if (await isResendCoolingDown(user.id, TOKEN_TYPES.RESET_PASSWORD))
-    return { error: "Tunggu 60 detik sebelum meminta ulang." };
+    return { error: t.resendCooldown };
 
   // AU-008: link reset valid 1 jam
   const raw = await createToken(user.id, TOKEN_TYPES.RESET_PASSWORD);
@@ -238,25 +238,23 @@ export async function forgotPassword(
   });
 
   await logAudit({ userId: user.id, action: "auth.forgot_password" });
-  return { ok: "Jika email terdaftar, link reset sudah dikirim.", devLink: result.devLink };
+  return { ok: t.forgotNeutral, devLink: result.devLink };
 }
 
 export async function resetPassword(
   _prev: { error?: string } | undefined,
   formData: FormData
 ) {
+  const t = msgs();
   const token = String(formData.get("token") ?? "");
   const password = String(formData.get("password") ?? "");
   const confirmPassword = String(formData.get("confirmPassword") ?? "");
 
-  const pwError = validatePassword(password);
-  if (pwError) return { error: pwError };
-  if (password !== confirmPassword)
-    return { error: "Konfirmasi password tidak sama." };
+  if (isWeakPassword(password)) return { error: t.passwordWeak };
+  if (password !== confirmPassword) return { error: t.confirmMismatch };
 
   const userId = await consumeToken(token, TOKEN_TYPES.RESET_PASSWORD);
-  if (!userId)
-    return { error: "Link reset tidak valid atau sudah kedaluwarsa (berlaku 1 jam)." };
+  if (!userId) return { error: t.invalidResetToken };
 
   await db.user.update({
     where: { id: userId },

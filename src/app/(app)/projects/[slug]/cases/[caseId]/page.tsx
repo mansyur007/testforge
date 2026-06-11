@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TFIcon } from "@/components/icons";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
@@ -69,27 +70,27 @@ export default async function CaseDetailPage({
               {testCase.automationStatus.replace(/_/g, " ")}
             </span>
             {testCase.suite && (
-              <span className="text-slate-400">📂 {testCase.suite.name}</span>
+              <span className="flex items-center gap-1 text-slate-400"><TFIcon name="nav-tree" className="h-4 w-4" /> {testCase.suite.name}</span>
             )}
           </div>
         </div>
         <div className="flex shrink-0 gap-2">
           <Link
             href={`/projects/${testCase.project.slug}/cases/${testCase.id}/edit`}
-            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100"
           >
-            ✏️ Edit
+            <TFIcon name="edit" className="h-4 w-4" /> Edit
           </Link>
           <form action={cloneCase}>
             <input type="hidden" name="caseId" value={testCase.id} />
-            <button className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100">
-              ⧉ Clone
+            <button className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100">
+              <TFIcon name="clone" className="h-4 w-4" /> Clone
             </button>
           </form>
           <form action={deleteCase}>
             <input type="hidden" name="caseId" value={testCase.id} />
-            <button className="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">
-              🗑 Hapus
+            <button className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">
+              <TFIcon name="delete" current className="h-4 w-4" /> Hapus
             </button>
           </form>
         </div>

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Logo, TFIcon, BrandIcon } from "@/components/icons";
 import {
   onboardingCreateProject,
   onboardingInvite,
@@ -13,17 +14,17 @@ const inputCls =
   "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none";
 
 const TEMPLATES = [
-  { id: "blank", icon: "📄", label: "Blank", desc: "Mulai dari kosong" },
-  { id: "web", icon: "🌐", label: "Web App", desc: "Suite auth, navigasi, form" },
-  { id: "mobile", icon: "📱", label: "Mobile App", desc: "Suite onboarding, push, offline" },
-  { id: "api", icon: "🔌", label: "API Service", desc: "Suite auth, CRUD, error handling" },
+  { id: "blank", icon: "tpl-blank", label: "Blank", desc: "Mulai dari kosong" },
+  { id: "web", icon: "tpl-web", label: "Web App", desc: "Suite auth, navigasi, form" },
+  { id: "mobile", icon: "tpl-mobile", label: "Mobile App", desc: "Suite onboarding, push, offline" },
+  { id: "api", icon: "tpl-api", label: "API Service", desc: "Suite auth, CRUD, error handling" },
 ];
 
 const INTEGRATIONS = [
-  { id: "jira", icon: "🟦", label: "Jira" },
-  { id: "github", icon: "🐙", label: "GitHub" },
-  { id: "cypress", icon: "🌲", label: "Cypress" },
-  { id: "slack", icon: "💬", label: "Slack" },
+  { id: "jira", label: "Jira" },
+  { id: "github", label: "GitHub" },
+  { id: "cypress", label: "Cypress" },
+  { id: "slack", label: "Slack" },
 ];
 
 export function OnboardingWizard({ userName }: { userName: string }) {
@@ -93,9 +94,7 @@ export function OnboardingWizard({ userName }: { userName: string }) {
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
       <div className="w-full max-w-xl">
         <div className="mb-6 text-center">
-          <p className="text-3xl font-bold text-slate-900">
-            ⚒️ Test<span className="text-indigo-600">Forge</span>
-          </p>
+          <Logo size="lg" />
           {step <= 3 && (
             <>
               <p className="mt-2 text-sm text-slate-500">
@@ -162,7 +161,7 @@ export function OnboardingWizard({ userName }: { userName: string }) {
                           : "border-slate-200 hover:border-slate-300"
                       }`}
                     >
-                      <span className="mr-1">{t.icon}</span>
+                      <span className="mb-1 block"><TFIcon name={t.icon} className="h-6 w-6" /></span>
                       <span className="font-medium">{t.label}</span>
                       <p className="mt-0.5 text-xs text-slate-500">{t.desc}</p>
                     </button>
@@ -255,7 +254,7 @@ export function OnboardingWizard({ userName }: { userName: string }) {
                         : "border-slate-200 hover:border-slate-300"
                     }`}
                   >
-                    <span className="text-xl">{it.icon}</span>
+                    <BrandIcon name={it.id} className="h-6 w-6" />
                     {it.label}
                     {selectedIntegrations.has(it.id) && (
                       <span className="ml-auto text-indigo-600">✓</span>
@@ -280,20 +279,20 @@ export function OnboardingWizard({ userName }: { userName: string }) {
 
           {step === 4 && (
             <div className="space-y-4 text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-50 text-3xl">
-                🎉
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-50 text-green-600">
+                <TFIcon name="celebrate" current className="h-8 w-8" />
               </div>
               <h1 className="text-lg font-bold">Mulai Eksplorasi</h1>
               {info && <p className="text-sm text-green-600">{info}</p>}
               <ul className="mx-auto max-w-sm space-y-2 text-left text-sm text-slate-600">
                 <li className="flex items-center gap-2 rounded-lg border border-slate-100 p-3">
-                  ☑️ Buat test case pertama di tab <b>Test Cases</b>
+                  <TFIcon name="checklist" className="h-5 w-5 shrink-0" /> Buat test case pertama di tab <b>Test Cases</b>
                 </li>
                 <li className="flex items-center gap-2 rounded-lg border border-slate-100 p-3">
-                  ☑️ Buat test run dan eksekusi dengan shortcut <b>P/F/B</b>
+                  <TFIcon name="checklist" className="h-5 w-5 shrink-0" /> Buat test run dan eksekusi dengan shortcut <b>P/F/B</b>
                 </li>
                 <li className="flex items-center gap-2 rounded-lg border border-slate-100 p-3">
-                  ☑️ Upload hasil automation via <b>API Keys + JUnit XML</b>
+                  <TFIcon name="checklist" className="h-5 w-5 shrink-0" /> Upload hasil automation via <b>API Keys + JUnit XML</b>
                 </li>
               </ul>
               <button

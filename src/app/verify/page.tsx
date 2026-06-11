@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { Logo, TFIcon } from "@/components/icons";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { verifyEmailToken } from "@/app/actions/auth";
+import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +13,8 @@ export default async function VerifyPage({
 }: {
   searchParams: { token?: string };
 }) {
+  const lang = resolveLang(cookies().get(LANG_COOKIE)?.value);
+  const t = dict[lang].auth.verifyFail;
   const token = searchParams.token;
   if (!token) redirect("/login");
 
@@ -19,20 +24,18 @@ export default async function VerifyPage({
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
       <div className="w-full max-w-md text-center">
-        <Link href="/" className="text-3xl font-bold text-slate-900">
-          ⚒️ Test<span className="text-indigo-600">Forge</span>
-        </Link>
+        <Logo size="lg" />
         <div className="mt-6 rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-3xl">
-            ⚠️
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-500">
+            <TFIcon name="invalid" current className="h-8 w-8" />
           </div>
-          <h1 className="mt-4 text-xl font-bold">Verifikasi gagal</h1>
+          <h1 className="mt-4 text-xl font-bold">{t.title}</h1>
           <p className="mt-2 text-sm text-slate-500">{result.error}</p>
           <Link
             href="/verify-email"
             className="mt-5 inline-block rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
           >
-            Minta link baru
+            {t.requestNew}
           </Link>
         </div>
       </div>
