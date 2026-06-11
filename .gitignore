@@ -38,3 +38,6 @@ next-env.d.ts
 # local env & sqlite database
 .env
 *.db
+
+# design system reference assets (local only)
+testforge design system/
