@@ -293,7 +293,6 @@ export default async function HomePage() {
           >
             {t.demo.cta}
           </Link>
-          <p className="mt-2 text-xs text-slate-400">{t.demo.demoCreds}</p>
         </div>
       </section>
 

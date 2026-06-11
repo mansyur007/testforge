@@ -41,3 +41,8 @@ next-env.d.ts
 
 # design system reference assets (local only)
 testforge design system/
+
+# Claude Code skill tooling (local only)
+.agents/
+.claude/skills/
+skills-lock.json
