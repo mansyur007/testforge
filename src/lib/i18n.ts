@@ -67,7 +67,6 @@ const en = {
         { title: "Dashboard & CI", desc: "Pass rate trends, flaky tests, and CI pipeline results flowing in automatically." },
       ],
       cta: "View Live Demo →",
-      demoCreds: "Demo login: admin@testforge.local / admin12345",
     },
     integrations: {
       kicker: "Integrations",
