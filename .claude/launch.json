@@ -5,7 +5,8 @@
       "name": "testforge",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
-        "start"
+        "run",
+        "dev"
       ],
       "port": 3456,
       "autoPort": true

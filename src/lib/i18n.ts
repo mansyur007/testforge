@@ -85,7 +85,7 @@ const en = {
       kicker: "Open Source",
       title: "MIT License. Forever.",
       body: "No “open core” model — every feature ships in the open source version. Fork it, modify it, deploy it however you like. Contributions always welcome.",
-      cta: "⭐ Star on GitHub",
+      cta: "Star on GitHub",
     },
     pricing: {
       title: "100% Free. Period.",
@@ -324,7 +324,7 @@ const id: typeof en = {
       kicker: "Open Source",
       title: "MIT License. Selamanya.",
       body: "Tidak ada model “open core” — semua fitur tersedia di versi open source. Fork, modifikasi, deploy sesuka kamu. Kontribusi selalu terbuka.",
-      cta: "⭐ Star on GitHub",
+      cta: "Star on GitHub",
     },
     pricing: {
       title: "100% Gratis. Titik.",
