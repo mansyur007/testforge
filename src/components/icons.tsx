@@ -7,8 +7,6 @@ import Link from "next/link";
    `onAccent` untuk ikon di atas latar indigo (logo mark). */
 
 const ICONS: Record<string, string> = {
-  // 1. Branding
-  logo: `<rect class="tf-acf" x="3.5" y="6" width="13.5" height="3.4" rx="1.2"/><path class="tf-acf" d="M16.5 6.2 h3.6 c-.4 2.1 -2.1 3.2 -3.6 3.2 z"/><rect x="9.6" y="9.4" width="3" height="2.6"/><path class="tf-acf" d="M5.4 18.4 c.6 -3.4 2.8 -5.2 6.1 -5.2 s5.5 1.8 6.1 5.2 z"/><path class="tf-ac" d="M3.5 18.6 h17"/>`,
   // 2. Core features
   manual: `<rect x="5" y="5" width="14" height="16" rx="2.2"/><path class="tf-acf" d="M9 4 h6 a1 1 0 0 1 1 1 v1.4 a1 1 0 0 1 -1 1 H9 a1 1 0 0 1 -1 -1 V5 a1 1 0 0 1 1 -1 z"/><path class="tf-ac" d="M8.5 13 l2 2 l4 -4.2"/><path d="M8.5 18 h7"/>`,
   automation: `<rect x="5" y="8.5" width="14" height="10.5" rx="2.6"/><circle class="tf-acf" cx="9.5" cy="13.5" r="1.25"/><circle class="tf-acf" cx="14.5" cy="13.5" r="1.25"/><path d="M12 8.5 V5.4"/><circle cx="12" cy="4.3" r="1.2"/><path d="M5 13.5 H3.3 M19 13.5 H20.7"/><path class="tf-ac" d="M9.7 16.4 h4.6"/>`,
@@ -83,12 +81,25 @@ export function TFIcon({
   );
 }
 
-/* Brand mark resmi integrasi — dari brand-data.js ("pakai icon asli"). */
+/* Brand mark resmi integrasi — geometri & warna asli ("pakai icon asli").
+   Disinkronkan dengan TF_BRANDS dari "TestForge Icon System".
+   Key dicocokkan dengan brandId di page.tsx (name.toLowerCase().replace(/\s+/g,"-")). */
 const BRANDS: Record<string, string> = {
-  jira: `<defs><linearGradient id="tfjg" x1="98%" y1="0%" x2="36%" y2="46%"><stop offset="0" stop-color="#0052CC"/><stop offset="1" stop-color="#2684FF"/></linearGradient></defs><path fill="#2684FF" d="M11.57 11.51H0a5.22 5.22 0 0 0 5.23 5.22h2.13v2.05A5.22 5.22 0 0 0 12.58 24V12.52a1 1 0 0 0-1.01-1.01z"/><path fill="url(#tfjg)" d="M17.29 5.76H5.74a5.22 5.22 0 0 0 5.21 5.21h2.13v2.06a5.22 5.22 0 0 0 5.22 5.21V6.76a1 1 0 0 0-1.01-1z"/><path fill="url(#tfjg)" d="M23.01 0H11.46a5.22 5.22 0 0 0 5.21 5.22h2.13v2.05A5.22 5.22 0 0 0 24 12.48V1.01A1 1 0 0 0 23.01 0z"/>`,
+  // test runners
+  cypress: `<circle cx="12" cy="12" r="11" fill="#1B1E2E"/><path fill="#69D3A7" d="M12 4.4a7.6 7.6 0 1 0 6.9 10.7l-1.7-.8A5.7 5.7 0 1 1 12 6.3a5.7 5.7 0 0 1 5.2 3.4l1.7-.8A7.6 7.6 0 0 0 12 4.4Z"/><path fill="#69D3A7" d="m12.6 13.7-1.5 5.4q.45.05.9.05l1.45-5.05a4 4 0 0 1-.85-.4Z"/>`,
+  playwright: `<circle cx="12" cy="12" r="11" fill="#2D4552"/><path fill="#E2574C" d="M6.8 8.6C8.1 7.7 9.9 7.2 12 7.2s3.9.5 5.2 1.4c.4 4.2-2.1 8.4-5.2 8.4s-5.6-4.2-5.2-8.4Z"/><circle cx="9.7" cy="10.7" r="1.15" fill="#fff"/><circle cx="14.3" cy="10.7" r="1.15" fill="#fff"/><path fill="#fff" d="M9 14.2c1.9-.7 4.1-.7 6 0-.9 1.1-2 1.7-3 1.7s-2.1-.6-3-1.7Z" opacity=".85"/>`,
+  jest: `<rect x="2" y="2" width="20" height="20" rx="5.2" fill="#C21325"/><path fill="#fff" d="M12 5.4 16.2 13.2H7.8Z"/><rect x="6.4" y="13" width="11.2" height="2.3" rx="1.15" fill="#fff"/><path fill="#C21325" d="m12 8.1.62 1.42 1.55.13-1.18.99.36 1.5L12 11.86l-1.35.81.36-1.5-1.18-1 1.55-.12Z"/>`,
+  k6: `<rect x="2" y="2" width="20" height="20" rx="5.2" fill="#7D64FF"/><path fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M7.7 6.6v10.8M7.7 12.3l3.6-3.7M8.1 12l3.7 3.9"/><path fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" d="M17 8.6a2.7 2.7 0 0 0-2.6 2.7v2.6a2.3 2.3 0 1 0 2.3-2.3 2.3 2.3 0 0 0-2.3 1.3"/>`,
+  selenium: `<circle cx="10.6" cy="11" r="7.4" fill="#43B02A"/><path fill="#43B02A" d="M14.6 13.6c3 1.9 4.4 4.7 4 6.3-1.6.5-4.6-.6-6.6-3.5Z"/><circle cx="8.4" cy="8.6" r="2.3" fill="#fff" opacity=".55"/>`,
+  pytest: `<rect x="3.6" y="3.6" width="11" height="11" rx="3" fill="#3776AB"/><rect x="9.4" y="9.4" width="11" height="11" rx="3" fill="#FFD43B"/><circle cx="6.8" cy="6.8" r="1.15" fill="#fff"/><circle cx="17.2" cy="17.2" r="1.15" fill="#fff"/>`,
+  // source, ci, collab
   github: `<path fill="#181717" d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.26.8-.58 0-.28-.01-1.04-.02-2.04-3.34.73-4.04-1.6-4.04-1.6-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .11-.78.42-1.3.76-1.6-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6.01 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.82 1.1.82 2.22 0 1.61-.02 2.9-.02 3.29 0 .32.22.7.83.58A12 12 0 0 0 12 .3z"/>`,
-  cypress: `<circle cx="12" cy="12" r="11.3" fill="#1B1E2E"/><path fill="none" stroke="#69D3A7" stroke-width="1.7" stroke-linecap="round" d="M14.3 8.6a4 4 0 1 0 0 6.8"/><path fill="#69D3A7" d="M6.2 9.4l1.7 5 1.7-5h1.5l-2.4 6.4c-.4 1.1-.9 1.6-1.9 1.6-.3 0-.6 0-.9-.1v-1.2c.2 0 .4.1.6.1.4 0 .6-.2.8-.6l.1-.3-2.4-5.9z"/>`,
+  gitlab: `<path fill="#E24329" d="M12 21.42 15.68 10.1H8.32z"/><path fill="#FC6D26" d="M12 21.42 8.32 10.1H3.16z"/><path fill="#FCA326" d="M3.16 10.1 2.03 13.56a.77.77 0 0 0 .28.86L12 21.42z"/><path fill="#E24329" d="M3.16 10.1h5.16L6.1 3.28a.39.39 0 0 0-.75 0z"/><path fill="#FC6D26" d="M12 21.42 15.68 10.1h5.16z"/><path fill="#FCA326" d="M20.84 10.1 21.97 13.56a.77.77 0 0 1-.28.86L12 21.42z"/><path fill="#E24329" d="M20.84 10.1h-5.16l2.22-6.82a.39.39 0 0 1 .75 0z"/>`,
+  jira: `<defs><linearGradient id="tfjg" x1="98%" y1="0%" x2="36%" y2="46%"><stop offset="0" stop-color="#0052CC"/><stop offset="1" stop-color="#2684FF"/></linearGradient></defs><path fill="#2684FF" d="M11.57 11.51H0a5.22 5.22 0 0 0 5.23 5.22h2.13v2.05A5.22 5.22 0 0 0 12.58 24V12.52a1 1 0 0 0-1.01-1.01z"/><path fill="url(#tfjg)" d="M17.29 5.76H5.74a5.22 5.22 0 0 0 5.21 5.21h2.13v2.06a5.22 5.22 0 0 0 5.22 5.21V6.76a1 1 0 0 0-1.01-1z"/><path fill="url(#tfjg)" d="M23.01 0H11.46a5.22 5.22 0 0 0 5.21 5.22h2.13v2.05A5.22 5.22 0 0 0 24 12.48V1.01A1 1 0 0 0 23.01 0z"/>`,
   slack: `<path fill="#36C5F0" d="M6.2 14.9a2 2 0 1 1-2-2h2zM7.2 14.9a2 2 0 1 1 4 0v5a2 2 0 1 1-4 0z"/><path fill="#2EB67D" d="M9.2 6.1a2 2 0 1 1 2-2v2zM9.2 7.1a2 2 0 1 1 0 4h-5a2 2 0 1 1 0-4z"/><path fill="#ECB22E" d="M17.9 9.1a2 2 0 1 1 2 2h-2zM16.9 9.1a2 2 0 1 1-4 0v-5a2 2 0 1 1 4 0z"/><path fill="#E01E5A" d="M14.9 17.9a2 2 0 1 1-2 2v-2zM14.9 16.9a2 2 0 1 1 0-4h5a2 2 0 1 1 0 4z"/>`,
+  jenkins: `<circle cx="12" cy="12" r="11" fill="#fff"/><ellipse cx="12" cy="11" rx="5.3" ry="6.1" fill="#EBD7BE"/><path fill="#2B3A42" d="M6.7 8.4C7.2 4.9 9.3 3 12 3s4.8 1.9 5.3 5.4c-1.8-.7-2.1-2.4-5.3-2.4S8.5 7.7 6.7 8.4Z"/><circle cx="9.9" cy="10.2" r="0.95" fill="#2B3A42"/><circle cx="14.1" cy="10.2" r="0.95" fill="#2B3A42"/><path fill="#4A3B30" d="M8.3 12.8c1.1-.25 2.2-.1 3.7.65 1.5-.75 2.6-.9 3.7-.65-.85 1.7-2.1 2.35-3.7 2.35s-2.85-.65-3.7-2.35Z"/><path fill="#D33833" d="m12 17.4-3.1 1.5.5 2.4c1.7.35 3.5.35 5.2 0l.5-2.4z"/>`,
+  "robot-framework": `<path fill="none" stroke="#1A1A2E" stroke-width="1.6" stroke-linecap="round" d="M12 6.8V4.2"/><circle cx="12" cy="3.2" r="1.4" fill="#1A1A2E"/><rect x="4.8" y="6.8" width="14.4" height="11" rx="3.2" fill="#1A1A2E"/><rect x="7.8" y="10.3" width="3.1" height="3.4" rx="1.1" fill="#00C0B5"/><rect x="13.1" y="10.3" width="3.1" height="3.4" rx="1.1" fill="#00C0B5"/><rect x="9" y="18.6" width="6" height="1.7" rx=".85" fill="#1A1A2E"/>`,
+  // self-host
   docker: `<g fill="#2496ED"><rect x="2.6" y="11" width="2.5" height="2.4" rx=".3"/><rect x="5.5" y="11" width="2.5" height="2.4" rx=".3"/><rect x="8.4" y="11" width="2.5" height="2.4" rx=".3"/><rect x="11.3" y="11" width="2.5" height="2.4" rx=".3"/><rect x="5.5" y="8.2" width="2.5" height="2.4" rx=".3"/><rect x="8.4" y="8.2" width="2.5" height="2.4" rx=".3"/><rect x="8.4" y="5.4" width="2.5" height="2.4" rx=".3"/><path d="M22.5 11.4c-.5-.35-1.7-.48-2.6-.3-.12-.85-.6-1.6-1.45-2.27l-.5-.33-.33.5c-.42.64-.56 1.7-.1 2.45.2.34.5.6.85.78-.3.16-.9.38-1.68.37H1.9c-.3 1.78.2 4.08 1.55 5.65 1.3 1.5 3.27 2.26 5.84 2.26 5.56 0 9.68-2.56 11.6-7.2.76.01 2.4.01 3.23-1.57.05-.09.18-.35.55-1.15z"/></g>`,
 };
 
@@ -111,6 +122,35 @@ export function BrandIcon({
   );
 }
 
+/* Brand mark "Anvil" — literal terhadap "Forge": siluet landasan solid +
+   percikan tempa. Fill-based dua warna (ink + spark), bukan stroke seperti
+   TFIcon. Default putih di atas badge indigo (lihat HTML Icon System). */
+export function AnvilMark({
+  className = "h-6 w-6",
+  ink = "#ffffff",
+  spark = "#c7d2fe",
+}: {
+  className?: string;
+  ink?: string;
+  spark?: string;
+}) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden className={className}>
+      <g fill={ink}>
+        <rect x="3.8" y="8" width="15" height="3.5" rx="1.1" />
+        <path d="M3.8 8.5 1.5 9.75 3.8 11Z" />
+        <path d="M9.4 11.5H14.6L17 17.4H7Z" />
+        <rect x="6.2" y="16.6" width="11.6" height="1.8" rx="0.7" />
+      </g>
+      <g stroke={spark} strokeWidth="1.5" strokeLinecap="round" fill="none">
+        <path d="M17 6.3 19 4.4" />
+        <path d="M19.7 8.2 21.7 7.6" />
+        <path d="M15 4.8 15.5 2.7" />
+      </g>
+    </svg>
+  );
+}
+
 /* Logo: mark indigo + wordmark Space Grotesk ("Test" ink, "Forge" aksen). */
 export function Logo({
   href = "/",
@@ -130,7 +170,7 @@ export function Logo({
       <span
         className={`grid place-items-center bg-indigo-600 shadow-[0_6px_20px_-8px_rgba(79,70,229,.6)] ${mark}`}
       >
-        <TFIcon name="logo" onAccent className={icon} />
+        <AnvilMark className={icon} />
       </span>
       <span className={`font-display font-bold tracking-tight ${text} ${dark ? "text-white" : "text-slate-900 dark:text-white"}`}>
         Test<span className="text-indigo-600 dark:text-indigo-400">Forge</span>

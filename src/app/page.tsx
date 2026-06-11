@@ -350,8 +350,9 @@ export default async function HomePage() {
             href={`https://github.com/${GITHUB_REPO}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-6 inline-block rounded-lg bg-white px-6 py-3 font-medium text-slate-900 hover:bg-slate-100"
+            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 font-medium text-slate-900 hover:bg-slate-100"
           >
+            <TFIcon name="stars" className="h-5 w-5" />
             {t.openSource.cta}
           </a>
         </div>
