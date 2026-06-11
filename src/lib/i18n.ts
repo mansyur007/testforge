@@ -306,7 +306,6 @@ const id: typeof en = {
         { title: "Dashboard & CI", desc: "Pass rate trend, flaky test, dan hasil pipeline CI masuk otomatis." },
       ],
       cta: "Lihat Live Demo →",
-      demoCreds: "Login demo: admin@testforge.local / admin12345",
     },
     integrations: {
       kicker: "Integrasi",
