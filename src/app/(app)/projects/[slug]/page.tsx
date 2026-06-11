@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TFIcon } from "@/components/icons";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
@@ -84,7 +85,7 @@ export default async function ProjectPage({
                     href={`/projects/${project.slug}${filterQS({ suite: suite.id })}`}
                     className={`block rounded px-2 py-1 hover:bg-slate-100 ${searchParams.suite === suite.id ? "bg-indigo-50 font-medium text-indigo-700" : ""}`}
                   >
-                    📂 {suite.name}
+                    <span className="inline-flex items-center gap-1.5"><TFIcon name="nav-tree" className="h-4 w-4" /> {suite.name}</span>
                   </Link>
                   {childrenOf(suite.id).map((section) => (
                     <Link
@@ -165,13 +166,13 @@ export default async function ProjectPage({
               href={`/api/export/cases?project=${project.slug}`}
               className="rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
             >
-              ↓ Export CSV
+              <span className="inline-flex items-center gap-1.5"><TFIcon name="download" className="h-4 w-4" /> Export CSV</span>
             </a>
             <Link
               href={`/projects/${project.slug}/import`}
               className="rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
             >
-              ↑ Import
+              <span className="inline-flex items-center gap-1.5"><TFIcon name="upload" className="h-4 w-4" /> Import</span>
             </Link>
             <Link
               href={`/projects/${project.slug}/cases/new${searchParams.suite ? `?suite=${searchParams.suite}` : ""}`}
@@ -224,7 +225,7 @@ export default async function ProjectPage({
                       </td>
                       <td className="px-3 py-2.5 text-xs text-slate-600">{c.type}</td>
                       <td className="px-3 py-2.5 text-xs text-slate-600">
-                        {c.automationStatus === "AUTOMATED" ? "🤖 Automated" : c.automationStatus.replace(/_/g, " ").toLowerCase()}
+                        {c.automationStatus === "AUTOMATED" ? (<span className="inline-flex items-center gap-1"><TFIcon name="automation" className="h-4 w-4" /> Automated</span>) : (c.automationStatus.replace(/_/g, " ").toLowerCase())}
                       </td>
                       <td className="px-3 py-2.5">
                         <div className="flex flex-wrap gap-1">
