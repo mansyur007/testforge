@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TFIcon } from "@/components/icons";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
@@ -58,13 +59,13 @@ export default async function RunsPage({
                     {run.name}{" "}
                     {run.source !== "MANUAL" && (
                       <span className="ml-1 rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700">
-                        🤖 {run.source}
+                        <span className="inline-flex items-center gap-1"><TFIcon name="automation" className="h-3.5 w-3.5" /> {run.source}</span>
                       </span>
                     )}
                   </p>
                   <p className="mt-0.5 text-xs text-slate-400">
                     {run.createdBy.name} · {run.createdAt.toLocaleDateString("id-ID")}
-                    {run.milestone && <> · 🎯 {run.milestone.name}</>}
+                    {run.milestone && <> · {run.milestone.name}</>}
                   </p>
                 </div>
                 <div className="text-right">
@@ -109,7 +110,7 @@ export default async function RunsPage({
       </div>
 
       <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <h3 className="mb-3 font-semibold">🎯 Milestones</h3>
+        <h3 className="mb-3 flex items-center gap-2 font-semibold"><TFIcon name="target" className="h-5 w-5" /> Milestones</h3>
         <ul className="mb-4 space-y-2 text-sm">
           {project.milestones.map((m) => (
             <li key={m.id} className="flex items-center justify-between">
