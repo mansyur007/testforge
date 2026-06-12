@@ -91,7 +91,7 @@ function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
       <p className="font-mono text-xs font-medium uppercase tracking-[.16em] text-indigo-600 dark:text-indigo-400">
         {kicker}
       </p>
-      <h2 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">
+      <h2 className="mt-2 text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
         {title}
       </h2>
     </div>
@@ -133,13 +133,13 @@ export default async function HomePage() {
               <>
                 <Link
                   href="/login"
-                  className="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
+                  className="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white sm:inline-block"
                 >
                   {t.nav.login}
                 </Link>
                 <Link
                   href="/signup"
-                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                  className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 sm:px-4"
                 >
                   {t.nav.cta}
                 </Link>
@@ -150,28 +150,28 @@ export default async function HomePage() {
       </header>
 
       {/* 1. Hero */}
-      <section className="mx-auto max-w-6xl px-4 pb-16 pt-16 md:pt-24">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
+      <section className="mx-auto max-w-6xl px-4 pb-12 pt-12 sm:pb-16 sm:pt-16 md:pt-24">
+        <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
           <div>
-            <h1 className="text-4xl font-extrabold leading-tight tracking-tight md:text-5xl">
+            <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl md:text-5xl">
               {t.hero.titlePre}{" "}
               <span className="text-indigo-600 dark:text-indigo-400">
                 {t.hero.titleHighlight}
               </span>
             </h1>
-            <p className="mt-5 text-lg text-slate-600 dark:text-slate-300">
+            <p className="mt-5 text-base text-slate-600 dark:text-slate-300 sm:text-lg">
               {t.hero.subtitle}
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 href="/signup"
-                className="rounded-lg bg-indigo-600 px-6 py-3 font-medium text-white hover:bg-indigo-700"
+                className="rounded-lg bg-indigo-600 px-6 py-3 text-center font-medium text-white hover:bg-indigo-700"
               >
                 {t.hero.ctaPrimary}
               </Link>
               <Link
                 href="/docs/self-hosting"
-                className="rounded-lg border border-slate-300 px-6 py-3 font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900"
+                className="rounded-lg border border-slate-300 px-6 py-3 text-center font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900"
               >
                 {t.hero.ctaSecondary}
               </Link>
@@ -189,7 +189,7 @@ export default async function HomePage() {
 
       {/* 2. Social Proof Bar */}
       <section className="border-y border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-12 gap-y-3 px-4 py-6 text-sm text-slate-500 dark:text-slate-400">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-6 gap-y-3 px-4 py-6 text-sm text-slate-500 dark:text-slate-400 sm:gap-x-12">
           <span className="flex items-center gap-2">
             <TFIcon name="stars" className="h-5 w-5" />
             <b className="text-slate-700 dark:text-slate-200">{stars !== null ? stars.toLocaleString(lang === "id" ? "id-ID" : "en-US") : "—"}</b> {t.socialProof.stars}
@@ -239,7 +239,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-4xl px-4">
           <SectionTitle kicker={t.comparison.kicker} title={t.comparison.title} />
           <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[520px] text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-left dark:border-slate-700">
                   <th className="px-5 py-3.5">{t.comparison.headFeature}</th>
@@ -306,7 +306,7 @@ export default async function HomePage() {
               return (
                 <div
                   key={name}
-                  className="flex flex-col items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-4 text-center text-sm font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300"
+                  className="flex flex-col items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-4 text-center text-xs font-medium leading-tight text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 sm:px-3 sm:text-sm"
                 >
                   <BrandIcon name={brandId} className="h-6 w-6" />
                   {name}
@@ -344,7 +344,7 @@ export default async function HomePage() {
           <p className="font-mono text-xs font-medium uppercase tracking-[.16em] text-indigo-400">
             {t.openSource.kicker}
           </p>
-          <h2 className="mt-2 text-3xl font-bold">{t.openSource.title}</h2>
+          <h2 className="mt-2 text-2xl font-bold sm:text-3xl">{t.openSource.title}</h2>
           <p className="mt-4 text-slate-300">{t.openSource.body}</p>
           <a
             href={`https://github.com/${GITHUB_REPO}`}
@@ -360,8 +360,8 @@ export default async function HomePage() {
 
       {/* 10. Pricing Banner */}
       <section className="mx-auto max-w-4xl px-4 py-16 text-center">
-        <div className="rounded-2xl border-2 border-indigo-200 bg-indigo-50 p-10 dark:border-indigo-900 dark:bg-indigo-950">
-          <h2 className="text-3xl font-bold">{t.pricing.title}</h2>
+        <div className="rounded-2xl border-2 border-indigo-200 bg-indigo-50 p-6 dark:border-indigo-900 dark:bg-indigo-950 sm:p-10">
+          <h2 className="text-2xl font-bold sm:text-3xl">{t.pricing.title}</h2>
           <p className="mx-auto mt-3 max-w-xl text-slate-600 dark:text-slate-300">
             {t.pricing.body}
           </p>
