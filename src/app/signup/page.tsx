@@ -3,7 +3,6 @@ import { Logo } from "@/components/icons";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { SignupForm } from "@/components/SignupForm";
-import { OAuthButtons } from "@/components/OAuthButtons";
 import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
 
 export const metadata: Metadata = {
@@ -26,13 +25,7 @@ export default function SignupPage() {
           <p className="mt-2 text-sm text-slate-500">{t.headline}</p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-          <OAuthButtons mode="signup" lang={lang} />
-          <div className="my-5 flex items-center gap-3 text-xs text-slate-400">
-            <span className="h-px flex-1 bg-slate-200" />
-            {t.orEmail}
-            <span className="h-px flex-1 bg-slate-200" />
-          </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <SignupForm lang={lang} />
         </div>
 
