@@ -1,0 +1,58 @@
+name: Deploy TestForge to VPS
+
+# Auto-deploy to the VPS on every push/merge to main (or manually via Actions).
+# Strategy: the runner rsyncs source to /opt/testforge, then builds + ups on the
+# VPS. TestForge runs as its own stack, fronted by Caddy (owned by the Tokopudidi
+# stack) over the shared external network tokopudidi_default.
+# State (SQLite testforge.db) lives in the named volume `testforge_data`, NOT in
+# the source tree — so rsync --delete is safe as long as the box's .env is kept.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'LICENSE'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-testforge
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Sync source to VPS
+        run: |
+          rsync -az --delete \
+            --exclude '.git' --exclude '.github' --exclude 'node_modules' \
+            --exclude '.env' --exclude '.next' --exclude '*.db' \
+            --exclude '*.log' --exclude '.DS_Store' \
+            -e "ssh -i ~/.ssh/deploy" \
+            ./ "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/opt/testforge/"
+
+      - name: Build & up on VPS
+        run: |
+          ssh -i ~/.ssh/deploy "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" bash -se <<'EOF'
+          set -e
+          cd /opt/testforge
+          docker compose -f docker-compose.prod.yml up -d --build
+          docker image prune -f
+          EOF
+
+      - name: Smoke test (testforge.emha.space via shared Caddy)
+        run: |
+          HOST=testforge.emha.space
+          ssh -i ~/.ssh/deploy "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
+            "sleep 5; curl -fsS --retry 5 --retry-delay 3 --retry-connrefused \
+               --resolve $HOST:443:127.0.0.1 https://$HOST/ -o /dev/null \
+             && echo 'Smoke OK: testforge live on emha.space'"

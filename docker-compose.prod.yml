@@ -1,0 +1,31 @@
+# TestForge — EMHA Universe estate stack.
+# No published ports; Caddy (tokopudidi stack) reaches it by container name on the
+# shared tokopudidi_default network. SQLite state lives in the named volume.
+services:
+  testforge:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_BASE_URL: https://testforge.emha.space
+        NEXT_PUBLIC_GITHUB_REPO: mansyur007/testforge
+    image: testforge:latest
+    container_name: testforge
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "file:/data/testforge.db"
+      AUTH_SECRET: ${AUTH_SECRET:?set in .env}
+    volumes:
+      - testforge_data:/data
+    expose:
+      - "3000"                          # internal only; Caddy reaches by name
+    networks:
+      - tokopudidi_default
+
+networks:
+  tokopudidi_default:
+    external: true                      # created by the Tokopudidi stack
+
+volumes:
+  testforge_data:                       # SQLite DB persists here

@@ -3,3 +3,9 @@ node_modules
 *.db
 .env
 .git
+.github
+.claude
+.agents
+.DS_Store
+*.md
+testforge design system
