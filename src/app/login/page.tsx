@@ -17,7 +17,6 @@ export default function LoginPage() {
           <p className="mt-2 text-sm text-slate-500">{t.tagline}</p>
         </div>
         <LoginForm lang={lang} />
-        <p className="mt-4 text-center text-xs text-slate-400">{t.demo}</p>
       </div>
     </main>
   );
