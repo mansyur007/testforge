@@ -121,18 +121,8 @@ const en = {
   auth: {
     login: {
       tagline: "Open Source Test Case Management Platform",
-      email: "Email",
-      password: "Password",
-      forgot: "Forgot Password?",
-      remember: "Remember me",
-      rememberHint: "(30 days)",
-      submit: "Log In",
-      submitting: "Signing in...",
-      noAccount: "Don't have an account?",
-      signupLink: "Sign up free",
-      verified: "✅ Email verified! Please log in.",
-      reset: "✅ Password reset successful. Please log in.",
-      demo: "Demo: admin@testforge.local / admin12345",
+      oauthSignup: "Sign up with",
+      oauthLogin: "Continue with",
     },
     signup: {
       headline: "Get started in 60 seconds. Free forever — no credit card.",
@@ -237,7 +227,8 @@ const en = {
       envComments: {
         secret: "required — change in production",
         db: "or postgresql://... for Postgres",
-        smtp: "optional, for verification emails",
+        google: "required, for Google login",
+        github: "required, for GitHub login",
       },
     },
   },
@@ -354,18 +345,8 @@ const id: typeof en = {
   auth: {
     login: {
       tagline: "Open Source Test Case Management Platform",
-      email: "Email",
-      password: "Password",
-      forgot: "Lupa Password?",
-      remember: "Ingat saya",
-      rememberHint: "(30 hari)",
-      submit: "Masuk",
-      submitting: "Memproses...",
-      noAccount: "Belum punya akun?",
-      signupLink: "Daftar gratis",
-      verified: "✅ Email terverifikasi! Silakan login.",
-      reset: "✅ Password berhasil direset. Silakan login.",
-      demo: "Demo: admin@testforge.local / admin12345",
+      oauthSignup: "Daftar dengan",
+      oauthLogin: "Lanjut dengan",
     },
     signup: {
       headline: "Mulai dalam 60 detik. Gratis selamanya — tanpa kartu kredit.",
@@ -470,7 +451,8 @@ const id: typeof en = {
       envComments: {
         secret: "wajib diganti di production",
         db: "atau postgresql://... untuk Postgres",
-        smtp: "opsional, untuk email verifikasi",
+        google: "wajib, untuk login Google",
+        github: "wajib, untuk login GitHub",
       },
     },
   },

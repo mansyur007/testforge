@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
-import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { db } from "./db";
 
@@ -15,14 +14,6 @@ export type Session = {
   name: string;
   role: string;
 };
-
-export async function hashPassword(password: string) {
-  return bcrypt.hash(password, 10);
-}
-
-export async function verifyPassword(password: string, hash: string) {
-  return bcrypt.compare(password, hash);
-}
 
 // PRD §12.6.1: "Remember me" = 30 hari, default 1 hari.
 // AU-010 (refresh token rotation) masuk backlog — lihat AUDIT-PRD.md.
