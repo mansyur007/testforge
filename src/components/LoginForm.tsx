@@ -5,7 +5,6 @@ import { useFormState, useFormStatus } from "react-dom";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { login } from "@/app/actions/auth";
-import { OAuthButtons } from "@/components/OAuthButtons";
 import { dict, type Lang } from "@/lib/i18n";
 
 function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
@@ -32,12 +31,6 @@ function FormInner({ lang }: { lang: Lang }) {
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-      <OAuthButtons mode="login" lang={lang} />
-      <div className="my-5 flex items-center gap-3 text-xs text-slate-400">
-        <span className="h-px flex-1 bg-slate-200" />
-        {t.orEmail}
-        <span className="h-px flex-1 bg-slate-200" />
-      </div>
       <form action={formAction} className="space-y-4">
         <input type="hidden" name="next" value={next} />
         {verified && (
