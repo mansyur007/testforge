@@ -121,7 +121,6 @@ const en = {
   auth: {
     login: {
       tagline: "Open Source Test Case Management Platform",
-      orEmail: "or with email",
       email: "Email",
       password: "Password",
       forgot: "Forgot Password?",
@@ -134,12 +133,9 @@ const en = {
       verified: "✅ Email verified! Please log in.",
       reset: "✅ Password reset successful. Please log in.",
       demo: "Demo: admin@testforge.local / admin12345",
-      oauthSignup: "Sign up with",
-      oauthLogin: "Continue with",
     },
     signup: {
       headline: "Get started in 60 seconds. Free forever — no credit card.",
-      orEmail: "or with email",
       fullName: "Full Name",
       fullNamePh: "Your full name",
       email: "Work Email",
@@ -242,8 +238,6 @@ const en = {
         secret: "required — change in production",
         db: "or postgresql://... for Postgres",
         smtp: "optional, for verification emails",
-        google: "optional, for Google OAuth",
-        github: "optional, for GitHub OAuth",
       },
     },
   },
@@ -360,7 +354,6 @@ const id: typeof en = {
   auth: {
     login: {
       tagline: "Open Source Test Case Management Platform",
-      orEmail: "atau dengan email",
       email: "Email",
       password: "Password",
       forgot: "Lupa Password?",
@@ -373,12 +366,9 @@ const id: typeof en = {
       verified: "✅ Email terverifikasi! Silakan login.",
       reset: "✅ Password berhasil direset. Silakan login.",
       demo: "Demo: admin@testforge.local / admin12345",
-      oauthSignup: "Daftar dengan",
-      oauthLogin: "Lanjut dengan",
     },
     signup: {
       headline: "Mulai dalam 60 detik. Gratis selamanya — tanpa kartu kredit.",
-      orEmail: "atau dengan email",
       fullName: "Nama Lengkap",
       fullNamePh: "Nama lengkap kamu",
       email: "Email Kerja",
@@ -481,8 +471,6 @@ const id: typeof en = {
         secret: "wajib diganti di production",
         db: "atau postgresql://... untuk Postgres",
         smtp: "opsional, untuk email verifikasi",
-        google: "opsional, untuk OAuth Google",
-        github: "opsional, untuk OAuth GitHub",
       },
     },
   },
