@@ -23,5 +23,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/prisma ./prisma
 EXPOSE 3000
-# db push idempoten: membuat schema saat volume masih kosong
-CMD ["sh", "-c", "npx prisma db push --skip-generate && node prisma/seed.mjs && npx next start"]
+# db push idempoten: membuat/menyelaraskan schema saat container start.
+# --accept-data-loss agar perubahan aditif (mis. menambah kolom unik) tidak
+# menggantung di prompt non-interaktif; data yang ada tidak dihapus.
+CMD ["sh", "-c", "npx prisma db push --skip-generate --accept-data-loss && node prisma/seed.mjs && npx next start"]
