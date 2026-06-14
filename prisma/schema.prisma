@@ -205,6 +205,7 @@ model Invitation {
   email          String
   role           String   @default("MEMBER") // ADMIN | MEMBER
   status         String   @default("PENDING") // PENDING | ACCEPTED
+  token          String?  @unique // dipakai di link accept /invite/[token]
   invitedById    String
   createdAt      DateTime @default(now())
 

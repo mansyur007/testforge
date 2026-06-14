@@ -16,11 +16,14 @@ services:
       NODE_ENV: production
       DATABASE_URL: "file:/data/testforge.db"
       AUTH_SECRET: ${AUTH_SECRET:?set in .env}
-      # OAuth (Google & GitHub) — login/signup hanya via provider ini.
+      # OAuth (Google & GitHub) — login/signup via provider.
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      # SMTP — email verifikasi, reset password, undangan tim.
+      SMTP_URL: ${SMTP_URL:-}
+      SMTP_FROM: ${SMTP_FROM:-}
     volumes:
       - testforge_data:/data
     expose:

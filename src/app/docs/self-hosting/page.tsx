@@ -47,10 +47,10 @@ docker compose up -d`}
 {`AUTH_SECRET=long-random-secret               # ${c.secret}
 DATABASE_URL=file:/data/testforge.db          # ${c.db}
 NEXT_PUBLIC_BASE_URL=https://testforge.company.com
+SMTP_URL=smtp://user:pass@mail:587            # ${c.smtp}
+SMTP_FROM=TestForge <no-reply@company.com>    # sender address
 GOOGLE_CLIENT_ID=...                          # ${c.google}
-GOOGLE_CLIENT_SECRET=...
-GITHUB_CLIENT_ID=...                          # ${c.github}
-GITHUB_CLIENT_SECRET=...`}
+GITHUB_CLIENT_ID=...                          # ${c.github}`}
       </pre>
 
       <h2 className="mt-10 text-xl font-semibold">{t.step3}</h2>
