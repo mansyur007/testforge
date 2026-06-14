@@ -430,7 +430,10 @@ export default async function HomePage() {
           </div>
         </div>
         <p className="border-t border-slate-100 py-5 text-center text-xs text-slate-400 dark:border-slate-800">
-          © {new Date().getFullYear()} TestForge. MIT License.
+          © {new Date().getFullYear()} TestForge. MIT License. · Part of{" "}
+          <a href="https://emha.space" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600 dark:hover:text-slate-200">
+            EMHA Universe
+          </a>
         </p>
       </footer>
     </div>
