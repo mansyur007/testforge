@@ -1,8 +1,36 @@
 "use server";
 
+import crypto from "crypto";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
+import { sendMail, actionEmailHtml } from "@/lib/mailer";
+
+// Pastikan user punya organization (user OAuth dibuat tanpa org). Dipakai sebelum
+// mengundang tim, agar undangan punya tempat bernaung.
+async function ensureOrganization(userId: string): Promise<string> {
+  const user = await db.user.findUnique({ where: { id: userId } });
+  if (user?.organizationId) return user.organizationId;
+
+  const base =
+    (user?.name ?? "workspace")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "")
+      .slice(0, 24) || "workspace";
+  let slug = base;
+  for (let i = 2; await db.organization.findUnique({ where: { slug } }); i++) {
+    slug = `${base}-${i}`;
+  }
+  const org = await db.organization.create({
+    data: { name: `${user?.name ?? "My"} Workspace`, slug },
+  });
+  await db.user.update({
+    where: { id: userId },
+    data: { organizationId: org.id },
+  });
+  return org.id;
+}
 
 // Template project (PRD §12.4 Step 1): blank / web app / mobile app / API
 const TEMPLATE_SUITES: Record<string, string[]> = {
@@ -63,27 +91,41 @@ export async function onboardingInvite(formData: FormData) {
 
   if (!emails.length) return { error: "Masukkan minimal satu email valid." };
 
-  const user = await db.user.findUnique({
-    where: { id: session.userId },
-    include: { organization: true },
-  });
-  if (!user?.organizationId)
-    return { error: "Akun ini tidak punya organization (akun lama). Lewati langkah ini." };
+  // User OAuth bisa belum punya org — buat otomatis di sini.
+  const organizationId = await ensureOrganization(session.userId);
+  const org = await db.organization.findUnique({ where: { id: organizationId } });
+  const base = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3456";
 
   let invited = 0;
+  const devLinks: string[] = [];
   for (const email of emails) {
-    await db.invitation.upsert({
-      where: {
-        organizationId_email: { organizationId: user.organizationId, email },
-      },
+    const token = crypto.randomBytes(24).toString("hex");
+    const inv = await db.invitation.upsert({
+      where: { organizationId_email: { organizationId, email } },
       create: {
-        organizationId: user.organizationId,
+        organizationId,
         email,
         role: role === "ADMIN" ? "ADMIN" : "MEMBER",
+        token,
         invitedById: session.userId,
       },
-      update: {},
+      // jika sudah pernah diundang & belum punya token, set token baru
+      update: { token },
     });
+
+    const acceptUrl = `${base}/invite/${inv.token}`;
+    const { sent } = await sendMail({
+      to: email,
+      subject: `Kamu diundang ke ${org?.name ?? "TestForge"}`,
+      html: actionEmailHtml({
+        heading: `Undangan bergabung ke ${org?.name ?? "TestForge"}`,
+        body: `${session.name} mengundangmu bergabung di TestForge. Klik tombol untuk menerima undangan.`,
+        buttonLabel: "Terima undangan",
+        actionUrl: acceptUrl,
+      }),
+      text: `${session.name} mengundangmu ke ${org?.name ?? "TestForge"}.\nTerima: ${acceptUrl}`,
+    });
+    if (!sent) devLinks.push(acceptUrl); // fallback tanpa SMTP
     invited++;
   }
 
@@ -92,8 +134,7 @@ export async function onboardingInvite(formData: FormData) {
     action: "onboarding.invite",
     detail: `${invited} undangan`,
   });
-  // Catatan: email undangan terkirim saat SMTP dikonfigurasi (lihat AUDIT-PRD.md)
-  return { ok: true, invited };
+  return { ok: true, invited, devLinks: devLinks.length ? devLinks : undefined };
 }
 
 export async function onboardingIntegrations(formData: FormData) {
