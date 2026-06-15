@@ -17,8 +17,8 @@ export default async function ApiKeysPage() {
       <div>
         <h1 className="text-2xl font-bold">API Keys</h1>
         <p className="text-sm text-slate-500">
-          Untuk autentikasi CI/CD dan REST API. Key di-hash di database dan
-          hanya ditampilkan sekali saat dibuat.
+          For CI/CD and REST API authentication. Keys are hashed in the database
+          and shown only once when created.
         </p>
       </div>
 
@@ -28,9 +28,9 @@ export default async function ApiKeysPage() {
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
             <tr>
-              <th className="px-5 py-3">Nama</th>
+              <th className="px-5 py-3">Name</th>
               <th className="px-5 py-3">Key</th>
-              <th className="px-5 py-3">Terakhir Dipakai</th>
+              <th className="px-5 py-3">Last Used</th>
               <th className="px-5 py-3"></th>
             </tr>
           </thead>
@@ -43,14 +43,14 @@ export default async function ApiKeysPage() {
                 </td>
                 <td className="px-5 py-3 text-xs text-slate-500">
                   {k.lastUsedAt
-                    ? k.lastUsedAt.toLocaleString("id-ID")
-                    : "Belum pernah"}
+                    ? k.lastUsedAt.toLocaleString("en-US")
+                    : "Never"}
                 </td>
                 <td className="px-5 py-3 text-right">
                   <form action={deleteApiKey}>
                     <input type="hidden" name="keyId" value={k.id} />
                     <button className="text-xs text-red-500 hover:underline">
-                      Hapus
+                      Delete
                     </button>
                   </form>
                 </td>
@@ -59,7 +59,7 @@ export default async function ApiKeysPage() {
             {keys.length === 0 && (
               <tr>
                 <td colSpan={4} className="px-5 py-8 text-center text-slate-400">
-                  Belum ada API key.
+                  No API keys yet.
                 </td>
               </tr>
             )}

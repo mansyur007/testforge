@@ -58,8 +58,8 @@ export default async function DashboardPage() {
     : 0;
 
   const stats = [
-    { label: "Proyek Aktif", value: projects.length },
-    { label: "Total Test Case", value: totalCases },
+    { label: "Active Projects", value: projects.length },
+    { label: "Total Test Cases", value: totalCases },
     { label: "Pass Rate", value: `${passRate}%` },
     { label: "Failed", value: statusCounts.FAILED ?? 0 },
   ];
@@ -69,7 +69,7 @@ export default async function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold">Dashboard</h1>
         <p className="text-sm text-slate-500">
-          Ringkasan semua proyek dan aktivitas testing terbaru
+          Overview of all projects and recent testing activity
         </p>
       </div>
 
@@ -87,9 +87,9 @@ export default async function DashboardPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="rounded-xl border border-slate-200 bg-white p-6">
-          <h2 className="mb-4 font-semibold">Test Run Aktif</h2>
+          <h2 className="mb-4 font-semibold">Active Test Runs</h2>
           {activeRuns.length === 0 && (
-            <p className="text-sm text-slate-400">Belum ada test run aktif.</p>
+            <p className="text-sm text-slate-400">No active test runs yet.</p>
           )}
           <div className="space-y-4">
             {activeRuns.map((run) => {
@@ -127,7 +127,7 @@ export default async function DashboardPage() {
                     )}
                   </div>
                   <p className="mt-1 text-xs text-slate-500">
-                    {done}/{run.results.length} dieksekusi
+                    {done}/{run.results.length} executed
                   </p>
                 </Link>
               );
@@ -138,7 +138,7 @@ export default async function DashboardPage() {
         <section className="rounded-xl border border-slate-200 bg-white p-6">
           <h2 className="mb-4 font-semibold">Activity Feed</h2>
           {recentLogs.length === 0 && (
-            <p className="text-sm text-slate-400">Belum ada aktivitas.</p>
+            <p className="text-sm text-slate-400">No activity yet.</p>
           )}
           <ul className="space-y-3">
             {recentLogs.map((log) => (
@@ -151,7 +151,7 @@ export default async function DashboardPage() {
                     <span className="text-slate-700"> — {log.detail}</span>
                   )}
                   <p className="text-xs text-slate-400">
-                    {log.createdAt.toLocaleString("id-ID")}
+                    {log.createdAt.toLocaleString("en-US")}
                   </p>
                 </div>
               </li>
@@ -162,12 +162,12 @@ export default async function DashboardPage() {
 
       <section className="rounded-xl border border-slate-200 bg-white p-6">
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-semibold">Proyek</h2>
+          <h2 className="font-semibold">Projects</h2>
           <Link
             href="/projects"
             className="text-sm text-indigo-600 hover:underline"
           >
-            Lihat semua →
+            View all →
           </Link>
         </div>
         <div className="grid gap-4 md:grid-cols-3">
@@ -179,15 +179,15 @@ export default async function DashboardPage() {
             >
               <p className="font-medium">{p.name}</p>
               <p className="mt-1 text-xs text-slate-500">
-                {p._count.cases} test case · {p._count.runs} run
+                {p._count.cases} test cases · {p._count.runs} runs
               </p>
             </Link>
           ))}
           {projects.length === 0 && (
             <p className="text-sm text-slate-400">
-              Belum ada proyek.{" "}
+              No projects yet.{" "}
               <Link href="/projects" className="text-indigo-600 hover:underline">
-                Buat proyek pertama
+                Create your first project
               </Link>
             </p>
           )}

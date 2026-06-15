@@ -109,8 +109,7 @@ export async function register(
   const slugTaken = await db.organization.findUnique({ where: { slug: orgSlug } });
   if (slugTaken) return { error: t.slugTaken(orgSlug) };
 
-  // User pertama otomatis ADMIN
-  const userCount = await db.user.count();
+  // The registrant creates and owns this organization, so they are its ADMIN.
   const org = await db.organization.create({
     data: { name: orgName, slug: orgSlug },
   });
@@ -119,7 +118,7 @@ export async function register(
       name,
       email,
       passwordHash: await hashPassword(password),
-      role: userCount === 0 ? "ADMIN" : "MEMBER",
+      role: "ADMIN",
       organizationId: org.id,
     },
   });

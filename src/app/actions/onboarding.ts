@@ -45,7 +45,7 @@ export async function onboardingCreateProject(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const template = String(formData.get("template") ?? "blank");
-  if (!name) return { error: "Nama project wajib diisi." };
+  if (!name) return { error: "Project name is required." };
 
   const baseSlug =
     name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "").slice(0, 20) ||
@@ -89,7 +89,7 @@ export async function onboardingInvite(formData: FormData) {
     .filter((e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e));
   const role = String(formData.get("role") ?? "MEMBER");
 
-  if (!emails.length) return { error: "Masukkan minimal satu email valid." };
+  if (!emails.length) return { error: "Enter at least one valid email." };
 
   // User OAuth bisa belum punya org — buat otomatis di sini.
   const organizationId = await ensureOrganization(session.userId);
@@ -116,14 +116,14 @@ export async function onboardingInvite(formData: FormData) {
     const acceptUrl = `${base}/invite/${inv.token}`;
     const { sent } = await sendMail({
       to: email,
-      subject: `Kamu diundang ke ${org?.name ?? "TestForge"}`,
+      subject: `You're invited to ${org?.name ?? "TestForge"}`,
       html: actionEmailHtml({
-        heading: `Undangan bergabung ke ${org?.name ?? "TestForge"}`,
-        body: `${session.name} mengundangmu bergabung di TestForge. Klik tombol untuk menerima undangan.`,
-        buttonLabel: "Terima undangan",
+        heading: `Invitation to join ${org?.name ?? "TestForge"}`,
+        body: `${session.name} invited you to join TestForge. Click the button to accept the invitation.`,
+        buttonLabel: "Accept invitation",
         actionUrl: acceptUrl,
       }),
-      text: `${session.name} mengundangmu ke ${org?.name ?? "TestForge"}.\nTerima: ${acceptUrl}`,
+      text: `${session.name} invited you to ${org?.name ?? "TestForge"}.\nAccept: ${acceptUrl}`,
     });
     if (!sent) devLinks.push(acceptUrl); // fallback tanpa SMTP
     invited++;
@@ -132,7 +132,7 @@ export async function onboardingInvite(formData: FormData) {
   await logAudit({
     userId: session.userId,
     action: "onboarding.invite",
-    detail: `${invited} undangan`,
+    detail: `${invited} invitations`,
   });
   return { ok: true, invited, devLinks: devLinks.length ? devLinks : undefined };
 }

@@ -11,7 +11,7 @@ function Submit() {
       disabled={pending}
       className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
     >
-      {pending ? "Memproses..." : "Terima undangan"}
+      {pending ? "Processing..." : "Accept invitation"}
     </button>
   );
 }

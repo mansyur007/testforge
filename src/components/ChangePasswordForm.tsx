@@ -12,7 +12,7 @@ function SubmitButton({ label }: { label: string }) {
       disabled={pending}
       className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
     >
-      {pending ? "Menyimpan…" : label}
+      {pending ? "Saving…" : label}
     </button>
   );
 }
@@ -43,7 +43,7 @@ export function ChangePasswordForm({ mode }: { mode: "change" | "set" }) {
       {mode === "change" && (
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">
-            Password lama
+            Current password
           </label>
           <input
             name="currentPassword"
@@ -57,7 +57,7 @@ export function ChangePasswordForm({ mode }: { mode: "change" | "set" }) {
 
       <div>
         <label className="mb-1 block text-sm font-medium text-slate-700">
-          Password baru
+          New password
         </label>
         <input
           name="newPassword"
@@ -67,13 +67,13 @@ export function ChangePasswordForm({ mode }: { mode: "change" | "set" }) {
           className="w-full max-w-sm rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
         />
         <p className="mt-1 text-xs text-slate-400">
-          Minimal 8 karakter, dengan 1 huruf besar dan 1 angka.
+          At least 8 characters, with 1 uppercase letter and 1 number.
         </p>
       </div>
 
       <div>
         <label className="mb-1 block text-sm font-medium text-slate-700">
-          Konfirmasi password baru
+          Confirm new password
         </label>
         <input
           name="confirmPassword"
@@ -84,7 +84,7 @@ export function ChangePasswordForm({ mode }: { mode: "change" | "set" }) {
         />
       </div>
 
-      <SubmitButton label={mode === "change" ? "Ubah password" : "Set password"} />
+      <SubmitButton label={mode === "change" ? "Change password" : "Set password"} />
     </form>
   );
 }

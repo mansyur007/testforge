@@ -23,7 +23,7 @@ export async function changePassword(
 ) {
   const session = await requireSession();
   const user = await db.user.findUnique({ where: { id: session.userId } });
-  if (!user) return { error: "User tidak ditemukan." };
+  if (!user) return { error: "User not found." };
 
   const currentPassword = String(formData.get("currentPassword") ?? "");
   const newPassword = String(formData.get("newPassword") ?? "");
@@ -33,15 +33,16 @@ export async function changePassword(
 
   if (hadPassword) {
     if (!(await verifyPassword(currentPassword, user.passwordHash)))
-      return { error: "Password lama salah." };
+      return { error: "Current password is incorrect." };
   }
 
   if (isWeakPassword(newPassword))
     return {
-      error: "Password minimal 8 karakter dengan 1 huruf besar dan 1 angka.",
+      error:
+        "Password must be at least 8 characters with 1 uppercase letter and 1 number.",
     };
   if (newPassword !== confirmPassword)
-    return { error: "Konfirmasi password tidak cocok." };
+    return { error: "Passwords do not match." };
 
   await db.user.update({
     where: { id: user.id },
@@ -54,6 +55,8 @@ export async function changePassword(
   });
 
   return {
-    ok: hadPassword ? "Password berhasil diubah." : "Password berhasil dibuat.",
+    ok: hadPassword
+      ? "Password changed successfully."
+      : "Password set successfully.",
   };
 }
