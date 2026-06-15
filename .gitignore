@@ -46,3 +46,8 @@ testforge design system/
 .agents/
 .claude/skills/
 skills-lock.json
+
+# e2e / playwright
+/e2e-results/
+/playwright-report/
+/test-results/
