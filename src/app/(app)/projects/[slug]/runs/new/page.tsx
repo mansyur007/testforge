@@ -31,7 +31,7 @@ export default async function NewRunPage({
   return (
     <div className="space-y-6">
       <ProjectTabs slug={project.slug} name={project.name} active="runs" />
-      <h2 className="text-lg font-semibold">Buat Test Run Baru</h2>
+      <h2 className="text-lg font-semibold">Create New Test Run</h2>
       <NewRunForm
         projectId={project.id}
         milestones={project.milestones.map((m) => ({ id: m.id, name: m.name }))}

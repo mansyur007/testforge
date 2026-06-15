@@ -3,6 +3,7 @@ import { Logo, TFIcon } from "@/components/icons";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { verifyEmailToken } from "@/app/actions/auth";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +38,9 @@ export default async function VerifyPage({
           >
             {t.requestNew}
           </Link>
+        </div>
+        <div className="mt-6 flex justify-center">
+          <LanguageSwitcher current={lang} />
         </div>
       </div>
     </main>

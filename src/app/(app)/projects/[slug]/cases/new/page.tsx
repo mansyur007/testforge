@@ -22,7 +22,7 @@ export default async function NewCasePage({
   return (
     <div className="space-y-6">
       <ProjectTabs slug={project.slug} name={project.name} active="cases" />
-      <h2 className="text-lg font-semibold">Buat Test Case Baru</h2>
+      <h2 className="text-lg font-semibold">Create New Test Case</h2>
       <CaseForm projectId={project.id} suites={project.suites} />
     </div>
   );

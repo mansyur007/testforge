@@ -20,18 +20,18 @@ export async function createProject(
   formData: FormData
 ) {
   const session = await requireSession();
-  if (session.role === "VIEWER") return { error: "Viewer tidak bisa membuat proyek." };
+  if (session.role === "VIEWER") return { error: "Viewers cannot create projects." };
 
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim().toLowerCase() || slugify(name);
 
-  if (!name || !slug) return { error: "Nama proyek wajib diisi." };
+  if (!name || !slug) return { error: "Project name is required." };
   if (!/^[a-z0-9-]+$/.test(slug))
-    return { error: "Slug hanya boleh huruf kecil, angka, dan strip." };
+    return { error: "Slug may only contain lowercase letters, numbers, and dashes." };
 
   const existing = await db.project.findUnique({ where: { slug } });
-  if (existing) return { error: `Slug "${slug}" sudah dipakai proyek lain.` };
+  if (existing) return { error: `Slug "${slug}" is already taken by another project.` };
 
   const project = await db.project.create({
     data: {

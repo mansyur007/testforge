@@ -77,7 +77,7 @@ export default async function ProjectPage({
                   href={`/projects/${project.slug}${filterQS({ suite: undefined })}`}
                   className={`block rounded px-2 py-1 hover:bg-slate-100 ${!searchParams.suite ? "bg-indigo-50 font-medium text-indigo-700" : ""}`}
                 >
-                  Semua Test Case
+                  All Test Cases
                 </Link>
               </li>
               {rootSuites.map((suite) => (
@@ -104,7 +104,7 @@ export default async function ProjectPage({
               <input type="hidden" name="projectId" value={project.id} />
               <input
                 name="name"
-                placeholder="Nama suite baru..."
+                placeholder="New suite name..."
                 required
                 className="w-full rounded border border-slate-200 px-2 py-1.5 text-xs focus:border-indigo-500 focus:outline-none"
               />
@@ -115,12 +115,12 @@ export default async function ProjectPage({
                 <option value="">(root suite)</option>
                 {rootSuites.map((s) => (
                   <option key={s.id} value={s.id}>
-                    section di: {s.name}
+                    section in: {s.name}
                   </option>
                 ))}
               </select>
               <button className="w-full rounded bg-slate-800 px-2 py-1.5 text-xs text-white hover:bg-slate-700">
-                + Tambah Suite
+                + Add Suite
               </button>
             </form>
           </div>
@@ -136,7 +136,7 @@ export default async function ProjectPage({
               <input
                 name="q"
                 defaultValue={searchParams.q}
-                placeholder="Cari test case..."
+                placeholder="Search test cases..."
                 className="w-48 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
               />
               <select
@@ -144,7 +144,7 @@ export default async function ProjectPage({
                 defaultValue={searchParams.priority ?? ""}
                 className="rounded-lg border border-slate-300 px-2 py-2 text-sm"
               >
-                <option value="">Semua Priority</option>
+                <option value="">All Priorities</option>
                 {PRIORITIES.map((p) => (
                   <option key={p}>{p}</option>
                 ))}
@@ -154,7 +154,7 @@ export default async function ProjectPage({
                 defaultValue={searchParams.type ?? ""}
                 className="rounded-lg border border-slate-300 px-2 py-2 text-sm"
               >
-                <option value="">Semua Type</option>
+                <option value="">All Types</option>
                 {CASE_TYPES.map((t) => (
                   <option key={t}>{t}</option>
                 ))}
@@ -190,7 +190,7 @@ export default async function ProjectPage({
                   <tr>
                     <th className="w-8 px-3 py-3"></th>
                     <th className="px-3 py-3">ID</th>
-                    <th className="px-3 py-3">Judul</th>
+                    <th className="px-3 py-3">Title</th>
                     <th className="px-3 py-3">Priority</th>
                     <th className="px-3 py-3">Type</th>
                     <th className="px-3 py-3">Automation</th>
@@ -246,7 +246,7 @@ export default async function ProjectPage({
                   {cases.length === 0 && (
                     <tr>
                       <td colSpan={7} className="px-3 py-10 text-center text-slate-400">
-                        Tidak ada test case. Buat baru atau import dari CSV.
+                        No test cases. Create one or import from CSV.
                       </td>
                     </tr>
                   )}

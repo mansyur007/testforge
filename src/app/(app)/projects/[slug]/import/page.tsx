@@ -27,17 +27,17 @@ export default async function ImportPage({
         <CsvImporter projectSlug={project.slug} />
 
         <section className="rounded-xl border border-slate-200 bg-white p-6">
-          <h3 className="mb-3 flex items-center gap-2 font-semibold"><TFIcon name="automation" className="h-5 w-5" /> Upload Hasil Automation (CI/CD)</h3>
+          <h3 className="mb-3 flex items-center gap-2 font-semibold"><TFIcon name="automation" className="h-5 w-5" /> Upload Automation Results (CI/CD)</h3>
           <p className="mb-3 text-sm text-slate-500">
-            Upload file JUnit XML dari framework apa pun (Cypress, Playwright,
-            Jest, Pytest, dll). Hasil otomatis menjadi test run baru, dan test
-            di-match ke test case via anotasi{" "}
+            Upload a JUnit XML file from any framework (Cypress, Playwright,
+            Jest, Pytest, etc.). Results automatically become a new test run, and
+            tests are matched to test cases via a{" "}
             <code className="rounded bg-slate-100 px-1">TC-{project.slug.toUpperCase()}-XXX</code>{" "}
-            di nama test, atau via judul yang sama.
+            annotation in the test name, or by an identical title.
           </p>
           <pre className="overflow-x-auto rounded-lg bg-slate-900 p-4 text-xs leading-relaxed text-slate-100">
-{`# 1. Buat API key di Settings → API Keys
-# 2. Upload dari pipeline CI:
+{`# 1. Create an API key in Settings → API Keys
+# 2. Upload from your CI pipeline:
 
 curl -X POST \\
   ${process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000"}/api/v1/junit \\
@@ -49,7 +49,7 @@ curl -X POST \\
   --data-binary @results/junit.xml`}
           </pre>
           <p className="mt-3 text-xs text-slate-400">
-            Endpoint REST lain:{" "}
+            Other REST endpoints:{" "}
             <code className="rounded bg-slate-100 px-1">
               GET /api/v1/projects/{project.slug}/cases
             </code>{" "}

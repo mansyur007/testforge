@@ -38,7 +38,7 @@ export default async function RunsPage({
           href={`/projects/${project.slug}/runs/new`}
           className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
         >
-          + Test Run Baru
+          + New Test Run
         </Link>
       </div>
 
@@ -65,7 +65,7 @@ export default async function RunsPage({
                     )}
                   </p>
                   <p className="mt-0.5 text-xs text-slate-400">
-                    {run.createdBy.name} · {run.createdAt.toLocaleDateString("id-ID")}
+                    {run.createdBy.name} · {run.createdAt.toLocaleDateString("en-US")}
                     {run.milestone && <> · {run.milestone.name}</>}
                   </p>
                 </div>
@@ -77,10 +77,10 @@ export default async function RunsPage({
                         : "bg-blue-100 text-blue-700"
                     }`}
                   >
-                    {run.status === "COMPLETED" ? "Selesai" : "Aktif"}
+                    {run.status === "COMPLETED" ? "Completed" : "Active"}
                   </span>
                   <p className="mt-1 text-xs text-slate-400">
-                    {done}/{run.results.length} dieksekusi
+                    {done}/{run.results.length} executed
                   </p>
                 </div>
               </div>
@@ -105,7 +105,7 @@ export default async function RunsPage({
         })}
         {project.runs.length === 0 && (
           <p className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">
-            Belum ada test run. Buat run baru atau upload hasil automation via API.
+            No test runs yet. Create a new run or upload automation results via the API.
           </p>
         )}
       </div>
@@ -118,12 +118,12 @@ export default async function RunsPage({
               <span>{m.name}</span>
               <span className="text-xs text-slate-400">
                 {m.runs.length} run
-                {m.dueDate && <> · due {m.dueDate.toLocaleDateString("id-ID")}</>}
+                {m.dueDate && <> · due {m.dueDate.toLocaleDateString("en-US")}</>}
               </span>
             </li>
           ))}
           {project.milestones.length === 0 && (
-            <p className="text-slate-400">Belum ada milestone.</p>
+            <p className="text-slate-400">No milestones yet.</p>
           )}
         </ul>
         <form action={createMilestone} className="flex gap-2">
@@ -131,7 +131,7 @@ export default async function RunsPage({
           <input
             name="name"
             required
-            placeholder="Nama milestone, contoh: Release v2.0"
+            placeholder="Milestone name, e.g. Release v2.0"
             className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
           />
           <input type="date" name="dueDate" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />

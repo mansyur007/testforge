@@ -33,15 +33,15 @@ export default async function InvitePage({
   if (!inv) {
     return (
       <Shell>
-        <h1 className="text-xl font-bold">Undangan tidak valid</h1>
+        <h1 className="text-xl font-bold">Invalid invitation</h1>
         <p className="mt-2 text-sm text-slate-500">
-          Link undangan tidak ditemukan atau sudah kedaluwarsa.
+          This invitation link was not found or has expired.
         </p>
         <Link
           href="/login"
           className="mt-4 inline-block text-sm font-medium text-indigo-600 hover:underline"
         >
-          Ke halaman masuk →
+          Go to login →
         </Link>
       </Shell>
     );
@@ -52,16 +52,16 @@ export default async function InvitePage({
   if (inv.status === "ACCEPTED") {
     return (
       <Shell>
-        <h1 className="text-xl font-bold">Undangan sudah diterima</h1>
+        <h1 className="text-xl font-bold">Invitation already accepted</h1>
         <p className="mt-2 text-sm text-slate-500">
-          Undangan ke <span className="font-medium">{orgName}</span> ini sudah
-          pernah diterima.
+          This invitation to <span className="font-medium">{orgName}</span> has
+          already been accepted.
         </p>
         <Link
           href="/dashboard"
           className="mt-4 inline-block text-sm font-medium text-indigo-600 hover:underline"
         >
-          Ke dashboard →
+          Go to dashboard →
         </Link>
       </Shell>
     );
@@ -70,24 +70,24 @@ export default async function InvitePage({
   if (!session) {
     return (
       <Shell>
-        <h1 className="text-xl font-bold">Kamu diundang ke {orgName}</h1>
+        <h1 className="text-xl font-bold">You&apos;re invited to {orgName}</h1>
         <p className="mt-2 text-sm text-slate-500">
-          {inv.invitedBy?.name ?? "Seseorang"} mengundang{" "}
-          <span className="font-medium">{inv.email}</span>. Masuk atau daftar
-          dengan email tersebut untuk menerima undangan.
+          {inv.invitedBy?.name ?? "Someone"} invited{" "}
+          <span className="font-medium">{inv.email}</span>. Log in or sign up
+          with that email to accept the invitation.
         </p>
         <div className="mt-5 space-y-2">
           <Link
             href={`/login?next=${next}`}
             className="block w-full rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-700"
           >
-            Masuk
+            Log in
           </Link>
           <Link
             href={`/signup?next=${next}`}
             className="block w-full rounded-lg border border-slate-300 px-4 py-2.5 font-medium text-slate-700 hover:bg-slate-50"
           >
-            Daftar
+            Sign up
           </Link>
         </div>
       </Shell>
@@ -97,12 +97,12 @@ export default async function InvitePage({
   if (inv.email.toLowerCase() !== session.email.toLowerCase()) {
     return (
       <Shell>
-        <h1 className="text-xl font-bold">Email tidak cocok</h1>
+        <h1 className="text-xl font-bold">Email mismatch</h1>
         <p className="mt-2 text-sm text-slate-500">
-          Undangan ini untuk <span className="font-medium">{inv.email}</span>,
-          tapi kamu masuk sebagai{" "}
-          <span className="font-medium">{session.email}</span>. Keluar lalu masuk
-          dengan email yang diundang.
+          This invitation is for <span className="font-medium">{inv.email}</span>,
+          but you&apos;re signed in as{" "}
+          <span className="font-medium">{session.email}</span>. Log out and sign in
+          with the invited email.
         </p>
       </Shell>
     );
@@ -110,9 +110,9 @@ export default async function InvitePage({
 
   return (
     <Shell>
-      <h1 className="text-xl font-bold">Bergabung ke {orgName}</h1>
+      <h1 className="text-xl font-bold">Join {orgName}</h1>
       <p className="mb-5 mt-2 text-sm text-slate-500">
-        {inv.invitedBy?.name ?? "Seseorang"} mengundangmu sebagai{" "}
+        {inv.invitedBy?.name ?? "Someone"} invited you as{" "}
         <span className="font-medium">{inv.role}</span>.
       </p>
       <AcceptInvite token={token} />

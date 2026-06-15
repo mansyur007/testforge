@@ -1,6 +1,7 @@
 import { Logo } from "@/components/icons";
 import { cookies } from "next/headers";
 import { ResetPasswordForm } from "@/components/ResetPasswordForm";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
@@ -17,6 +18,9 @@ export default function ResetPasswordPage() {
           <p className="mt-2 text-sm text-slate-500">{t.headline}</p>
         </div>
         <ResetPasswordForm lang={lang} />
+        <div className="mt-6 flex justify-center">
+          <LanguageSwitcher current={lang} />
+        </div>
       </div>
     </main>
   );

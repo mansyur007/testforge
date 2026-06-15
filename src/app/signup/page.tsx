@@ -3,6 +3,7 @@ import { Logo } from "@/components/icons";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { SignupForm } from "@/components/SignupForm";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
 
 export const metadata: Metadata = {
@@ -35,6 +36,9 @@ export default function SignupPage() {
             {t.loginLink}
           </Link>
         </p>
+        <div className="mt-6 flex justify-center">
+          <LanguageSwitcher current={lang} />
+        </div>
       </div>
     </main>
   );

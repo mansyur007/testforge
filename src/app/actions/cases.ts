@@ -46,13 +46,13 @@ export async function createCase(
   formData: FormData
 ) {
   const session = await requireSession();
-  if (session.role === "VIEWER") return { error: "Viewer tidak punya akses tulis." };
+  if (session.role === "VIEWER") return { error: "Viewers don't have write access." };
 
   const projectId = String(formData.get("projectId"));
   const fields = readCaseFields(formData);
-  if (!fields.title) return { error: "Judul test case wajib diisi." };
+  if (!fields.title) return { error: "Test case title is required." };
   if (!(await isProjectMember(session.userId, projectId)))
-    return { error: "Proyek tidak ditemukan." };
+    return { error: "Project not found." };
 
   const project = await db.project.update({
     where: { id: projectId },
@@ -78,11 +78,11 @@ export async function updateCase(
   formData: FormData
 ) {
   const session = await requireSession();
-  if (session.role === "VIEWER") return { error: "Viewer tidak punya akses tulis." };
+  if (session.role === "VIEWER") return { error: "Viewers don't have write access." };
 
   const caseId = String(formData.get("caseId"));
   const fields = readCaseFields(formData);
-  if (!fields.title) return { error: "Judul test case wajib diisi." };
+  if (!fields.title) return { error: "Test case title is required." };
   await assertCaseAccess(session.userId, caseId);
 
   const testCase = await db.testCase.update({
