@@ -12,9 +12,12 @@ export default async function EditCasePage({
 }: {
   params: { slug: string; caseId: string };
 }) {
-  await requireSession();
-  const testCase = await db.testCase.findUnique({
-    where: { id: params.caseId },
+  const session = await requireSession();
+  const testCase = await db.testCase.findFirst({
+    where: {
+      id: params.caseId,
+      project: { members: { some: { userId: session.userId } } },
+    },
     include: { project: { include: { suites: { orderBy: { order: "asc" } } } } },
   });
   if (!testCase || testCase.project.slug !== params.slug) notFound();

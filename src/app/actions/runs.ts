@@ -1,10 +1,21 @@
 "use server";
 
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
+import { isProjectMember } from "@/lib/projects";
 import { logAudit } from "@/lib/audit";
+
+// Tenant guard for run-level mutations: the run must belong to a project the
+// user is a member of.
+async function assertRunAccess(userId: string, runId: string) {
+  const owned = await db.testRun.findFirst({
+    where: { id: runId, project: { members: { some: { userId } } } },
+    select: { id: true },
+  });
+  if (!owned) notFound();
+}
 
 export async function createRun(
   _prev: { error?: string } | undefined,
@@ -21,6 +32,8 @@ export async function createRun(
 
   if (!name) return { error: "Nama test run wajib diisi." };
   if (!caseIds.length) return { error: "Pilih minimal satu test case." };
+  if (!(await isProjectMember(session.userId, projectId)))
+    return { error: "Proyek tidak ditemukan." };
 
   const project = await db.project.findUniqueOrThrow({ where: { id: projectId } });
 
@@ -55,6 +68,15 @@ export async function submitResult(formData: FormData) {
   const defectUrl = String(formData.get("defectUrl") ?? "").trim() || null;
   const elapsed = parseInt(String(formData.get("elapsedSeconds") ?? ""), 10);
 
+  const owned = await db.testRunResult.findFirst({
+    where: {
+      id: resultId,
+      run: { project: { members: { some: { userId: session.userId } } } },
+    },
+    select: { id: true },
+  });
+  if (!owned) notFound();
+
   const result = await db.testRunResult.update({
     where: { id: resultId },
     data: {
@@ -82,6 +104,7 @@ export async function submitResult(formData: FormData) {
 export async function completeRun(formData: FormData) {
   const session = await requireSession();
   const runId = String(formData.get("runId"));
+  await assertRunAccess(session.userId, runId);
   const run = await db.testRun.update({
     where: { id: runId },
     data: { status: "COMPLETED", completedAt: new Date() },
@@ -101,13 +124,17 @@ export async function completeRun(formData: FormData) {
 export async function rerunFailed(formData: FormData) {
   const session = await requireSession();
   const runId = String(formData.get("runId"));
-  const run = await db.testRun.findUniqueOrThrow({
-    where: { id: runId },
+  const run = await db.testRun.findFirst({
+    where: {
+      id: runId,
+      project: { members: { some: { userId: session.userId } } },
+    },
     include: {
       project: true,
       results: { where: { status: { in: ["FAILED", "BLOCKED", "RETEST"] } } },
     },
   });
+  if (!run) notFound();
   if (!run.results.length) return;
 
   const newRun = await db.testRun.create({

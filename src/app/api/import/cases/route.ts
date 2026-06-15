@@ -29,8 +29,11 @@ export async function POST(req: NextRequest) {
 
   const projectSlug = req.nextUrl.searchParams.get("project");
   const dryRun = req.nextUrl.searchParams.get("dryRun") === "true";
-  const project = await db.project.findUnique({
-    where: { slug: projectSlug ?? "" },
+  const project = await db.project.findFirst({
+    where: {
+      slug: projectSlug ?? "",
+      members: { some: { userId: session.userId } },
+    },
   });
   if (!project)
     return NextResponse.json({ error: "Proyek tidak ditemukan" }, { status: 404 });

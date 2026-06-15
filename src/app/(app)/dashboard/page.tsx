@@ -6,18 +6,29 @@ import { RESULT_COLORS } from "@/lib/constants";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  await requireSession();
+  const session = await requireSession();
+  const me = await db.user.findUnique({
+    where: { id: session.userId },
+    select: { organizationId: true },
+  });
+
+  // Tenant isolation: every stat is scoped to the user's projects (membership),
+  // and recent activity to their organization.
+  const mine = { members: { some: { userId: session.userId } } };
+  const logScope = me?.organizationId
+    ? { user: { organizationId: me.organizationId } }
+    : { userId: session.userId };
 
   const [projects, totalCases, activeRuns, recentResults, recentLogs] =
     await Promise.all([
       db.project.findMany({
-        where: { status: "ACTIVE" },
+        where: { status: "ACTIVE", ...mine },
         include: { _count: { select: { cases: true, runs: true } } },
         orderBy: { createdAt: "desc" },
       }),
-      db.testCase.count({ where: { deletedAt: null } }),
+      db.testCase.count({ where: { deletedAt: null, project: mine } }),
       db.testRun.findMany({
-        where: { status: "ACTIVE" },
+        where: { status: "ACTIVE", project: mine },
         include: { project: true, results: true },
         orderBy: { createdAt: "desc" },
         take: 5,
@@ -25,8 +36,10 @@ export default async function DashboardPage() {
       db.testRunResult.groupBy({
         by: ["status"],
         _count: { status: true },
+        where: { run: { project: mine } },
       }),
       db.auditLog.findMany({
+        where: logScope,
         include: { user: true },
         orderBy: { createdAt: "desc" },
         take: 8,
