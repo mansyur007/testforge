@@ -3,6 +3,7 @@ import { TFIcon } from "@/components/icons";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
+import { memberScope } from "@/lib/projects";
 import { caseDisplayId, RESULT_COLORS } from "@/lib/constants";
 import { ProjectTabs } from "@/components/ProjectTabs";
 
@@ -13,9 +14,9 @@ export default async function ReportsPage({
 }: {
   params: { slug: string };
 }) {
-  await requireSession();
-  const project = await db.project.findUnique({
-    where: { slug: params.slug },
+  const session = await requireSession();
+  const project = await db.project.findFirst({
+    where: { slug: params.slug, ...memberScope(session.userId) },
     include: {
       cases: { where: { deletedAt: null } },
       runs: {

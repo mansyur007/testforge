@@ -14,9 +14,12 @@ export default async function RunDetailPage({
 }: {
   params: { slug: string; runId: string };
 }) {
-  await requireSession();
-  const run = await db.testRun.findUnique({
-    where: { id: params.runId },
+  const session = await requireSession();
+  const run = await db.testRun.findFirst({
+    where: {
+      id: params.runId,
+      project: { members: { some: { userId: session.userId } } },
+    },
     include: {
       project: true,
       milestone: true,

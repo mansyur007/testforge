@@ -3,6 +3,7 @@ import { TFIcon } from "@/components/icons";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
+import { memberScope } from "@/lib/projects";
 import { RESULT_COLORS } from "@/lib/constants";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { createMilestone } from "@/app/actions/projects";
@@ -14,9 +15,9 @@ export default async function RunsPage({
 }: {
   params: { slug: string };
 }) {
-  await requireSession();
-  const project = await db.project.findUnique({
-    where: { slug: params.slug },
+  const session = await requireSession();
+  const project = await db.project.findFirst({
+    where: { slug: params.slug, ...memberScope(session.userId) },
     include: {
       runs: {
         include: { results: true, milestone: true, createdBy: true },

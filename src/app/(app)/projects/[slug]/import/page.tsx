@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { TFIcon } from "@/components/icons";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
+import { memberScope } from "@/lib/projects";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { CsvImporter } from "@/components/CsvImporter";
 
@@ -12,8 +13,10 @@ export default async function ImportPage({
 }: {
   params: { slug: string };
 }) {
-  await requireSession();
-  const project = await db.project.findUnique({ where: { slug: params.slug } });
+  const session = await requireSession();
+  const project = await db.project.findFirst({
+    where: { slug: params.slug, ...memberScope(session.userId) },
+  });
   if (!project) notFound();
 
   return (

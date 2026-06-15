@@ -8,10 +8,11 @@ export async function GET(req: NextRequest) {
   const session = (await getSession()) ?? (await authenticateApiKey(req));
   if (!session)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = "userId" in session ? session.userId : session.id;
 
   const id = req.nextUrl.searchParams.get("id") ?? "";
-  const run = await db.testRun.findUnique({
-    where: { id },
+  const run = await db.testRun.findFirst({
+    where: { id, project: { members: { some: { userId } } } },
     include: {
       project: true,
       results: {

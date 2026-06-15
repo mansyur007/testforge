@@ -1,11 +1,22 @@
 "use server";
 
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
+import { isProjectMember } from "@/lib/projects";
 import { logAudit } from "@/lib/audit";
 import type { TestStep } from "@/lib/constants";
+
+// Tenant guard for case-level mutations: the case must belong to a project the
+// user is a member of.
+async function assertCaseAccess(userId: string, caseId: string) {
+  const owned = await db.testCase.findFirst({
+    where: { id: caseId, project: { members: { some: { userId } } } },
+    select: { id: true },
+  });
+  if (!owned) notFound();
+}
 
 function readCaseFields(formData: FormData) {
   let steps: TestStep[] = [];
@@ -40,6 +51,8 @@ export async function createCase(
   const projectId = String(formData.get("projectId"));
   const fields = readCaseFields(formData);
   if (!fields.title) return { error: "Judul test case wajib diisi." };
+  if (!(await isProjectMember(session.userId, projectId)))
+    return { error: "Proyek tidak ditemukan." };
 
   const project = await db.project.update({
     where: { id: projectId },
@@ -70,6 +83,7 @@ export async function updateCase(
   const caseId = String(formData.get("caseId"));
   const fields = readCaseFields(formData);
   if (!fields.title) return { error: "Judul test case wajib diisi." };
+  await assertCaseAccess(session.userId, caseId);
 
   const testCase = await db.testCase.update({
     where: { id: caseId },
@@ -90,6 +104,7 @@ export async function updateCase(
 export async function cloneCase(formData: FormData) {
   const session = await requireSession();
   const caseId = String(formData.get("caseId"));
+  await assertCaseAccess(session.userId, caseId);
   const original = await db.testCase.findUniqueOrThrow({
     where: { id: caseId },
   });
@@ -130,6 +145,7 @@ export async function cloneCase(formData: FormData) {
 export async function deleteCase(formData: FormData) {
   const session = await requireSession();
   const caseId = String(formData.get("caseId"));
+  await assertCaseAccess(session.userId, caseId);
   const testCase = await db.testCase.update({
     where: { id: caseId },
     data: { deletedAt: new Date() },
@@ -154,7 +170,10 @@ export async function bulkUpdateCases(formData: FormData) {
   if (!ids.length || !["priority", "type", "status"].includes(field)) return;
 
   await db.testCase.updateMany({
-    where: { id: { in: ids } },
+    where: {
+      id: { in: ids },
+      project: { members: { some: { userId: session.userId } } },
+    },
     data: { [field]: value },
   });
   await logAudit({
