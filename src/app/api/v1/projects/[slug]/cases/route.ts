@@ -13,8 +13,11 @@ export async function GET(
   const auth = (await getSession()) ?? (await authenticateApiKey(req));
   if (!auth)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = "userId" in auth ? auth.userId : auth.id;
 
-  const project = await db.project.findUnique({ where: { slug: params.slug } });
+  const project = await db.project.findFirst({
+    where: { slug: params.slug, members: { some: { userId } } },
+  });
   if (!project)
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
@@ -66,10 +69,18 @@ export async function POST(
   const auth = (await getSession()) ?? (await authenticateApiKey(req));
   if (!auth)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = "userId" in auth ? auth.userId : auth.id;
 
   const body = await req.json().catch(() => null);
   if (!body?.title)
     return NextResponse.json({ error: "title wajib diisi" }, { status: 400 });
+
+  const allowed = await db.project.findFirst({
+    where: { slug: params.slug, members: { some: { userId } } },
+    select: { id: true },
+  });
+  if (!allowed)
+    return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
   const project = await db.project.update({
     where: { slug: params.slug },
