@@ -24,6 +24,12 @@ export async function verifyPassword(password: string, hash: string) {
   return bcrypt.compare(password, hash);
 }
 
+// bcrypt hashes always start with "$2"; OAuth users get a random hex placeholder
+// (see api/auth/oauth) — so this tells a real password apart from "no password yet".
+export function hasUsablePassword(passwordHash: string) {
+  return passwordHash.startsWith("$2");
+}
+
 // PRD §12.6.1: "Remember me" = 30 hari, default 1 hari.
 // AU-010 (refresh token rotation) masuk backlog — lihat AUDIT-PRD.md.
 export async function createSession(
