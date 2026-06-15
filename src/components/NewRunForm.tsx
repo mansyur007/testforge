@@ -23,7 +23,7 @@ function SubmitButton({ count }: { count: number }) {
       disabled={pending || count === 0}
       className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
     >
-      {pending ? "Membuat..." : `Buat Run (${count} test case)`}
+      {pending ? "Creating..." : `Create Run (${count} test cases)`}
     </button>
   );
 }
@@ -89,12 +89,12 @@ export function NewRunForm({
         <div className="grid gap-4 md:grid-cols-3">
           <div className="md:col-span-2">
             <label className="mb-1 block text-sm font-medium text-slate-700">
-              Nama Run <span className="text-red-500">*</span>
+              Run Name <span className="text-red-500">*</span>
             </label>
             <input
               name="name"
               required
-              placeholder="contoh: Regression Sprint 24"
+              placeholder="e.g. Regression Sprint 24"
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
             />
           </div>
@@ -106,7 +106,7 @@ export function NewRunForm({
               name="milestoneId"
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
             >
-              <option value="">(tanpa milestone)</option>
+              <option value="">(no milestone)</option>
               {milestones.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.name}
@@ -116,7 +116,7 @@ export function NewRunForm({
           </div>
           <div className="md:col-span-3">
             <label className="mb-1 block text-sm font-medium text-slate-700">
-              Deskripsi
+              Description
             </label>
             <input
               name="description"
@@ -128,16 +128,16 @@ export function NewRunForm({
 
       <div className="rounded-xl border border-slate-200 bg-white p-6">
         <h3 className="mb-3 font-semibold">
-          Pilih Test Case{" "}
+          Select Test Cases{" "}
           <span className="font-normal text-slate-400">
-            ({selected.size} dipilih)
+            ({selected.size} selected)
           </span>
         </h3>
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <input
             value={fQ}
             onChange={(e) => setFQ(e.target.value)}
-            placeholder="Cari judul..."
+            placeholder="Search title..."
             className="w-44 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none"
           />
           <select value={fPriority} onChange={(e) => setFPriority(e.target.value)}
@@ -158,7 +158,7 @@ export function NewRunForm({
           />
           <button type="button" onClick={selectAllFiltered}
             className="rounded-lg border border-indigo-300 px-3 py-1.5 text-sm text-indigo-600 hover:bg-indigo-50">
-            Pilih semua hasil filter ({filtered.length})
+            Select all filtered ({filtered.length})
           </button>
           <button type="button" onClick={() => setSelected(new Set())}
             className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-50">
@@ -186,7 +186,7 @@ export function NewRunForm({
           ))}
           {filtered.length === 0 && (
             <p className="p-6 text-center text-sm text-slate-400">
-              Tidak ada test case yang cocok dengan filter.
+              No test cases match the filter.
             </p>
           )}
         </div>

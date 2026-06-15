@@ -93,7 +93,7 @@ export default async function CaseDetailPage({
           <form action={deleteCase}>
             <input type="hidden" name="caseId" value={testCase.id} />
             <button className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">
-              <TFIcon name="delete" current className="h-4 w-4" /> Hapus
+              <TFIcon name="delete" current className="h-4 w-4" /> Delete
             </button>
           </form>
         </div>
@@ -104,7 +104,7 @@ export default async function CaseDetailPage({
           {testCase.description && (
             <section className="rounded-xl border border-slate-200 bg-white p-6">
               <h3 className="mb-2 text-sm font-semibold uppercase text-slate-400">
-                Deskripsi
+                Description
               </h3>
               <p className="whitespace-pre-wrap text-sm">{testCase.description}</p>
             </section>
@@ -122,7 +122,7 @@ export default async function CaseDetailPage({
               Steps to Reproduce
             </h3>
             {steps.length === 0 && (
-              <p className="text-sm text-slate-400">Belum ada step.</p>
+              <p className="text-sm text-slate-400">No steps yet.</p>
             )}
             <ol className="space-y-3">
               {steps.map((step, i) => (
@@ -153,7 +153,7 @@ export default async function CaseDetailPage({
         <div className="space-y-6">
           <section className="rounded-xl border border-slate-200 bg-white p-6">
             <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
-              Riwayat Eksekusi
+              Execution History
             </h3>
             {executed.length > 0 && (
               <p className="mb-3 text-sm">
@@ -182,7 +182,7 @@ export default async function CaseDetailPage({
               ))}
               {testCase.results.length === 0 && (
                 <p className="text-sm text-slate-400">
-                  Belum pernah dieksekusi dalam test run.
+                  Never executed in a test run.
                 </p>
               )}
             </ul>

@@ -21,16 +21,16 @@ export default async function AccountPage() {
   return (
     <div className="max-w-2xl space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Akun</h1>
+        <h1 className="text-2xl font-bold">Account</h1>
         <p className="text-sm text-slate-500">
-          Informasi akun dan keamanan login kamu.
+          Your account information and login security.
         </p>
       </div>
 
       <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
-        <h2 className="text-lg font-semibold">Profil</h2>
+        <h2 className="text-lg font-semibold">Profile</h2>
         <dl className="grid grid-cols-3 gap-y-3 text-sm">
-          <dt className="text-slate-500">Nama</dt>
+          <dt className="text-slate-500">Name</dt>
           <dd className="col-span-2 font-medium text-slate-800">{user.name}</dd>
 
           <dt className="text-slate-500">Email</dt>
@@ -38,11 +38,11 @@ export default async function AccountPage() {
             {user.email}
             {user.emailVerifiedAt ? (
               <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-                Terverifikasi
+                Verified
               </span>
             ) : (
               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
-                Belum verifikasi
+                Not verified
               </span>
             )}
           </dd>
@@ -50,7 +50,7 @@ export default async function AccountPage() {
           <dt className="text-slate-500">Role</dt>
           <dd className="col-span-2 font-medium text-slate-800">{user.role}</dd>
 
-          <dt className="text-slate-500">Metode login</dt>
+          <dt className="text-slate-500">Login method</dt>
           <dd className="col-span-2 font-medium text-slate-800">
             {hasPassword ? "Email & password" : "OAuth (Google/GitHub)"}
           </dd>
@@ -60,12 +60,12 @@ export default async function AccountPage() {
       <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
         <div>
           <h2 className="text-lg font-semibold">
-            {hasPassword ? "Ganti password" : "Set password"}
+            {hasPassword ? "Change password" : "Set password"}
           </h2>
           <p className="text-sm text-slate-500">
             {hasPassword
-              ? "Masukkan password lama lalu password baru."
-              : "Akunmu login lewat OAuth dan belum punya password. Buat password agar bisa login dengan email juga."}
+              ? "Enter your current password, then a new one."
+              : "Your account signs in via OAuth and has no password yet. Set one to also sign in with email."}
           </p>
         </div>
         <ChangePasswordForm mode={hasPassword ? "change" : "set"} />

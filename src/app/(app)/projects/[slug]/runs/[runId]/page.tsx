@@ -68,7 +68,7 @@ export default async function RunDetailPage({
             <form action={completeRun}>
               <input type="hidden" name="runId" value={run.id} />
               <button className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700">
-                ✓ Tandai Selesai
+                ✓ Mark Complete
               </button>
             </form>
           )}
