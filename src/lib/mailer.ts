@@ -10,25 +10,68 @@ type SendArgs = {
   text: string;
 };
 
-/** Bungkus konten dalam template HTML sederhana dengan tombol aksi. */
+/**
+ * Bungkus konten dalam template email transaksional yang branded.
+ * Memakai layout berbasis <table> + inline CSS agar tampil konsisten di
+ * Gmail, Outlook, Apple Mail, dan klien email lain (yang sering mengabaikan
+ * <style>, flexbox, dan margin).
+ */
 export function actionEmailHtml(opts: {
   heading: string;
   body: string;
   buttonLabel: string;
   actionUrl: string;
 }) {
+  const year = new Date().getFullYear();
   return `<!doctype html>
-<div style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#0f172a">
-  <h1 style="font-size:20px;margin:0 0 12px">${opts.heading}</h1>
-  <p style="font-size:14px;color:#475569;margin:0 0 24px">${opts.body}</p>
-  <a href="${opts.actionUrl}" style="display:inline-block;background:#4f46e5;color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:12px 20px;border-radius:8px">
-    ${opts.buttonLabel}
-  </a>
-  <p style="font-size:12px;color:#94a3b8;margin:24px 0 0">
-    Jika tombol tidak berfungsi, salin URL ini ke browser:<br>
-    <a href="${opts.actionUrl}" style="color:#4f46e5;word-break:break-all">${opts.actionUrl}</a>
-  </p>
-</div>`;
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>${opts.heading}</title>
+</head>
+<body style="margin:0;padding:0;background:#f1f5f9;-webkit-font-smoothing:antialiased;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+          <tr>
+            <td style="background:#4f46e5;padding:24px 32px;">
+              <span style="font-size:18px;font-weight:700;letter-spacing:-0.02em;color:#ffffff;">TestForge</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:36px 32px 8px;">
+              <h1 style="margin:0 0 12px;font-size:22px;line-height:1.3;font-weight:700;color:#0f172a;">${opts.heading}</h1>
+              <p style="margin:0 0 28px;font-size:15px;line-height:1.6;color:#475569;">${opts.body}</p>
+              <table role="presentation" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" bgcolor="#4f46e5" style="border-radius:10px;">
+                    <a href="${opts.actionUrl}" target="_blank" style="display:inline-block;padding:13px 28px;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:10px;">${opts.buttonLabel}</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 32px 32px;">
+              <p style="margin:0 0 6px;font-size:12px;line-height:1.5;color:#94a3b8;">Jika tombol tidak berfungsi, salin URL ini ke browser:</p>
+              <a href="${opts.actionUrl}" target="_blank" style="font-size:12px;color:#4f46e5;word-break:break-all;text-decoration:none;">${opts.actionUrl}</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="border-top:1px solid #e2e8f0;padding:20px 32px;">
+              <p style="margin:0;font-size:11px;line-height:1.5;color:#94a3b8;">Email ini dikirim otomatis oleh TestForge. Jika kamu tidak meminta tindakan ini, abaikan saja email ini.</p>
+              <p style="margin:8px 0 0;font-size:11px;color:#cbd5e1;">&copy; ${year} TestForge</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 }
 
 export async function sendMail(
