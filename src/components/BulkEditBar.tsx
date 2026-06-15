@@ -38,10 +38,10 @@ export function BulkEditBar({
       {selectedCount > 0 && (
         <div className="mb-3 flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm">
           <span className="font-medium text-indigo-700">
-            {selectedCount} dipilih
+            {selectedCount} selected
           </span>
           <span className="text-slate-400">|</span>
-          <span>Ubah</span>
+          <span>Change</span>
           <select
             name="bulkField"
             value={field}
@@ -52,7 +52,7 @@ export function BulkEditBar({
             <option value="type">Type</option>
             <option value="status">Status</option>
           </select>
-          <span>menjadi</span>
+          <span>to</span>
           <select
             name="bulkValue"
             className="rounded border border-slate-300 px-2 py-1 text-xs"
@@ -62,7 +62,7 @@ export function BulkEditBar({
             ))}
           </select>
           <button className="rounded bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700">
-            Terapkan
+            Apply
           </button>
         </div>
       )}

@@ -81,7 +81,7 @@ export function RunExecutor({
   if (!results.length)
     return (
       <p className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">
-        Run ini tidak punya test case.
+        This run has no test cases.
       </p>
     );
 
@@ -146,7 +146,7 @@ export function RunExecutor({
           )}
           {active.assigneeName && (
             <p className="mt-3 text-xs text-slate-400">
-              Terakhir dieksekusi oleh {active.assigneeName}
+              Last executed by {active.assigneeName}
               {active.elapsedSeconds != null && <> · {active.elapsedSeconds}s</>}
             </p>
           )}
@@ -158,13 +158,13 @@ export function RunExecutor({
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={2}
-              placeholder="Catatan hasil eksekusi (opsional)..."
+              placeholder="Execution notes (optional)..."
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
             />
             <input
               value={defectUrl}
               onChange={(e) => setDefectUrl(e.target.value)}
-              placeholder="URL bug report jika failed (Jira/GitHub Issue)..."
+              placeholder="Bug report URL if failed (Jira/GitHub Issue)..."
               className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
             />
             <div className="mt-3 flex flex-wrap gap-2">
@@ -190,12 +190,12 @@ export function RunExecutor({
               </button>
             </div>
             <p className="mt-3 text-xs text-slate-400">
-              ⌨️ Shortcut: P/F/B/S/R untuk submit · J/K atau ↑↓ untuk navigasi · Timer otomatis berjalan per case
+              ⌨️ Shortcuts: P/F/B/S/R to submit · J/K or ↑↓ to navigate · Timer runs automatically per case
             </p>
           </div>
         ) : (
           <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center text-sm text-slate-500">
-            Run sudah selesai — hasil bersifat read-only.
+            This run is complete — results are read-only.
           </p>
         )}
       </div>

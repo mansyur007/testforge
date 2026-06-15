@@ -107,8 +107,8 @@ export default async function ReportsPage({
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
-          { label: "Pass Rate Keseluruhan", value: `${passRate}%` },
-          { label: "Total Eksekusi", value: executed.length },
+          { label: "Overall Pass Rate", value: `${passRate}%` },
+          { label: "Total Executions", value: executed.length },
           { label: "Failed", value: failed },
           { label: "Automation Coverage", value: `${automationCoverage}%` },
         ].map((s) => (
@@ -120,9 +120,9 @@ export default async function ReportsPage({
       </div>
 
       <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <h3 className="mb-4 flex items-center gap-2 font-semibold"><TFIcon name="trend" className="h-5 w-5" /> Tren Pass Rate per Run</h3>
+        <h3 className="mb-4 flex items-center gap-2 font-semibold"><TFIcon name="trend" className="h-5 w-5" /> Pass Rate Trend per Run</h3>
         {trend.length === 0 ? (
-          <p className="text-sm text-slate-400">Belum ada data run.</p>
+          <p className="text-sm text-slate-400">No run data yet.</p>
         ) : (
           <div className="flex h-44 items-end gap-2">
             {trend.map((t, i) => (
@@ -131,7 +131,7 @@ export default async function ReportsPage({
                 <div
                   className={`w-full rounded-t ${t.rate >= 80 ? "bg-green-400" : t.rate >= 50 ? "bg-yellow-400" : "bg-red-400"}`}
                   style={{ height: `${Math.max(t.rate, 3)}%` }}
-                  title={`${t.name}: ${t.rate}% (${t.executed} eksekusi)`}
+                  title={`${t.name}: ${t.rate}% (${t.executed} executed)`}
                 />
                 <span className="w-full truncate text-center text-[10px] text-slate-400">
                   {t.name}
@@ -146,10 +146,10 @@ export default async function ReportsPage({
         <section className="rounded-xl border border-slate-200 bg-white p-6">
           <h3 className="mb-4 flex items-center gap-2 font-semibold"><TFIcon name="flaky" className="h-5 w-5" /> Flaky Tests</h3>
           <p className="mb-3 text-xs text-slate-400">
-            Test case yang berganti-ganti status pass/fail antar run (≥2 perubahan).
+            Test cases whose pass/fail status flips between runs (≥2 changes).
           </p>
           {flakyCases.length === 0 ? (
-            <p className="text-sm text-slate-400">Tidak ada flaky test terdeteksi. 🎉</p>
+            <p className="text-sm text-slate-400">No flaky tests detected. 🎉</p>
           ) : (
             <ul className="space-y-2 text-sm">
               {flakyCases.map((f) => (
@@ -175,10 +175,10 @@ export default async function ReportsPage({
         <section className="rounded-xl border border-slate-200 bg-white p-6">
           <h3 className="mb-4 flex items-center gap-2 font-semibold"><TFIcon name="bug" className="h-5 w-5" /> Bug Correlation</h3>
           <p className="mb-3 text-xs text-slate-400">
-            Test case yang paling sering menghasilkan bug report.
+            Test cases that most often produce bug reports.
           </p>
           {buggy.length === 0 ? (
-            <p className="text-sm text-slate-400">Belum ada defect yang tercatat.</p>
+            <p className="text-sm text-slate-400">No defects recorded yet.</p>
           ) : (
             <ul className="space-y-2 text-sm">
               {buggy.map((b, i) => (

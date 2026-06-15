@@ -23,7 +23,7 @@ function SubmitButton({ isEdit }: { isEdit: boolean }) {
       disabled={pending}
       className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
     >
-      {pending ? "Menyimpan..." : isEdit ? "Simpan Perubahan" : "Buat Test Case"}
+      {pending ? "Saving..." : isEdit ? "Save Changes" : "Create Test Case"}
     </button>
   );
 }
@@ -96,20 +96,20 @@ export function CaseForm({
         <div className="grid gap-4 md:grid-cols-2">
           <div className="md:col-span-2">
             <label className={labelCls}>
-              Judul <span className="text-red-500">*</span>
+              Title <span className="text-red-500">*</span>
             </label>
             <input
               name="title"
               required
               defaultValue={initial?.title}
-              placeholder="contoh: Valid Login dengan email terdaftar"
+              placeholder="e.g. Valid login with a registered email"
               className={inputCls}
             />
           </div>
           <div>
             <label className={labelCls}>Test Suite</label>
             <select name="suiteId" defaultValue={initial?.suiteId ?? ""} className={inputCls}>
-              <option value="">(tanpa suite)</option>
+              <option value="">(no suite)</option>
               {suites
                 .filter((s) => !s.parentId)
                 .map((s) => (
@@ -165,7 +165,7 @@ export function CaseForm({
             </select>
           </div>
           <div>
-            <label className={labelCls}>Tags (pisahkan dengan koma)</label>
+            <label className={labelCls}>Tags (comma-separated)</label>
             <input
               name="tags"
               defaultValue={initial?.tags}
@@ -174,12 +174,12 @@ export function CaseForm({
             />
           </div>
           <div className="md:col-span-2">
-            <label className={labelCls}>Deskripsi (Markdown didukung)</label>
+            <label className={labelCls}>Description (Markdown supported)</label>
             <textarea
               name="description"
               rows={2}
               defaultValue={initial?.description}
-              placeholder="Konteks dan tujuan test..."
+              placeholder="Context and purpose of the test..."
               className={inputCls}
             />
           </div>
@@ -189,12 +189,12 @@ export function CaseForm({
               name="preconditions"
               rows={2}
               defaultValue={initial?.preconditions}
-              placeholder="Kondisi yang harus terpenuhi sebelum test..."
+              placeholder="Conditions that must be met before the test..."
               className={inputCls}
             />
           </div>
           <div className="md:col-span-2">
-            <label className={labelCls}>Linked Issues (URL, pisahkan koma)</label>
+            <label className={labelCls}>Linked Issues (URLs, comma-separated)</label>
             <input
               name="linkedIssues"
               defaultValue={initial?.linkedIssues}
@@ -219,22 +219,22 @@ export function CaseForm({
                 rows={1}
                 value={step.action}
                 onChange={(e) => setStep(i, "action", e.target.value)}
-                placeholder="Langkah aksi, contoh: Buka halaman /login"
+                placeholder="Action step, e.g. Open the /login page"
                 className={inputCls}
               />
               <textarea
                 rows={1}
                 value={step.expected}
                 onChange={(e) => setStep(i, "expected", e.target.value)}
-                placeholder="Expected result step ini"
+                placeholder="Expected result for this step"
                 className={inputCls}
               />
               <div className="flex shrink-0 gap-1 pt-1.5">
-                <button type="button" onClick={() => moveStep(i, -1)} title="Naik"
+                <button type="button" onClick={() => moveStep(i, -1)} title="Move up"
                   className="rounded border border-slate-200 px-1.5 py-0.5 text-xs text-slate-500 hover:bg-slate-100">↑</button>
-                <button type="button" onClick={() => moveStep(i, 1)} title="Turun"
+                <button type="button" onClick={() => moveStep(i, 1)} title="Move down"
                   className="rounded border border-slate-200 px-1.5 py-0.5 text-xs text-slate-500 hover:bg-slate-100">↓</button>
-                <button type="button" title="Hapus"
+                <button type="button" title="Delete"
                   onClick={() => setSteps((p) => p.filter((_, idx) => idx !== i))}
                   className="rounded border border-red-200 px-1.5 py-0.5 text-xs text-red-500 hover:bg-red-50">✕</button>
               </div>
@@ -246,15 +246,15 @@ export function CaseForm({
           onClick={() => setSteps((p) => [...p, { action: "", expected: "" }])}
           className="mt-3 rounded-lg border border-dashed border-slate-300 px-4 py-2 text-sm text-slate-500 hover:border-indigo-400 hover:text-indigo-600"
         >
-          + Tambah Step
+          + Add Step
         </button>
         <div className="mt-4">
-          <label className={labelCls}>Expected Result Keseluruhan</label>
+          <label className={labelCls}>Overall Expected Result</label>
           <textarea
             name="expectedResult"
             rows={2}
             defaultValue={initial?.expectedResult}
-            placeholder="Hasil akhir yang diharapkan dari test case ini..."
+            placeholder="The expected final result of this test case..."
             className={inputCls}
           />
         </div>

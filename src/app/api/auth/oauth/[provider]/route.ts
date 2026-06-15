@@ -119,14 +119,14 @@ export async function GET(
 
     let user = await db.user.findUnique({ where: { email } });
     if (!user) {
-      const userCount = await db.user.count();
-      // email dari OAuth provider dianggap sudah terverifikasi
+      // New signups own the organization they create at onboarding, so ADMIN.
+      // email from the OAuth provider is treated as already verified.
       user = await db.user.create({
         data: {
           name,
           email,
           passwordHash: crypto.randomBytes(32).toString("hex"),
-          role: userCount === 0 ? "ADMIN" : "MEMBER",
+          role: "ADMIN",
           emailVerifiedAt: new Date(),
           avatarUrl: profile.picture ?? profile.avatar_url ?? null,
         },

@@ -14,7 +14,7 @@ export async function createApiKey(
 ) {
   const session = await requireSession();
   const name = String(formData.get("name") ?? "").trim();
-  if (!name) return { error: "Nama key wajib diisi." };
+  if (!name) return { error: "Key name is required." };
 
   const raw = `tf_${crypto.randomBytes(24).toString("hex")}`;
   const keyHash = crypto.createHash("sha256").update(raw).digest("hex");

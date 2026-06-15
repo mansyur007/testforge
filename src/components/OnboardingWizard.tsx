@@ -14,10 +14,10 @@ const inputCls =
   "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none";
 
 const TEMPLATES = [
-  { id: "blank", icon: "tpl-blank", label: "Blank", desc: "Mulai dari kosong" },
-  { id: "web", icon: "tpl-web", label: "Web App", desc: "Suite auth, navigasi, form" },
-  { id: "mobile", icon: "tpl-mobile", label: "Mobile App", desc: "Suite onboarding, push, offline" },
-  { id: "api", icon: "tpl-api", label: "API Service", desc: "Suite auth, CRUD, error handling" },
+  { id: "blank", icon: "tpl-blank", label: "Blank", desc: "Start from scratch" },
+  { id: "web", icon: "tpl-web", label: "Web App", desc: "Auth, navigation, form suites" },
+  { id: "mobile", icon: "tpl-mobile", label: "Mobile App", desc: "Onboarding, push, offline suites" },
+  { id: "api", icon: "tpl-api", label: "API Service", desc: "Auth, CRUD, error handling suites" },
 ];
 
 const INTEGRATIONS = [
@@ -77,7 +77,7 @@ export function OnboardingWizard({ userName }: { userName: string }) {
       const res = await onboardingInvite(fd);
       if (res?.error) setError(res.error);
       else {
-        setInfo(`${res.invited} undangan tercatat.`);
+        setInfo(`${res.invited} invitations recorded.`);
         next();
       }
     });
@@ -98,8 +98,8 @@ export function OnboardingWizard({ userName }: { userName: string }) {
           {step <= 3 && (
             <>
               <p className="mt-2 text-sm text-slate-500">
-                Halo {userName}! Siapkan workspace kamu — semua langkah bisa
-                dilewati.
+                Hi {userName}! Set up your workspace — every step can be
+                skipped.
               </p>
               <div className="mx-auto mt-4 flex max-w-xs items-center gap-2">
                 {[1, 2, 3].map((i) => (
@@ -123,21 +123,21 @@ export function OnboardingWizard({ userName }: { userName: string }) {
 
           {step === 1 && (
             <div className="space-y-4">
-              <h1 className="text-lg font-bold">Buat Project Pertama</h1>
+              <h1 className="text-lg font-bold">Create Your First Project</h1>
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">
-                  Nama Project
+                  Project Name
                 </label>
                 <input
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
-                  placeholder="contoh: Web Portal"
+                  placeholder="e.g. Web Portal"
                   className={inputCls}
                 />
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">
-                  Deskripsi (opsional)
+                  Description (optional)
                 </label>
                 <input
                   value={projectDesc}
@@ -170,14 +170,14 @@ export function OnboardingWizard({ userName }: { userName: string }) {
               </div>
               <div className="flex justify-between pt-2">
                 <button onClick={next} className="text-sm text-slate-400 hover:text-slate-600">
-                  Lewati →
+                  Skip →
                 </button>
                 <button
                   onClick={submitStep1}
                   disabled={pending || !projectName.trim()}
                   className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                 >
-                  {pending ? "Membuat..." : "Buat Project"}
+                  {pending ? "Creating..." : "Create Project"}
                 </button>
               </div>
             </div>
@@ -185,13 +185,13 @@ export function OnboardingWizard({ userName }: { userName: string }) {
 
           {step === 2 && (
             <div className="space-y-4">
-              <h1 className="text-lg font-bold">Invite Anggota Tim</h1>
+              <h1 className="text-lg font-bold">Invite Team Members</h1>
               <p className="text-sm text-slate-500">
-                Bekerja solo? Lewati saja — bisa invite kapan pun nanti.
+                Working solo? Just skip — you can invite anytime later.
               </p>
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">
-                  Email anggota (pisahkan koma atau baris baru)
+                  Member emails (separate by comma or new line)
                 </label>
                 <textarea
                   value={emails}
@@ -216,14 +216,14 @@ export function OnboardingWizard({ userName }: { userName: string }) {
               </div>
               <div className="flex justify-between pt-2">
                 <button onClick={next} className="text-sm text-slate-400 hover:text-slate-600">
-                  Lewati →
+                  Skip →
                 </button>
                 <button
                   onClick={submitStep2}
                   disabled={pending || !emails.trim()}
                   className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                 >
-                  {pending ? "Menyimpan..." : "Kirim Undangan"}
+                  {pending ? "Saving..." : "Send Invitations"}
                 </button>
               </div>
             </div>
@@ -231,9 +231,9 @@ export function OnboardingWizard({ userName }: { userName: string }) {
 
           {step === 3 && (
             <div className="space-y-4">
-              <h1 className="text-lg font-bold">Pilih Integrasi</h1>
+              <h1 className="text-lg font-bold">Choose Integrations</h1>
               <p className="text-sm text-slate-500">
-                Tandai yang ingin kamu pakai — setup detail bisa dilakukan nanti.
+                Mark the ones you want to use — detailed setup can be done later.
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {INTEGRATIONS.map((it) => (
@@ -264,14 +264,14 @@ export function OnboardingWizard({ userName }: { userName: string }) {
               </div>
               <div className="flex justify-between pt-2">
                 <button onClick={next} className="text-sm text-slate-400 hover:text-slate-600">
-                  Lewati →
+                  Skip →
                 </button>
                 <button
                   onClick={submitStep3}
                   disabled={pending}
                   className="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                 >
-                  {pending ? "Menyimpan..." : "Lanjut"}
+                  {pending ? "Saving..." : "Continue"}
                 </button>
               </div>
             </div>
@@ -282,17 +282,17 @@ export function OnboardingWizard({ userName }: { userName: string }) {
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-50 text-green-600">
                 <TFIcon name="celebrate" current className="h-8 w-8" />
               </div>
-              <h1 className="text-lg font-bold">Mulai Eksplorasi</h1>
+              <h1 className="text-lg font-bold">Start Exploring</h1>
               {info && <p className="text-sm text-green-600">{info}</p>}
               <ul className="mx-auto max-w-sm space-y-2 text-left text-sm text-slate-600">
                 <li className="flex items-center gap-2 rounded-lg border border-slate-100 p-3">
-                  <TFIcon name="checklist" className="h-5 w-5 shrink-0" /> Buat test case pertama di tab <b>Test Cases</b>
+                  <TFIcon name="checklist" className="h-5 w-5 shrink-0" /> Create your first test case in the <b>Test Cases</b> tab
                 </li>
                 <li className="flex items-center gap-2 rounded-lg border border-slate-100 p-3">
-                  <TFIcon name="checklist" className="h-5 w-5 shrink-0" /> Buat test run dan eksekusi dengan shortcut <b>P/F/B</b>
+                  <TFIcon name="checklist" className="h-5 w-5 shrink-0" /> Create a test run and execute with the <b>P/F/B</b> shortcuts
                 </li>
                 <li className="flex items-center gap-2 rounded-lg border border-slate-100 p-3">
-                  <TFIcon name="checklist" className="h-5 w-5 shrink-0" /> Upload hasil automation via <b>API Keys + JUnit XML</b>
+                  <TFIcon name="checklist" className="h-5 w-5 shrink-0" /> Upload automation results via <b>API Keys + JUnit XML</b>
                 </li>
               </ul>
               <button
@@ -300,7 +300,7 @@ export function OnboardingWizard({ userName }: { userName: string }) {
                 disabled={pending}
                 className="w-full rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
               >
-                {pending ? "Membuka dashboard..." : "Masuk ke Dashboard →"}
+                {pending ? "Opening dashboard..." : "Go to Dashboard →"}
               </button>
             </div>
           )}

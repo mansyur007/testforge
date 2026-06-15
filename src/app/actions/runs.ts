@@ -22,7 +22,7 @@ export async function createRun(
   formData: FormData
 ) {
   const session = await requireSession();
-  if (session.role === "VIEWER") return { error: "Viewer tidak punya akses tulis." };
+  if (session.role === "VIEWER") return { error: "Viewers don't have write access." };
 
   const projectId = String(formData.get("projectId"));
   const name = String(formData.get("name") ?? "").trim();
@@ -30,10 +30,10 @@ export async function createRun(
   const milestoneId = String(formData.get("milestoneId") ?? "") || null;
   const caseIds = formData.getAll("caseIds").map(String);
 
-  if (!name) return { error: "Nama test run wajib diisi." };
-  if (!caseIds.length) return { error: "Pilih minimal satu test case." };
+  if (!name) return { error: "Test run name is required." };
+  if (!caseIds.length) return { error: "Select at least one test case." };
   if (!(await isProjectMember(session.userId, projectId)))
-    return { error: "Proyek tidak ditemukan." };
+    return { error: "Project not found." };
 
   const project = await db.project.findUniqueOrThrow({ where: { id: projectId } });
 
@@ -141,7 +141,7 @@ export async function rerunFailed(formData: FormData) {
     data: {
       projectId: run.projectId,
       name: `${run.name} — Rerun Failed`,
-      description: `Rerun otomatis dari run "${run.name}" (${run.results.length} case gagal/blocked/retest).`,
+      description: `Automatic rerun of "${run.name}" (${run.results.length} failed/blocked/retest cases).`,
       createdById: session.userId,
       results: {
         create: run.results.map((r) => ({ caseId: r.caseId })),

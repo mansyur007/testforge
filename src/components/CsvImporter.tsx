@@ -25,14 +25,14 @@ export function CsvImporter({ projectSlug }: { projectSlug: string }) {
       );
       const data = await res.json();
       if (!res.ok) {
-        setMessage(data.error ?? "Gagal memproses CSV.");
+        setMessage(data.error ?? "Failed to process the CSV.");
         return;
       }
       if (dryRun) {
         setPreview(data.rows);
       } else {
         setPreview(null);
-        setMessage(`✅ ${data.imported} test case berhasil diimport.`);
+        setMessage(`✅ ${data.imported} test cases imported successfully.`);
         router.refresh();
       }
     } finally {
@@ -42,13 +42,13 @@ export function CsvImporter({ projectSlug }: { projectSlug: string }) {
 
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-6">
-      <h3 className="mb-3 flex items-center gap-2 font-semibold"><TFIcon name="import" className="h-5 w-5" /> Import Test Case dari CSV</h3>
+      <h3 className="mb-3 flex items-center gap-2 font-semibold"><TFIcon name="import" className="h-5 w-5" /> Import Test Cases from CSV</h3>
       <p className="mb-3 text-sm text-slate-500">
-        Kolom: <code className="rounded bg-slate-100 px-1">title</code> (wajib),{" "}
+        Columns: <code className="rounded bg-slate-100 px-1">title</code> (required),{" "}
         <code className="rounded bg-slate-100 px-1">description</code>,{" "}
         <code className="rounded bg-slate-100 px-1">preconditions</code>,{" "}
-        <code className="rounded bg-slate-100 px-1">steps</code> (pisahkan baris
-        dengan <code className="rounded bg-slate-100 px-1">|</code>),{" "}
+        <code className="rounded bg-slate-100 px-1">steps</code> (separate lines
+        with <code className="rounded bg-slate-100 px-1">|</code>),{" "}
         <code className="rounded bg-slate-100 px-1">expected_result</code>,{" "}
         <code className="rounded bg-slate-100 px-1">priority</code>,{" "}
         <code className="rounded bg-slate-100 px-1">type</code>,{" "}
@@ -58,7 +58,7 @@ export function CsvImporter({ projectSlug }: { projectSlug: string }) {
         href="/api/templates/cases-csv"
         className="text-sm text-indigo-600 hover:underline"
       >
-        <span className="inline-flex items-center gap-1.5"><TFIcon name="download" className="h-4 w-4" /> Unduh template CSV</span>
+        <span className="inline-flex items-center gap-1.5"><TFIcon name="download" className="h-4 w-4" /> Download CSV template</span>
       </a>
       <div className="mt-4 space-y-3">
         <input
@@ -77,7 +77,7 @@ export function CsvImporter({ projectSlug }: { projectSlug: string }) {
             disabled={!file || busy}
             className="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-100 disabled:opacity-50"
           >
-            {busy ? "Memproses..." : "Preview & Validasi"}
+            {busy ? "Processing..." : "Preview & Validate"}
           </button>
           {preview && preview.some((r) => r.valid) && (
             <button
@@ -85,7 +85,7 @@ export function CsvImporter({ projectSlug }: { projectSlug: string }) {
               disabled={busy}
               className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
             >
-              Import {preview.filter((r) => r.valid).length} baris valid
+              Import {preview.filter((r) => r.valid).length} valid rows
             </button>
           )}
         </div>
@@ -104,7 +104,7 @@ export function CsvImporter({ projectSlug }: { projectSlug: string }) {
                 {preview.map((row, i) => (
                   <tr key={i} className={row.valid ? "" : "bg-red-50"}>
                     <td className="px-3 py-1.5 text-slate-400">{i + 1}</td>
-                    <td className="px-3 py-1.5">{row.title || <i>(kosong)</i>}</td>
+                    <td className="px-3 py-1.5">{row.title || <i>(empty)</i>}</td>
                     <td className="px-3 py-1.5">
                       {row.valid ? (
                         <span className="text-green-600">✓ valid</span>

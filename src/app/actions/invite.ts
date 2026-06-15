@@ -16,12 +16,12 @@ export async function acceptInvite(
   if (!session) redirect(`/login?next=${encodeURIComponent(`/invite/${token}`)}`);
 
   const inv = await db.invitation.findUnique({ where: { token } });
-  if (!inv) return { error: "Undangan tidak ditemukan atau sudah kedaluwarsa." };
+  if (!inv) return { error: "Invitation not found or has expired." };
   if (inv.status === "ACCEPTED")
-    return { error: "Undangan ini sudah pernah diterima." };
+    return { error: "This invitation has already been accepted." };
   if (inv.email.toLowerCase() !== session!.email.toLowerCase())
     return {
-      error: `Undangan ini untuk ${inv.email}. Masuk dengan akun email tersebut untuk menerimanya.`,
+      error: `This invitation is for ${inv.email}. Sign in with that email account to accept it.`,
     };
 
   await db.user.update({

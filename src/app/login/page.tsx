@@ -2,6 +2,7 @@ import { Logo } from "@/components/icons";
 import { cookies } from "next/headers";
 import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
 import { LoginForm } from "@/components/LoginForm";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,9 @@ export default function LoginPage() {
           <p className="mt-2 text-sm text-slate-500">{t.tagline}</p>
         </div>
         <LoginForm lang={lang} />
+        <div className="mt-6 flex justify-center">
+          <LanguageSwitcher current={lang} />
+        </div>
       </div>
     </main>
   );
