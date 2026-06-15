@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireSession } from "@/lib/auth";
-import { logout } from "@/app/actions/auth";
 import { Logo, TFIcon } from "@/components/icons";
+import { LogoutButton } from "@/components/LogoutButton";
 
 export default async function AppLayout({
   children,
@@ -40,11 +40,9 @@ export default async function AppLayout({
             {session.name}
           </p>
           <p className="truncate text-xs text-slate-400">{session.email}</p>
-          <form action={logout} className="mt-3">
-            <button className="text-xs text-slate-400 hover:text-white">
-              Keluar →
-            </button>
-          </form>
+          <div className="mt-3">
+            <LogoutButton />
+          </div>
         </div>
       </aside>
       <main className="ml-60 flex-1 p-8">{children}</main>
