@@ -183,9 +183,11 @@ export async function login(
     return { error: t.wrongCredentials };
   }
 
-  // AU-001: verifikasi email wajib sebelum login
+  // AU-001: verifikasi email wajib sebelum login.
+  // Password sudah benar di atas, jadi aman mengarahkan ke halaman verify-email
+  // (punya tombol resend) tanpa membocorkan status akun ke yang tak tahu password.
   if (!user.emailVerifiedAt) {
-    return { error: t.notVerified };
+    redirect(`/verify-email?email=${encodeURIComponent(email)}`);
   }
 
   failedAttempts.delete(email);
