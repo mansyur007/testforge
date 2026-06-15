@@ -2,6 +2,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { archiveProject } from "@/app/actions/projects";
+import { memberScope } from "@/lib/projects";
 import { NewProjectForm } from "@/components/NewProjectForm";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +10,7 @@ export const dynamic = "force-dynamic";
 export default async function ProjectsPage() {
   const session = await requireSession();
   const projects = await db.project.findMany({
+    where: memberScope(session.userId),
     include: {
       _count: { select: { cases: true, runs: true, suites: true } },
       createdBy: true,

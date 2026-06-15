@@ -1,9 +1,10 @@
 "use server";
 
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
+import { isProjectMember } from "@/lib/projects";
 import { logAudit } from "@/lib/audit";
 
 function slugify(name: string) {
@@ -57,6 +58,7 @@ export async function createProject(
 export async function archiveProject(formData: FormData) {
   const session = await requireSession();
   const id = String(formData.get("projectId"));
+  if (!(await isProjectMember(session.userId, id))) notFound();
   const project = await db.project.findUniqueOrThrow({ where: { id } });
   const next = project.status === "ARCHIVED" ? "ACTIVE" : "ARCHIVED";
   await db.project.update({ where: { id }, data: { status: next } });
@@ -72,6 +74,7 @@ export async function archiveProject(formData: FormData) {
 export async function createSuite(formData: FormData) {
   const session = await requireSession();
   const projectId = String(formData.get("projectId"));
+  if (!(await isProjectMember(session.userId, projectId))) notFound();
   const parentId = String(formData.get("parentId") ?? "") || null;
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return;
@@ -93,6 +96,7 @@ export async function createSuite(formData: FormData) {
 export async function createMilestone(formData: FormData) {
   const session = await requireSession();
   const projectId = String(formData.get("projectId"));
+  if (!(await isProjectMember(session.userId, projectId))) notFound();
   const name = String(formData.get("name") ?? "").trim();
   const dueDate = String(formData.get("dueDate") ?? "");
   if (!name) return;

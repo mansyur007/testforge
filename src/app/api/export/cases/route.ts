@@ -8,10 +8,11 @@ export async function GET(req: NextRequest) {
   const session = (await getSession()) ?? (await authenticateApiKey(req));
   if (!session)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = "userId" in session ? session.userId : session.id;
 
   const slug = req.nextUrl.searchParams.get("project") ?? "";
-  const project = await db.project.findUnique({
-    where: { slug },
+  const project = await db.project.findFirst({
+    where: { slug, members: { some: { userId } } },
     include: {
       cases: {
         where: { deletedAt: null },

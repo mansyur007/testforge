@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
+import { memberScope } from "@/lib/projects";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { NewRunForm } from "@/components/NewRunForm";
 import { caseDisplayId } from "@/lib/constants";
@@ -12,9 +13,9 @@ export default async function NewRunPage({
 }: {
   params: { slug: string };
 }) {
-  await requireSession();
-  const project = await db.project.findUnique({
-    where: { slug: params.slug },
+  const session = await requireSession();
+  const project = await db.project.findFirst({
+    where: { slug: params.slug, ...memberScope(session.userId) },
     include: {
       suites: { orderBy: { order: "asc" } },
       milestones: { where: { status: "OPEN" } },

@@ -34,8 +34,8 @@ export async function POST(req: NextRequest) {
     `Automation Run ${new Date().toISOString()}`;
   const source = (req.nextUrl.searchParams.get("source") ?? "JUNIT").toUpperCase();
 
-  const project = await db.project.findUnique({
-    where: { slug },
+  const project = await db.project.findFirst({
+    where: { slug, members: { some: { userId: user.id } } },
     include: { cases: { where: { deletedAt: null } } },
   });
   if (!project)

@@ -12,6 +12,7 @@ import {
   CASE_TYPES,
 } from "@/lib/constants";
 import { createSuite } from "@/app/actions/projects";
+import { memberScope } from "@/lib/projects";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { BulkEditBar } from "@/components/BulkEditBar";
 
@@ -24,9 +25,9 @@ export default async function ProjectPage({
   params: { slug: string };
   searchParams: { suite?: string; priority?: string; type?: string; q?: string; tag?: string };
 }) {
-  await requireSession();
-  const project = await db.project.findUnique({
-    where: { slug: params.slug },
+  const session = await requireSession();
+  const project = await db.project.findFirst({
+    where: { slug: params.slug, ...memberScope(session.userId) },
     include: { suites: { orderBy: { order: "asc" } } },
   });
   if (!project) notFound();
