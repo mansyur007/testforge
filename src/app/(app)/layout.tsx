@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { requireSession } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { memberScope } from "@/lib/projects";
 import { Logo, TFIcon } from "@/components/icons";
 import { LogoutButton } from "@/components/LogoutButton";
+import { SidebarProjects } from "@/components/SidebarProjects";
 
 export default async function AppLayout({
   children,
@@ -9,6 +12,14 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const session = await requireSession();
+
+  // Active projects listed inline under the Projects nav item so any project is
+  // one click away from anywhere — no Projects-list detour.
+  const projects = await db.project.findMany({
+    where: { ...memberScope(session.userId), status: "ACTIVE" },
+    select: { id: true, name: true, slug: true },
+    orderBy: { createdAt: "desc" },
+  });
 
   const nav = [
     { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
@@ -27,14 +38,18 @@ export default async function AppLayout({
         </div>
         <nav className="flex-1 space-y-1 px-3">
           {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-slate-800 hover:text-white"
-            >
-              <TFIcon name={item.icon} current className="h-[19px] w-[19px]" />
-              {item.label}
-            </Link>
+            <div key={item.href}>
+              <Link
+                href={item.href}
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-slate-800 hover:text-white"
+              >
+                <TFIcon name={item.icon} current className="h-[19px] w-[19px]" />
+                {item.label}
+              </Link>
+              {item.href === "/projects" && (
+                <SidebarProjects projects={projects} />
+              )}
+            </div>
           ))}
         </nav>
         <div className="border-t border-slate-800 p-4">
