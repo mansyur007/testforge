@@ -32,9 +32,11 @@ export function CaseForm({
   projectId,
   suites,
   initial,
+  defaultSuiteId,
 }: {
   projectId: string;
   suites: { id: string; name: string; parentId: string | null }[];
+  defaultSuiteId?: string;
   initial?: {
     caseId: string;
     title: string;
@@ -108,7 +110,7 @@ export function CaseForm({
           </div>
           <div>
             <label className={labelCls}>Test Suite</label>
-            <select name="suiteId" defaultValue={initial?.suiteId ?? ""} className={inputCls}>
+            <select name="suiteId" defaultValue={initial?.suiteId ?? defaultSuiteId ?? ""} className={inputCls}>
               <option value="">(no suite)</option>
               {suites
                 .filter((s) => !s.parentId)
