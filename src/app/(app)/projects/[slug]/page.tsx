@@ -5,9 +5,9 @@ import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 import { requireSession } from "@/lib/auth";
 import { PRIORITIES, CASE_TYPES } from "@/lib/constants";
-import { createSuite } from "@/app/actions/projects";
 import { memberScope } from "@/lib/projects";
 import { ProjectTabs } from "@/components/ProjectTabs";
+import { NewSuiteForm } from "@/components/NewSuiteForm";
 import { CasesTable } from "@/components/CasesTable";
 
 export const dynamic = "force-dynamic";
@@ -94,29 +94,10 @@ export default async function ProjectPage({
                 </li>
               ))}
             </ul>
-            <form action={createSuite} className="mt-4 space-y-2 border-t border-slate-100 pt-3">
-              <input type="hidden" name="projectId" value={project.id} />
-              <input
-                name="name"
-                placeholder="New suite name..."
-                required
-                className="w-full rounded border border-slate-200 px-2 py-1.5 text-xs focus:border-indigo-500 focus:outline-none"
-              />
-              <select
-                name="parentId"
-                className="w-full rounded border border-slate-200 px-2 py-1.5 text-xs"
-              >
-                <option value="">(root suite)</option>
-                {rootSuites.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    section in: {s.name}
-                  </option>
-                ))}
-              </select>
-              <button className="w-full rounded bg-slate-800 px-2 py-1.5 text-xs text-white hover:bg-slate-700">
-                + Add Suite
-              </button>
-            </form>
+            <NewSuiteForm
+              projectId={project.id}
+              rootSuites={rootSuites.map((s) => ({ id: s.id, name: s.name }))}
+            />
           </div>
         </aside>
 
