@@ -37,6 +37,24 @@ The script uses `TF_API_KEY` if set, otherwise the local key from
 `TF_JUNIT`. Results appear as a new run under the project's **Test Runs** tab,
 matched to cases via the `TC-E2E-<n>` annotation in each test name.
 
+## Uploading to production (run locally, report to prod)
+
+The plumbing is env-driven, so no code change is needed — just point the upload at
+prod. One-time on `testforge.emha.space`: create an account, create a project with
+slug `e2e`, and create an API key (Settings → API Keys).
+
+```bash
+export TF_API_URL=https://testforge.emha.space
+export TF_PROJECT=e2e
+export TF_API_KEY=tf_xxx          # prod key — keep it out of git
+
+node scripts/seed-cases.mjs       # once: creates TC-E2E-1..4 in the prod project
+npm run e2e                       # run the suite locally → e2e-results/junit.xml
+npm run e2e:upload                # POST results to the prod project's Test Runs
+```
+
+The API key's user must be a member of the target project (tenant isolation).
+
 ## Tokens / CI
 
 These tests need no model (Claude) in the loop, so they cost no tokens and are
