@@ -13,6 +13,7 @@ export default async function AppLayout({
   const nav = [
     { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
     { href: "/projects", label: "Projects", icon: "nav-projects" },
+    { href: "/settings/team", label: "Team", icon: "nav-team" },
     { href: "/settings/api-keys", label: "API Keys", icon: "nav-keys" },
     { href: "/settings/audit-log", label: "Audit Log", icon: "nav-audit" },
     { href: "/settings/account", label: "Account", icon: "nav-account" },
