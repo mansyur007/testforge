@@ -66,11 +66,16 @@ export async function POST(req: NextRequest) {
       where: { id: project.id },
       data: { caseCounter: { increment: 1 } },
     });
+    // Steps are pipe-separated; within a step, an optional "::" splits the
+    // action from its per-step expected result (e.g. "Click Login :: Dashboard").
     const steps = (row.steps ?? "")
       .split("|")
       .map((s) => s.trim())
       .filter(Boolean)
-      .map((action) => ({ action, expected: "" }));
+      .map((segment) => {
+        const [action, ...rest] = segment.split("::");
+        return { action: action.trim(), expected: rest.join("::").trim() };
+      });
     await db.testCase.create({
       data: {
         projectId: project.id,
