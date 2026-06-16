@@ -71,13 +71,18 @@ export async function archiveProject(formData: FormData) {
   revalidatePath("/projects");
 }
 
-export async function createSuite(formData: FormData) {
+// useFormState signature: (prevState, formData). Returns {ok} so the client
+// form can reset its inputs after a successful create.
+export async function createSuite(
+  _prev: { ok?: boolean } | undefined,
+  formData: FormData
+): Promise<{ ok: boolean }> {
   const session = await requireSession();
   const projectId = String(formData.get("projectId"));
   if (!(await isProjectMember(session.userId, projectId))) notFound();
   const parentId = String(formData.get("parentId") ?? "") || null;
   const name = String(formData.get("name") ?? "").trim();
-  if (!name) return;
+  if (!name) return { ok: false };
 
   const project = await db.project.findUniqueOrThrow({ where: { id: projectId } });
   const count = await db.testSuite.count({ where: { projectId } });
@@ -91,6 +96,7 @@ export async function createSuite(formData: FormData) {
     detail: name,
   });
   revalidatePath(`/projects/${project.slug}`);
+  return { ok: true };
 }
 
 export async function createMilestone(formData: FormData) {
