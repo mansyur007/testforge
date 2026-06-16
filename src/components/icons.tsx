@@ -29,6 +29,7 @@ const ICONS: Record<string, string> = {
   "nav-audit": `<path d="M6 4.5 h8.5 a1.8 1.8 0 0 1 1.8 1.8 V17 a2.2 2.2 0 0 0 2.2 2.2 H8.4 A2.4 2.4 0 0 1 6 16.8 z"/><path class="tf-ac" d="M9 9 h5 M9 12.4 h5"/>`,
   "nav-tree": `<rect class="tf-acf" x="4" y="4" width="6" height="3.6" rx="1"/><path d="M7 7.6 V17 M7 12 h4 M7 17 h4"/><rect x="13" y="10.2" width="6" height="3.6" rx="1"/><rect x="13" y="15.2" width="6" height="3.6" rx="1"/>`,
   "nav-account": `<circle cx="12" cy="8.4" r="3.5"/><path class="tf-acf" d="M5.5 19.2 a6.5 6.5 0 0 1 13 0 z"/>`,
+  "nav-team": `<circle cx="9" cy="8.5" r="3"/><path class="tf-acf" d="M3.5 18.5 a5.5 5.5 0 0 1 11 0 z"/><circle class="tf-ac" cx="16.6" cy="9" r="2.2"/><path class="tf-ac" d="M15.2 14.3 a4.4 4.4 0 0 1 5.3 4.2 h-2.8"/>`,
   // 7. Import / export
   import: `<path d="M5 15 v2.5 a1.5 1.5 0 0 0 1.5 1.5 h11 a1.5 1.5 0 0 0 1.5 -1.5 V15"/><path class="tf-ac" d="M12 4 V14 M8.4 10.4 L12 14 l3.6 -3.6"/>`,
   download: `<path class="tf-ac" d="M12 4 V15.5 M7.6 11.1 L12 15.5 l4.4 -4.4"/><path d="M5.5 19.5 h13"/>`,
