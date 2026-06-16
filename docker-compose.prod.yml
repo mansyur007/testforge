@@ -24,6 +24,8 @@ services:
       # SMTP — email verifikasi, reset password, undangan tim.
       SMTP_URL: ${SMTP_URL:-}
       SMTP_FROM: ${SMTP_FROM:-}
+      # Shared secret for the scheduled /api/cron/purge endpoint.
+      CRON_SECRET: ${CRON_SECRET:-}
     volumes:
       - testforge_data:/data
     expose:
