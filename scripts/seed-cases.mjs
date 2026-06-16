@@ -16,11 +16,49 @@ if (!KEY) {
 }
 
 // Order matters: these become seq 1..4 → TC-<SLUG>-1..4, matching the spec names.
-const TITLES = [
-  "Valid login redirects to dashboard",
-  "Language switcher on login",
-  "Change password succeeds",
-  "Dashboard renders in English",
+// Each carries real steps/preconditions/expected so the manual case mirrors the
+// automated test (the JUnit upload only records pass/fail, it never authors these).
+const CASES = [
+  {
+    title: "Valid login redirects to dashboard",
+    preconditions: "A verified account exists.",
+    steps: [
+      { action: "Open /login", expected: "Login form is shown" },
+      { action: "Enter a valid email and password", expected: "" },
+      { action: "Click Log In", expected: "" },
+    ],
+    expected_result: "User is redirected to /dashboard.",
+    priority: "HIGH",
+    tags: "smoke,login",
+  },
+  {
+    title: "Language switcher on login",
+    preconditions: "On the /login page.",
+    steps: [{ action: "Observe the language control", expected: "EN and ID buttons are visible" }],
+    expected_result: "An EN/ID language switcher is present and toggles the language.",
+    priority: "LOW",
+    tags: "i18n",
+  },
+  {
+    title: "Change password succeeds",
+    preconditions: "Logged in with an email/password account.",
+    steps: [
+      { action: "Open Settings → Account", expected: "" },
+      { action: "Enter current password, new password, and confirm", expected: "" },
+      { action: "Click Change password", expected: "" },
+    ],
+    expected_result: "A 'Password changed successfully.' message is shown.",
+    priority: "MEDIUM",
+    tags: "account",
+  },
+  {
+    title: "Dashboard renders in English",
+    preconditions: "Logged in.",
+    steps: [{ action: "Open /dashboard", expected: "Nav and labels are in English" }],
+    expected_result: "Sidebar (Projects, Account) and stat labels (Active Projects) are English.",
+    priority: "LOW",
+    tags: "i18n",
+  },
 ];
 
 const headers = { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" };
@@ -36,14 +74,22 @@ if ((existing.items?.length ?? 0) > 0) {
   process.exit(0);
 }
 
-for (const title of TITLES) {
+for (const c of CASES) {
   const res = await fetch(`${API}/api/v1/projects/${PROJECT}/cases`, {
     method: "POST",
     headers,
-    body: JSON.stringify({ title, priority: "MEDIUM", type: "FUNCTIONAL" }),
+    body: JSON.stringify({
+      title: c.title,
+      preconditions: c.preconditions,
+      steps: c.steps,
+      expectedResult: c.expected_result,
+      priority: c.priority,
+      type: "FUNCTIONAL",
+      tags: c.tags,
+    }),
   });
   const data = await res.json().catch(() => ({}));
-  console.log(`${res.status} ${data.displayId ?? data.error ?? ""} — ${title}`);
+  console.log(`${res.status} ${data.displayId ?? data.error ?? ""} — ${c.title}`);
   if (!res.ok) process.exit(1);
 }
 console.log("Done. Now run the suite and upload with the same TF_* env vars.");
