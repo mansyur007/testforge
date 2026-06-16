@@ -47,8 +47,9 @@ export function CsvImporter({ projectSlug }: { projectSlug: string }) {
         Columns: <code className="rounded bg-slate-100 px-1">title</code> (required),{" "}
         <code className="rounded bg-slate-100 px-1">description</code>,{" "}
         <code className="rounded bg-slate-100 px-1">preconditions</code>,{" "}
-        <code className="rounded bg-slate-100 px-1">steps</code> (separate lines
-        with <code className="rounded bg-slate-100 px-1">|</code>),{" "}
+        <code className="rounded bg-slate-100 px-1">steps</code> (separate steps
+        with <code className="rounded bg-slate-100 px-1">|</code>; optional per-step
+        expected after <code className="rounded bg-slate-100 px-1">::</code>),{" "}
         <code className="rounded bg-slate-100 px-1">expected_result</code>,{" "}
         <code className="rounded bg-slate-100 px-1">priority</code>,{" "}
         <code className="rounded bg-slate-100 px-1">type</code>,{" "}
