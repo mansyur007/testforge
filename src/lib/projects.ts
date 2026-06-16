@@ -19,3 +19,18 @@ export async function isProjectMember(userId: string, projectId: string) {
   });
   return hit !== null;
 }
+
+/** The user's role in a project (OWNER | ADMIN | MEMBER | VIEWER), or null if
+ * they are not a member. */
+export async function getProjectRole(userId: string, projectId: string) {
+  const m = await db.projectMember.findUnique({
+    where: { projectId_userId: { projectId, userId } },
+    select: { role: true },
+  });
+  return m?.role ?? null;
+}
+
+/** Only OWNER/ADMIN of a project may add, remove, or re-role its members. */
+export function canManageMembers(role: string | null) {
+  return role === "OWNER" || role === "ADMIN";
+}
