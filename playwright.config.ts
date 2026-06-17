@@ -14,7 +14,11 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   webServer: {
-    command: "npm run dev",
+    // Pin the port: `next dev` defaults to 3000, but the suite (and baseURL)
+    // expect 3456. Without -p this only worked locally by reusing an already
+    // running 3456 server; in CI there's none, so next dev bound 3000 and the
+    // webServer wait timed out.
+    command: "npm run dev -- -p 3456",
     port: 3456,
     reuseExistingServer: true,
     timeout: 120_000,
