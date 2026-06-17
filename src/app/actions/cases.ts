@@ -183,3 +183,41 @@ export async function bulkUpdateCases(formData: FormData) {
   });
   revalidatePath(`/projects/${slug}`);
 }
+
+// Bulk soft delete. Cases are hidden (deletedAt) now and hard-purged after a
+// retention window (see lib/cases-purge). Requires the exact project name as a
+// destructive-action gate — validated server-side, not just in the UI.
+export async function bulkDeleteCases(
+  formData: FormData
+): Promise<{ ok?: boolean; error?: string; deleted?: number }> {
+  const session = await requireSession();
+  if (session.role === "VIEWER")
+    return { error: "Viewers don't have write access." };
+
+  const slug = String(formData.get("projectSlug"));
+  const ids = formData.getAll("caseIds").map(String);
+  const confirmName = String(formData.get("confirmName") ?? "").trim();
+  if (!ids.length) return { error: "No test cases selected." };
+
+  const project = await db.project.findFirst({
+    where: { slug, members: { some: { userId: session.userId } } },
+    select: { id: true, name: true },
+  });
+  if (!project) return { error: "Project not found." };
+  if (confirmName !== project.name)
+    return { error: "Project name does not match." };
+
+  const res = await db.testCase.updateMany({
+    where: { id: { in: ids }, projectId: project.id, deletedAt: null },
+    data: { deletedAt: new Date() },
+  });
+  await logAudit({
+    userId: session.userId,
+    action: "case.bulk_delete",
+    entityType: "project",
+    entityId: project.id,
+    detail: `${res.count} case(s) soft-deleted`,
+  });
+  revalidatePath(`/projects/${slug}`);
+  return { ok: true, deleted: res.count };
+}
