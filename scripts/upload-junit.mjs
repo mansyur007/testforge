@@ -2,10 +2,26 @@
 // The dev server must be running. API key: TF_API_KEY env, or the local key
 // minted by the e2e global setup (e2e-results/.api-key).
 import fs from "node:fs";
+import os from "node:os";
 
 const API = process.env.TF_API_URL ?? "http://localhost:3456";
 const PROJECT = process.env.TF_PROJECT ?? "e2e";
 const FILE = process.env.TF_JUNIT ?? "e2e-results/junit.xml";
+
+// Auto-detect where this run came from so the report shows it — no user action.
+// Override explicitly with TF_RUN_LABEL (e.g. "VPS") when needed.
+function detectOrigin() {
+  if (process.env.TF_RUN_LABEL) return process.env.TF_RUN_LABEL;
+  if (process.env.GITHUB_ACTIONS) {
+    return `CI · GitHub Actions (${process.env.RUNNER_OS ?? "Linux"})`;
+  }
+  if (process.env.CI) return "CI";
+  const plat =
+    { darwin: "macOS", linux: "Linux", win32: "Windows" }[process.platform] ??
+    process.platform;
+  return `Local · ${plat} (${os.hostname()})`;
+}
+const ORIGIN = detectOrigin();
 
 const KEY =
   process.env.TF_API_KEY ||
@@ -26,7 +42,7 @@ if (!fs.existsSync(FILE)) {
 
 const xml = fs.readFileSync(FILE, "utf8");
 const name = `Playwright ${new Date().toISOString()}`;
-const url = `${API}/api/v1/junit?project=${PROJECT}&name=${encodeURIComponent(name)}&source=playwright`;
+const url = `${API}/api/v1/junit?project=${PROJECT}&name=${encodeURIComponent(name)}&source=playwright&origin=${encodeURIComponent(ORIGIN)}`;
 
 const res = await fetch(url, {
   method: "POST",
@@ -61,6 +77,7 @@ const total = (s.passed ?? 0) + (s.failed ?? 0) + (s.skipped ?? 0);
 const fullRunUrl = data.runUrl ? `${API}${data.runUrl}` : null;
 
 console.log(`\n✓ Uploaded to TestForge — project "${PROJECT}"`);
+console.log(`  Origin:    ${ORIGIN}`);
 if (fullRunUrl) console.log(`  Run:       ${fullRunUrl}`);
 console.log(
   `  Results:   ${s.passed ?? 0} passed · ${s.failed ?? 0} failed · ${s.skipped ?? 0} skipped  (${total} total)`
