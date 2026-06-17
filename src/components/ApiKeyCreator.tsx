@@ -11,6 +11,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
+      data-testid="apikey-create-submit"
       className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
     >
       {pending ? "Creating..." : "+ Create API Key"}
@@ -43,6 +44,7 @@ function CopyButton({ value }: { value: string }) {
     <button
       type="button"
       onClick={copy}
+      data-testid="apikey-copy"
       className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-green-300 bg-white px-3 py-2 text-sm font-medium text-green-800 hover:bg-green-100"
     >
       <TFIcon name={copied ? "valid" : "clone"} className="h-4 w-4" />
@@ -67,6 +69,7 @@ export function ApiKeyCreator() {
           <input
             name="name"
             required
+            data-testid="apikey-name-input"
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
           />
         </div>

@@ -63,6 +63,7 @@ export default async function CaseDetailPage({
 
       <Link
         href={backHref}
+        data-testid="case-back"
         className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-indigo-600"
       >
         ← Back to test cases
@@ -208,7 +209,7 @@ export default async function CaseDetailPage({
                   {Math.round((passCount / executed.length) * 100)}%
                 </span>{" "}
                 <span className="text-slate-400">
-                  ({passCount}/{executed.length} eksekusi)
+                  ({passCount}/{executed.length} executed)
                 </span>
               </p>
             )}

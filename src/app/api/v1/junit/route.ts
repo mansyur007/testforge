@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
       attributeNamePrefix: "",
     }).parse(xml) as JUnitDoc;
   } catch {
-    return NextResponse.json({ error: "XML tidak valid" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid XML" }, { status: 400 });
   }
 
   const suites = toArray(
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
   const testcases: JUnitCase[] = suites.flatMap((s) => toArray(s?.testcase));
   if (!testcases.length)
     return NextResponse.json(
-      { error: "Tidak ada <testcase> ditemukan di JUnit XML" },
+      { error: "No <testcase> found in the JUnit XML" },
       { status: 400 }
     );
 
@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error:
-          "Tidak ada test yang ter-match ke test case. Tambahkan anotasi TC-ID di nama test atau samakan judul.",
+          "No tests matched any test case. Add a TC-ID annotation to the test name, or use an identical title.",
         unmatched,
       },
       { status: 422 }
