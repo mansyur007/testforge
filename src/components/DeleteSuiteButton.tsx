@@ -23,6 +23,7 @@ export function DeleteSuiteButton({
       type="button"
       title={`Delete suite "${suiteName}"`}
       aria-label={`Delete suite ${suiteName}`}
+      data-testid={`suite-delete-${suiteId}`}
       disabled={pending}
       onClick={() => {
         if (caseCount > 0) {

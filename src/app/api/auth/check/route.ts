@@ -21,5 +21,5 @@ export async function GET(req: NextRequest) {
     });
     return NextResponse.json({ available: !exists });
   }
-  return NextResponse.json({ error: "email atau slug wajib diisi" }, { status: 400 });
+  return NextResponse.json({ error: "email or slug is required" }, { status: 400 });
 }

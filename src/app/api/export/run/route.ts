@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     },
   });
   if (!run)
-    return NextResponse.json({ error: "Run tidak ditemukan" }, { status: 404 });
+    return NextResponse.json({ error: "Run not found" }, { status: 404 });
 
   const csv = Papa.unparse(
     run.results.map((r) => ({

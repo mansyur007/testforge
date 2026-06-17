@@ -8,17 +8,17 @@ import { PRIORITIES, CASE_TYPES } from "@/lib/constants";
 type CsvRow = Record<string, string>;
 
 function validateRow(row: CsvRow) {
-  if (!row.title?.trim()) return "title wajib diisi";
+  if (!row.title?.trim()) return "title is required";
   if (
     row.priority &&
     !(PRIORITIES as readonly string[]).includes(row.priority.toUpperCase())
   )
-    return `priority tidak valid: ${row.priority}`;
+    return `Invalid priority: ${row.priority}`;
   if (
     row.type &&
     !(CASE_TYPES as readonly string[]).includes(row.type.toUpperCase())
   )
-    return `type tidak valid: ${row.type}`;
+    return `Invalid type: ${row.type}`;
   return null;
 }
 
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     },
   });
   if (!project)
-    return NextResponse.json({ error: "Proyek tidak ditemukan" }, { status: 404 });
+    return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
   // Optional target suite — must belong to this project.
   const suiteIdParam = req.nextUrl.searchParams.get("suite");
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     });
     if (!suite)
       return NextResponse.json(
-        { error: "Suite tidak ditemukan di proyek ini" },
+        { error: "Suite not found in this project" },
         { status: 400 }
       );
     targetSuiteId = suite.id;
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
   });
 
   if (!parsed.data.length)
-    return NextResponse.json({ error: "CSV kosong atau tidak valid" }, { status: 400 });
+    return NextResponse.json({ error: "CSV is empty or invalid" }, { status: 400 });
 
   const rows = parsed.data.map((row) => {
     const error = validateRow(row);

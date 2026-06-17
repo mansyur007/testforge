@@ -24,7 +24,7 @@ export function DeleteApiKeyButton({
       }}
     >
       <input type="hidden" name="keyId" value={keyId} />
-      <button className="text-xs text-red-500 hover:underline">Delete</button>
+      <button data-testid="apikey-delete" className="text-xs text-red-500 hover:underline">Delete</button>
     </form>
   );
 }

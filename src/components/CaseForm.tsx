@@ -21,6 +21,7 @@ function SubmitButton({ isEdit }: { isEdit: boolean }) {
     <button
       type="submit"
       disabled={pending}
+      data-testid="case-form-submit"
       className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
     >
       {pending ? "Saving..." : isEdit ? "Save Changes" : "Create Test Case"}
@@ -104,6 +105,7 @@ export function CaseForm({
               name="title"
               required
               defaultValue={initial?.title}
+              data-testid="case-title-input"
               placeholder="e.g. Valid login with a registered email"
               className={inputCls}
             />
