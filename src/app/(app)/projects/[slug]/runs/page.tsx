@@ -63,6 +63,11 @@ export default async function RunsPage({
                         <span className="inline-flex items-center gap-1"><TFIcon name="automation" className="h-3.5 w-3.5" /> {run.source}</span>
                       </span>
                     )}
+                    {run.origin && (
+                      <span className="ml-1 rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
+                        {run.origin}
+                      </span>
+                    )}
                   </p>
                   <p className="mt-0.5 text-xs text-slate-400">
                     {run.createdBy.name} · {run.createdAt.toLocaleDateString("en-US")}
