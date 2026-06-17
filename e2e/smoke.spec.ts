@@ -28,22 +28,30 @@ test(`TC-${TC}-2 Language switcher on login`, async ({ page }) => {
   await expect(group.getByRole("button", { name: "ID" })).toBeVisible();
 });
 
+async function changePassword(page: Page, current: string, next: string) {
+  await page.goto("/settings/account");
+  await page.fill('input[name="currentPassword"]', current);
+  await page.fill('input[name="newPassword"]', next);
+  await page.fill('input[name="confirmPassword"]', next);
+  await page.getByRole("button", { name: "Change password" }).click();
+  await expect(page.getByText("Password changed successfully.")).toBeVisible();
+}
+
 test(`TC-${TC}-3 Change password succeeds`, async ({ page }) => {
   await login(page);
-  await page.goto("/settings/account");
 
-  await page.fill('input[name="currentPassword"]', E2E.password);
-  await page.fill('input[name="newPassword"]', "E2eDemo456");
-  await page.fill('input[name="confirmPassword"]', "E2eDemo456");
-  await page.getByRole("button", { name: "Change password" }).click();
-  await expect(page.getByText("Password changed successfully.")).toBeVisible();
+  await changePassword(page, E2E.password, "E2eDemo456");
+  // Reload between changes: the form resets its fields on success (async), which
+  // can race with filling them for the restore — leaving the password stuck at
+  // the new value. Navigating fresh avoids that and makes the second success
+  // banner a genuine confirmation rather than the stale first one.
+  await changePassword(page, "E2eDemo456", E2E.password);
 
-  // Restore the original password so other tests / reruns stay stable.
-  await page.fill('input[name="currentPassword"]', "E2eDemo456");
-  await page.fill('input[name="newPassword"]', E2E.password);
-  await page.fill('input[name="confirmPassword"]', E2E.password);
-  await page.getByRole("button", { name: "Change password" }).click();
-  await expect(page.getByText("Password changed successfully.")).toBeVisible();
+  // Prove the restore actually persisted: a fresh login with the original
+  // password must still work (this is what kept breaking the next test).
+  await page.goto("/login");
+  await login(page);
+  await expect(page).toHaveURL(/\/dashboard/);
 });
 
 test(`TC-${TC}-4 Dashboard renders in English`, async ({ page }) => {
