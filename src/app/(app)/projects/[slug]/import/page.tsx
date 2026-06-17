@@ -16,6 +16,7 @@ export default async function ImportPage({
   const session = await requireSession();
   const project = await db.project.findFirst({
     where: { slug: params.slug, ...memberScope(session.userId) },
+    include: { suites: { orderBy: { order: "asc" } } },
   });
   if (!project) notFound();
 
@@ -24,7 +25,14 @@ export default async function ImportPage({
       <ProjectTabs slug={project.slug} name={project.name} active="import" />
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <CsvImporter projectSlug={project.slug} />
+        <CsvImporter
+          projectSlug={project.slug}
+          suites={project.suites.map((s) => ({
+            id: s.id,
+            name: s.name,
+            parentId: s.parentId,
+          }))}
+        />
 
         <section className="rounded-xl border border-slate-200 bg-white p-6">
           <h3 className="mb-3 flex items-center gap-2 font-semibold"><TFIcon name="automation" className="h-5 w-5" /> Upload Automation Results (CI/CD)</h3>

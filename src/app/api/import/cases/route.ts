@@ -38,6 +38,22 @@ export async function POST(req: NextRequest) {
   if (!project)
     return NextResponse.json({ error: "Proyek tidak ditemukan" }, { status: 404 });
 
+  // Optional target suite — must belong to this project.
+  const suiteIdParam = req.nextUrl.searchParams.get("suite");
+  let targetSuiteId: string | null = null;
+  if (suiteIdParam) {
+    const suite = await db.testSuite.findFirst({
+      where: { id: suiteIdParam, projectId: project.id },
+      select: { id: true },
+    });
+    if (!suite)
+      return NextResponse.json(
+        { error: "Suite tidak ditemukan di proyek ini" },
+        { status: 400 }
+      );
+    targetSuiteId = suite.id;
+  }
+
   const csv = await req.text();
   const parsed = Papa.parse<CsvRow>(csv, {
     header: true,
@@ -79,6 +95,7 @@ export async function POST(req: NextRequest) {
     await db.testCase.create({
       data: {
         projectId: project.id,
+        suiteId: targetSuiteId,
         seq: updated.caseCounter,
         title: row.title.trim(),
         description: row.description?.trim() || null,
