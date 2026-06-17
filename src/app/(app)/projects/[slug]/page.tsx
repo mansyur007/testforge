@@ -48,6 +48,20 @@ export default async function ProjectPage({
   const childrenOf = (id: string) =>
     project.suites.filter((s) => s.parentId === id);
 
+  // Active-case count per suite (incl. sub-suites) so the delete button can warn
+  // up front instead of letting an empty-only delete be attempted.
+  const grouped = await db.testCase.groupBy({
+    by: ["suiteId"],
+    where: { projectId: project.id, deletedAt: null },
+    _count: { _all: true },
+  });
+  const directCaseCount = new Map<string, number>();
+  for (const g of grouped)
+    if (g.suiteId) directCaseCount.set(g.suiteId, g._count._all);
+  const subtreeCaseCount = (id: string): number =>
+    (directCaseCount.get(id) ?? 0) +
+    childrenOf(id).reduce((sum, ch) => sum + subtreeCaseCount(ch.id), 0);
+
   const filterQS = (overrides: Record<string, string | undefined>) => {
     const params2 = new URLSearchParams();
     const merged = { ...searchParams, ...overrides };
@@ -86,7 +100,11 @@ export default async function ProjectPage({
                       <span className="inline-flex items-center gap-1.5"><TFIcon name="nav-tree" className="h-4 w-4" /> {suite.name}</span>
                     </Link>
                     {canWrite && (
-                      <DeleteSuiteButton suiteId={suite.id} suiteName={suite.name} />
+                      <DeleteSuiteButton
+                        suiteId={suite.id}
+                        suiteName={suite.name}
+                        caseCount={subtreeCaseCount(suite.id)}
+                      />
                     )}
                   </div>
                   {childrenOf(suite.id).map((section) => (
@@ -98,7 +116,11 @@ export default async function ProjectPage({
                         └ {section.name}
                       </Link>
                       {canWrite && (
-                        <DeleteSuiteButton suiteId={section.id} suiteName={section.name} />
+                        <DeleteSuiteButton
+                          suiteId={section.id}
+                          suiteName={section.name}
+                          caseCount={subtreeCaseCount(section.id)}
+                        />
                       )}
                     </div>
                   ))}
