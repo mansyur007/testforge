@@ -5,14 +5,22 @@ import { TFIcon } from "@/components/icons";
 import { useRouter } from "next/navigation";
 
 type PreviewRow = { title: string; valid: boolean; error?: string };
+type Suite = { id: string; name: string; parentId: string | null };
 
 // Import CSV dengan preview + validasi sebelum commit (US-004)
-export function CsvImporter({ projectSlug }: { projectSlug: string }) {
+export function CsvImporter({
+  projectSlug,
+  suites,
+}: {
+  projectSlug: string;
+  suites: Suite[];
+}) {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<PreviewRow[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [suiteId, setSuiteId] = useState("");
 
   const upload = async (dryRun: boolean) => {
     if (!file) return;
@@ -20,7 +28,7 @@ export function CsvImporter({ projectSlug }: { projectSlug: string }) {
     setMessage(null);
     try {
       const res = await fetch(
-        `/api/import/cases?project=${projectSlug}&dryRun=${dryRun}`,
+        `/api/import/cases?project=${projectSlug}&dryRun=${dryRun}${suiteId ? `&suite=${suiteId}` : ""}`,
         { method: "POST", body: await file.text(), headers: { "Content-Type": "text/csv" } }
       );
       const data = await res.json();
@@ -62,6 +70,32 @@ export function CsvImporter({ projectSlug }: { projectSlug: string }) {
         <span className="inline-flex items-center gap-1.5"><TFIcon name="download" className="h-4 w-4" /> Download CSV template</span>
       </a>
       <div className="mt-4 space-y-3">
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-500">
+            Import into suite
+          </label>
+          <select
+            value={suiteId}
+            onChange={(e) => setSuiteId(e.target.value)}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          >
+            <option value="">(no suite)</option>
+            {suites
+              .filter((s) => !s.parentId)
+              .map((s) => (
+                <optgroup key={s.id} label={s.name}>
+                  <option value={s.id}>{s.name}</option>
+                  {suites
+                    .filter((c) => c.parentId === s.id)
+                    .map((c) => (
+                      <option key={c.id} value={c.id}>
+                        — {c.name}
+                      </option>
+                    ))}
+                </optgroup>
+              ))}
+          </select>
+        </div>
         <input
           type="file"
           accept=".csv"

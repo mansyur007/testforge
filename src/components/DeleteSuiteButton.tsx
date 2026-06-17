@@ -3,14 +3,18 @@
 import { useTransition } from "react";
 import { deleteSuite } from "@/app/actions/projects";
 
-// Small ✕ next to a suite in the tree. Only empty suites delete; if cases remain
-// the server returns a message which we surface via alert().
+// Small ✕ next to a suite in the tree.
+// - If the suite (or a sub-suite) still has test cases → just warn; don't offer
+//   to delete, since it can't be.
+// - If empty → a standard yes/cancel confirm, like the other delete actions.
 export function DeleteSuiteButton({
   suiteId,
   suiteName,
+  caseCount,
 }: {
   suiteId: string;
   suiteName: string;
+  caseCount: number;
 }) {
   const [pending, startTransition] = useTransition();
 
@@ -21,12 +25,13 @@ export function DeleteSuiteButton({
       aria-label={`Delete suite ${suiteName}`}
       disabled={pending}
       onClick={() => {
-        if (
-          !confirm(
-            `Delete suite "${suiteName}"? This also removes its sub-suites. Only works if it has no test cases.`
-          )
-        )
+        if (caseCount > 0) {
+          alert(
+            `Can't delete "${suiteName}": it has ${caseCount} test case${caseCount === 1 ? "" : "s"} (here or in a sub-suite). Move them to another suite or delete them first.`
+          );
           return;
+        }
+        if (!confirm(`Delete suite "${suiteName}"?`)) return;
         startTransition(async () => {
           const fd = new FormData();
           fd.set("suiteId", suiteId);
