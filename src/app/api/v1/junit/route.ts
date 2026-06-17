@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
     req.nextUrl.searchParams.get("name") ??
     `Automation Run ${new Date().toISOString()}`;
   const source = (req.nextUrl.searchParams.get("source") ?? "JUNIT").toUpperCase();
+  const origin = req.nextUrl.searchParams.get("origin")?.slice(0, 120) || null;
 
   const project = await db.project.findFirst({
     where: { slug, members: { some: { userId: user.id } } },
@@ -133,6 +134,7 @@ export async function POST(req: NextRequest) {
       projectId: project.id,
       name: runName,
       source,
+      origin,
       status: "COMPLETED",
       completedAt: new Date(),
       createdById: user.id,

@@ -129,6 +129,7 @@ model TestRun {
   description String?
   status      String    @default("ACTIVE") // ACTIVE | COMPLETED
   source      String    @default("MANUAL") // MANUAL | JUNIT | CYPRESS | PLAYWRIGHT | ...
+  origin      String? // where an automation run came from, e.g. "CI · GitHub Actions (Linux)" / "Local · macOS"
   milestoneId String?
   createdById String
   createdAt   DateTime  @default(now())
