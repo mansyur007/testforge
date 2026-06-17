@@ -4,11 +4,9 @@ name: E2E (Playwright → TestForge)
 # runner, then (on main / schedule / manual) uploads the JUnit results to the
 # production TestForge as a test run — dogfooding /api/v1/junit.
 #
-# One-time prerequisites for the prod upload to match cases:
-#   1. On testforge.emha.space: a project with slug `e2e`, whose owner is the
-#      user that owns the API key, seeded with cases TC-E2E-1..4
-#      (run `node scripts/seed-cases.mjs` once with the prod env vars).
-#   2. Repo secret TF_API_KEY = a prod API key for that user.
+# Prereqs for the prod upload (already set up): the `super-admin-tf` project on
+# testforge.emha.space is seeded with the matching cases (scripts/seed-cases.mjs),
+# and repo secret TF_API_KEY holds a prod API key whose user is a member of it.
 # Without the secret the upload step is skipped (tests still run).
 on:
   push:
@@ -24,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: file:./dev.db
-      TF_PROJECT: e2e # drives both the TC-E2E-<n> test names and the upload target
+      TF_PROJECT: super-admin-tf # drives both the TC-<SLUG>-<n> test names and the upload target
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
