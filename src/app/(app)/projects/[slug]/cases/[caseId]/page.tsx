@@ -10,8 +10,9 @@ import {
   RESULT_BADGES,
   type TestStep,
 } from "@/lib/constants";
-import { cloneCase, deleteCase } from "@/app/actions/cases";
+import { cloneCase } from "@/app/actions/cases";
 import { ProjectTabs } from "@/components/ProjectTabs";
+import { DeleteCaseButton } from "@/components/DeleteCaseButton";
 
 export const dynamic = "force-dynamic";
 
@@ -90,12 +91,7 @@ export default async function CaseDetailPage({
               <TFIcon name="clone" className="h-4 w-4" /> Clone
             </button>
           </form>
-          <form action={deleteCase}>
-            <input type="hidden" name="caseId" value={testCase.id} />
-            <button className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">
-              <TFIcon name="delete" current className="h-4 w-4" /> Delete
-            </button>
-          </form>
+          <DeleteCaseButton caseId={testCase.id} />
         </div>
       </div>
 
