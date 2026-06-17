@@ -1,0 +1,19 @@
+name: Purge soft-deleted test cases
+
+# Daily hard-delete of test cases that have been soft-deleted past the retention
+# window (15 days). Hits the app's guarded /api/cron/purge endpoint.
+# Requires repo secret CRON_SECRET to match the CRON_SECRET in the app's .env on
+# the VPS. Until both are set the endpoint returns 503 and nothing is purged.
+on:
+  schedule:
+    - cron: '17 3 * * *' # 03:17 UTC daily
+  workflow_dispatch:
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call purge endpoint
+        run: |
+          curl -fsS -X GET https://testforge.emha.space/api/cron/purge \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

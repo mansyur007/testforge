@@ -4,17 +4,11 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 import { requireSession } from "@/lib/auth";
-import {
-  caseDisplayId,
-  parseTags,
-  PRIORITY_BADGES,
-  PRIORITIES,
-  CASE_TYPES,
-} from "@/lib/constants";
+import { PRIORITIES, CASE_TYPES } from "@/lib/constants";
 import { memberScope } from "@/lib/projects";
 import { ProjectTabs } from "@/components/ProjectTabs";
-import { BulkEditBar } from "@/components/BulkEditBar";
 import { NewSuiteForm } from "@/components/NewSuiteForm";
+import { CasesTable } from "@/components/CasesTable";
 
 export const dynamic = "force-dynamic";
 
@@ -164,78 +158,22 @@ export default async function ProjectPage({
             </Link>
           </div>
 
-          <BulkEditBar projectSlug={project.slug}>
-            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-              <table className="w-full text-sm">
-                <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
-                  <tr>
-                    <th className="w-8 px-3 py-3"></th>
-                    <th className="px-3 py-3">ID</th>
-                    <th className="px-3 py-3">Title</th>
-                    <th className="px-3 py-3">Priority</th>
-                    <th className="px-3 py-3">Type</th>
-                    <th className="px-3 py-3">Automation</th>
-                    <th className="px-3 py-3">Tags</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {cases.map((c) => (
-                    <tr key={c.id} className="hover:bg-slate-50">
-                      <td className="px-3 py-2.5">
-                        <input type="checkbox" name="caseIds" value={c.id} />
-                      </td>
-                      <td className="whitespace-nowrap px-3 py-2.5 font-mono text-xs text-slate-500">
-                        {caseDisplayId(project.slug, c.seq)}
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <Link
-                          href={`/projects/${project.slug}/cases/${c.id}`}
-                          className="font-medium text-slate-800 hover:text-indigo-600"
-                        >
-                          {c.title}
-                        </Link>
-                        {c.suite && (
-                          <p className="text-xs text-slate-400">{c.suite.name}</p>
-                        )}
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <span
-                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${PRIORITY_BADGES[c.priority]}`}
-                        >
-                          {c.priority}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2.5 text-xs text-slate-600">{c.type}</td>
-                      <td className="px-3 py-2.5 text-xs text-slate-600">
-                        {c.automationStatus === "AUTOMATED" ? (<span className="inline-flex items-center gap-1"><TFIcon name="automation" className="h-4 w-4" /> Automated</span>) : (c.automationStatus.replace(/_/g, " ").toLowerCase())}
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <div className="flex flex-wrap gap-1">
-                          {parseTags(c.tags).map((tag) => (
-                            <Link
-                              key={tag}
-                              href={`/projects/${project.slug}${filterQS({ tag })}`}
-                              className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600 hover:bg-indigo-100"
-                            >
-                              {tag}
-                            </Link>
-                          ))}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {cases.length === 0 && (
-                    <tr>
-                      <td colSpan={7} className="px-3 py-10 text-center text-slate-400">
-                        No test cases. Create one or import from CSV.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </BulkEditBar>
-          <p className="text-xs text-slate-400">{cases.length} test case</p>
+          <CasesTable
+            projectSlug={project.slug}
+            projectName={project.name}
+            canWrite={session.role !== "VIEWER"}
+            searchParams={searchParams}
+            cases={cases.map((c) => ({
+              id: c.id,
+              seq: c.seq,
+              title: c.title,
+              suiteName: c.suite?.name ?? null,
+              priority: c.priority,
+              type: c.type,
+              automationStatus: c.automationStatus,
+              tags: c.tags,
+            }))}
+          />
         </div>
       </div>
     </div>
