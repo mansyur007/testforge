@@ -99,6 +99,60 @@ export async function createSuite(
   return { ok: true };
 }
 
+// Delete a suite and all of its sub-suites — but only when the whole subtree is
+// empty of (non-deleted) test cases. If any case is still attached, the user is
+// asked to move or delete those cases first, so nothing is silently orphaned.
+export async function deleteSuite(
+  formData: FormData
+): Promise<{ ok?: boolean; error?: string }> {
+  const session = await requireSession();
+  const suiteId = String(formData.get("suiteId"));
+
+  const suite = await db.testSuite.findFirst({
+    where: {
+      id: suiteId,
+      project: { members: { some: { userId: session.userId } } },
+    },
+    include: { project: { select: { slug: true } } },
+  });
+  if (!suite) return { error: "Suite not found." };
+
+  // Collect the suite + every descendant (sub-suites are 1 level deep today, but
+  // walk the tree so this stays correct if nesting grows).
+  const all = await db.testSuite.findMany({
+    where: { projectId: suite.projectId },
+    select: { id: true, parentId: true },
+  });
+  const ids = [suiteId];
+  for (let i = 0; i < ids.length; i++) {
+    for (const s of all) if (s.parentId === ids[i]) ids.push(s.id);
+  }
+
+  const caseCount = await db.testCase.count({
+    where: { suiteId: { in: ids }, deletedAt: null },
+  });
+  if (caseCount > 0) {
+    return {
+      error: `This suite still has ${caseCount} test case${caseCount === 1 ? "" : "s"} (here or in a sub-suite). Move them to another suite or delete them first.`,
+    };
+  }
+
+  // Delete deepest-first so a parent is never removed while a child still
+  // references it.
+  for (const id of ids.reverse()) {
+    await db.testSuite.delete({ where: { id } });
+  }
+  await logAudit({
+    userId: session.userId,
+    action: "suite.delete",
+    entityType: "suite",
+    entityId: suiteId,
+    detail: `${suite.name} (+${ids.length - 1} sub-suite${ids.length - 1 === 1 ? "" : "s"})`,
+  });
+  revalidatePath(`/projects/${suite.project.slug}`);
+  return { ok: true };
+}
+
 export async function createMilestone(formData: FormData) {
   const session = await requireSession();
   const projectId = String(formData.get("projectId"));

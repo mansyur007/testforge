@@ -34,5 +34,45 @@ const res = await fetch(url, {
   body: xml,
 });
 const data = await res.json().catch(() => ({}));
-console.log(`HTTP ${res.status}`, JSON.stringify(data));
-if (!res.ok) process.exit(1);
+
+const slug = PROJECT.toUpperCase();
+const listUnmatched = (items) => {
+  for (const n of items) console.log(`    · ${n}`);
+  console.log(
+    `  Tip: match by giving the case the same title, or a TC-${slug}-<n> id in the test name.`
+  );
+};
+
+if (!res.ok) {
+  console.error(
+    `\n✗ Upload failed — HTTP ${res.status}${data.error ? `: ${data.error}` : ""}`
+  );
+  if (Array.isArray(data.unmatched) && data.unmatched.length) {
+    console.error(
+      `\n  ${data.unmatched.length} test(s) matched no case in project "${PROJECT}":`
+    );
+    listUnmatched(data.unmatched);
+  }
+  process.exit(1);
+}
+
+const s = data.summary ?? {};
+const total = (s.passed ?? 0) + (s.failed ?? 0) + (s.skipped ?? 0);
+const fullRunUrl = data.runUrl ? `${API}${data.runUrl}` : null;
+
+console.log(`\n✓ Uploaded to TestForge — project "${PROJECT}"`);
+if (fullRunUrl) console.log(`  Run:       ${fullRunUrl}`);
+console.log(
+  `  Results:   ${s.passed ?? 0} passed · ${s.failed ?? 0} failed · ${s.skipped ?? 0} skipped  (${total} total)`
+);
+console.log(`  Matched:   ${data.matched ?? 0} case(s)`);
+
+const unmatched = Array.isArray(data.unmatched) ? data.unmatched : [];
+if (unmatched.length) {
+  console.log(
+    `  Unmatched: ${unmatched.length} test(s) — not recorded against any case:`
+  );
+  listUnmatched(unmatched);
+} else {
+  console.log(`  Unmatched: none — every test mapped to a case.`);
+}

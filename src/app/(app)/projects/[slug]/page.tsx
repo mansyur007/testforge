@@ -9,6 +9,7 @@ import { memberScope } from "@/lib/projects";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { NewSuiteForm } from "@/components/NewSuiteForm";
 import { CasesTable } from "@/components/CasesTable";
+import { DeleteSuiteButton } from "@/components/DeleteSuiteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,7 @@ export default async function ProjectPage({
     include: { suite: true },
   });
 
+  const canWrite = session.role !== "VIEWER";
   const rootSuites = project.suites.filter((s) => !s.parentId);
   const childrenOf = (id: string) =>
     project.suites.filter((s) => s.parentId === id);
@@ -76,20 +78,29 @@ export default async function ProjectPage({
               </li>
               {rootSuites.map((suite) => (
                 <li key={suite.id}>
-                  <Link
-                    href={`/projects/${project.slug}${filterQS({ suite: suite.id })}`}
-                    className={`block rounded px-2 py-1 hover:bg-slate-100 ${searchParams.suite === suite.id ? "bg-indigo-50 font-medium text-indigo-700" : ""}`}
-                  >
-                    <span className="inline-flex items-center gap-1.5"><TFIcon name="nav-tree" className="h-4 w-4" /> {suite.name}</span>
-                  </Link>
-                  {childrenOf(suite.id).map((section) => (
+                  <div className="flex items-center">
                     <Link
-                      key={section.id}
-                      href={`/projects/${project.slug}${filterQS({ suite: section.id })}`}
-                      className={`ml-4 block rounded px-2 py-1 text-slate-600 hover:bg-slate-100 ${searchParams.suite === section.id ? "bg-indigo-50 font-medium text-indigo-700" : ""}`}
+                      href={`/projects/${project.slug}${filterQS({ suite: suite.id })}`}
+                      className={`min-w-0 flex-1 truncate rounded px-2 py-1 hover:bg-slate-100 ${searchParams.suite === suite.id ? "bg-indigo-50 font-medium text-indigo-700" : ""}`}
                     >
-                      └ {section.name}
+                      <span className="inline-flex items-center gap-1.5"><TFIcon name="nav-tree" className="h-4 w-4" /> {suite.name}</span>
                     </Link>
+                    {canWrite && (
+                      <DeleteSuiteButton suiteId={suite.id} suiteName={suite.name} />
+                    )}
+                  </div>
+                  {childrenOf(suite.id).map((section) => (
+                    <div key={section.id} className="ml-4 flex items-center">
+                      <Link
+                        href={`/projects/${project.slug}${filterQS({ suite: section.id })}`}
+                        className={`min-w-0 flex-1 truncate rounded px-2 py-1 text-slate-600 hover:bg-slate-100 ${searchParams.suite === section.id ? "bg-indigo-50 font-medium text-indigo-700" : ""}`}
+                      >
+                        └ {section.name}
+                      </Link>
+                      {canWrite && (
+                        <DeleteSuiteButton suiteId={section.id} suiteName={section.name} />
+                      )}
+                    </div>
                   ))}
                 </li>
               ))}
