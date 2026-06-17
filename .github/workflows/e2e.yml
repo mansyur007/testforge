@@ -1,0 +1,64 @@
+name: E2E (Playwright → TestForge)
+
+# Runs the Playwright smoke suite against an ephemeral local dev server in the
+# runner, then (on main / schedule / manual) uploads the JUnit results to the
+# production TestForge as a test run — dogfooding /api/v1/junit.
+#
+# One-time prerequisites for the prod upload to match cases:
+#   1. On testforge.emha.space: a project with slug `e2e`, whose owner is the
+#      user that owns the API key, seeded with cases TC-E2E-1..4
+#      (run `node scripts/seed-cases.mjs` once with the prod env vars).
+#   2. Repo secret TF_API_KEY = a prod API key for that user.
+# Without the secret the upload step is skipped (tests still run).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 4 * * *' # daily 04:00 UTC
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: file:./dev.db
+      TF_PROJECT: e2e # drives both the TC-E2E-<n> test names and the upload target
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx prisma db push # create the ephemeral SQLite schema
+      - run: npx playwright install --with-deps chromium
+
+      - name: Run E2E suite
+        run: npm run e2e
+
+      - name: Upload JUnit to TestForge (prod)
+        # Best-effort: the test result above is the CI gate. A failed upload
+        # (e.g. prod project not seeded yet) shouldn't redden the run.
+        continue-on-error: true
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          TF_API_URL: https://testforge.emha.space
+          TF_API_KEY: ${{ secrets.TF_API_KEY }}
+        run: |
+          if [ -z "$TF_API_KEY" ]; then
+            echo "TF_API_KEY secret not set — skipping prod upload."
+            exit 0
+          fi
+          npm run e2e:upload
+
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-results
+          path: e2e-results/
+          retention-days: 7
