@@ -1,7 +1,7 @@
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
-import { deleteApiKey } from "@/app/actions/apikeys";
 import { ApiKeyCreator } from "@/components/ApiKeyCreator";
+import { DeleteApiKeyButton } from "@/components/DeleteApiKeyButton";
 
 export const dynamic = "force-dynamic";
 
@@ -47,12 +47,7 @@ export default async function ApiKeysPage() {
                     : "Never"}
                 </td>
                 <td className="px-5 py-3 text-right">
-                  <form action={deleteApiKey}>
-                    <input type="hidden" name="keyId" value={k.id} />
-                    <button className="text-xs text-red-500 hover:underline">
-                      Delete
-                    </button>
-                  </form>
+                  <DeleteApiKeyButton keyId={k.id} keyName={k.name} />
                 </td>
               </tr>
             ))}
