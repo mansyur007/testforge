@@ -41,6 +41,7 @@ export default async function AppLayout({
             <div key={item.href}>
               <Link
                 href={item.href}
+                data-testid={`nav-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-slate-800 hover:text-white"
               >
                 <TFIcon name={item.icon} current className="h-[19px] w-[19px]" />

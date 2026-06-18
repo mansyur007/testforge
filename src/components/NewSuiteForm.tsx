@@ -32,6 +32,7 @@ export function NewSuiteForm({
         name="name"
         placeholder="New suite name..."
         required
+        data-testid="suite-name-input"
         className="w-full rounded border border-slate-200 px-2 py-1.5 text-xs focus:border-indigo-500 focus:outline-none"
       />
       <select
@@ -45,7 +46,10 @@ export function NewSuiteForm({
           </option>
         ))}
       </select>
-      <button className="w-full rounded bg-slate-800 px-2 py-1.5 text-xs text-white hover:bg-slate-700">
+      <button
+        data-testid="suite-add-submit"
+        className="w-full rounded bg-slate-800 px-2 py-1.5 text-xs text-white hover:bg-slate-700"
+      >
         + Add Suite
       </button>
     </form>

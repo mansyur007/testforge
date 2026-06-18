@@ -73,7 +73,7 @@ export async function POST(
 
   const body = await req.json().catch(() => null);
   if (!body?.title)
-    return NextResponse.json({ error: "title wajib diisi" }, { status: 400 });
+    return NextResponse.json({ error: "title is required" }, { status: 400 });
 
   const allowed = await db.project.findFirst({
     where: { slug: params.slug, members: { some: { userId } } },

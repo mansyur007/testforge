@@ -212,6 +212,7 @@ export function CasesTable({
               setShowDelete(true);
             }}
             disabled={pending}
+            data-testid="cases-bulk-delete"
             className="inline-flex items-center gap-1 rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
           >
             <TFIcon name="delete" className="h-3.5 w-3.5" /> Delete ({selected.size})
@@ -229,6 +230,7 @@ export function CasesTable({
                     ref={selectAllRef}
                     type="checkbox"
                     aria-label="Select all"
+                    data-testid="cases-select-all"
                     checked={allSelected}
                     onChange={(e) => (e.target.checked ? selectAll() : clear())}
                   />
@@ -255,6 +257,7 @@ export function CasesTable({
                       <input
                         type="checkbox"
                         aria-label={`Select ${caseDisplayId(projectSlug, c.seq)}`}
+                        data-testid={`case-checkbox-${c.id}`}
                         checked={isSel}
                         onChange={() => toggle(c.id)}
                       />
@@ -342,6 +345,7 @@ export function CasesTable({
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
               placeholder={projectName}
+              data-testid="cases-bulk-delete-confirm-input"
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none"
             />
             {error && <p className="text-sm text-red-600">{error}</p>}
@@ -357,6 +361,7 @@ export function CasesTable({
                 type="button"
                 onClick={confirmDelete}
                 disabled={pending || confirmText.trim() !== projectName}
+                data-testid="cases-bulk-delete-confirm"
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
               >
                 {pending ? "Deleting…" : "Delete"}
