@@ -1,11 +1,22 @@
 import { notFound } from "next/navigation";
-import { TFIcon } from "@/components/icons";
+import Link from "next/link";
+import { TFIcon, BrandIcon } from "@/components/icons";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { memberScope } from "@/lib/projects";
 import { ProjectTabs } from "@/components/ProjectTabs";
+import { CodeBlock } from "@/components/CodeBlock";
 
 export const dynamic = "force-dynamic";
+
+const FRAMEWORKS = [
+  { id: "cypress", name: "Cypress" },
+  { id: "playwright", name: "Playwright" },
+  { id: "jest", name: "Jest" },
+  { id: "pytest", name: "Pytest" },
+  { id: "selenium", name: "Selenium" },
+  { id: "k6", name: "k6" },
+];
 
 export default async function ApiPage({
   params,
@@ -18,44 +29,153 @@ export default async function ApiPage({
   });
   if (!project) notFound();
 
-  return (
-    <div className="space-y-6">
-      <ProjectTabs slug={project.slug} name={project.name} active="api" />
+  const slug = project.slug;
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
 
-      <div className="max-w-2xl">
-        <section className="rounded-xl border border-slate-200 bg-white p-6">
-          <h3 className="mb-3 flex items-center gap-2 font-semibold"><TFIcon name="automation" className="h-5 w-5" /> Upload Automation Results (CI/CD)</h3>
-          <p className="mb-3 text-sm text-slate-500">
-            Upload a JUnit XML file from any framework (Cypress, Playwright,
-            Jest, Pytest, etc.). Results automatically become a new test run, and
-            tests are matched to test cases via a{" "}
-            <code className="rounded bg-slate-100 px-1">TC-{project.slug.toUpperCase()}-XXX</code>{" "}
-            annotation in the test name, or by an identical title.
-          </p>
-          <pre className="overflow-x-auto rounded-lg bg-slate-900 p-4 text-xs leading-relaxed text-slate-100">
-{`# 1. Create an API key in Settings → API Keys
-# 2. Upload from your CI pipeline:
-
-curl -X POST \\
-  ${process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000"}/api/v1/junit \\
+  const curl = `curl -X POST \\
+  ${baseUrl}/api/v1/junit \\
   -H "Authorization: Bearer <API_KEY>" \\
   -H "Content-Type: application/xml" \\
-  -G -d "project=${project.slug}" \\
-  -d "name=CI Run \${"$"}{GITHUB_RUN_NUMBER}" \\
+  -G -d "project=${slug}" \\
+  -d "name=CI Run \${GITHUB_RUN_NUMBER}" \\
   -d "source=cypress" \\
-  --data-binary @results/junit.xml`}
-          </pre>
-          <p className="mt-3 text-xs text-slate-400">
-            Other REST endpoints:{" "}
-            <code className="rounded bg-slate-100 px-1">
-              GET /api/v1/projects/{project.slug}/cases
-            </code>{" "}
-            ·{" "}
-            <code className="rounded bg-slate-100 px-1">
-              POST /api/v1/projects/{project.slug}/cases
-            </code>
-          </p>
-        </section>
+  --data-binary @results/junit.xml`;
+
+  const endpoints = [
+    {
+      method: "POST",
+      path: "/api/v1/junit",
+      desc: "Upload JUnit XML as a new test run",
+    },
+    {
+      method: "GET",
+      path: `/api/v1/projects/${slug}/cases`,
+      desc: "List all test cases",
+    },
+    {
+      method: "POST",
+      path: `/api/v1/projects/${slug}/cases`,
+      desc: "Create a test case",
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <ProjectTabs slug={slug} name={project.name} active="api" />
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
+          <section className="rounded-xl border border-slate-200 bg-white p-6">
+            <h3 className="flex items-center gap-2 font-semibold">
+              <TFIcon name="cicd" className="h-5 w-5" /> Upload automation results
+            </h3>
+            <p className="mt-1 text-sm text-slate-500">
+              Push a JUnit XML report from any CI pipeline. Results become a new
+              test run, with tests matched to cases by a{" "}
+              <code className="rounded bg-slate-100 px-1 text-xs">
+                TC-{slug.toUpperCase()}-XXX
+              </code>{" "}
+              annotation in the test name, or by an identical title.
+            </p>
+
+            <ol className="mt-4 space-y-2.5 text-sm text-slate-600">
+              <li className="flex gap-3">
+                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-indigo-100 text-[11px] font-bold text-indigo-700">
+                  1
+                </span>
+                <span>
+                  Create an API key in{" "}
+                  <Link
+                    href="/settings/api-keys"
+                    className="font-medium text-indigo-600 hover:underline"
+                  >
+                    Settings → API Keys
+                  </Link>
+                  .
+                </span>
+              </li>
+              <li className="flex gap-3">
+                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-indigo-100 text-[11px] font-bold text-indigo-700">
+                  2
+                </span>
+                <span>Add this step to your CI pipeline:</span>
+              </li>
+            </ol>
+
+            <div className="mt-3">
+              <CodeBlock code={curl} />
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-slate-200 bg-white p-6">
+            <h3 className="flex items-center gap-2 font-semibold">
+              <TFIcon name="frameworks" className="h-5 w-5" /> REST endpoints
+            </h3>
+            <div className="mt-4 divide-y divide-slate-100">
+              {endpoints.map((e) => (
+                <div
+                  key={e.method + e.path}
+                  className="flex items-start gap-3 py-2.5"
+                >
+                  <span
+                    className={`mt-0.5 w-12 shrink-0 rounded-md py-0.5 text-center text-[10px] font-bold ${
+                      e.method === "GET"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-indigo-100 text-indigo-700"
+                    }`}
+                  >
+                    {e.method}
+                  </span>
+                  <div className="min-w-0">
+                    <code className="block truncate font-mono text-xs text-slate-700">
+                      {e.path}
+                    </code>
+                    <p className="text-xs text-slate-400">{e.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+
+        <aside className="space-y-6">
+          <section className="rounded-xl border border-slate-200 bg-white p-6">
+            <h4 className="text-sm font-semibold text-slate-700">
+              Supported frameworks
+            </h4>
+            <p className="mt-1 text-xs text-slate-400">
+              Anything that emits JUnit XML.
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              {FRAMEWORKS.map((f) => (
+                <div
+                  key={f.id}
+                  className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2"
+                >
+                  <BrandIcon name={f.id} className="h-5 w-5" />
+                  <span className="text-sm text-slate-600">{f.name}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-indigo-100 bg-indigo-50/60 p-6">
+            <h4 className="flex items-center gap-2 text-sm font-semibold text-indigo-900">
+              <TFIcon name="nav-keys" className="h-5 w-5" /> Authentication
+            </h4>
+            <p className="mt-2 text-xs leading-relaxed text-indigo-900/70">
+              Every endpoint expects a{" "}
+              <code className="rounded bg-white/70 px-1">Bearer</code> API key.
+              Keys are project-scoped and can be revoked at any time.
+            </p>
+            <Link
+              href="/settings/api-keys"
+              className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:underline"
+            >
+              Manage API keys →
+            </Link>
+          </section>
+        </aside>
       </div>
     </div>
   );
