@@ -35,7 +35,7 @@ export async function GET(
 ) {
   const cfg = PROVIDERS[params.provider as keyof typeof PROVIDERS];
   if (!cfg)
-    return NextResponse.json({ error: "Provider tidak dikenal" }, { status: 404 });
+    return NextResponse.json({ error: "Unknown provider" }, { status: 404 });
 
   const clientId = process.env[cfg.idEnv];
   const clientSecret = process.env[cfg.secretEnv];
@@ -77,7 +77,7 @@ export async function GET(
   const expectedState = cookies().get(STATE_COOKIE)?.value;
   if (!returnedState || !expectedState || returnedState !== expectedState) {
     return NextResponse.redirect(
-      `${base}/login?error=${encodeURIComponent("OAuth gagal: state tidak valid")}`
+      `${base}/login?error=${encodeURIComponent("OAuth failed: invalid state")}`
     );
   }
 
@@ -95,7 +95,7 @@ export async function GET(
     });
     const tokenData = await tokenRes.json();
     const accessToken = tokenData.access_token;
-    if (!accessToken) throw new Error("Token tidak diterima dari provider");
+    if (!accessToken) throw new Error("No token received from the provider");
 
     const userRes = await fetch(cfg.userUrl, {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -112,7 +112,7 @@ export async function GET(
         await emailsRes.json();
       email = emails.find((e) => e.primary && e.verified)?.email ?? null;
     }
-    if (!email) throw new Error("Email tidak tersedia dari provider");
+    if (!email) throw new Error("No email available from the provider");
 
     const name: string = profile.name ?? profile.login ?? email.split("@")[0];
     email = email.toLowerCase();
