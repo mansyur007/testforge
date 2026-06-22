@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   },
 };
 
-const GITHUB_REPO = process.env.NEXT_PUBLIC_GITHUB_REPO ?? "mansyur007/testforge";
+const GITHUB_REPO = process.env.NEXT_PUBLIC_GITHUB_REPO ?? "mansyur007/test-forge";
 
 // HP-005: GitHub stars via API, cache 1 jam
 async function getGitHubStars(): Promise<number | null> {
