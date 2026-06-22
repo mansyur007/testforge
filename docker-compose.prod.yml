@@ -8,7 +8,7 @@ services:
       dockerfile: Dockerfile
       args:
         NEXT_PUBLIC_BASE_URL: https://testforge.emha.space
-        NEXT_PUBLIC_GITHUB_REPO: mansyur007/testforge
+        NEXT_PUBLIC_GITHUB_REPO: mansyur007/test-forge
     image: testforge:latest
     container_name: testforge
     restart: unless-stopped
