@@ -1,6 +1,8 @@
 name: Deploy TestForge to VPS
 
 # Auto-deploy to the VPS on every push/merge to main (or manually via Actions).
+# Do NOT push commits directly to main — use a feature branch + PR so CI runs
+# first; merge to main is what triggers production deploy.
 # Strategy: the runner rsyncs source to /opt/testforge, then builds + ups on the
 # VPS. TestForge runs as its own stack, fronted by Caddy (owned by the Tokopudidi
 # stack) over the shared external network tokopudidi_default.

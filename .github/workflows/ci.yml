@@ -1,6 +1,8 @@
 name: CI
 
 # Build gate: runs on every PR to main and every push to main.
+# Prefer opening a PR from a branch — do not push directly to main; merge only
+# after this workflow passes (see README § Git & deploy).
 # TestForge is Next.js + Prisma, so the gate is `prisma generate` + `next build`
 # (catches type errors / broken imports before a deploy). No DB needed at build —
 # the SQLite schema is created at runtime via `prisma db push` against the volume.
