@@ -6,23 +6,22 @@ export default function PrivacyPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
       <Link href="/" className="text-sm text-indigo-600 hover:underline">
-        ← Kembali ke beranda
+        ← Back to home
       </Link>
       <h1 className="mt-4 text-3xl font-bold">Privacy Policy</h1>
       <div className="mt-6 space-y-4 text-sm text-slate-600">
         <p>
-          Data akun (nama, email) hanya dipakai untuk autentikasi dan
-          kolaborasi tim. Password di-hash dengan bcrypt dan tidak pernah
-          disimpan dalam bentuk plaintext.
+          Account data (name, email) is used only for authentication and
+          team collaboration. Passwords are hashed with bcrypt and are never
+          stored in plaintext.
         </p>
         <p>
-          Pada deployment self-hosted, seluruh data berada di server kamu
-          sendiri — tidak ada data yang dikirim ke pihak ketiga. Telemetry
-          bersifat opt-in dan anonim.
+          On self-hosted deployments, all data stays on your own server —
+          no data is sent to third parties. Telemetry is opt-in and anonymous.
         </p>
         <p className="text-slate-400">
-          Dokumen ini adalah placeholder MVP — lengkapi dengan review legal
-          sebelum peluncuran publik.
+          This document is an MVP placeholder — complete it with legal review
+          before public launch.
         </p>
       </div>
     </main>
