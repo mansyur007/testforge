@@ -1,29 +1,29 @@
 # ⚒️ TestForge
 
-Open source test case management platform — alternatif gratis dari TestRail,
-Qase.io, dan Zephyr. Dibangun berdasarkan **PRD TestForge v1.0** (lihat
-[AUDIT-PRD.md](AUDIT-PRD.md) untuk hasil audit dokumen tersebut).
+Open source test case management platform — a free alternative to TestRail,
+Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
+[AUDIT-PRD.md](AUDIT-PRD.md) for the audit of that document).
 
-## Fitur MVP (v0.1)
+## MVP Features (v0.1)
 
-- **Multi-project workspace** — buat, arsip, namespace test per proyek
-- **Test case management** — semua field standar PRD §4.2.1, steps dinamis,
-  clone, bulk edit, tags, soft delete, ID otomatis `TC-[SLUG]-[NUM]`
-- **Hierarki suite → section → case** (PRD §4.1.2)
-- **Test run & eksekusi** — pilih case via filter, status 7 warna (§4.3.2),
-  keyboard shortcut `P/F/B/S/R` + `J/K` (US-002), timer otomatis, partial run,
+- **Multi-project workspace** — create, archive, namespace tests per project
+- **Test case management** — all standard PRD §4.2.1 fields, dynamic steps,
+  clone, bulk edit, tags, soft delete, automatic ID `TC-[SLUG]-[NUM]`
+- **Suite → section → case hierarchy** (PRD §4.1.2)
+- **Test run & execution** — select cases via filter, 7-color status (§4.3.2),
+  keyboard shortcuts `P/F/B/S/R` + `J/K` (US-002), automatic timer, partial run,
   **rerun failed only**, milestone
-- **Automation integration** — upload JUnit XML framework-agnostic
-  (Cypress/Playwright/Jest/Pytest/dll) via `POST /api/v1/junit`, auto-matching
-  ke test case via anotasi `TC-WEB-001` di nama test atau exact title (US-010)
-- **REST API v1** — Bearer API key (di-hash), cursor pagination, filtering
-- **Import/Export CSV** — dengan preview & validasi sebelum import (US-004)
+- **Automation integration** — upload framework-agnostic JUnit XML
+  (Cypress/Playwright/Jest/Pytest/etc.) via `POST /api/v1/junit`, auto-matching
+  to test cases via `TC-WEB-001` annotation in test name or exact title (US-010)
+- **REST API v1** — Bearer API key (hashed), cursor pagination, filtering
+- **Import/Export CSV** — with preview & validation before import (US-004)
 - **Reports** — pass rate trend, flaky test detection, bug correlation,
   automation coverage (§4.5)
-- **Auth & RBAC dasar** — register/login JWT, brute force lockout (§8),
+- **Basic auth & RBAC** — register/login JWT, brute force lockout (§8),
   audit log (§5.5)
 
-## Menjalankan
+## Running
 
 ### Docker (one-command, PRD §5.4)
 
@@ -31,97 +31,97 @@ Qase.io, dan Zephyr. Dibangun berdasarkan **PRD TestForge v1.0** (lihat
 docker compose up
 ```
 
-### Development lokal
+### Local development
 
 ```bash
 npm install
-npx prisma db push   # buat database SQLite
-npm run seed         # data demo + akun admin
+npx prisma db push   # create SQLite database
+npm run seed         # demo data + admin account
 npm run dev
 ```
 
-Login demo: `admin@testforge.local` / `admin12345`
+Demo login: `admin@testforge.local` / `admin12345`
 
-> Database default SQLite agar langsung jalan. Untuk production sesuai PRD
-> (§5.1, PostgreSQL): ganti `provider` di `prisma/schema.prisma` menjadi
-> `postgresql` dan set `DATABASE_URL`.
+> Default database is SQLite for out-of-the-box setup. For production per PRD
+> (§5.1, PostgreSQL): change `provider` in `prisma/schema.prisma` to
+> `postgresql` and set `DATABASE_URL`.
 
-## Upload hasil CI/CD
+## Upload CI/CD results
 
 ```bash
-# Buat API key di Settings → API Keys, lalu:
+# Create an API key in Settings → API Keys, then:
 curl -X POST "http://localhost:3000/api/v1/junit?project=web&name=CI%20Run&source=cypress" \
   -H "Authorization: Bearer <API_KEY>" \
   -H "Content-Type: application/xml" \
   --data-binary @results/junit.xml
 ```
 
-## Struktur
+## Structure
 
-- `src/app/(app)/` — halaman aplikasi (dashboard, proyek, run, reports, settings)
-- `src/app/actions/` — server actions (mutasi data)
-- `src/app/api/` — REST API v1, import/export CSV, upload JUnit
-- `prisma/schema.prisma` — data model (termasuk perbaikan gap ERD dari audit)
+- `src/app/(app)/` — application pages (dashboard, projects, runs, reports, settings)
+- `src/app/actions/` — server actions (data mutations)
+- `src/app/api/` — REST API v1, CSV import/export, JUnit upload
+- `prisma/schema.prisma` — data model (including ERD gap fixes from the audit)
 
 ## Git & deploy
 
-**Jangan commit atau push langsung ke `main` di remote.** Setiap push/merge ke
-`main` memicu auto-deploy ke production (`testforge.emha.space` via
+**Do not commit or push directly to remote `main`.** Every push/merge to
+`main` triggers auto-deploy to production (`testforge.emha.space` via
 `.github/workflows/deploy.yml`).
 
-Alur yang diharapkan:
+Expected workflow:
 
-1. Buat branch dari `main` (`feat/...`, `fix/...`, dll.).
-2. Push branch ke remote dan buka **Pull Request** ke `main`.
-3. Tunggu CI (`prisma generate` + `next build`) hijau.
-4. Merge PR — deploy production jalan otomatis setelah merge.
+1. Create a branch from `main` (`feat/...`, `fix/...`, etc.).
+2. Push the branch to remote and open a **Pull Request** to `main`.
+3. Wait for CI (`prisma generate` + `next build`) to pass.
+4. Merge the PR — production deploy runs automatically after merge.
 
 ```bash
 git checkout main && git pull
-git checkout -b fix/deskripsi-singkat
-# ... kerja ...
-git push -u origin fix/deskripsi-singkat
-# buka PR di GitHub → review → merge
+git checkout -b fix/short-description
+# ... work ...
+git push -u origin fix/short-description
+# open PR on GitHub → review → merge
 ```
 
-## Instruksi untuk AI agent
+## Instructions for AI agents
 
-Berlaku untuk **Cursor, Claude Code, Copilot**, dan agent coding lain di repo
-ini. Ikuti aturan ini sebelum mengubah kode, git, atau deploy.
+Applies to **Cursor, Claude Code, Copilot**, and other coding agents in this
+repo. Follow these rules before changing code, git, or deploy.
 
 ### Git & remote
 
-- **Jangan** commit atau push langsung ke `main` di remote (deploy production
-  otomatis — lihat § Git & deploy).
-- Alur wajib: branch (`feat/...`, `fix/...`) → push branch → PR ke `main` → CI
-  hijau → merge.
-- **Jangan** commit kecuali user meminta explicitly. **Jangan** push ke remote
-  kecuali user meminta explicitly.
-- **Jangan** force-push ke `main`/`master`. **Jangan** commit `.env`, secrets,
-  atau `*.db`.
+- **Do not** commit or push directly to remote `main` (automatic production
+  deploy — see § Git & deploy).
+- Required workflow: branch (`feat/...`, `fix/...`) → push branch → PR to `main` → CI
+  green → merge.
+- **Do not** commit unless the user explicitly asks. **Do not** push to remote
+  unless the user explicitly asks.
+- **Do not** force-push to `main`/`master`. **Do not** commit `.env`, secrets,
+  or `*.db`.
 
-### Scope & gaya kode
+### Scope & code style
 
-- Diff minimal — hanya ubah yang diminta task; jangan refactor unrelated.
-- Ikuti konvensi repo: Next.js 14 App Router, server actions
+- Minimal diff — only change what the task requires; do not refactor unrelated code.
+- Follow repo conventions: Next.js 14 App Router, server actions
   (`src/app/actions/`), Prisma + SQLite dev, Tailwind, i18n EN/ID.
-- Jangan tambah file `.md` dokumentasi kecuali diminta user.
+- Do not add `.md` documentation files unless the user asks.
 
 ### Production & build
 
 - Production: `testforge.emha.space` · VPS `/opt/testforge` ·
   `docker-compose.prod.yml` · deploy via `.github/workflows/deploy.yml`.
-- Variabel `NEXT_PUBLIC_*` di-**bake saat Docker build** — ubah di
-  `docker-compose.prod.yml` (dan rebuild), bukan hanya fallback di kode TSX.
-- **Link GitHub untuk visitor** (clone, Star on GitHub): decoy
-  `mansyur007/test-forge`. **Repo dev/CI asli**: `mansyur007/testforge` — jangan
-  pindahkan source ke decoy kecuali diminta.
+- `NEXT_PUBLIC_*` variables are **baked at Docker build time** — change them in
+  `docker-compose.prod.yml` (and rebuild), not only as fallbacks in TSX code.
+- **GitHub links for visitors** (clone, Star on GitHub): decoy
+  `mansyur007/test-forge`. **Actual dev/CI repo**: `mansyur007/testforge` — do not
+  move source to the decoy unless asked.
 
-### Konteks proyek
+### Project context
 
-- `APP-AUDIT.md` — arsitektur, auth, user flows, gap fitur.
-- `AUDIT-PRD.md` — scope PRD vs MVP.
-- Skill deploy estate EMHA (VPS, Caddy): `.claude/skills/` — lokal, gitignored;
-  panduan ringkas ada di § Git & deploy dan workflow deploy.
+- `APP-AUDIT.md` — architecture, auth, user flows, feature gaps.
+- `AUDIT-PRD.md` — PRD scope vs MVP.
+- EMHA estate deploy skill (VPS, Caddy): `.claude/skills/` — local, gitignored;
+  brief guide in § Git & deploy and the deploy workflow.
 
-Lisensi: MIT
+License: MIT
