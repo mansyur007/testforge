@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import Link from "next/link";
 import { register } from "@/app/actions/auth";
+import { OAuthButtons } from "@/components/OAuthButtons";
 import { dict, type Lang } from "@/lib/i18n";
 
 const inputCls =
@@ -121,160 +122,168 @@ export function SignupForm({ lang }: { lang: Lang }) {
     touched[f] && errors[f] ? "border-red-400" : "border-slate-300";
 
   return (
-    <form action={formAction} className="space-y-4">
-      {state?.error && (
-        <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
-          {state.error}
-        </p>
-      )}
-
-      <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">
-          {t.fullName} <span className="text-red-500">*</span>
-        </label>
-        <input
-          name="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onBlur={() => blur("name")}
-          placeholder={t.fullNamePh}
-          className={`${inputCls} ${border("name")}`}
-        />
-        {fieldErr("name")}
+    <>
+      <OAuthButtons mode="signup" lang={lang} />
+      <div className="my-5 flex items-center gap-3 text-xs text-slate-400">
+        <span className="h-px flex-1 bg-slate-200" />
+        {t.orEmail}
+        <span className="h-px flex-1 bg-slate-200" />
       </div>
-
-      <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">
-          {t.email} <span className="text-red-500">*</span>
-        </label>
-        <input
-          name="email"
-          type="email"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            setEmailAvailable(null);
-          }}
-          onBlur={() => blur("email")}
-          placeholder={t.emailPh}
-          className={`${inputCls} ${border("email")}`}
-        />
-        {fieldErr("email")}
-        {emailAvailable && touched.email && !errors.email && (
-          <p className="mt-1 text-xs text-green-600">{t.emailAvailable}</p>
-        )}
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            {t.password} <span className="text-red-500">*</span>
-          </label>
-          <input
-            name="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onBlur={() => blur("password")}
-            placeholder="••••••••"
-            className={`${inputCls} ${border("password")}`}
-          />
-          {password && (
-            <div className="mt-1.5">
-              <div className="flex gap-1">
-                {[1, 2, 3, 4].map((i) => (
-                  <div
-                    key={i}
-                    className={`h-1 flex-1 rounded-full ${i <= strength.score ? strength.color : "bg-slate-200"}`}
-                  />
-                ))}
-              </div>
-              <p className="mt-0.5 text-xs text-slate-500">
-                {t.strength[strength.key]}
-              </p>
-            </div>
-          )}
-          {fieldErr("password")}
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            {t.confirm} <span className="text-red-500">*</span>
-          </label>
-          <input
-            name="confirmPassword"
-            type="password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            onBlur={() => blur("confirm")}
-            placeholder="••••••••"
-            className={`${inputCls} ${border("confirm")}`}
-          />
-          {fieldErr("confirm")}
-        </div>
-      </div>
-
-      <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">
-          {t.orgName} <span className="text-red-500">*</span>
-        </label>
-        <input
-          name="orgName"
-          value={orgName}
-          onChange={(e) => setOrgName(e.target.value)}
-          onBlur={() => blur("orgName")}
-          placeholder={t.orgNamePh}
-          className={`${inputCls} ${border("orgName")}`}
-        />
-        {fieldErr("orgName")}
-      </div>
-
-      <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">
-          {t.workspaceUrl}
-        </label>
-        <div className="flex items-center gap-1">
-          <span className="text-sm text-slate-400">testforge.io/</span>
-          <input
-            name="orgSlug"
-            value={effectiveSlug}
-            onChange={(e) => {
-              setSlugEdited(true);
-              setOrgSlug(slugify(e.target.value) || e.target.value.toLowerCase());
-              setSlugAvailable(null);
-            }}
-            onBlur={() => blur("orgSlug")}
-            className={`${inputCls} flex-1 ${border("orgSlug")}`}
-          />
-        </div>
-        {fieldErr("orgSlug")}
-        {slugAvailable && effectiveSlug && !errors.orgSlug && (
-          <p className="mt-1 text-xs text-green-600">
-            ✓ testforge.io/{effectiveSlug} {t.slugAvailable}
+      <form action={formAction} className="space-y-4">
+        {state?.error && (
+          <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
+            {state.error}
           </p>
         )}
-      </div>
 
-      <label className="flex items-start gap-2 text-sm text-slate-600">
-        <input
-          type="checkbox"
-          name="agreeTerms"
-          checked={agreed}
-          onChange={(e) => setAgreed(e.target.checked)}
-          className="mt-0.5"
-        />
-        <span>
-          {t.agreePre}{" "}
-          <Link href="/terms" className="text-indigo-600 hover:underline">
-            {t.terms}
-          </Link>{" "}
-          {t.and}{" "}
-          <Link href="/privacy" className="text-indigo-600 hover:underline">
-            {t.privacy}
-          </Link>
-        </span>
-      </label>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">
+            {t.fullName} <span className="text-red-500">*</span>
+          </label>
+          <input
+            name="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={() => blur("name")}
+            placeholder={t.fullNamePh}
+            className={`${inputCls} ${border("name")}`}
+          />
+          {fieldErr("name")}
+        </div>
 
-      <SubmitButton disabled={hasErrors} label={t.submit} pendingLabel={t.submitting} />
-    </form>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">
+            {t.email} <span className="text-red-500">*</span>
+          </label>
+          <input
+            name="email"
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setEmailAvailable(null);
+            }}
+            onBlur={() => blur("email")}
+            placeholder={t.emailPh}
+            className={`${inputCls} ${border("email")}`}
+          />
+          {fieldErr("email")}
+          {emailAvailable && touched.email && !errors.email && (
+            <p className="mt-1 text-xs text-green-600">{t.emailAvailable}</p>
+          )}
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              {t.password} <span className="text-red-500">*</span>
+            </label>
+            <input
+              name="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onBlur={() => blur("password")}
+              placeholder="••••••••"
+              className={`${inputCls} ${border("password")}`}
+            />
+            {password && (
+              <div className="mt-1.5">
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className={`h-1 flex-1 rounded-full ${i <= strength.score ? strength.color : "bg-slate-200"}`}
+                    />
+                  ))}
+                </div>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  {t.strength[strength.key]}
+                </p>
+              </div>
+            )}
+            {fieldErr("password")}
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              {t.confirm} <span className="text-red-500">*</span>
+            </label>
+            <input
+              name="confirmPassword"
+              type="password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              onBlur={() => blur("confirm")}
+              placeholder="••••••••"
+              className={`${inputCls} ${border("confirm")}`}
+            />
+            {fieldErr("confirm")}
+          </div>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">
+            {t.orgName} <span className="text-red-500">*</span>
+          </label>
+          <input
+            name="orgName"
+            value={orgName}
+            onChange={(e) => setOrgName(e.target.value)}
+            onBlur={() => blur("orgName")}
+            placeholder={t.orgNamePh}
+            className={`${inputCls} ${border("orgName")}`}
+          />
+          {fieldErr("orgName")}
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">
+            {t.workspaceUrl}
+          </label>
+          <div className="flex items-center gap-1">
+            <span className="text-sm text-slate-400">testforge.io/</span>
+            <input
+              name="orgSlug"
+              value={effectiveSlug}
+              onChange={(e) => {
+                setSlugEdited(true);
+                setOrgSlug(slugify(e.target.value) || e.target.value.toLowerCase());
+                setSlugAvailable(null);
+              }}
+              onBlur={() => blur("orgSlug")}
+              className={`${inputCls} flex-1 ${border("orgSlug")}`}
+            />
+          </div>
+          {fieldErr("orgSlug")}
+          {slugAvailable && effectiveSlug && !errors.orgSlug && (
+            <p className="mt-1 text-xs text-green-600">
+              ✓ testforge.io/{effectiveSlug} {t.slugAvailable}
+            </p>
+          )}
+        </div>
+
+        <label className="flex items-start gap-2 text-sm text-slate-600">
+          <input
+            type="checkbox"
+            name="agreeTerms"
+            checked={agreed}
+            onChange={(e) => setAgreed(e.target.checked)}
+            className="mt-0.5"
+          />
+          <span>
+            {t.agreePre}{" "}
+            <Link href="/terms" className="text-indigo-600 hover:underline">
+              {t.terms}
+            </Link>{" "}
+            {t.and}{" "}
+            <Link href="/privacy" className="text-indigo-600 hover:underline">
+              {t.privacy}
+            </Link>
+          </span>
+        </label>
+
+        <SubmitButton disabled={hasErrors} label={t.submit} pendingLabel={t.submitting} />
+      </form>
+    </>
   );
 }
