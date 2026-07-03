@@ -1,6 +1,6 @@
 # TestForge — EMHA Universe estate stack.
-# No published ports; Caddy (tokopudidi stack) reaches it by container name on the
-# shared tokopudidi_default network. SQLite state lives in the named volume.
+# No published ports; Caddy (EMHA Universe stack) reaches it by container name on the
+# shared emha_shared network. SQLite state lives in the named volume.
 services:
   testforge:
     build:
@@ -31,10 +31,10 @@ services:
     expose:
       - "3000"                          # internal only; Caddy reaches by name
     networks:
-      - tokopudidi_default
+      - emha_shared
 
 networks:
-  tokopudidi_default:
+  emha_shared:
     external: true                      # created by the Tokopudidi stack
 
 volumes:
