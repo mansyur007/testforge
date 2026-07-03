@@ -1,6 +1,6 @@
 ---
 name: emha-deploy
-description: Deployment and CI/CD workflow for the EMHA Universe apps (portal, tokopudidi, real-estate, postinia, testforge) running on the shared VPS behind Tokopudidi's Caddy. Use when deploying, editing the Caddyfile, adding a subdomain, troubleshooting a down front-door, or wiring CI/CD for one of these repos.
+description: Deployment and CI/CD workflow for the EMHA Universe apps (portal, tokopudidi, real-estate, postinia, testforge, code-server) running on the shared VPS behind the EMHA Universe Caddy (emha-caddy). Use when deploying, editing the Caddyfile, adding a subdomain, troubleshooting a down front-door, or wiring CI/CD for one of these repos.
 ---
 
 # EMHA Universe — Deploy & CI/CD
@@ -15,16 +15,20 @@ read the EMHA-specific rules first; they override the generic advice.
 
 - One VPS, one domain: **`emha.space`** (sslip.io fully retired). SSH `root@103.169.207.239`,
   key `~/.ssh/development` (always pass `-i`).
-- **Tokopudidi owns the shared Caddy** (ports 80/443) at `/opt/tokopudidi`. Every app
-  joins the **external** docker network `tokopudidi_default` so Caddy can reverse-proxy it.
+- **EMHA Universe owns the shared Caddy** — container `emha-caddy` (binds ports 80/443)
+  in the portal stack at `/opt/emhauniverse`. Every app joins the **external, standalone**
+  docker network `emha_shared` (owned by no compose project; `docker network create emha_shared`)
+  so Caddy can reverse-proxy it. *(Front door inverted 2026-07-03: was tokopudidi's caddy on
+  `tokopudidi_default` — both now retired.)*
 - Apps and their internal ports:
   | App | URL | VPS dir | container : port | CI key |
   |-----|-----|---------|------------------|--------|
-  | Portal | emha.space (apex) | /opt/emhauniverse | emha-portal:3100 | emhauniverse-ci |
-  | Tokopudidi | toko.emha.space | /opt/tokopudidi | web/api | — |
+  | Portal + **Caddy** | emha.space (apex) | /opt/emhauniverse | emha-portal:3100, **emha-caddy** | emhauniverse-ci |
+  | Tokopudidi | toko.emha.space | /opt/tokopudidi | web/api (tokopudidi-web:3000/api:4000) | — |
   | Real Estate | real-estate.emha.space | /opt/real-estate | real-estate:3000 | real-estate-ci |
   | Postinia POS | postinia.emha.space | /opt/postinia | postinia:8080 | postinia-ci |
-  | TestForge | testforge.emha.space | /opt/<repo> | testforge:3000 | — |
+  | TestForge | testforge.emha.space | /opt/testforge | testforge:3000 | — |
+  | code-server | code.emha.space | /opt/code-server | code-server:8080 | — (VPS-only, `docker-compose.yml`, no repo/CI) |
 
 ## CRITICAL gotchas (these have bitten us — do not skip)
 
@@ -33,22 +37,27 @@ read the EMHA-specific rules first; they override the generic advice.
    docker compose --env-file .env.production -f docker-compose.prod.yml up -d <svc>
    ```
    Without it `${POSTGRES_USER}` / `${DATABASE_URL}` resolve empty → postgres comes up
-   "unhealthy" → compose gates web/api/caddy → **the whole front door goes down**, and api
-   gets an empty `DATABASE_URL` (Prisma 500s). The healthcheck now has a runtime fallback
+   "unhealthy" → compose gates web/api → **toko.emha.space goes down** (500s / no upstream),
+   and api gets an empty `DATABASE_URL` (Prisma 500s). Since the front door (emha-caddy) now
+   lives in the emhauniverse stack, this no longer takes down the *whole* estate — just toko —
+   but it's still a real outage. The healthcheck has a runtime fallback
    (`pg_isready -U $${POSTGRES_USER:-postgres}`) so a forgotten env-file won't tear the
    stack down, but api/web still need the env-file to actually work. **Postinia and the
    portal auto-load `.env` (default name) — they do NOT need `--env-file`.** Only tokopudidi does.
 
-2. **Caddyfile is bind-mounted as a single file.** `git reset --hard` (which tokopudidi's
-   deploy runs) replaces the inode, so `caddy reload` reads STALE content. Always recreate
-   the container instead:
+2. **Caddyfile is bind-mounted as a single file.** An rsync/`git reset --hard` (which the
+   emhauniverse deploy runs) replaces the inode, so `caddy reload` reads STALE content.
+   Always recreate the container instead — from the **emhauniverse** stack (no `--env-file`
+   needed there; the portal/caddy stack auto-loads no secrets):
    ```bash
-   docker compose --env-file .env.production -f docker-compose.prod.yml up -d --force-recreate caddy
+   cd /opt/emhauniverse && docker compose -f docker-compose.prod.yml up -d --force-recreate caddy
    ```
-   If hand-editing on the VPS, use `cat >` (in-place, preserves inode) — never an editor that swaps the inode.
+   The emhauniverse `deploy.yml` already does this on every deploy. If hand-editing on the
+   VPS, use `cat >` (in-place, preserves inode) — never an editor that swaps the inode.
 
-3. **Routing lives in the tokopudidi repo's `Caddyfile`, commit it there.** Editing only on
-   the VPS is unsafe — tokopudidi's deploy does `git reset --hard origin/main` and wipes it.
+3. **Routing lives in the emhauniverse repo's `Caddyfile`, commit it there.** Editing only on
+   the VPS is unsafe — the emhauniverse deploy rsyncs `--delete` and overwrites it. (The old
+   tokopudidi `Caddyfile` was deleted; do not resurrect routing there.)
 
 4. **`NEXT_PUBLIC_*` is baked at build time** (tokopudidi web, portal). Changing a public URL
    means rebuilding the image, not just restarting.
@@ -63,10 +72,10 @@ read the EMHA-specific rules first; they override the generic advice.
 ## Adding a new app to the estate
 
 1. `A` record `newapp.emha.space` → `103.169.207.239`.
-2. App `docker-compose.prod.yml`: join `tokopudidi_default` as **external**, expose port
+2. App `docker-compose.prod.yml`: join `emha_shared` as **external**, expose port
    internal-only (no host port mapping needed — Caddy reaches it over the network).
-3. Add a route block in the **tokopudidi repo** `Caddyfile`: `newapp.emha.space { reverse_proxy newapp:PORT }`. Commit it.
-4. Redeploy caddy with `--force-recreate` (gotcha #2) **and** `--env-file .env.production` (gotcha #1).
+3. Add a route block in the **emhauniverse repo** `Caddyfile`: `newapp.emha.space { reverse_proxy newapp:PORT }`. Commit it.
+4. Push emhauniverse (or manually `cd /opt/emhauniverse && docker compose -f docker-compose.prod.yml up -d --force-recreate caddy`, gotcha #2).
 5. Smoke-test `https://newapp.emha.space`.
 
 ## CI/CD shape (per repo, GitHub Actions)

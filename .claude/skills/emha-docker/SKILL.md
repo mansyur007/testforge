@@ -1,6 +1,6 @@
 ---
 name: emha-docker
-description: Docker and Docker Compose conventions for the EMHA Universe Node.js apps (portal, real-estate, postinia, testforge) sharing one VPS and Tokopudidi's Caddy network. Use when writing or reviewing a Dockerfile / compose file, debugging container networking or volumes, or hardening a container in this estate.
+description: Docker and Docker Compose conventions for the EMHA Universe Node.js apps (portal, real-estate, postinia, testforge, code-server) sharing one VPS and the shared emha_shared Caddy network. Use when writing or reviewing a Dockerfile / compose file, debugging container networking or volumes, or hardening a container in this estate.
 ---
 
 # EMHA Universe — Docker & Compose
@@ -11,20 +11,21 @@ and debugging guidance is in the **Generic reference** at the bottom — but the
 
 ## Estate conventions (apply to every app here)
 
-1. **Join Tokopudidi's network as external — don't publish host ports.** Caddy reverse-proxies
-   over the docker network, so apps expose ports *internal only*. A host port mapping is
-   usually unnecessary (and undesirable — it bypasses Caddy/TLS).
+1. **Join the shared `emha_shared` network as external — don't publish host ports.** Caddy
+   (container `emha-caddy`, owned by the EMHA Universe/portal stack) reverse-proxies over the
+   docker network, so apps expose ports *internal only*. A host port mapping is usually
+   unnecessary (and undesirable — it bypasses Caddy/TLS).
    ```yaml
    services:
      myapp:
        # no "ports:" needed — Caddy reaches myapp:PORT over the shared network
        networks:
-         - tokopudidi_default
+         - emha_shared
    networks:
-     tokopudidi_default:
-       external: true
+     emha_shared:
+       external: true   # standalone estate net: docker network create emha_shared
    ```
-   Caddy's route (in the **tokopudidi repo** Caddyfile) is `myapp.emha.space { reverse_proxy myapp:PORT }`.
+   Caddy's route (in the **emhauniverse repo** Caddyfile) is `myapp.emha.space { reverse_proxy myapp:PORT }`.
 
 2. **Internal ports are fixed per app** (Caddy routes to these names:ports):
    portal `emha-portal:3100`, real-estate `real-estate:3000`, postinia `postinia:8080`,
@@ -58,7 +59,7 @@ and debugging guidance is in the **Generic reference** at the bottom — but the
 ssh -i ~/.ssh/development root@103.169.207.239
 docker compose -f /opt/<app>/docker-compose.prod.yml logs -f --tail=50 <svc>
 docker compose exec <svc> sh
-docker network inspect tokopudidi_default      # confirm app is attached + see its name
+docker network inspect emha_shared             # confirm app is attached + see its name
 docker compose exec <app> wget -qO- http://<other>:PORT/health   # test in-network reachability
 ```
 
