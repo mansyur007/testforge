@@ -221,3 +221,49 @@ export async function bulkDeleteCases(
   revalidatePath(`/projects/${slug}`);
   return { ok: true, deleted: res.count };
 }
+
+// Move one or more cases into a suite/sub-suite, or unassign them (suiteId
+// null) — used by the drag-and-drop on the project page, including a
+// multi-selection drop. Only cases in a project the user belongs to are
+// touched, and the target suite (if any) must live in that same project.
+export async function moveCases(
+  formData: FormData
+): Promise<{ ok?: boolean; error?: string; moved?: number }> {
+  const session = await requireSession();
+  if (session.role === "VIEWER")
+    return { error: "Viewers don't have write access." };
+
+  const slug = String(formData.get("projectSlug"));
+  const ids = formData.getAll("caseIds").map(String).filter(Boolean);
+  const suiteId = String(formData.get("suiteId") ?? "") || null;
+  if (!ids.length) return { error: "No test cases selected." };
+
+  const project = await db.project.findFirst({
+    where: { slug, members: { some: { userId: session.userId } } },
+    select: { id: true },
+  });
+  if (!project) return { error: "Project not found." };
+
+  // Guard against dropping into another project's suite.
+  if (suiteId) {
+    const suite = await db.testSuite.findFirst({
+      where: { id: suiteId, projectId: project.id },
+      select: { id: true },
+    });
+    if (!suite) return { error: "Target suite not found in this project." };
+  }
+
+  const res = await db.testCase.updateMany({
+    where: { id: { in: ids }, projectId: project.id, deletedAt: null },
+    data: { suiteId },
+  });
+  await logAudit({
+    userId: session.userId,
+    action: "case.move",
+    entityType: "project",
+    entityId: project.id,
+    detail: `${res.count} case(s) → suite ${suiteId ?? "(none)"}`,
+  });
+  revalidatePath(`/projects/${slug}`);
+  return { ok: true, moved: res.count };
+}

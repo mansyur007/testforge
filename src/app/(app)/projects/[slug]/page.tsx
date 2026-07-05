@@ -10,6 +10,7 @@ import { ProjectTabs } from "@/components/ProjectTabs";
 import { NewSuiteForm } from "@/components/NewSuiteForm";
 import { CasesTable } from "@/components/CasesTable";
 import { DeleteSuiteButton } from "@/components/DeleteSuiteButton";
+import { SuiteDropZone } from "@/components/SuiteDropZone";
 
 export const dynamic = "force-dynamic";
 
@@ -83,16 +84,22 @@ export default async function ProjectPage({
             </h3>
             <ul className="space-y-1 text-sm">
               <li>
-                <Link
-                  href={`/projects/${project.slug}${filterQS({ suite: undefined })}`}
-                  className={`block rounded px-2 py-1 hover:bg-slate-100 ${!searchParams.suite ? "bg-indigo-50 font-medium text-indigo-700" : ""}`}
-                >
-                  All Test Cases
-                </Link>
+                <SuiteDropZone projectSlug={project.slug} suiteId={null}>
+                  <Link
+                    href={`/projects/${project.slug}${filterQS({ suite: undefined })}`}
+                    className={`block rounded px-2 py-1 hover:bg-slate-100 ${!searchParams.suite ? "bg-indigo-50 font-medium text-indigo-700" : ""}`}
+                  >
+                    All Test Cases
+                  </Link>
+                </SuiteDropZone>
               </li>
               {rootSuites.map((suite) => (
                 <li key={suite.id}>
-                  <div className="flex items-center">
+                  <SuiteDropZone
+                    projectSlug={project.slug}
+                    suiteId={suite.id}
+                    className="flex items-center"
+                  >
                     <Link
                       href={`/projects/${project.slug}${filterQS({ suite: suite.id })}`}
                       className={`min-w-0 flex-1 truncate rounded px-2 py-1 hover:bg-slate-100 ${searchParams.suite === suite.id ? "bg-indigo-50 font-medium text-indigo-700" : ""}`}
@@ -106,9 +113,14 @@ export default async function ProjectPage({
                         caseCount={subtreeCaseCount(suite.id)}
                       />
                     )}
-                  </div>
+                  </SuiteDropZone>
                   {childrenOf(suite.id).map((section) => (
-                    <div key={section.id} className="ml-4 flex items-center">
+                    <SuiteDropZone
+                      key={section.id}
+                      projectSlug={project.slug}
+                      suiteId={section.id}
+                      className="ml-4 flex items-center"
+                    >
                       <Link
                         href={`/projects/${project.slug}${filterQS({ suite: section.id })}`}
                         className={`min-w-0 flex-1 truncate rounded px-2 py-1 text-slate-600 hover:bg-slate-100 ${searchParams.suite === section.id ? "bg-indigo-50 font-medium text-indigo-700" : ""}`}
@@ -122,7 +134,7 @@ export default async function ProjectPage({
                           caseCount={subtreeCaseCount(section.id)}
                         />
                       )}
-                    </div>
+                    </SuiteDropZone>
                   ))}
                 </li>
               ))}
