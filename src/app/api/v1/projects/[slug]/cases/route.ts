@@ -82,6 +82,20 @@ export async function POST(
   if (!allowed)
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
+  // Optional suite assignment — must be a suite in this project.
+  const suiteId = body.suiteId ? String(body.suiteId) : null;
+  if (suiteId) {
+    const suite = await db.testSuite.findFirst({
+      where: { id: suiteId, projectId: allowed.id },
+      select: { id: true },
+    });
+    if (!suite)
+      return NextResponse.json(
+        { error: "suiteId not found in this project" },
+        { status: 400 }
+      );
+  }
+
   const project = await db.project.update({
     where: { slug: params.slug },
     data: { caseCounter: { increment: 1 } },
@@ -91,6 +105,7 @@ export async function POST(
     data: {
       projectId: project.id,
       seq: project.caseCounter,
+      suiteId,
       title: String(body.title),
       description: body.description ?? null,
       preconditions: body.preconditions ?? null,

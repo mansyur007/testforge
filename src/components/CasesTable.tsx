@@ -12,6 +12,7 @@ import {
   CASE_STATUSES,
 } from "@/lib/constants";
 import { bulkUpdateCases, bulkDeleteCases } from "@/app/actions/cases";
+import { CASE_DND_MIME, CASES_MOVED_EVENT } from "@/lib/dnd";
 
 type CaseRow = {
   id: string;
@@ -82,6 +83,32 @@ export function CasesTable({
 
   const selectAll = () => setSelected(new Set(allIds));
   const clear = () => setSelected(new Set());
+
+  // A drop onto a suite happens in a different component subtree, so it tells us
+  // to clear the selection via a window event once the move has landed.
+  useEffect(() => {
+    const onMoved = () => clear();
+    window.addEventListener(CASES_MOVED_EVENT, onMoved);
+    return () => window.removeEventListener(CASES_MOVED_EVENT, onMoved);
+  }, []);
+
+  // Drag a case onto a suite in the sidebar to move it. If the dragged row is
+  // part of the current selection, the whole selection travels; otherwise just
+  // that one row.
+  function onDragStart(e: React.DragEvent, id: string) {
+    const ids = selected.has(id) ? Array.from(selected) : [id];
+    e.dataTransfer.setData(CASE_DND_MIME, JSON.stringify(ids));
+    e.dataTransfer.effectAllowed = "move";
+    if (ids.length > 1) {
+      const badge = document.createElement("div");
+      badge.textContent = `${ids.length} test cases`;
+      badge.style.cssText =
+        "position:absolute;top:-1000px;left:-1000px;padding:4px 10px;border-radius:9999px;background:#4f46e5;color:#fff;font:500 12px sans-serif";
+      document.body.appendChild(badge);
+      e.dataTransfer.setDragImage(badge, 0, 0);
+      setTimeout(() => badge.remove(), 0);
+    }
+  }
 
   // Ctrl/Cmd+A selects every row in the current (filtered) list; Escape clears.
   useEffect(() => {
@@ -250,7 +277,11 @@ export function CasesTable({
               return (
                 <tr
                   key={c.id}
-                  className={isSel ? "bg-indigo-50/60" : "hover:bg-slate-50"}
+                  draggable={canWrite}
+                  onDragStart={
+                    canWrite ? (e) => onDragStart(e, c.id) : undefined
+                  }
+                  className={`${isSel ? "bg-indigo-50/60" : "hover:bg-slate-50"} ${canWrite ? "cursor-grab active:cursor-grabbing" : ""}`}
                 >
                   {canWrite && (
                     <td className="px-3 py-2.5">
@@ -325,7 +356,8 @@ export function CasesTable({
       </div>
 
       <p className="text-xs text-slate-400">
-        {cases.length} test case{canWrite && " · Ctrl/Cmd+A to select all"}
+        {cases.length} test case
+        {canWrite && " · Ctrl/Cmd+A to select all · drag onto a suite to move"}
       </p>
 
       {showDelete && (
