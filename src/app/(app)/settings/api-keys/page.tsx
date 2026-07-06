@@ -18,7 +18,15 @@ export default async function ApiKeysPage() {
         <h1 className="text-2xl font-bold">API Keys</h1>
         <p className="text-sm text-slate-500">
           For CI/CD and REST API authentication. Keys are hashed in the database
-          and shown only once when created.
+          and shown only once when created.{" "}
+          <a
+            href="/docs/api"
+            target="_blank"
+            rel="noreferrer"
+            className="font-medium text-indigo-600 hover:underline"
+          >
+            View API reference →
+          </a>
         </p>
       </div>
 
