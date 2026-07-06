@@ -30,6 +30,9 @@ export async function GET(
   if (sp.get("type")) where.type = sp.get("type")!.toUpperCase();
   if (sp.get("tag")) where.tags = { contains: sp.get("tag")! };
   if (sp.get("q")) where.title = { contains: sp.get("q")! };
+  // ?suiteId=<id> filters to one suite; ?suiteId=none returns unassigned cases.
+  const suiteId = sp.get("suiteId");
+  if (suiteId) where.suiteId = suiteId === "none" ? null : suiteId;
 
   // cursor-based pagination (PRD §5.3)
   const cursor = sp.get("cursor");
@@ -54,6 +57,7 @@ export async function GET(
       type: c.type,
       status: c.status,
       automationStatus: c.automationStatus,
+      suiteId: c.suiteId,
       tags: c.tags,
       steps: JSON.parse(c.stepsJson || "[]"),
       expectedResult: c.expectedResult,
