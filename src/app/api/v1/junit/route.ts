@@ -150,18 +150,31 @@ export async function POST(req: NextRequest) {
     include: { results: true },
   });
 
+  // A matched case now has a real automated test, so flip its coverage status.
+  // Any matched result counts (pass or fail) — the case is automated either way.
+  // Only touch cases not already AUTOMATED to keep the change (and audit) meaningful.
+  const automated = await db.testCase.updateMany({
+    where: {
+      id: { in: Array.from(byCase.keys()) },
+      projectId: project.id,
+      automationStatus: { not: "AUTOMATED" },
+    },
+    data: { automationStatus: "AUTOMATED" },
+  });
+
   await logAudit({
     userId: user.id,
     action: "automation.upload",
     entityType: "run",
     entityId: run.id,
-    detail: `${source}: ${byCase.size} matched, ${unmatched.length} unmatched`,
+    detail: `${source}: ${byCase.size} matched, ${unmatched.length} unmatched, ${automated.count} → AUTOMATED`,
   });
 
   return NextResponse.json({
     runId: run.id,
     runUrl: `/projects/${project.slug}/runs/${run.id}`,
     matched: byCase.size,
+    automated: automated.count,
     unmatched,
     summary: {
       passed: run.results.filter((r) => r.status === "PASSED").length,
