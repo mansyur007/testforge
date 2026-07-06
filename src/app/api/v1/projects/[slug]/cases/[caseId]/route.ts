@@ -15,6 +15,7 @@ import {
   CASE_STATUSES,
   AUTOMATION_STATUSES,
 } from "@/lib/constants";
+import { dispatchWebhook } from "@/lib/webhooks";
 
 // Resolve the case only if it lives in a project the caller belongs to. Keeps
 // tenant isolation in one place for all three verbs.
@@ -146,6 +147,8 @@ export async function PATCH(
     detail: Object.keys(body).join(", "),
   });
 
+  await dispatchWebhook(existing.projectId, "case.updated", serializeCase(params.slug, updated));
+
   return NextResponse.json(serializeCase(params.slug, updated));
 }
 
@@ -171,6 +174,8 @@ export async function DELETE(
     entityId: deleted.id,
     detail: existing.title,
   });
+
+  await dispatchWebhook(existing.projectId, "case.deleted", { id: deleted.id });
 
   return NextResponse.json({ id: deleted.id, deletedAt: deleted.deletedAt });
 }

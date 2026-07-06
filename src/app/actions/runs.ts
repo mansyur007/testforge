@@ -6,6 +6,8 @@ import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { isProjectMember } from "@/lib/projects";
 import { logAudit } from "@/lib/audit";
+import { dispatchWebhook } from "@/lib/webhooks";
+import { serializeRun } from "@/lib/api";
 
 // Tenant guard for run-level mutations: the run must belong to a project the
 // user is a member of.
@@ -116,6 +118,7 @@ export async function completeRun(formData: FormData) {
     entityType: "run",
     entityId: runId,
   });
+  await dispatchWebhook(run.projectId, "run.completed", serializeRun(run));
   revalidatePath(`/projects/${run.project.slug}/runs/${runId}`);
 }
 

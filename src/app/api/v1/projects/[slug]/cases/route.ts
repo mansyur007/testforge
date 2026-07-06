@@ -9,6 +9,7 @@ import {
   serializeCase,
   type FieldError,
 } from "@/lib/api";
+import { dispatchWebhook } from "@/lib/webhooks";
 
 // REST API v1 (PRD §5.3): list & create test case.
 // Filtering via query params: ?priority=HIGH&type=SMOKE&tag=login&q=...
@@ -137,6 +138,8 @@ export async function POST(
       tags: body.tags ?? "",
     },
   });
+
+  await dispatchWebhook(project.id, "case.created", serializeCase(project.slug, testCase));
 
   return NextResponse.json(
     { id: testCase.id, displayId: caseDisplayId(project.slug, testCase.seq) },
