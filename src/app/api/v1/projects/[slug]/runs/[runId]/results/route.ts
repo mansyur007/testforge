@@ -45,7 +45,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: { slug: string; runId: string } }
 ) {
-  const g = await guard(req);
+  const g = await guard(req, { write: true });
   if (g instanceof NextResponse) return g;
 
   const run = await findScopedRun(g.userId, params.slug, params.runId);

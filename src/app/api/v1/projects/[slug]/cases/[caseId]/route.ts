@@ -50,7 +50,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { slug: string; caseId: string } }
 ) {
-  const g = await guard(req);
+  const g = await guard(req, { write: true });
   if (g instanceof NextResponse) return g;
 
   const existing = await findScopedCase(g.userId, params.slug, params.caseId);
@@ -153,7 +153,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: { slug: string; caseId: string } }
 ) {
-  const g = await guard(req);
+  const g = await guard(req, { write: true });
   if (g instanceof NextResponse) return g;
 
   const existing = await findScopedCase(g.userId, params.slug, params.caseId);

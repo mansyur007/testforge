@@ -30,6 +30,7 @@ export default async function ApiKeysPage() {
             <tr>
               <th className="px-5 py-3">Name</th>
               <th className="px-5 py-3">Key</th>
+              <th className="px-5 py-3">Access</th>
               <th className="px-5 py-3">Last Used</th>
               <th className="px-5 py-3"></th>
             </tr>
@@ -40,6 +41,17 @@ export default async function ApiKeysPage() {
                 <td className="px-5 py-3 font-medium">{k.name}</td>
                 <td className="px-5 py-3 font-mono text-xs text-slate-500">
                   {k.prefix}••••••••
+                </td>
+                <td className="px-5 py-3">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                      k.scope === "READ"
+                        ? "bg-slate-100 text-slate-600"
+                        : "bg-indigo-100 text-indigo-700"
+                    }`}
+                  >
+                    {k.scope === "READ" ? "Read-only" : "Read & write"}
+                  </span>
                 </td>
                 <td className="px-5 py-3 text-xs text-slate-500">
                   {k.lastUsedAt
@@ -53,7 +65,7 @@ export default async function ApiKeysPage() {
             ))}
             {keys.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-5 py-8 text-center text-slate-400">
+                <td colSpan={5} className="px-5 py-8 text-center text-slate-400">
                   No API keys yet.
                 </td>
               </tr>

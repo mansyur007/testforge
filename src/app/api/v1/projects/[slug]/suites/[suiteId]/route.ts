@@ -39,7 +39,7 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { slug: string; suiteId: string } }
 ) {
-  const g = await guard(req);
+  const g = await guard(req, { write: true });
   if (g instanceof NextResponse) return g;
 
   const ctx = await loadSuiteContext(g.userId, params.slug, params.suiteId);
@@ -113,7 +113,7 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: { slug: string; suiteId: string } }
 ) {
-  const g = await guard(req);
+  const g = await guard(req, { write: true });
   if (g instanceof NextResponse) return g;
 
   const ctx = await loadSuiteContext(g.userId, params.slug, params.suiteId);

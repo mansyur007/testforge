@@ -1,6 +1,6 @@
 import type { TestCase, TestRun, TestRunResult } from "@prisma/client";
 import { NextResponse, type NextRequest } from "next/server";
-import { getSession, authenticateApiKey } from "@/lib/auth";
+import { getSession, verifyApiKey } from "@/lib/auth";
 import { caseDisplayId } from "@/lib/constants";
 import { rateLimit, type RateResult } from "@/lib/rate-limit";
 
@@ -24,6 +24,8 @@ export function apiError(
 
 export const unauthorized = () =>
   apiError(401, "unauthorized", "Authentication required");
+export const forbidden = (message = "Forbidden") =>
+  apiError(403, "forbidden", message);
 export const notFoundError = (message = "Not found") =>
   apiError(404, "not_found", message);
 export const badRequest = (message: string) =>
@@ -50,28 +52,31 @@ function tooManyRequests(r: RateResult) {
 // Auth
 // ---------------------------------------------------------------------------
 
-// Resolve the acting user id from either a browser session or a Bearer API key.
-// Returns null when neither authenticates the request.
-export async function resolveUserId(req: NextRequest): Promise<string | null> {
-  const auth = (await getSession()) ?? (await authenticateApiKey(req));
-  if (!auth) return null;
-  return "userId" in auth ? auth.userId : auth.id;
-}
-
-// One-stop entry guard for v1 handlers: authenticates, and for API-key traffic
-// (Bearer header) enforces the in-memory rate limit. Returns the acting userId,
-// or a ready-to-return error Response (401/429).
+// One-stop entry guard for v1 handlers. Order of checks:
+//   1. Browser session → allowed (page-level RBAC governs writes elsewhere).
+//   2. Bearer API key → rate-limited, verified, and — when opts.write is set —
+//      required to carry the WRITE scope, else 403.
+// Returns the acting userId, or a ready-to-return error Response.
 export async function guard(
-  req: NextRequest
+  req: NextRequest,
+  opts: { write?: boolean } = {}
 ): Promise<{ userId: string } | NextResponse> {
-  const userId = await resolveUserId(req);
-  if (!userId) return unauthorized();
-  const bearer = req.headers.get("authorization");
-  if (bearer?.startsWith("Bearer ")) {
-    const r = rateLimit(bearer.slice(7));
-    if (!r.ok) return tooManyRequests(r);
-  }
-  return { userId };
+  const session = await getSession();
+  if (session) return { userId: session.userId };
+
+  const header = req.headers.get("authorization") ?? "";
+  if (!header.startsWith("Bearer ")) return unauthorized();
+  const token = header.slice(7);
+
+  const r = rateLimit(token);
+  if (!r.ok) return tooManyRequests(r);
+
+  const key = await verifyApiKey(token);
+  if (!key) return unauthorized();
+  if (opts.write && key.scope !== "WRITE")
+    return forbidden("This API key is read-only");
+
+  return { userId: key.userId };
 }
 
 // ---------------------------------------------------------------------------
