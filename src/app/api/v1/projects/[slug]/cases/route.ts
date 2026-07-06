@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 import { getSession, authenticateApiKey } from "@/lib/auth";
 import { caseDisplayId } from "@/lib/constants";
+import { serializeCase } from "@/lib/api";
 
 // REST API v1 (PRD §5.3): list & create test case.
 // Filtering via query params: ?priority=HIGH&type=SMOKE&tag=login&q=...
@@ -33,35 +34,33 @@ export async function GET(
   // ?suiteId=<id> filters to one suite; ?suiteId=none returns unassigned cases.
   const suiteId = sp.get("suiteId");
   if (suiteId) where.suiteId = suiteId === "none" ? null : suiteId;
+  // ?updatedSince=<ISO> for incremental sync — only cases changed since then.
+  const updatedSince = sp.get("updatedSince");
+  if (updatedSince) {
+    const since = new Date(updatedSince);
+    if (!Number.isNaN(since.getTime())) where.updatedAt = { gte: since };
+  }
 
   // cursor-based pagination (PRD §5.3)
   const cursor = sp.get("cursor");
   const limit = Math.min(parseInt(sp.get("limit") ?? "50", 10) || 50, 200);
 
-  const cases = await db.testCase.findMany({
-    where,
-    orderBy: { seq: "asc" },
-    take: limit + 1,
-    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
-  });
+  const [total, cases] = await Promise.all([
+    db.testCase.count({ where }),
+    db.testCase.findMany({
+      where,
+      orderBy: { seq: "asc" },
+      take: limit + 1,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+    }),
+  ]);
 
   const hasMore = cases.length > limit;
   const items = hasMore ? cases.slice(0, limit) : cases;
 
   return NextResponse.json({
-    data: items.map((c) => ({
-      id: c.id,
-      displayId: caseDisplayId(project.slug, c.seq),
-      title: c.title,
-      priority: c.priority,
-      type: c.type,
-      status: c.status,
-      automationStatus: c.automationStatus,
-      suiteId: c.suiteId,
-      tags: c.tags,
-      steps: JSON.parse(c.stepsJson || "[]"),
-      expectedResult: c.expectedResult,
-    })),
+    data: items.map((c) => serializeCase(project.slug, c)),
+    total,
     nextCursor: hasMore ? items[items.length - 1].id : null,
   });
 }
