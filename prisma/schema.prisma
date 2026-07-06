@@ -168,6 +168,7 @@ model ApiKey {
   name       String
   prefix     String // 8 char pertama, untuk identifikasi di UI
   keyHash    String    @unique
+  scope      String    @default("WRITE") // READ (read-only) | WRITE (read + write)
   createdAt  DateTime  @default(now())
   lastUsedAt DateTime?
 

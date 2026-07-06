@@ -78,12 +78,11 @@ export async function requireSession(): Promise<Session> {
   return session;
 }
 
-/** Autentikasi request API via Bearer API key (untuk CI/CD, PRD §5.3). */
-export async function authenticateApiKey(req: Request) {
-  const header = req.headers.get("authorization") ?? "";
-  const token = header.startsWith("Bearer ") ? header.slice(7) : null;
-  if (!token) return null;
-
+/**
+ * Verify a raw API key token and return its stored record (incl. scope) plus
+ * the owning user. Bumps lastUsedAt. Returns null for an unknown token.
+ */
+export async function verifyApiKey(token: string) {
   const crypto = await import("crypto");
   const keyHash = crypto.createHash("sha256").update(token).digest("hex");
   const apiKey = await db.apiKey.findUnique({
@@ -96,5 +95,14 @@ export async function authenticateApiKey(req: Request) {
     where: { id: apiKey.id },
     data: { lastUsedAt: new Date() },
   });
-  return apiKey.user;
+  return apiKey;
+}
+
+/** Autentikasi request API via Bearer API key (untuk CI/CD, PRD §5.3). */
+export async function authenticateApiKey(req: Request) {
+  const header = req.headers.get("authorization") ?? "";
+  const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+  if (!token) return null;
+  const apiKey = await verifyApiKey(token);
+  return apiKey ? apiKey.user : null;
 }

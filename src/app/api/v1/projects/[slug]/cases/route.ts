@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
-import { getSession, authenticateApiKey } from "@/lib/auth";
-import { caseDisplayId } from "@/lib/constants";
-import { serializeCase } from "@/lib/api";
+import { caseDisplayId, PRIORITIES, CASE_TYPES } from "@/lib/constants";
+import {
+  guard,
+  notFoundError,
+  validationError,
+  serializeCase,
+  type FieldError,
+} from "@/lib/api";
 
 // REST API v1 (PRD §5.3): list & create test case.
 // Filtering via query params: ?priority=HIGH&type=SMOKE&tag=login&q=...
@@ -11,16 +16,13 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  const auth = (await getSession()) ?? (await authenticateApiKey(req));
-  if (!auth)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const userId = "userId" in auth ? auth.userId : auth.id;
+  const g = await guard(req);
+  if (g instanceof NextResponse) return g;
 
   const project = await db.project.findFirst({
-    where: { slug: params.slug, members: { some: { userId } } },
+    where: { slug: params.slug, members: { some: { userId: g.userId } } },
   });
-  if (!project)
-    return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  if (!project) return notFoundError("Project not found");
 
   const sp = req.nextUrl.searchParams;
   const where: Prisma.TestCaseWhereInput = {
@@ -69,21 +71,38 @@ export async function POST(
   req: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  const auth = (await getSession()) ?? (await authenticateApiKey(req));
-  if (!auth)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  const userId = "userId" in auth ? auth.userId : auth.id;
-
-  const body = await req.json().catch(() => null);
-  if (!body?.title)
-    return NextResponse.json({ error: "title is required" }, { status: 400 });
+  const g = await guard(req, { write: true });
+  if (g instanceof NextResponse) return g;
 
   const allowed = await db.project.findFirst({
-    where: { slug: params.slug, members: { some: { userId } } },
+    where: { slug: params.slug, members: { some: { userId: g.userId } } },
     select: { id: true },
   });
-  if (!allowed)
-    return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  if (!allowed) return notFoundError("Project not found");
+
+  const body = await req.json().catch(() => null);
+  if (!body || typeof body !== "object")
+    return validationError([{ field: "body", message: "Invalid JSON body" }]);
+
+  const errors: FieldError[] = [];
+  const title = String(body.title ?? "").trim();
+  if (!title) errors.push({ field: "title", message: "title is required" });
+
+  const priority = body.priority
+    ? String(body.priority).toUpperCase()
+    : "MEDIUM";
+  if (!PRIORITIES.includes(priority as (typeof PRIORITIES)[number]))
+    errors.push({
+      field: "priority",
+      message: `must be one of: ${PRIORITIES.join(", ")}`,
+    });
+
+  const type = body.type ? String(body.type).toUpperCase() : "FUNCTIONAL";
+  if (!CASE_TYPES.includes(type as (typeof CASE_TYPES)[number]))
+    errors.push({
+      field: "type",
+      message: `must be one of: ${CASE_TYPES.join(", ")}`,
+    });
 
   // Optional suite assignment — must be a suite in this project.
   const suiteId = body.suiteId ? String(body.suiteId) : null;
@@ -93,11 +112,10 @@ export async function POST(
       select: { id: true },
     });
     if (!suite)
-      return NextResponse.json(
-        { error: "suiteId not found in this project" },
-        { status: 400 }
-      );
+      errors.push({ field: "suiteId", message: "not found in this project" });
   }
+
+  if (errors.length) return validationError(errors);
 
   const project = await db.project.update({
     where: { slug: params.slug },
@@ -109,22 +127,19 @@ export async function POST(
       projectId: project.id,
       seq: project.caseCounter,
       suiteId,
-      title: String(body.title),
+      title,
       description: body.description ?? null,
       preconditions: body.preconditions ?? null,
       stepsJson: JSON.stringify(body.steps ?? []),
       expectedResult: body.expectedResult ?? null,
-      priority: body.priority ?? "MEDIUM",
-      type: body.type ?? "FUNCTIONAL",
+      priority,
+      type,
       tags: body.tags ?? "",
     },
   });
 
   return NextResponse.json(
-    {
-      id: testCase.id,
-      displayId: caseDisplayId(project.slug, testCase.seq),
-    },
+    { id: testCase.id, displayId: caseDisplayId(project.slug, testCase.seq) },
     { status: 201 }
   );
 }

@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
-import { resolveUserId } from "@/lib/api";
+import {
+  guard,
+  notFoundError,
+  validationError,
+  type FieldError,
+} from "@/lib/api";
 
 // Load the suite plus every other suite in the same project — the sibling set is
 // needed both for cycle detection (PATCH) and subtree deletion (DELETE).
@@ -34,31 +39,30 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: { slug: string; suiteId: string } }
 ) {
-  const userId = await resolveUserId(req);
-  if (!userId)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const g = await guard(req, { write: true });
+  if (g instanceof NextResponse) return g;
 
-  const ctx = await loadSuiteContext(userId, params.slug, params.suiteId);
-  if (!ctx)
-    return NextResponse.json({ error: "Suite not found" }, { status: 404 });
+  const ctx = await loadSuiteContext(g.userId, params.slug, params.suiteId);
+  if (!ctx) return notFoundError("Suite not found");
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object")
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return validationError([{ field: "body", message: "Invalid JSON body" }]);
 
   const data: Prisma.TestSuiteUpdateInput = {};
-  const bad = (msg: string) => NextResponse.json({ error: msg }, { status: 400 });
+  const errors: FieldError[] = [];
 
   if ("name" in body) {
     const name = String(body.name ?? "").trim();
-    if (!name) return bad("name cannot be empty");
-    data.name = name;
+    if (!name) errors.push({ field: "name", message: "cannot be empty" });
+    else data.name = name;
   }
   if ("description" in body) data.description = body.description ?? null;
   if ("order" in body) {
     const order = Number(body.order);
-    if (!Number.isInteger(order)) return bad("order must be an integer");
-    data.order = order;
+    if (!Number.isInteger(order))
+      errors.push({ field: "order", message: "must be an integer" });
+    else data.order = order;
   }
 
   // Reparent: null/"" promotes to root; an id must be in this project and must
@@ -66,24 +70,30 @@ export async function PATCH(
   if ("parentId" in body) {
     const pid = body.parentId ? String(body.parentId) : null;
     if (pid) {
-      if (pid === params.suiteId) return bad("a suite cannot be its own parent");
-      const inProject = ctx.siblings.some((s) => s.id === pid);
-      if (!inProject) return bad("parentId not found in this project");
       const subtree = collectSubtree(params.suiteId, ctx.siblings);
-      if (subtree.includes(pid))
-        return bad("parentId cannot be a descendant of the suite");
-      data.parent = { connect: { id: pid } };
+      if (pid === params.suiteId)
+        errors.push({ field: "parentId", message: "a suite cannot be its own parent" });
+      else if (!ctx.siblings.some((s) => s.id === pid))
+        errors.push({ field: "parentId", message: "not found in this project" });
+      else if (subtree.includes(pid))
+        errors.push({
+          field: "parentId",
+          message: "cannot be a descendant of the suite",
+        });
+      else data.parent = { connect: { id: pid } };
     } else {
       data.parent = { disconnect: true };
     }
   }
+
+  if (errors.length) return validationError(errors);
 
   const updated = await db.testSuite.update({
     where: { id: ctx.suite.id },
     data,
   });
   await logAudit({
-    userId,
+    userId: g.userId,
     action: "suite.update",
     entityType: "suite",
     entityId: updated.id,
@@ -103,13 +113,11 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: { slug: string; suiteId: string } }
 ) {
-  const userId = await resolveUserId(req);
-  if (!userId)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const g = await guard(req, { write: true });
+  if (g instanceof NextResponse) return g;
 
-  const ctx = await loadSuiteContext(userId, params.slug, params.suiteId);
-  if (!ctx)
-    return NextResponse.json({ error: "Suite not found" }, { status: 404 });
+  const ctx = await loadSuiteContext(g.userId, params.slug, params.suiteId);
+  if (!ctx) return notFoundError("Suite not found");
 
   // Remove the suite and any sub-suites. Cases keep existing — their suiteId is
   // set null automatically (onDelete: SetNull), i.e. they become unassigned.
@@ -123,7 +131,7 @@ export async function DELETE(
       .map((id) => db.testSuite.delete({ where: { id } }))
   );
   await logAudit({
-    userId,
+    userId: g.userId,
     action: "suite.delete",
     entityType: "suite",
     entityId: params.suiteId,
