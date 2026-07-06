@@ -9,6 +9,7 @@ import {
   serializeRun,
   type FieldError,
 } from "@/lib/api";
+import { dispatchWebhook } from "@/lib/webhooks";
 
 const RUN_STATUSES = ["ACTIVE", "COMPLETED"] as const;
 
@@ -95,5 +96,10 @@ export async function PATCH(
     detail: Object.keys(body).join(", "),
   });
 
-  return NextResponse.json(serializeRun(updated, await runStats(updated.id)));
+  const stats = await runStats(updated.id);
+  // Fire only on the ACTIVE → COMPLETED transition, not on every edit.
+  if (updated.status === "COMPLETED" && run.status !== "COMPLETED")
+    await dispatchWebhook(updated.projectId, "run.completed", serializeRun(updated, stats));
+
+  return NextResponse.json(serializeRun(updated, stats));
 }

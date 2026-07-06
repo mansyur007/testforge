@@ -6,6 +6,8 @@ import { requireSession } from "@/lib/auth";
 import { memberScope } from "@/lib/projects";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { CodeBlock } from "@/components/CodeBlock";
+import { WebhookManager } from "@/components/WebhookManager";
+import { WEBHOOK_EVENTS } from "@/lib/webhooks";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +30,12 @@ export default async function ApiPage({
     where: { slug: params.slug, ...memberScope(session.userId) },
   });
   if (!project) notFound();
+
+  const webhooks = await db.webhook.findMany({
+    where: { projectId: project.id },
+    orderBy: { createdAt: "desc" },
+    select: { id: true, url: true, events: true, secret: true, active: true },
+  });
 
   const slug = project.slug;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
@@ -134,6 +142,23 @@ export default async function ApiPage({
                   </div>
                 </div>
               ))}
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-slate-200 bg-white p-6">
+            <h3 className="flex items-center gap-2 font-semibold">
+              <TFIcon name="cicd" className="h-5 w-5" /> Webhooks
+            </h3>
+            <p className="mt-1 text-sm text-slate-500">
+              Get a signed <code className="rounded bg-slate-100 px-1 text-xs">POST</code>{" "}
+              when cases change or a run completes.
+            </p>
+            <div className="mt-4">
+              <WebhookManager
+                projectId={project.id}
+                webhooks={webhooks}
+                availableEvents={WEBHOOK_EVENTS}
+              />
             </div>
           </section>
         </div>

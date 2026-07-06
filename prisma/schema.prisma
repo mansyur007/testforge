@@ -52,6 +52,21 @@ model Project {
   cases      TestCase[]
   runs       TestRun[]
   milestones Milestone[]
+  webhooks   Webhook[]
+}
+
+// Outbound webhooks: POST a signed JSON payload to `url` when a subscribed event
+// fires (best-effort, HMAC-SHA256 signature in X-TestForge-Signature).
+model Webhook {
+  id        String   @id @default(cuid())
+  projectId String
+  url       String
+  secret    String // used to sign deliveries
+  events    String // comma-separated event names (see lib/webhooks)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model ProjectMember {
