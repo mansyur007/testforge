@@ -28,7 +28,7 @@ export default async function CaseDetailPage({
       project: { members: { some: { userId: session.userId } } },
     },
     include: {
-      project: { include: { suites: { orderBy: { order: "asc" } } } },
+      project: true,
       suite: true,
       results: {
         include: { run: true },
@@ -41,9 +41,6 @@ export default async function CaseDetailPage({
 
   const steps: TestStep[] = JSON.parse(testCase.stepsJson || "[]");
   const displayId = caseDisplayId(testCase.project.slug, testCase.seq);
-  const rootSuites = testCase.project.suites.filter((s) => !s.parentId);
-  const childrenOf = (id: string) =>
-    testCase.project.suites.filter((s) => s.parentId === id);
   // Back link returns to the cases list, scoped to this case's suite if it has one.
   const backHref = `/projects/${testCase.project.slug}${testCase.suiteId ? `?suite=${testCase.suiteId}` : ""}`;
 
@@ -160,44 +157,6 @@ export default async function CaseDetailPage({
         </div>
 
         <div className="space-y-6">
-          <section className="rounded-xl border border-slate-200 bg-white p-4">
-            <h3 className="mb-3 text-xs font-semibold uppercase text-slate-400">
-              Test Suites
-            </h3>
-            <ul className="space-y-1 text-sm">
-              <li>
-                <Link
-                  href={`/projects/${testCase.project.slug}`}
-                  className="block rounded px-2 py-1 hover:bg-slate-100"
-                >
-                  All Test Cases
-                </Link>
-              </li>
-              {rootSuites.map((suite) => (
-                <li key={suite.id}>
-                  <Link
-                    href={`/projects/${testCase.project.slug}?suite=${suite.id}`}
-                    className={`block rounded px-2 py-1 hover:bg-slate-100 ${testCase.suiteId === suite.id ? "bg-indigo-50 font-medium text-indigo-700" : ""}`}
-                  >
-                    <span className="inline-flex items-center gap-1.5"><TFIcon name="nav-tree" className="h-4 w-4" /> {suite.name}</span>
-                  </Link>
-                  {childrenOf(suite.id).map((section) => (
-                    <Link
-                      key={section.id}
-                      href={`/projects/${testCase.project.slug}?suite=${section.id}`}
-                      className={`ml-4 block rounded px-2 py-1 text-slate-600 hover:bg-slate-100 ${testCase.suiteId === section.id ? "bg-indigo-50 font-medium text-indigo-700" : ""}`}
-                    >
-                      └ {section.name}
-                    </Link>
-                  ))}
-                </li>
-              ))}
-              {rootSuites.length === 0 && (
-                <li className="px-2 py-1 text-xs text-slate-400">No suites yet.</li>
-              )}
-            </ul>
-          </section>
-
           <section className="rounded-xl border border-slate-200 bg-white p-6">
             <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
               Execution History

@@ -53,9 +53,29 @@ export function CasesTable({
   const [confirmText, setConfirmText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const selectAllRef = useRef<HTMLInputElement>(null);
 
   const allIds = cases.map((c) => c.id);
+
+  // Client-side pagination. Selection lives by id, so it survives page changes
+  // and Ctrl/Cmd+A still spans the whole filtered set, not just this page.
+  const totalPages = Math.max(1, Math.ceil(cases.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const pageStart = (currentPage - 1) * pageSize;
+  const pageRows = cases.slice(pageStart, pageStart + pageSize);
+
+  // Jump back to page 1 whenever the filter changes (new result set).
+  useEffect(() => {
+    setPage(1);
+  }, [
+    searchParams.suite,
+    searchParams.q,
+    searchParams.priority,
+    searchParams.type,
+    searchParams.tag,
+  ]);
   const allSelected = cases.length > 0 && selected.size === cases.length;
   const someSelected = selected.size > 0 && !allSelected;
 
@@ -272,7 +292,7 @@ export function CasesTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {cases.map((c) => {
+            {pageRows.map((c) => {
               const isSel = selected.has(c.id);
               return (
                 <tr
@@ -355,10 +375,58 @@ export function CasesTable({
         </table>
       </div>
 
-      <p className="text-xs text-slate-400">
-        {cases.length} test case
-        {canWrite && " · Ctrl/Cmd+A to select all · drag onto a suite to move"}
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+        <span>
+          {cases.length === 0
+            ? "0 test cases"
+            : `Showing ${pageStart + 1}–${pageStart + pageRows.length} of ${cases.length}`}
+          {canWrite &&
+            " · Ctrl/Cmd+A to select all · drag onto a suite to move"}
+        </span>
+        <div className="flex items-center gap-2">
+          <label className="flex items-center gap-1.5">
+            <span>Rows</span>
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                setPageSize(Number(e.target.value));
+                setPage(1);
+              }}
+              data-testid="cases-page-size"
+              className="rounded border border-slate-300 px-1.5 py-1 text-xs text-slate-600"
+            >
+              {[10, 25, 50, 100].map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </label>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage <= 1}
+              data-testid="cases-prev-page"
+              className="rounded border border-slate-300 px-2 py-1 text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+            >
+              Prev
+            </button>
+            <span data-testid="cases-page-indicator" className="px-1">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage >= totalPages}
+              data-testid="cases-next-page"
+              className="rounded border border-slate-300 px-2 py-1 text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </div>
 
       {showDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
