@@ -31,8 +31,13 @@ export async function GET(req: NextRequest) {
       suite: c.suite?.name ?? "",
       description: c.description ?? "",
       preconditions: c.preconditions ?? "",
+      // Match the import/template format: "action :: expected" per step, steps
+      // separated by " | ". The ":: expected" part is only added when present,
+      // so an exported CSV round-trips cleanly back through import.
       steps: (JSON.parse(c.stepsJson || "[]") as TestStep[])
-        .map((s) => s.action)
+        .map((s) =>
+          s.expected?.trim() ? `${s.action} :: ${s.expected}` : s.action
+        )
         .join(" | "),
       expected_result: c.expectedResult ?? "",
       priority: c.priority,
