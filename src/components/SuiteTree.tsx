@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { TFIcon } from "@/components/icons";
 import { SuiteDropZone } from "@/components/SuiteDropZone";
@@ -23,13 +23,41 @@ export function SuiteTree({
   canWrite: boolean;
 }) {
   const [query, setQuery] = useState("");
-  // Roots are expanded by default; a root id in this set is collapsed.
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
 
   const rootsWithChildren = useMemo(
     () => roots.filter((r) => r.children.length > 0).map((r) => r.id),
     [roots]
   );
+
+  // A root id in this set is collapsed. First visit (no saved state) starts with
+  // every root collapsed; after that we remember the last state per project.
+  const storageKey = `tf:suites:collapsed:${slug}`;
+  const [collapsed, setCollapsed] = useState<Set<string>>(
+    () => new Set(roots.filter((r) => r.children.length > 0).map((r) => r.id))
+  );
+  const [hydrated, setHydrated] = useState(false);
+
+  // Load the saved state once on mount (localStorage is client-only, so the SSR
+  // render uses the all-collapsed default and is corrected here).
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) setCollapsed(new Set(JSON.parse(raw) as string[]));
+    } catch {
+      // ignore malformed/unavailable storage
+    }
+    setHydrated(true);
+  }, [storageKey]);
+
+  // Persist after hydration so we never overwrite saved state with the default.
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(Array.from(collapsed)));
+    } catch {
+      // ignore
+    }
+  }, [collapsed, hydrated, storageKey]);
 
   // One search box, matching both suites and sub-suites. A root shows if it or
   // any child matches; a matching root reveals all its children, otherwise only
