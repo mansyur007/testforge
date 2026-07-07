@@ -9,8 +9,7 @@ import { memberScope } from "@/lib/projects";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { NewSuiteForm } from "@/components/NewSuiteForm";
 import { CasesTable } from "@/components/CasesTable";
-import { DeleteSuiteButton } from "@/components/DeleteSuiteButton";
-import { SuiteDropZone } from "@/components/SuiteDropZone";
+import { SuiteTree } from "@/components/SuiteTree";
 
 export const dynamic = "force-dynamic";
 
@@ -63,14 +62,6 @@ export default async function ProjectPage({
     (directCaseCount.get(id) ?? 0) +
     childrenOf(id).reduce((sum, ch) => sum + subtreeCaseCount(ch.id), 0);
 
-  const filterQS = (overrides: Record<string, string | undefined>) => {
-    const params2 = new URLSearchParams();
-    const merged = { ...searchParams, ...overrides };
-    Object.entries(merged).forEach(([k, v]) => v && params2.set(k, v));
-    const s = params2.toString();
-    return s ? `?${s}` : "";
-  };
-
   return (
     <div className="space-y-6">
       <ProjectTabs slug={project.slug} name={project.name} active="cases" />
@@ -82,67 +73,28 @@ export default async function ProjectPage({
             <h3 className="mb-3 text-xs font-semibold uppercase text-slate-400">
               Test Suites
             </h3>
-            <ul className="space-y-1 text-sm">
-              <li>
-                <SuiteDropZone projectSlug={project.slug} suiteId={null}>
-                  <Link
-                    href={`/projects/${project.slug}${filterQS({ suite: undefined })}`}
-                    className={`block rounded px-2 py-1 hover:bg-slate-100 ${!searchParams.suite ? "bg-indigo-50 font-medium text-indigo-700" : ""}`}
-                  >
-                    All Test Cases
-                  </Link>
-                </SuiteDropZone>
-              </li>
-              {rootSuites.map((suite) => (
-                <li key={suite.id}>
-                  <SuiteDropZone
-                    projectSlug={project.slug}
-                    suiteId={suite.id}
-                    className="flex items-center"
-                  >
-                    <Link
-                      href={`/projects/${project.slug}${filterQS({ suite: suite.id })}`}
-                      className={`min-w-0 flex-1 truncate rounded px-2 py-1 hover:bg-slate-100 ${searchParams.suite === suite.id ? "bg-indigo-50 font-medium text-indigo-700" : ""}`}
-                    >
-                      <span className="inline-flex items-center gap-1.5"><TFIcon name="nav-tree" className="h-4 w-4" /> {suite.name}</span>
-                    </Link>
-                    {canWrite && (
-                      <DeleteSuiteButton
-                        suiteId={suite.id}
-                        suiteName={suite.name}
-                        caseCount={subtreeCaseCount(suite.id)}
-                      />
-                    )}
-                  </SuiteDropZone>
-                  {childrenOf(suite.id).map((section) => (
-                    <SuiteDropZone
-                      key={section.id}
-                      projectSlug={project.slug}
-                      suiteId={section.id}
-                      className="ml-4 flex items-center"
-                    >
-                      <Link
-                        href={`/projects/${project.slug}${filterQS({ suite: section.id })}`}
-                        className={`min-w-0 flex-1 truncate rounded px-2 py-1 text-slate-600 hover:bg-slate-100 ${searchParams.suite === section.id ? "bg-indigo-50 font-medium text-indigo-700" : ""}`}
-                      >
-                        └ {section.name}
-                      </Link>
-                      {canWrite && (
-                        <DeleteSuiteButton
-                          suiteId={section.id}
-                          suiteName={section.name}
-                          caseCount={subtreeCaseCount(section.id)}
-                        />
-                      )}
-                    </SuiteDropZone>
-                  ))}
-                </li>
-              ))}
-            </ul>
-            <NewSuiteForm
-              projectId={project.id}
-              rootSuites={rootSuites.map((s) => ({ id: s.id, name: s.name }))}
+            <SuiteTree
+              slug={project.slug}
+              canWrite={canWrite}
+              activeSuite={searchParams.suite}
+              searchParams={searchParams}
+              roots={rootSuites.map((suite) => ({
+                id: suite.id,
+                name: suite.name,
+                caseCount: subtreeCaseCount(suite.id),
+                children: childrenOf(suite.id).map((section) => ({
+                  id: section.id,
+                  name: section.name,
+                  caseCount: subtreeCaseCount(section.id),
+                })),
+              }))}
             />
+            <div className="mt-3">
+              <NewSuiteForm
+                projectId={project.id}
+                rootSuites={rootSuites.map((s) => ({ id: s.id, name: s.name }))}
+              />
+            </div>
           </div>
         </aside>
 
