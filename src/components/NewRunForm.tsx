@@ -72,6 +72,16 @@ export function NewRunForm({
       return next;
     });
 
+  const unselectAllFiltered = () =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      filtered.forEach((c) => next.delete(c.id));
+      return next;
+    });
+
+  const allFilteredSelected =
+    filtered.length > 0 && filtered.every((c) => selected.has(c.id));
+
   return (
     <form action={formAction} className="space-y-5">
       <input type="hidden" name="projectId" value={projectId} />
@@ -158,7 +168,11 @@ export function NewRunForm({
           />
           <button type="button" onClick={selectAllFiltered}
             className="rounded-lg border border-indigo-300 px-3 py-1.5 text-sm text-indigo-600 hover:bg-indigo-50">
-            Select all filtered ({filtered.length})
+            Select all ({filtered.length})
+          </button>
+          <button type="button" onClick={unselectAllFiltered}
+            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50">
+            Unselect all
           </button>
           <button type="button" onClick={() => setSelected(new Set())}
             className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-50">
@@ -166,6 +180,18 @@ export function NewRunForm({
           </button>
         </div>
         <div className="max-h-96 divide-y divide-slate-100 overflow-y-auto rounded-lg border border-slate-200">
+          {filtered.length > 0 && (
+            <label className="flex cursor-pointer items-center gap-3 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100">
+              <input
+                type="checkbox"
+                checked={allFilteredSelected}
+                onChange={() =>
+                  allFilteredSelected ? unselectAllFiltered() : selectAllFiltered()
+                }
+              />
+              <span>{allFilteredSelected ? "Unselect all" : "Select all"}</span>
+            </label>
+          )}
           {filtered.map((c) => (
             <label
               key={c.id}
