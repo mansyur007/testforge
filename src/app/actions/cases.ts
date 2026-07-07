@@ -167,7 +167,11 @@ export async function bulkUpdateCases(formData: FormData) {
   const ids = formData.getAll("caseIds").map(String);
   const field = String(formData.get("bulkField"));
   const value = String(formData.get("bulkValue"));
-  if (!ids.length || !["priority", "type", "status"].includes(field)) return;
+  if (
+    !ids.length ||
+    !["priority", "type", "status", "automationStatus"].includes(field)
+  )
+    return;
 
   await db.testCase.updateMany({
     where: {
