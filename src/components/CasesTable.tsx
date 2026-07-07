@@ -10,9 +10,17 @@ import {
   PRIORITIES,
   CASE_TYPES,
   CASE_STATUSES,
+  AUTOMATION_STATUSES,
 } from "@/lib/constants";
 import { bulkUpdateCases, bulkDeleteCases } from "@/app/actions/cases";
 import { CASE_DND_MIME, CASES_MOVED_EVENT } from "@/lib/dnd";
+
+const AUTOMATION_LABELS: Record<string, string> = {
+  NOT_AUTOMATED: "Not automated",
+  IN_PROGRESS: "In progress",
+  AUTOMATED: "Automated",
+  TO_BE_UPDATED: "To be updated",
+};
 
 type CaseRow = {
   id: string;
@@ -116,6 +124,12 @@ export function CasesTable({
   // part of the current selection, the whole selection travels; otherwise just
   // that one row.
   function onDragStart(e: React.DragEvent, id: string) {
+    // Don't hijack interactions with the inline priority/automation selects.
+    const target = e.target as HTMLElement | null;
+    if (target?.closest("select")) {
+      e.preventDefault();
+      return;
+    }
     const ids = selected.has(id) ? Array.from(selected) : [id];
     e.dataTransfer.setData(CASE_DND_MIME, JSON.stringify(ids));
     e.dataTransfer.effectAllowed = "move";
@@ -153,12 +167,28 @@ export function CasesTable({
     return () => document.removeEventListener("keydown", onKey);
   }, [canWrite, cases, showDelete]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const bulkOptions =
-    bulkField === "priority"
+  const optionsFor = (field: string) =>
+    field === "priority"
       ? PRIORITIES
-      : bulkField === "type"
+      : field === "type"
         ? CASE_TYPES
-        : CASE_STATUSES;
+        : field === "automationStatus"
+          ? AUTOMATION_STATUSES
+          : CASE_STATUSES;
+
+  const bulkOptions = optionsFor(bulkField);
+
+  // Inline single-row edit (priority / automation) straight from the table.
+  function inlineUpdate(id: string, field: string, value: string) {
+    const fd = new FormData();
+    fd.set("projectSlug", projectSlug);
+    fd.set("bulkField", field);
+    fd.set("bulkValue", value);
+    fd.append("caseIds", id);
+    startTransition(async () => {
+      await bulkUpdateCases(fd);
+    });
+  }
 
   function applyBulkEdit() {
     const fd = new FormData();
@@ -218,19 +248,14 @@ export function CasesTable({
             value={bulkField}
             onChange={(e) => {
               setBulkField(e.target.value);
-              const opts =
-                e.target.value === "priority"
-                  ? PRIORITIES
-                  : e.target.value === "type"
-                    ? CASE_TYPES
-                    : CASE_STATUSES;
-              setBulkValue(opts[0]);
+              setBulkValue(optionsFor(e.target.value)[0]);
             }}
             className="rounded border border-slate-300 px-2 py-1 text-xs"
           >
             <option value="priority">Priority</option>
             <option value="type">Type</option>
             <option value="status">Status</option>
+            <option value="automationStatus">Automation</option>
           </select>
           <span>to</span>
           <select
@@ -239,7 +264,9 @@ export function CasesTable({
             className="rounded border border-slate-300 px-2 py-1 text-xs"
           >
             {bulkOptions.map((o) => (
-              <option key={o}>{o}</option>
+              <option key={o} value={o}>
+                {bulkField === "automationStatus" ? AUTOMATION_LABELS[o] : o}
+              </option>
             ))}
           </select>
           <button
@@ -329,15 +356,51 @@ export function CasesTable({
                     )}
                   </td>
                   <td className="px-3 py-2.5">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${PRIORITY_BADGES[c.priority]}`}
-                    >
-                      {c.priority}
-                    </span>
+                    {canWrite ? (
+                      <select
+                        value={c.priority}
+                        disabled={pending}
+                        aria-label={`Priority for ${caseDisplayId(projectSlug, c.seq)}`}
+                        data-testid={`case-priority-${c.id}`}
+                        onChange={(e) =>
+                          inlineUpdate(c.id, "priority", e.target.value)
+                        }
+                        className={`cursor-pointer rounded-full border-0 px-2 py-0.5 text-xs font-medium focus:ring-2 focus:ring-indigo-400 disabled:opacity-50 ${PRIORITY_BADGES[c.priority]}`}
+                      >
+                        {PRIORITIES.map((p) => (
+                          <option key={p} value={p}>
+                            {p}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${PRIORITY_BADGES[c.priority]}`}
+                      >
+                        {c.priority}
+                      </span>
+                    )}
                   </td>
                   <td className="px-3 py-2.5 text-xs text-slate-600">{c.type}</td>
                   <td className="px-3 py-2.5 text-xs text-slate-600">
-                    {c.automationStatus === "AUTOMATED" ? (
+                    {canWrite ? (
+                      <select
+                        value={c.automationStatus}
+                        disabled={pending}
+                        aria-label={`Automation for ${caseDisplayId(projectSlug, c.seq)}`}
+                        data-testid={`case-automation-${c.id}`}
+                        onChange={(e) =>
+                          inlineUpdate(c.id, "automationStatus", e.target.value)
+                        }
+                        className="cursor-pointer rounded border border-slate-300 bg-white px-1.5 py-0.5 text-xs text-slate-600 focus:border-indigo-500 focus:outline-none disabled:opacity-50"
+                      >
+                        {AUTOMATION_STATUSES.map((a) => (
+                          <option key={a} value={a}>
+                            {AUTOMATION_LABELS[a]}
+                          </option>
+                        ))}
+                      </select>
+                    ) : c.automationStatus === "AUTOMATED" ? (
                       <span className="inline-flex items-center gap-1">
                         <TFIcon name="automation" className="h-4 w-4" /> Automated
                       </span>
