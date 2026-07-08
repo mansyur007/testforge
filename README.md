@@ -46,6 +46,13 @@ Demo login: `admin@testforge.local` / `admin12345`
 > (§5.1, PostgreSQL): change `provider` in `prisma/schema.prisma` to
 > `postgresql` and set `DATABASE_URL`.
 
+## Backup & self-hosted migration
+
+Your entire instance (users, projects, cases, runs, API keys, audit log, …)
+lives in a single database. To back it up or move to your own server if the
+hosted site goes away, see
+[docs/SELF-HOSTED-MIGRATION.md](docs/SELF-HOSTED-MIGRATION.md).
+
 ## Upload CI/CD results
 
 ```bash
