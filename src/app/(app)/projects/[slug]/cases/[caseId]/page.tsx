@@ -13,6 +13,7 @@ import {
 import { cloneCase } from "@/app/actions/cases";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { DeleteCaseButton } from "@/components/DeleteCaseButton";
+import { AttachmentUploader } from "@/components/AttachmentUploader";
 
 export const dynamic = "force-dynamic";
 
@@ -38,6 +39,13 @@ export default async function CaseDetailPage({
     },
   });
   if (!testCase || testCase.project.slug !== params.slug) notFound();
+
+  const attachments = await db.attachment.findMany({
+    where: { entityType: "CASE", entityId: testCase.id },
+    orderBy: { createdAt: "asc" },
+  });
+  const maxUploadMb =
+    parseInt(process.env.TF_MAX_UPLOAD_MB ?? "10", 10) || 10;
 
   const steps: TestStep[] = JSON.parse(testCase.stepsJson || "[]");
   const displayId = caseDisplayId(testCase.project.slug, testCase.seq);
@@ -153,6 +161,26 @@ export default async function CaseDetailPage({
                 </span>
               </div>
             )}
+          </section>
+
+          <section className="rounded-xl border border-slate-200 bg-white p-6">
+            <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
+              Attachments
+            </h3>
+            <AttachmentUploader
+              projectSlug={testCase.project.slug}
+              entityType="CASE"
+              entityId={testCase.id}
+              canWrite={session.role !== "VIEWER"}
+              maxMb={maxUploadMb}
+              initial={attachments.map((a) => ({
+                id: a.id,
+                filename: a.filename,
+                mimeType: a.mimeType,
+                sizeBytes: a.sizeBytes,
+                url: `/api/attachments/${a.id}`,
+              }))}
+            />
           </section>
         </div>
 

@@ -34,6 +34,7 @@ model User {
   createdRuns    TestRun[]       @relation("RunCreator")
   apiKeys        ApiKey[]
   auditLogs      AuditLog[]
+  attachments    Attachment[]
 }
 
 model Project {
@@ -53,6 +54,7 @@ model Project {
   runs       TestRun[]
   milestones Milestone[]
   webhooks   Webhook[]
+  attachments Attachment[]
 }
 
 // Outbound webhooks: POST a signed JSON payload to `url` when a subscribed event
@@ -67,6 +69,29 @@ model Webhook {
   createdAt DateTime @default(now())
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// F-01: file attachments on test cases & run results. Files live on disk under
+// TF_UPLOAD_DIR (Docker: /data/uploads); rows are deduped per project by sha256
+// (same content → same storageKey, file stored once). See src/lib/storage.ts.
+model Attachment {
+  id         String   @id @default(cuid())
+  projectId  String
+  uploaderId String
+  entityType String   // "CASE" | "RESULT" (extensible: COMMENT, SESSION, ...)
+  entityId   String
+  filename   String   // original name, sanitized
+  mimeType   String
+  sizeBytes  Int
+  sha256     String
+  storageKey String   // relative path inside TF_UPLOAD_DIR, never absolute
+  createdAt  DateTime @default(now())
+
+  project  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploader User    @relation(fields: [uploaderId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([projectId, sha256])
 }
 
 model ProjectMember {

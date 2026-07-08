@@ -1,4 +1,4 @@
-import type { TestCase, TestRun, TestRunResult } from "@prisma/client";
+import type { Attachment, TestCase, TestRun, TestRunResult } from "@prisma/client";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSession, verifyApiKey } from "@/lib/auth";
 import { caseDisplayId } from "@/lib/constants";
@@ -121,6 +121,20 @@ export function serializeRun(
     createdAt: r.createdAt.toISOString(),
     completedAt: r.completedAt ? r.completedAt.toISOString() : null,
     ...(stats ? { stats } : {}),
+  };
+}
+
+export function serializeAttachment(a: Attachment) {
+  return {
+    id: a.id,
+    filename: a.filename,
+    mimeType: a.mimeType,
+    sizeBytes: a.sizeBytes,
+    entityType: a.entityType,
+    entityId: a.entityId,
+    uploaderId: a.uploaderId,
+    url: `/api/attachments/${a.id}`,
+    createdAt: a.createdAt.toISOString(),
   };
 }
 

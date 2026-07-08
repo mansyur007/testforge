@@ -3,6 +3,10 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { submitResult } from "@/app/actions/runs";
 import { RESULT_BADGES, PRIORITY_BADGES, type TestStep } from "@/lib/constants";
+import {
+  AttachmentUploader,
+  type AttachmentItem,
+} from "@/components/AttachmentUploader";
 
 type ResultItem = {
   id: string;
@@ -17,6 +21,7 @@ type ResultItem = {
   preconditions: string;
   expectedResult: string;
   steps: TestStep[];
+  attachments: AttachmentItem[];
 };
 
 // Eksekusi test run (PRD §4.3.3 + US-002):
@@ -24,9 +29,15 @@ type ResultItem = {
 export function RunExecutor({
   results,
   runStatus,
+  projectSlug,
+  canWrite,
+  maxUploadMb,
 }: {
   results: ResultItem[];
   runStatus: string;
+  projectSlug: string;
+  canWrite: boolean;
+  maxUploadMb: number;
 }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [comment, setComment] = useState("");
@@ -150,6 +161,22 @@ export function RunExecutor({
               {active.elapsedSeconds != null && <> · {active.elapsedSeconds}s</>}
             </p>
           )}
+
+          {/* F-01: evidence attachments per result. key remounts on case switch. */}
+          <div className="mt-4 border-t border-slate-100 pt-4">
+            <p className="mb-2 text-xs font-semibold uppercase text-slate-400">
+              Evidence
+            </p>
+            <AttachmentUploader
+              key={active.id}
+              projectSlug={projectSlug}
+              entityType="RESULT"
+              entityId={active.id}
+              canWrite={canWrite && runStatus === "ACTIVE"}
+              maxMb={maxUploadMb}
+              initial={active.attachments}
+            />
+          </div>
         </div>
 
         {runStatus === "ACTIVE" ? (

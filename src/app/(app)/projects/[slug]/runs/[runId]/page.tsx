@@ -31,6 +31,22 @@ export default async function RunDetailPage({
   });
   if (!run || run.project.slug !== params.slug) notFound();
 
+  // F-01: evidence attachments per result, grouped for the executor panel.
+  const resultAttachments = await db.attachment.findMany({
+    where: {
+      entityType: "RESULT",
+      entityId: { in: run.results.map((r) => r.id) },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+  const attachmentsByResult = new Map<string, typeof resultAttachments>();
+  for (const a of resultAttachments) {
+    const list = attachmentsByResult.get(a.entityId) ?? [];
+    list.push(a);
+    attachmentsByResult.set(a.entityId, list);
+  }
+  const maxUploadMb = parseInt(process.env.TF_MAX_UPLOAD_MB ?? "10", 10) || 10;
+
   const total = run.results.length || 1;
   const counts: Record<string, number> = {};
   run.results.forEach((r) => (counts[r.status] = (counts[r.status] ?? 0) + 1));
@@ -104,6 +120,9 @@ export default async function RunDetailPage({
 
       <RunExecutor
         runStatus={run.status}
+        projectSlug={run.project.slug}
+        canWrite={session.role !== "VIEWER"}
+        maxUploadMb={maxUploadMb}
         results={run.results.map((r) => ({
           id: r.id,
           status: r.status,
@@ -117,6 +136,13 @@ export default async function RunDetailPage({
           preconditions: r.testCase.preconditions ?? "",
           expectedResult: r.testCase.expectedResult ?? "",
           steps: JSON.parse(r.testCase.stepsJson || "[]") as TestStep[],
+          attachments: (attachmentsByResult.get(r.id) ?? []).map((a) => ({
+            id: a.id,
+            filename: a.filename,
+            mimeType: a.mimeType,
+            sizeBytes: a.sizeBytes,
+            url: `/api/attachments/${a.id}`,
+          })),
         }))}
       />
     </div>

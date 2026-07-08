@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { purgeExpiredCases, CASE_RETENTION_DAYS } from "@/lib/cases-purge";
+import { sweepOrphanAttachments } from "@/lib/attachments";
 
 export const dynamic = "force-dynamic";
 
@@ -19,5 +20,12 @@ export async function GET(req: Request) {
   }
 
   const purged = await purgeExpiredCases(CASE_RETENTION_DAYS);
-  return NextResponse.json({ purged, retentionDays: CASE_RETENTION_DAYS });
+  // F-01: also reap attachments whose owning entity was hard-deleted by other
+  // paths (e.g. run deletion cascading results).
+  const orphanedAttachments = await sweepOrphanAttachments();
+  return NextResponse.json({
+    purged,
+    orphanedAttachments,
+    retentionDays: CASE_RETENTION_DAYS,
+  });
 }
