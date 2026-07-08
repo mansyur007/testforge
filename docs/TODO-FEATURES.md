@@ -146,7 +146,19 @@ A feature is **done** only when all boxes below are checked:
 
 ---
 
-### F-01 — Attachments & file uploads `[ ]`
+### F-01 — Attachments & file uploads `[x]`
+
+> **Status: DONE** (2026-07-08, branch `feat/attachments`). Implemented as specified, with
+> these deliberate deviations:
+> - Mutations live in the v1 API routes only (`guard()` covers both session & API-key auth,
+>   audit is logged there) — no separate `src/app/actions/attachments.ts`; the UI uploads
+>   via `fetch` to the API.
+> - **Bonus:** sha256 dedupe per project (identical bytes stored once — the VPS disk is
+>   small) plus a `GET /api/v1/projects/[slug]/attachments` list endpoint.
+> - Demo seed data omitted (a seeded attachment row would point at a file that doesn't
+>   exist on a fresh disk).
+> - e2e covers the happy path (upload → inline serving → delete → 404); the size-limit and
+>   non-member-404 ACs are enforced server-side but not e2e-automated yet.
 
 **Goal.** Upload files (screenshots, logs, any file) onto test cases and run results; view/download
 them; images render as thumbnails. This is the single most-cited missing feature vs every competitor.

@@ -434,6 +434,86 @@ export function openApiSpec() {
           },
         },
       },
+      "/projects/{slug}/attachments": {
+        parameters: [slugParam],
+        get: {
+          tags: ["Attachments"],
+          summary: "List attachments",
+          parameters: [
+            { name: "entityType", in: "query", schema: { type: "string", enum: ["CASE", "RESULT"] } },
+            { name: "entityId", in: "query", schema: { type: "string" } },
+            { name: "cursor", in: "query", schema: { type: "string" } },
+            { name: "limit", in: "query", schema: { type: "integer", default: 50, maximum: 200 } },
+          ],
+          responses: {
+            "200": {
+              description: "Paginated list.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      items: { type: "array", items: { $ref: "#/components/schemas/Attachment" } },
+                      nextCursor: { type: ["string", "null"] },
+                    },
+                  },
+                },
+              },
+            },
+            "404": err("Project not found."),
+          },
+        },
+        post: {
+          tags: ["Attachments"],
+          summary: "Upload a file onto a case or run result",
+          description:
+            "multipart/form-data with fields `file`, `entityType` (CASE|RESULT), `entityId`. " +
+            "Max size is TF_MAX_UPLOAD_MB (default 10 MB). Identical content is deduplicated per project. " +
+            "Download the file via the returned `url` (only PNG/JPEG/GIF/WebP render inline; everything else downloads).",
+          requestBody: {
+            required: true,
+            content: {
+              "multipart/form-data": {
+                schema: {
+                  type: "object",
+                  required: ["file", "entityType", "entityId"],
+                  properties: {
+                    file: { type: "string", format: "binary" },
+                    entityType: { type: "string", enum: ["CASE", "RESULT"] },
+                    entityId: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "201": {
+              description: "Uploaded.",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/Attachment" } } },
+            },
+            "400": err("Missing/invalid fields."),
+            "403": err("Read-only key or viewer role."),
+            "404": err("Project or target entity not found."),
+            "413": err("File exceeds the upload limit."),
+          },
+        },
+      },
+      "/projects/{slug}/attachments/{id}": {
+        parameters: [
+          slugParam,
+          { name: "id", in: "path", required: true, schema: { type: "string" } },
+        ],
+        delete: {
+          tags: ["Attachments"],
+          summary: "Delete an attachment",
+          description: "Allowed for the uploader, a project OWNER/ADMIN, or an org ADMIN.",
+          responses: {
+            "204": { description: "Deleted." },
+            "403": err("Not allowed to delete this attachment."),
+            "404": err("Attachment not found."),
+          },
+        },
+      },
     },
     components: {
       securitySchemes: {
@@ -541,6 +621,20 @@ export function openApiSpec() {
             assigneeId: { type: ["string", "null"] },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },
+          },
+        },
+        Attachment: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            filename: { type: "string" },
+            mimeType: { type: "string" },
+            sizeBytes: { type: "integer" },
+            entityType: { type: "string", enum: ["CASE", "RESULT"] },
+            entityId: { type: "string" },
+            uploaderId: { type: "string" },
+            url: { type: "string", description: "Relative download URL (/api/attachments/{id})." },
+            createdAt: { type: "string", format: "date-time" },
           },
         },
       },

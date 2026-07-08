@@ -7,6 +7,9 @@ services:
     environment:
       DATABASE_URL: "file:/data/testforge.db"
       AUTH_SECRET: "${AUTH_SECRET:-ganti-secret-ini-di-production}"
+      # Attachments (F-01) live next to the DB in the same volume.
+      TF_UPLOAD_DIR: /data/uploads
+      TF_MAX_UPLOAD_MB: "${TF_MAX_UPLOAD_MB:-10}"
     volumes:
       - testforge-data:/data
     restart: unless-stopped

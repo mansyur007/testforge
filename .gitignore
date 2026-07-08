@@ -51,3 +51,6 @@ skills-lock.json
 /e2e-results/
 /playwright-report/
 /test-results/
+
+# F-01 attachment uploads (local dev; Docker uses the /data volume)
+/data/

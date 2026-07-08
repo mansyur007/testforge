@@ -1,4 +1,5 @@
 import { db } from "./db";
+import { removeAttachments } from "./attachments";
 
 // Hard-delete test cases that have been soft-deleted (deletedAt set) for longer
 // than the retention window. Cascades to their TestRunResults (schema onDelete:
@@ -11,8 +12,26 @@ export async function purgeExpiredCases(
   retentionDays: number = CASE_RETENTION_DAYS
 ): Promise<number> {
   const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
-  const res = await db.testCase.deleteMany({
-    where: { deletedAt: { not: null, lt: cutoff } },
-  });
+  const where = { deletedAt: { not: null, lt: cutoff } };
+
+  // F-01: attachments must go first — the DB rows would cascade with the case,
+  // but the files on disk would not. Collect the doomed cases and their
+  // results, remove both tiers' attachments (rows + files), then delete.
+  const doomed = await db.testCase.findMany({ where, select: { id: true } });
+  if (doomed.length > 0) {
+    const caseIds = doomed.map((c) => c.id);
+    const results = await db.testRunResult.findMany({
+      where: { caseId: { in: caseIds } },
+      select: { id: true },
+    });
+    await removeAttachments({
+      OR: [
+        { entityType: "CASE", entityId: { in: caseIds } },
+        { entityType: "RESULT", entityId: { in: results.map((r) => r.id) } },
+      ],
+    });
+  }
+
+  const res = await db.testCase.deleteMany({ where });
   return res.count;
 }

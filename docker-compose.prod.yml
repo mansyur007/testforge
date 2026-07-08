@@ -26,6 +26,10 @@ services:
       SMTP_FROM: ${SMTP_FROM:-}
       # Shared secret for the scheduled /api/cron/purge endpoint.
       CRON_SECRET: ${CRON_SECRET:-}
+      # Attachments (F-01): files live next to the DB in the same volume.
+      # Keep the per-file limit modest — the VPS disk is small.
+      TF_UPLOAD_DIR: /data/uploads
+      TF_MAX_UPLOAD_MB: ${TF_MAX_UPLOAD_MB:-10}
     volumes:
       - testforge_data:/data
     expose:
