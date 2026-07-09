@@ -68,6 +68,48 @@ async function globalSetup() {
     });
   }
 
+  // F-09 tenant-isolation fixture: a project owned by a DIFFERENT user with a
+  // distinctive case title. Global search as the e2e user must never surface it.
+  const outsider = await db.user.upsert({
+    where: { email: "outsider@testforge.local" },
+    update: {},
+    create: {
+      name: "Outsider",
+      email: "outsider@testforge.local",
+      passwordHash,
+      role: "MEMBER",
+      emailVerifiedAt: new Date(),
+      onboardedAt: new Date(),
+    },
+  });
+  const foreign = await db.project.findUnique({
+    where: { slug: "private-e2e" },
+  });
+  if (!foreign) {
+    await db.project.create({
+      data: {
+        name: "Private E2E",
+        slug: "private-e2e",
+        description: "Tenant-isolation fixture — e2e user is NOT a member",
+        createdById: outsider.id,
+        caseCounter: 1,
+        members: { create: { userId: outsider.id, role: "OWNER" } },
+        cases: {
+          create: [
+            {
+              seq: 1,
+              title: "XyzzySecretCase must stay invisible",
+              stepsJson: "[]",
+              priority: "LOW",
+              type: "FUNCTIONAL",
+              tags: "isolation",
+            },
+          ],
+        },
+      },
+    });
+  }
+
   // Mint a fresh local API key (same scheme as the app: tf_<hex>, sha256 hash).
   await db.apiKey.deleteMany({ where: { userId: user.id, name: "e2e-local" } });
   const raw = `tf_${crypto.randomBytes(24).toString("hex")}`;

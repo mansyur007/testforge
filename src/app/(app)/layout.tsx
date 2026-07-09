@@ -5,6 +5,7 @@ import { memberScope } from "@/lib/projects";
 import { Logo, TFIcon } from "@/components/icons";
 import { LogoutButton } from "@/components/LogoutButton";
 import { SidebarProjects } from "@/components/SidebarProjects";
+import { CommandPalette } from "@/components/CommandPalette";
 
 export default async function AppLayout({
   children,
@@ -35,6 +36,10 @@ export default async function AppLayout({
       <aside className="fixed inset-y-0 flex w-60 flex-col border-r border-slate-800 bg-slate-900 text-slate-300">
         <div className="px-5 py-5">
           <Logo href="/dashboard" size="sm" dark />
+        </div>
+        {/* F-09: global search — trigger in the sidebar, ⌘K works everywhere */}
+        <div className="mb-3 px-3">
+          <CommandPalette />
         </div>
         <nav className="flex-1 space-y-1 px-3">
           {nav.map((item) => (

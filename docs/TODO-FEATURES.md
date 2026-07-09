@@ -845,7 +845,18 @@ assert intercepted payload shape. Formatter unit checks via a script in `scripts
 
 ---
 
-### F-09 — Global search (⌘K command palette) `[ ]`
+### F-09 — Global search (⌘K command palette) `[x]`
+
+> **Status: DONE** (2026-07-09, branch `feat/global-search`). Implemented as specified,
+> with these notes:
+> - Built with zero new dependencies (no `cmdk`) — hand-rolled modal + keyboard handling.
+> - Trigger button lives in the sidebar (the app has no top header); ⌘K/Ctrl+K works from
+>   every app page via the layout mount.
+> - Exact display-id lookup accepts both padded (`TC-E2E-002`) and unpadded (`TC-E2E-2`)
+>   forms and ranks the match first.
+> - Milestone results link to the project's runs page (no dedicated milestone page exists yet).
+> - Tenant isolation is e2e-tested: a fixture project owned by another user
+>   (`private-e2e` in `global-setup.ts`) never appears in results (`search.spec.ts`).
 
 **Goal.** One keystroke, search everything you can access: cases, runs, suites, milestones,
 plans. Faster than TestRail's search, matching Qase.
