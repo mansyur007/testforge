@@ -1,25 +1,58 @@
 import { NextRequest, NextResponse } from "next/server";
 import Papa from "papaparse";
+import type { CustomFieldDef } from "@prisma/client";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
 import { PRIORITIES, CASE_TYPES } from "@/lib/constants";
+import { validateCustomValues } from "@/lib/custom-fields";
 
 type CsvRow = Record<string, string>;
 
-function validateRow(row: CsvRow) {
-  if (!row.title?.trim()) return "title is required";
+// F-03: cf_<key> columns map onto the project's CASE custom fields. A cell is
+// parsed per the def's type (multi-select splits on ";", checkbox accepts
+// true/yes/1); the shared validator produces the row error or the values.
+function readCustomCells(
+  row: CsvRow,
+  defs: CustomFieldDef[]
+): Record<string, unknown> {
+  const input: Record<string, unknown> = {};
+  for (const def of defs) {
+    const cell = row[`cf_${def.key}`]?.trim();
+    if (!cell) continue;
+    if (def.type === "MULTISELECT")
+      input[def.key] = cell.split(";").map((s) => s.trim()).filter(Boolean);
+    else if (def.type === "CHECKBOX")
+      input[def.key] = ["true", "yes", "1"].includes(cell.toLowerCase());
+    else input[def.key] = cell;
+  }
+  return input;
+}
+
+function validateRow(
+  row: CsvRow,
+  defs: CustomFieldDef[],
+  memberIds: Set<string>
+): { error: string | null; customJson: string } {
+  if (!row.title?.trim()) return { error: "title is required", customJson: "{}" };
   if (
     row.priority &&
     !(PRIORITIES as readonly string[]).includes(row.priority.toUpperCase())
   )
-    return `Invalid priority: ${row.priority}`;
+    return { error: `Invalid priority: ${row.priority}`, customJson: "{}" };
   if (
     row.type &&
     !(CASE_TYPES as readonly string[]).includes(row.type.toUpperCase())
   )
-    return `Invalid type: ${row.type}`;
-  return null;
+    return { error: `Invalid type: ${row.type}`, customJson: "{}" };
+
+  const check = validateCustomValues(defs, readCustomCells(row, defs), memberIds);
+  if (!check.ok)
+    return {
+      error: check.errors.map((e) => e.message).join("; "),
+      customJson: "{}",
+    };
+  return { error: null, customJson: JSON.stringify(check.values) };
 }
 
 export async function POST(req: NextRequest) {
@@ -64,9 +97,28 @@ export async function POST(req: NextRequest) {
   if (!parsed.data.length)
     return NextResponse.json({ error: "CSV is empty or invalid" }, { status: 400 });
 
+  const defs = await db.customFieldDef.findMany({
+    where: { projectId: project.id, entity: "CASE", active: true },
+    orderBy: { order: "asc" },
+  });
+  const memberIds = new Set(
+    (
+      await db.projectMember.findMany({
+        where: { projectId: project.id },
+        select: { userId: true },
+      })
+    ).map((m) => m.userId)
+  );
+
   const rows = parsed.data.map((row) => {
-    const error = validateRow(row);
-    return { title: row.title ?? "", valid: !error, error: error ?? undefined, row };
+    const { error, customJson } = validateRow(row, defs, memberIds);
+    return {
+      title: row.title ?? "",
+      valid: !error,
+      error: error ?? undefined,
+      row,
+      customJson,
+    };
   });
 
   if (dryRun) {
@@ -77,7 +129,7 @@ export async function POST(req: NextRequest) {
 
   const validRows = rows.filter((r) => r.valid);
   let imported = 0;
-  for (const { row } of validRows) {
+  for (const { row, customJson } of validRows) {
     const updated = await db.project.update({
       where: { id: project.id },
       data: { caseCounter: { increment: 1 } },
@@ -105,6 +157,7 @@ export async function POST(req: NextRequest) {
         priority: row.priority?.toUpperCase() || "MEDIUM",
         type: row.type?.toUpperCase() || "FUNCTIONAL",
         tags: row.tags?.trim() || "",
+        customJson,
       },
     });
     imported++;

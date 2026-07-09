@@ -5,6 +5,11 @@ import { useFormState, useFormStatus } from "react-dom";
 import { createCase, updateCase } from "@/app/actions/cases";
 import { MarkdownEditor } from "@/components/MarkdownEditor";
 import {
+  CustomFieldInputs,
+  type CustomDefItem,
+  type MemberOption,
+} from "@/components/CustomFieldInputs";
+import {
   PRIORITIES,
   CASE_TYPES,
   CASE_STATUSES,
@@ -36,6 +41,8 @@ export function CaseForm({
   suites,
   initial,
   defaultSuiteId,
+  customDefs = [],
+  members = [],
 }: {
   projectId: string;
   // Enables paste-a-screenshot in the Markdown editors (edit mode only — a
@@ -43,6 +50,8 @@ export function CaseForm({
   projectSlug?: string;
   suites: { id: string; name: string; parentId: string | null }[];
   defaultSuiteId?: string;
+  customDefs?: CustomDefItem[];
+  members?: MemberOption[];
   initial?: {
     caseId: string;
     title: string;
@@ -57,6 +66,7 @@ export function CaseForm({
     linkedIssues: string;
     suiteId: string;
     steps: TestStep[];
+    custom?: Record<string, unknown>;
   };
 }) {
   const isEdit = Boolean(initial);
@@ -216,6 +226,11 @@ export function CaseForm({
               className={inputCls}
             />
           </div>
+          <CustomFieldInputs
+            defs={customDefs}
+            values={initial?.custom}
+            members={members}
+          />
         </div>
       </div>
 

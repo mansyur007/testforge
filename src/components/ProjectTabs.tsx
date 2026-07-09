@@ -7,13 +7,14 @@ export function ProjectTabs({
 }: {
   slug: string;
   name: string;
-  active: "cases" | "runs" | "reports" | "import" | "api" | "members";
+  active: "cases" | "runs" | "reports" | "import" | "fields" | "api" | "members";
 }) {
   const tabs = [
     { key: "cases", label: "Test Cases", href: `/projects/${slug}` },
     { key: "runs", label: "Test Runs", href: `/projects/${slug}/runs` },
     { key: "reports", label: "Reports", href: `/projects/${slug}/reports` },
     { key: "import", label: "Import", href: `/projects/${slug}/import` },
+    { key: "fields", label: "Fields", href: `/projects/${slug}/fields` },
     { key: "api", label: "API", href: `/projects/${slug}/api` },
     { key: "members", label: "Members", href: `/projects/${slug}/members` },
   ];

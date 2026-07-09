@@ -55,7 +55,7 @@ Legenda: ✅ ada · 🟡 sebagian/terbatas · ❌ tidak ada · ➖ tidak relevan
 | Clone & bulk edit | ✅ | ✅ | ✅ | 🟡 | ➖ |
 | Soft delete / recycle bin | ✅ | ✅ | ✅ | ❌ | ➖ |
 | **Attachment / gambar di case & hasil** | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **Custom fields** | ❌ | ✅ (sangat kuat) | ✅ | ✅ | ➖ |
+| **Custom fields** | ✅ (9 tipe) | ✅ (sangat kuat) | ✅ | ✅ | ➖ |
 | **Shared steps (langkah reusable)** | ❌ | ✅ | ✅ | ❌ | ➖ |
 | **Versioning / riwayat perubahan case** | ❌ | ✅ | ✅ | ✅ | ➖ |
 | **Parameterisasi / dataset** | ❌ | ✅ | ✅ | ❌ | ➖ |
@@ -308,7 +308,7 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
       abstraksi supaya bisa S3-compatible. *Gap paling sering ditanya; semua kompetitor punya.*
       *(Selesai 2026-07-08 — upload/dedupe/limit/purge live; inline image di deskripsi
       menunggu F-02 markdown.)*
-- [ ] **Custom fields** — definisi field per project (tipe: text, dropdown, multi-select,
+- [x] *(Selesai 2026-07-09 — 9 tipe field untuk case & result; kolom tabel/filter menyusul)* **Custom fields** — definisi field per project (tipe: text, dropdown, multi-select,
       checkbox, URL, user, date) untuk test case dan hasil run; tampil di form, tabel,
       filter, CSV import/export, dan API.
 - [ ] **Shared steps** — langkah reusable lintas case (mis. "login sebagai admin");

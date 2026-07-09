@@ -18,9 +18,21 @@ export default async function EditCasePage({
       id: params.caseId,
       project: { members: { some: { userId: session.userId } } },
     },
-    include: { project: { include: { suites: { orderBy: { order: "asc" } } } } },
+    include: {
+      project: {
+        include: {
+          suites: { orderBy: { order: "asc" } },
+          members: { include: { user: { select: { id: true, name: true } } } },
+        },
+      },
+    },
   });
   if (!testCase || testCase.project.slug !== params.slug) notFound();
+
+  const customDefs = await db.customFieldDef.findMany({
+    where: { projectId: testCase.projectId, entity: "CASE", active: true },
+    orderBy: { order: "asc" },
+  });
 
   return (
     <div className="space-y-6">
@@ -50,7 +62,16 @@ export default async function EditCasePage({
           linkedIssues: testCase.linkedIssues ?? "",
           suiteId: testCase.suiteId ?? "",
           steps: JSON.parse(testCase.stepsJson || "[]"),
+          custom: JSON.parse(testCase.customJson || "{}"),
         }}
+        customDefs={customDefs.map((d) => ({
+          key: d.key,
+          label: d.label,
+          type: d.type,
+          options: JSON.parse(d.optionsJson || "[]"),
+          required: d.required,
+        }))}
+        members={testCase.project.members.map((m) => m.user)}
       />
     </div>
   );

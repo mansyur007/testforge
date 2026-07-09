@@ -498,6 +498,103 @@ export function openApiSpec() {
           },
         },
       },
+      "/projects/{slug}/fields": {
+        parameters: [slugParam],
+        get: {
+          tags: ["Custom Fields"],
+          summary: "List custom field definitions",
+          parameters: [
+            { name: "entity", in: "query", schema: { type: "string", enum: ["CASE", "RESULT"] } },
+          ],
+          responses: {
+            "200": {
+              description: "All definitions, ordered.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      items: { type: "array", items: { $ref: "#/components/schemas/FieldDef" } },
+                    },
+                  },
+                },
+              },
+            },
+            "404": err("Project not found."),
+          },
+        },
+        post: {
+          tags: ["Custom Fields"],
+          summary: "Create a custom field definition (project admins)",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["entity", "key", "label", "type"],
+                  properties: {
+                    entity: { type: "string", enum: ["CASE", "RESULT"] },
+                    key: { type: "string", pattern: "^[a-z][a-z0-9_]{1,30}$" },
+                    label: { type: "string" },
+                    type: {
+                      type: "string",
+                      enum: ["TEXT", "TEXTAREA", "NUMBER", "CHECKBOX", "DATE", "URL", "USER", "DROPDOWN", "MULTISELECT"],
+                    },
+                    options: { type: "array", items: { type: "string" }, description: "Required for DROPDOWN/MULTISELECT." },
+                    required: { type: "boolean", default: false },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "201": {
+              description: "Created.",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/FieldDef" } } },
+            },
+            "403": err("Not a project admin."),
+            "422": err("Validation failed (bad key, type, duplicate…)."),
+          },
+        },
+      },
+      "/projects/{slug}/fields/{id}": {
+        parameters: [
+          slugParam,
+          { name: "id", in: "path", required: true, schema: { type: "string" } },
+        ],
+        patch: {
+          tags: ["Custom Fields"],
+          summary: "Update a definition (label/options/required/order/active)",
+          description: "Key, type, and entity are immutable. Set `active: false` to hide a field from forms while keeping stored values.",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    label: { type: "string" },
+                    options: { type: "array", items: { type: "string" } },
+                    required: { type: "boolean" },
+                    order: { type: "integer" },
+                    active: { type: "boolean" },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "200": {
+              description: "Updated.",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/FieldDef" } } },
+            },
+            "403": err("Not a project admin."),
+            "404": err("Field not found."),
+            "422": err("Validation failed."),
+          },
+        },
+      },
       "/projects/{slug}/attachments/{id}": {
         parameters: [
           slugParam,
@@ -562,6 +659,12 @@ export function openApiSpec() {
             assigneeId: { type: ["string", "null"] },
             tags: { type: "string", description: "Comma-separated." },
             linkedIssues: { type: ["string", "null"] },
+            custom: {
+              type: "object",
+              additionalProperties: true,
+              description:
+                "Custom field values keyed by field key (see /fields). Validated per definition; unknown keys are rejected with 422.",
+            },
           },
         },
         Case: {
@@ -619,8 +722,27 @@ export function openApiSpec() {
             elapsedSeconds: { type: ["integer", "null"] },
             defectUrl: { type: ["string", "null"] },
             assigneeId: { type: ["string", "null"] },
+            custom: {
+              type: "object",
+              additionalProperties: true,
+              description: "Custom RESULT field values keyed by field key.",
+            },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },
+          },
+        },
+        FieldDef: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            entity: { type: "string", enum: ["CASE", "RESULT"] },
+            key: { type: "string" },
+            label: { type: "string" },
+            type: { type: "string" },
+            options: { type: "array", items: { type: "string" } },
+            required: { type: "boolean" },
+            order: { type: "integer" },
+            active: { type: "boolean" },
           },
         },
         Attachment: {

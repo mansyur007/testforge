@@ -16,6 +16,7 @@ import {
   AUTOMATION_STATUSES,
 } from "@/lib/constants";
 import { dispatchWebhook } from "@/lib/webhooks";
+import { mergeCustomJson, validateCustomValues } from "@/lib/custom-fields";
 
 // Resolve the case only if it lives in a project the caller belongs to. Keeps
 // tenant isolation in one place for all three verbs.
@@ -80,6 +81,28 @@ export async function PATCH(
     if (!Array.isArray(body.steps))
       errors.push({ field: "steps", message: "must be an array" });
     else data.stepsJson = JSON.stringify(body.steps);
+  }
+
+  // F-03: `custom` merges over the stored values (validated per CASE defs).
+  if ("custom" in body) {
+    if (!body.custom || typeof body.custom !== "object" || Array.isArray(body.custom)) {
+      errors.push({ field: "custom", message: "must be an object" });
+    } else {
+      const defs = await db.customFieldDef.findMany({
+        where: { projectId: existing.projectId, entity: "CASE" },
+      });
+      const members = await db.projectMember.findMany({
+        where: { projectId: existing.projectId },
+        select: { userId: true },
+      });
+      const check = validateCustomValues(
+        defs,
+        body.custom,
+        new Set(members.map((m) => m.userId))
+      );
+      if (!check.ok) errors.push(...check.errors);
+      else data.customJson = mergeCustomJson(existing.customJson, defs, check.values);
+    }
   }
 
   // Enum fields — reject unknown values.

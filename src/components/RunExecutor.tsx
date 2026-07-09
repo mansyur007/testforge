@@ -9,6 +9,11 @@ import {
 } from "@/components/AttachmentUploader";
 import { Markdown } from "@/components/Markdown";
 import { MarkdownEditor } from "@/components/MarkdownEditor";
+import {
+  CustomFieldInputs,
+  type CustomDefItem,
+  type MemberOption,
+} from "@/components/CustomFieldInputs";
 
 type ResultItem = {
   id: string;
@@ -24,6 +29,7 @@ type ResultItem = {
   expectedResult: string;
   steps: TestStep[];
   attachments: AttachmentItem[];
+  custom: Record<string, unknown>;
 };
 
 // Eksekusi test run (PRD §4.3.3 + US-002):
@@ -34,18 +40,23 @@ export function RunExecutor({
   projectSlug,
   canWrite,
   maxUploadMb,
+  customDefs = [],
+  members = [],
 }: {
   results: ResultItem[];
   runStatus: string;
   projectSlug: string;
   canWrite: boolean;
   maxUploadMb: number;
+  customDefs?: CustomDefItem[];
+  members?: MemberOption[];
 }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [comment, setComment] = useState("");
   const [defectUrl, setDefectUrl] = useState("");
   const [isPending, startTransition] = useTransition();
   const startedAt = useRef<number>(Date.now());
+  const customRef = useRef<HTMLDivElement>(null);
   const active = results[activeIdx];
 
   useEffect(() => {
@@ -64,6 +75,18 @@ export function RunExecutor({
     fd.set("comment", comment);
     fd.set("defectUrl", defectUrl);
     fd.set("elapsedSeconds", String(elapsed));
+    // F-03: the custom inputs live outside a <form>, so collect them by name.
+    customRef.current
+      ?.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>(
+        "[name^='custom_']"
+      )
+      .forEach((el) => {
+        if (el instanceof HTMLInputElement && el.type === "checkbox") {
+          if (el.checked) fd.append(el.name, el.value || "on");
+        } else if (el.value !== "") {
+          fd.append(el.name, el.value);
+        }
+      });
     startTransition(async () => {
       await submitResult(fd);
       // lanjut ke case berikutnya yang belum dieksekusi
@@ -204,6 +227,19 @@ export function RunExecutor({
               placeholder="Bug report URL if failed (Jira/GitHub Issue)..."
               className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
             />
+            {customDefs.length > 0 && (
+              <div
+                ref={customRef}
+                key={active.id}
+                className="mt-3 grid gap-3 md:grid-cols-2"
+              >
+                <CustomFieldInputs
+                  defs={customDefs}
+                  values={active.custom}
+                  members={members}
+                />
+              </div>
+            )}
             <div className="mt-3 flex flex-wrap gap-2">
               <button onClick={() => submit("PASSED")} disabled={isPending}
                 className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50">
