@@ -107,7 +107,7 @@ Legenda: ✅ ada · 🟡 sebagian/terbatas · ❌ tidak ada · ➖ tidak relevan
 | Komentar & @mention di case/run | ❌ | 🟡 | ✅ | ❌ | ✅ |
 | Activity feed / riwayat per entity | 🟡 (audit log global) | ✅ | ✅ | 🟡 | ➖ |
 | Saved filter / view tersimpan | ❌ | ✅ | ✅ | ❌ | ➖ |
-| Pencarian global full-text | ❌ (filter per halaman) | ✅ | ✅ | 🟡 | ➖ |
+| Pencarian global full-text | ✅ (⌘K) | ✅ | ✅ | 🟡 | ➖ |
 | **Keamanan & admin** |
 | RBAC (org + project role) | ✅ (2 lapis) | ✅ | ✅ (+custom role) | ✅ | ➖ |
 | Custom role | ❌ | ✅ | ✅ | ✅ | ➖ |
@@ -327,7 +327,7 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
       arah, tampilkan status issue live di case/run, konfigurasi per project.
 - [ ] **Notifikasi Slack/Discord/Teams + email** — run selesai, hasil gagal, case
       di-assign; dibangun di atas sistem webhook yang sudah ada.
-- [ ] **Pencarian global** — satu kotak cari (⌘K) lintas case/run/suite/milestone dengan
+- [x] *(Selesai 2026-07-09)* **Pencarian global** — satu kotak cari (⌘K) lintas case/run/suite/milestone dengan
       full-text di title/description/steps.
 - [ ] **Saved filters / views** — simpan kombinasi filter tabel case & run (per user dan
       shared per project), jadikan default view.

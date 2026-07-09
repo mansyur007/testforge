@@ -28,6 +28,8 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 - **Markdown** — GFM in descriptions, preconditions, steps, expected results
   and run notes (sanitized rendering); paste a screenshot into the editor to
   attach & embed it
+- **Global search** — `⌘K`/`Ctrl+K` command palette across cases, runs, suites
+  and milestones (exact `TC-…` id lookup ranks first), scoped to your projects
 
 ## Running
 
