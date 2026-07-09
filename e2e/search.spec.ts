@@ -15,8 +15,15 @@ async function login(page: Page) {
 }
 
 async function openPalette(page: Page) {
-  await page.keyboard.press("ControlOrMeta+k");
-  await expect(page.locator('[data-testid="global-search-panel"]')).toBeVisible();
+  // Retry the shortcut: on a slow CI runner the first press can land before
+  // React hydration attaches the window keydown listener. If a press did
+  // open the palette, the inner expect passes and we never press again.
+  await expect(async () => {
+    await page.keyboard.press("ControlOrMeta+k");
+    await expect(
+      page.locator('[data-testid="global-search-panel"]')
+    ).toBeVisible({ timeout: 1000 });
+  }).toPass({ timeout: 15000 });
 }
 
 test(`TC-${TC}-7 Global search finds a case and navigates`, async ({ page }) => {
