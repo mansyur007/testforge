@@ -14,6 +14,7 @@ import { cloneCase } from "@/app/actions/cases";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { DeleteCaseButton } from "@/components/DeleteCaseButton";
 import { AttachmentUploader } from "@/components/AttachmentUploader";
+import { Markdown } from "@/components/Markdown";
 
 export const dynamic = "force-dynamic";
 
@@ -120,7 +121,7 @@ export default async function CaseDetailPage({
               <h3 className="mb-2 text-sm font-semibold uppercase text-slate-400">
                 Description
               </h3>
-              <p className="whitespace-pre-wrap text-sm">{testCase.description}</p>
+              <Markdown>{testCase.description}</Markdown>
             </section>
           )}
           {testCase.preconditions && (
@@ -128,7 +129,7 @@ export default async function CaseDetailPage({
               <h3 className="mb-2 text-sm font-semibold uppercase text-slate-400">
                 Preconditions
               </h3>
-              <p className="whitespace-pre-wrap text-sm">{testCase.preconditions}</p>
+              <Markdown>{testCase.preconditions}</Markdown>
             </section>
           )}
           <section className="rounded-xl border border-slate-200 bg-white p-6">
@@ -145,20 +146,25 @@ export default async function CaseDetailPage({
                     {i + 1}
                   </span>
                   <div className="grid flex-1 gap-2 md:grid-cols-2">
-                    <p className="whitespace-pre-wrap">{step.action}</p>
-                    <p className="whitespace-pre-wrap text-slate-500">
-                      {step.expected && <>↳ {step.expected}</>}
-                    </p>
+                    <Markdown>{step.action}</Markdown>
+                    <div className="flex gap-1 text-slate-500">
+                      {step.expected && (
+                        <>
+                          <span>↳</span>
+                          <Markdown className="text-slate-500">{step.expected}</Markdown>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </li>
               ))}
             </ol>
             {testCase.expectedResult && (
               <div className="mt-4 rounded-lg bg-green-50 p-3 text-sm">
-                <span className="font-medium text-green-800">Expected Result: </span>
-                <span className="whitespace-pre-wrap text-green-900">
+                <span className="font-medium text-green-800">Expected Result:</span>
+                <Markdown className="text-green-900">
                   {testCase.expectedResult}
-                </span>
+                </Markdown>
               </div>
             )}
           </section>

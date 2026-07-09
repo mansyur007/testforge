@@ -34,6 +34,7 @@ export default async function EditCasePage({
       </h2>
       <CaseForm
         projectId={testCase.projectId}
+        projectSlug={testCase.project.slug}
         suites={testCase.project.suites}
         initial={{
           caseId: testCase.id,
