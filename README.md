@@ -30,6 +30,8 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   attach & embed it
 - **Global search** — `⌘K`/`Ctrl+K` command palette across cases, runs, suites
   and milestones (exact `TC-…` id lookup ranks first), scoped to your projects
+- **Saved views** — save case-table filter combos as named views (personal or
+  shared with the project), star one as your default
 
 ## Running
 
