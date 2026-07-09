@@ -46,10 +46,13 @@ test(`TC-${TC}-8 Exact display id ranks first`, async ({ page }) => {
   await openPalette(page);
 
   // Canonical padded form (TC-E2E-002); the API also accepts unpadded input.
-  await page.fill('[data-testid="global-search-input"]', `TC-${TC}-002`);
+  // Built from the fixture project's slug — NOT the TC test-name prefix,
+  // which CI overrides via TF_PROJECT for prod title matching.
+  const displayId = `TC-${E2E.projectSlug.toUpperCase()}-002`;
+  await page.fill('[data-testid="global-search-input"]', displayId);
   const first = page.locator('[data-testid="global-search-result"]').first();
   await expect(first).toContainText("Language switcher on login");
-  await expect(first).toContainText(`TC-${TC}-002`);
+  await expect(first).toContainText(displayId);
 });
 
 test(`TC-${TC}-9 Search never leaks other projects' entities`, async ({ page }) => {
