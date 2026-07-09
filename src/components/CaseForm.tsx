@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { createCase, updateCase } from "@/app/actions/cases";
+import { MarkdownEditor } from "@/components/MarkdownEditor";
 import {
   PRIORITIES,
   CASE_TYPES,
@@ -31,11 +32,15 @@ function SubmitButton({ isEdit }: { isEdit: boolean }) {
 
 export function CaseForm({
   projectId,
+  projectSlug,
   suites,
   initial,
   defaultSuiteId,
 }: {
   projectId: string;
+  // Enables paste-a-screenshot in the Markdown editors (edit mode only — a
+  // new case has no id to attach to yet).
+  projectSlug?: string;
   suites: { id: string; name: string; parentId: string | null }[];
   defaultSuiteId?: string;
   initial?: {
@@ -179,22 +184,27 @@ export function CaseForm({
           </div>
           <div className="md:col-span-2">
             <label className={labelCls}>Description (Markdown supported)</label>
-            <textarea
+            <MarkdownEditor
               name="description"
-              rows={2}
+              rows={3}
               defaultValue={initial?.description}
               placeholder="Context and purpose of the test..."
-              className={inputCls}
+              testId="case-description-editor"
+              projectSlug={projectSlug}
+              entityType="CASE"
+              entityId={initial?.caseId}
             />
           </div>
           <div className="md:col-span-2">
-            <label className={labelCls}>Preconditions</label>
-            <textarea
+            <label className={labelCls}>Preconditions (Markdown supported)</label>
+            <MarkdownEditor
               name="preconditions"
               rows={2}
               defaultValue={initial?.preconditions}
               placeholder="Conditions that must be met before the test..."
-              className={inputCls}
+              projectSlug={projectSlug}
+              entityType="CASE"
+              entityId={initial?.caseId}
             />
           </div>
           <div className="md:col-span-2">
@@ -253,13 +263,15 @@ export function CaseForm({
           + Add Step
         </button>
         <div className="mt-4">
-          <label className={labelCls}>Overall Expected Result</label>
-          <textarea
+          <label className={labelCls}>Overall Expected Result (Markdown supported)</label>
+          <MarkdownEditor
             name="expectedResult"
             rows={2}
             defaultValue={initial?.expectedResult}
             placeholder="The expected final result of this test case..."
-            className={inputCls}
+            projectSlug={projectSlug}
+            entityType="CASE"
+            entityId={initial?.caseId}
           />
         </div>
       </div>

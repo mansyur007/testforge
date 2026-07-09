@@ -25,6 +25,9 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 - **Attachments** — drag-drop/paste screenshots & files on test cases and run
   results (evidence), sha256-deduplicated storage in the `/data` volume,
   per-file limit via `TF_MAX_UPLOAD_MB` (default 10 MB)
+- **Markdown** — GFM in descriptions, preconditions, steps, expected results
+  and run notes (sanitized rendering); paste a screenshot into the editor to
+  attach & embed it
 
 ## Running
 

@@ -269,7 +269,23 @@ sweep: attachments whose `entityId` no longer resolves → delete (log count to 
 
 ---
 
-### F-02 — Markdown rich text with inline images `[ ]`
+### F-02 — Markdown rich text with inline images `[x]`
+
+> **Status: DONE** (2026-07-08, branch `feat/markdown`). Implemented as specified, with
+> these notes:
+> - Read-side rendering covers case detail + run executor (description, preconditions,
+>   step action/expected, expected result); styles are hand-rolled under `.tf-markdown`
+>   in `globals.css` (no typography plugin).
+> - `MarkdownEditor` replaces the textareas in `CaseForm` (description, preconditions,
+>   overall expected result) and the run executor's notes box; supports both uncontrolled
+>   (`name`/`defaultValue` in forms) and controlled (`value`/`onChange`) modes.
+> - Paste-a-screenshot works where the entity already exists (case **edit** form and run
+>   executor notes — uploads via the F-01 API, inserts `![](/api/attachments/…)`); on the
+>   **new-case** form there is no entity id yet, so paste-upload is disabled there by design.
+> - Step editors in `CaseForm` remain plain textareas per spec (Markdown renders in read
+>   views); run-result notes render via the editor's Preview tab.
+> - e2e `markdown.spec.ts` covers GFM rendering, script-injection inertness, and the
+>   Preview tab; the `javascript:` image-src block is enforced in `urlTransform`.
 
 **Goal.** `description`, `preconditions`, step `action`/`expected`, run-result comments render
 Markdown (GFM) with inline images pasted from clipboard. Competitors have WYSIWYG; Markdown +

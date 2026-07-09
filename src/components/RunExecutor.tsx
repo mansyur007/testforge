@@ -7,6 +7,8 @@ import {
   AttachmentUploader,
   type AttachmentItem,
 } from "@/components/AttachmentUploader";
+import { Markdown } from "@/components/Markdown";
+import { MarkdownEditor } from "@/components/MarkdownEditor";
 
 type ResultItem = {
   id: string;
@@ -130,8 +132,8 @@ export function RunExecutor({
           <h3 className="mt-1 text-lg font-bold">{active.title}</h3>
           {active.preconditions && (
             <div className="mt-3 rounded-lg bg-amber-50 p-3 text-sm">
-              <span className="font-medium text-amber-800">Preconditions: </span>
-              <span className="whitespace-pre-wrap text-amber-900">{active.preconditions}</span>
+              <span className="font-medium text-amber-800">Preconditions:</span>
+              <Markdown className="text-amber-900">{active.preconditions}</Markdown>
             </div>
           )}
           <ol className="mt-4 space-y-2">
@@ -140,10 +142,13 @@ export function RunExecutor({
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
                   {i + 1}
                 </span>
-                <div>
-                  <p className="whitespace-pre-wrap">{s.action}</p>
+                <div className="min-w-0">
+                  <Markdown>{s.action}</Markdown>
                   {s.expected && (
-                    <p className="whitespace-pre-wrap text-xs text-slate-500">↳ {s.expected}</p>
+                    <div className="flex gap-1 text-xs text-slate-500">
+                      <span>↳</span>
+                      <Markdown className="text-xs text-slate-500">{s.expected}</Markdown>
+                    </div>
                   )}
                 </div>
               </li>
@@ -151,8 +156,8 @@ export function RunExecutor({
           </ol>
           {active.expectedResult && (
             <div className="mt-4 rounded-lg bg-green-50 p-3 text-sm">
-              <span className="font-medium text-green-800">Expected: </span>
-              <span className="whitespace-pre-wrap text-green-900">{active.expectedResult}</span>
+              <span className="font-medium text-green-800">Expected:</span>
+              <Markdown className="text-green-900">{active.expectedResult}</Markdown>
             </div>
           )}
           {active.assigneeName && (
@@ -181,12 +186,17 @@ export function RunExecutor({
 
         {runStatus === "ACTIVE" ? (
           <div className="rounded-xl border border-slate-200 bg-white p-6">
-            <textarea
+            {/* F-02: Markdown notes; pasting a screenshot attaches it to this
+                result (F-01) and inserts the image reference. */}
+            <MarkdownEditor
+              key={active.id}
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={setComment}
               rows={2}
-              placeholder="Execution notes (optional)..."
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              placeholder="Execution notes (optional, Markdown)..."
+              projectSlug={projectSlug}
+              entityType="RESULT"
+              entityId={active.id}
             />
             <input
               value={defectUrl}

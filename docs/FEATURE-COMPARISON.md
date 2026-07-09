@@ -60,7 +60,7 @@ Legenda: ✅ ada · 🟡 sebagian/terbatas · ❌ tidak ada · ➖ tidak relevan
 | **Versioning / riwayat perubahan case** | ❌ | ✅ | ✅ | ✅ | ➖ |
 | **Parameterisasi / dataset** | ❌ | ✅ | ✅ | ❌ | ➖ |
 | **Template case (teks/BDD/exploratory)** | ❌ | ✅ | 🟡 | ❌ | ➖ |
-| Rich text / markdown + inline image | ❌ (plain text) | ✅ | ✅ | 🟡 | ➖ |
+| Rich text / markdown + inline image | ✅ (GFM) | ✅ | ✅ | 🟡 | ➖ |
 | Review/approval workflow untuk case | ❌ | 🟡 | ✅ | ❌ | ➖ |
 | **Perencanaan & eksekusi** |
 | Test run + pilih case via filter | ✅ | ✅ | ✅ | ✅ | ➖ |
@@ -319,8 +319,9 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
 - [ ] **Test plan + configurations** — entity Test Plan berisi banyak run; configurations
       (mis. Browser: Chrome/Firefox × OS: Win/macOS) menghasilkan run per kombinasi;
       progres agregat per plan. *Fitur pembeda utama TestRail.*
-- [ ] **Rich text (markdown)** untuk description/preconditions/steps + render aman
-      (sanitized) dan inline image dari attachment.
+- [x] **Rich text (markdown)** untuk description/preconditions/steps + render aman
+      (sanitized) dan inline image dari attachment. *(Selesai 2026-07-08 — GFM +
+      rehype-sanitize, editor Write/Preview, paste screenshot → attach + embed.)*
 - [ ] **Integrasi Jira** (lalu GitHub/GitLab Issues) — bukan sekadar URL string:
       buat issue dari hasil FAILED dengan template otomatis (repro dari steps), link dua
       arah, tampilkan status issue live di case/run, konfigurasi per project.
