@@ -896,7 +896,23 @@ e2e `e2e/search.spec.ts`: AC 1–3 (create second user for AC 3 via seed).
 
 ---
 
-### F-10 — Saved filters / views `[ ]`
+### F-10 — Saved filters / views `[x]`
+
+> **Status: DONE for CASES** (2026-07-09, branch `feat/saved-views`). Deviations/notes:
+> - Schema keeps `userId` as the owner on every view plus a `shared Boolean`, instead of
+>   the spec's nullable-userId-means-shared — ownership survives sharing, which powers the
+>   delete rule (owner always; project OWNER/ADMIN or org ADMIN for shared) and the
+>   personal default (`isDefault`, max one per user+project+entity, enforced in the action).
+> - The cases list was already server-filtered via URL params, so a view is simply a
+>   whitelisted snapshot of `{suite, priority, type, q, tag}` (`sanitizeCaseFilters` drops
+>   stale keys on save *and* apply); `?v=<id>` marks the active view.
+> - Default view auto-applies as a server-side redirect on a param-less visit; `?v=all`
+>   ("All cases" pseudo-view) suppresses it. Editing filters manually drops `v` — you're
+>   off-view the moment you deviate.
+> - VIEWERs may save **personal** views (a view is a UI preference, not test data);
+>   sharing requires write access.
+> - **RUNS entity deferred**: the `entity` column is ready; the runs list has no filter
+>   bar worth saving yet.
 
 **Goal.** Save the current cases/runs table filter combination as a named view; personal or
 shared with the project; optional default.

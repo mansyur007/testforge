@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { TFIcon } from "@/components/icons";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 import { requireSession } from "@/lib/auth";
@@ -10,6 +10,8 @@ import { ProjectTabs } from "@/components/ProjectTabs";
 import { NewSuiteForm } from "@/components/NewSuiteForm";
 import { CasesTable } from "@/components/CasesTable";
 import { SuiteTree } from "@/components/SuiteTree";
+import { SavedViewsMenu } from "@/components/SavedViewsMenu";
+import { sanitizeCaseFilters, viewHref } from "@/lib/saved-views";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +20,7 @@ export default async function ProjectPage({
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { suite?: string; priority?: string; type?: string; q?: string; tag?: string };
+  searchParams: { suite?: string; priority?: string; type?: string; q?: string; tag?: string; v?: string };
 }) {
   const session = await requireSession();
   const project = await db.project.findFirst({
@@ -26,6 +28,32 @@ export default async function ProjectPage({
     include: { suites: { orderBy: { order: "asc" } } },
   });
   if (!project) notFound();
+
+  // F-10: opening the list with no params at all applies the user's default
+  // view. `?v=all` (the "All cases" pseudo-view) suppresses this on purpose.
+  if (Object.values(searchParams).every((v) => !v)) {
+    const def = await db.savedView.findFirst({
+      where: {
+        projectId: project.id,
+        userId: session.userId,
+        entity: "CASES",
+        isDefault: true,
+      },
+    });
+    if (def)
+      redirect(
+        viewHref(project.slug, def.id, sanitizeCaseFilters(JSON.parse(def.filtersJson)))
+      );
+  }
+
+  const savedViews = await db.savedView.findMany({
+    where: {
+      projectId: project.id,
+      entity: "CASES",
+      OR: [{ userId: session.userId }, { shared: true }],
+    },
+    orderBy: { name: "asc" },
+  });
 
   const where: Prisma.TestCaseWhereInput = {
     projectId: project.id,
@@ -101,6 +129,22 @@ export default async function ProjectPage({
         {/* Case list */}
         <div className="min-w-0 flex-1 space-y-4">
           <div className="flex flex-wrap items-center gap-2">
+            <SavedViewsMenu
+              projectId={project.id}
+              projectSlug={project.slug}
+              canShare={canWrite}
+              canManageShared={session.role === "ADMIN"}
+              activeViewId={searchParams.v}
+              currentFilters={sanitizeCaseFilters(searchParams)}
+              views={savedViews.map((v) => ({
+                id: v.id,
+                name: v.name,
+                shared: v.shared,
+                isDefault: v.isDefault,
+                mine: v.userId === session.userId,
+                filters: sanitizeCaseFilters(JSON.parse(v.filtersJson)),
+              }))}
+            />
             <form className="flex flex-1 flex-wrap items-center gap-2">
               {searchParams.suite && (
                 <input type="hidden" name="suite" value={searchParams.suite} />
