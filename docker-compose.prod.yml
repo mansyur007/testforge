@@ -30,6 +30,10 @@ services:
       # Keep the per-file limit modest — the VPS disk is small.
       TF_UPLOAD_DIR: /data/uploads
       TF_MAX_UPLOAD_MB: ${TF_MAX_UPLOAD_MB:-10}
+      # Notifications (F-08): absolute links in Slack/Discord/Teams/email.
+      TF_BASE_URL: ${TF_BASE_URL:-https://testforge.emha.space}
+      # TF_SECRET: ${TF_SECRET:-}      # webhook-URL encryption key (default: AUTH_SECRET)
+      # TF_ALLOW_ANY_WEBHOOK_HOST: "1" # only for proxied self-hosted targets
     volumes:
       - testforge_data:/data
     expose:

@@ -10,6 +10,7 @@ import {
   type FieldError,
 } from "@/lib/api";
 import { dispatchWebhook } from "@/lib/webhooks";
+import { notify, notifyBaseUrl } from "@/lib/notifications";
 import { mergeCustomJson, validateCustomValues } from "@/lib/custom-fields";
 import { recordRevision } from "@/lib/case-revisions";
 import { loadStepGroups } from "@/lib/steps";
@@ -171,6 +172,12 @@ export async function POST(
 
   await recordRevision(testCase.id, g.userId); // F-05: rev 1 "created"
   await dispatchWebhook(project.id, "case.created", serializeCase(project.slug, testCase));
+  await notify(project.id, "case.created", {
+    title: `Case created: ${title}`,
+    url: `${notifyBaseUrl()}/projects/${project.slug}/cases/${testCase.id}`,
+    tone: "good",
+    fields: [{ label: "ID", value: caseDisplayId(project.slug, testCase.seq) }],
+  });
 
   return NextResponse.json(
     { id: testCase.id, displayId: caseDisplayId(project.slug, testCase.seq) },

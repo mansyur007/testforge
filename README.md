@@ -40,6 +40,11 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 - **Case history & versioning** — every change becomes a numbered revision
   (author, per-field diff) with one-click restore; run results remember which
   revision they executed and flag stale ones
+- **Notifications** — push run/case events to Slack, Discord, Microsoft Teams
+  or email per project (event subscriptions, test button, failure-burst
+  aggregation); links use `TF_BASE_URL`, chat webhook URLs are stored
+  encrypted (`TF_SECRET`, falls back to `AUTH_SECRET`), and non-standard
+  webhook hosts require `TF_ALLOW_ANY_WEBHOOK_HOST=1`
 
 ## Running
 

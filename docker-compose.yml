@@ -10,6 +10,10 @@ services:
       # Attachments (F-01) live next to the DB in the same volume.
       TF_UPLOAD_DIR: /data/uploads
       TF_MAX_UPLOAD_MB: "${TF_MAX_UPLOAD_MB:-10}"
+      # Notifications (F-08). TF_BASE_URL builds absolute links in messages.
+      TF_BASE_URL: "${TF_BASE_URL:-http://localhost:3000}"
+      # TF_SECRET: encrypts stored chat-webhook URLs (falls back to AUTH_SECRET).
+      # TF_ALLOW_ANY_WEBHOOK_HOST: "1"  # self-hosters with proxies only
     volumes:
       - testforge-data:/data
     restart: unless-stopped

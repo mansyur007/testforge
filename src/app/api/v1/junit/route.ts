@@ -3,6 +3,9 @@ import { XMLParser } from "fast-xml-parser";
 import { db } from "@/lib/db";
 import { authenticateApiKey } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
+import { dispatchWebhook } from "@/lib/webhooks";
+import { notify, notifyBaseUrl } from "@/lib/notifications";
+import { serializeRun } from "@/lib/api";
 
 type JUnitCase = {
   name: string;
@@ -170,6 +173,24 @@ export async function POST(req: NextRequest) {
     entityType: "run",
     entityId: run.id,
     detail: `${source}: ${byCase.size} matched, ${unmatched.length} unmatched, ${automated.count} → AUTOMATED`,
+  });
+
+  // F-08: a JUnit run is born completed, so only run.completed fires (a
+  // separate run.created for the same instant would just be noise).
+  const failedCount = run.results.filter((r) => r.status === "FAILED").length;
+  await dispatchWebhook(project.id, "run.completed", serializeRun(run));
+  await notify(project.id, "run.completed", {
+    title: `Run completed: ${runName}`,
+    url: `${notifyBaseUrl()}/projects/${project.slug}/runs/${run.id}`,
+    tone: failedCount > 0 ? "bad" : "good",
+    fields: [
+      {
+        label: "Passed",
+        value: String(run.results.filter((r) => r.status === "PASSED").length),
+      },
+      { label: "Failed", value: String(failedCount) },
+      { label: "Source", value: source },
+    ],
   });
 
   return NextResponse.json({

@@ -816,7 +816,24 @@ a plain node script under `scripts/`).
 
 ---
 
-### F-08 — Notifications: Slack, Discord, Teams, email `[ ]`
+### F-08 — Notifications: Slack, Discord, Teams, email `[x]`
+
+> **Status: DONE** (2026-07-10, branch `feat/notifications`). Implemented as specified, with
+> these deliberate deviations:
+> - `milestone.completed` is registered in the event vocabulary but has no producer yet —
+>   the app has no milestone-completion flow (expected with F-06 test plans).
+> - The JUnit upload emits only `run.completed` (the run is born completed; a separate
+>   `run.created` for the same instant would be noise). `result.failed` fires from the
+>   interactive executor and the results API, not from bulk JUnit ingestion — the
+>   run.completed summary already carries the failure count.
+> - Formatter unit checks live at the top of `e2e/notifications.spec.ts` (node-side
+>   assertions on the pure functions) instead of a separate `scripts/` file — same
+>   coverage, runs with the suite.
+> - `lib/crypto.ts` (spec'd under F-07) was built now for the encrypted webhook URLs;
+>   key falls back TF_SECRET → AUTH_SECRET → dev default with a console warning.
+> - Bonus: existing `case.created/updated/deleted` webhook sites also notify, and the
+>   playwright webServer sets `TF_ALLOW_ANY_WEBHOOK_HOST=1` so e2e can target a local
+>   receiver.
 
 **Goal.** Push run/case events to team chat and email. Builds directly on the existing webhook
 dispatcher.

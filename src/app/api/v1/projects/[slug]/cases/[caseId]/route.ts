@@ -16,6 +16,7 @@ import {
   AUTOMATION_STATUSES,
 } from "@/lib/constants";
 import { dispatchWebhook } from "@/lib/webhooks";
+import { notify, notifyBaseUrl } from "@/lib/notifications";
 import { mergeCustomJson, validateCustomValues } from "@/lib/custom-fields";
 import { recordRevision } from "@/lib/case-revisions";
 import { loadStepGroups } from "@/lib/steps";
@@ -178,6 +179,25 @@ export async function PATCH(
   });
 
   await dispatchWebhook(existing.projectId, "case.updated", serializeCase(params.slug, updated));
+  const caseUrl = `${notifyBaseUrl()}/projects/${params.slug}/cases/${updated.id}`;
+  await notify(existing.projectId, "case.updated", {
+    title: `Case updated: ${updated.title}`,
+    url: caseUrl,
+    fields: [{ label: "Changed", value: Object.keys(body).join(", ") }],
+  });
+  // case.assigned fires only when the assignee actually changed to someone.
+  if (updated.assigneeId && updated.assigneeId !== existing.assigneeId) {
+    const assignee = await db.user.findUnique({
+      where: { id: updated.assigneeId },
+      select: { name: true },
+    });
+    await dispatchWebhook(existing.projectId, "case.assigned", serializeCase(params.slug, updated));
+    await notify(existing.projectId, "case.assigned", {
+      title: `Case assigned: ${updated.title}`,
+      url: caseUrl,
+      fields: [{ label: "Assignee", value: assignee?.name ?? updated.assigneeId }],
+    });
+  }
 
   return NextResponse.json(serializeCase(params.slug, updated));
 }
@@ -206,6 +226,10 @@ export async function DELETE(
   });
 
   await dispatchWebhook(existing.projectId, "case.deleted", { id: deleted.id });
+  await notify(existing.projectId, "case.deleted", {
+    title: `Case deleted: ${existing.title}`,
+    tone: "bad",
+  });
 
   return NextResponse.json({ id: deleted.id, deletedAt: deleted.deletedAt });
 }

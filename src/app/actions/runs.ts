@@ -7,6 +7,7 @@ import { requireSession } from "@/lib/auth";
 import { isProjectMember } from "@/lib/projects";
 import { logAudit } from "@/lib/audit";
 import { dispatchWebhook } from "@/lib/webhooks";
+import { notify, notifyBaseUrl } from "@/lib/notifications";
 import { serializeRun } from "@/lib/api";
 import { loadCaseRevs } from "@/lib/case-revisions";
 import {
@@ -67,6 +68,15 @@ export async function createRun(
     entityId: run.id,
     detail: `${name} (${caseIds.length} cases)`,
   });
+  await dispatchWebhook(projectId, "run.created", serializeRun(run));
+  await notify(projectId, "run.created", {
+    title: `Run created: ${name}`,
+    url: `${notifyBaseUrl()}/projects/${project.slug}/runs/${run.id}`,
+    fields: [
+      { label: "Project", value: project.name },
+      { label: "Cases", value: String(caseIds.length) },
+    ],
+  });
   redirect(`/projects/${project.slug}/runs/${run.id}`);
 }
 
@@ -118,7 +128,7 @@ export async function submitResult(formData: FormData) {
       assigneeId: session.userId,
       elapsedSeconds: Number.isFinite(elapsed) ? elapsed : undefined,
     },
-    include: { run: { include: { project: true } } },
+    include: { run: { include: { project: true } }, testCase: true },
   });
 
   await logAudit({
@@ -128,6 +138,19 @@ export async function submitResult(formData: FormData) {
     entityId: resultId,
     detail: status,
   });
+  if (status === "FAILED") {
+    const slug = result.run.project.slug;
+    await notify(result.run.projectId, "result.failed", {
+      title: `Test failed: ${result.testCase.title}`,
+      url: `${notifyBaseUrl()}/projects/${slug}/runs/${result.runId}`,
+      tone: "bad",
+      runId: result.runId, // keys the 1-per-minute aggregation window
+      fields: [
+        { label: "Run", value: result.run.name },
+        ...(comment ? [{ label: "Notes", value: comment }] : []),
+      ],
+    });
+  }
   revalidatePath(
     `/projects/${result.run.project.slug}/runs/${result.runId}`
   );
@@ -149,6 +172,26 @@ export async function completeRun(formData: FormData) {
     entityId: runId,
   });
   await dispatchWebhook(run.projectId, "run.completed", serializeRun(run));
+  const counts = await db.testRunResult.groupBy({
+    by: ["status"],
+    where: { runId },
+    _count: true,
+  });
+  const count = (s: string) => counts.find((c) => c.status === s)?._count ?? 0;
+  const failed = count("FAILED");
+  await notify(run.projectId, "run.completed", {
+    title: `Run completed: ${run.name}`,
+    url: `${notifyBaseUrl()}/projects/${run.project.slug}/runs/${runId}`,
+    tone: failed > 0 ? "bad" : "good",
+    fields: [
+      { label: "Passed", value: String(count("PASSED")) },
+      { label: "Failed", value: String(failed) },
+      {
+        label: "Total",
+        value: String(counts.reduce((n, c) => n + c._count, 0)),
+      },
+    ],
+  });
   revalidatePath(`/projects/${run.project.slug}/runs/${runId}`);
 }
 
@@ -192,6 +235,15 @@ export async function rerunFailed(formData: FormData) {
     action: "run.rerun_failed",
     entityType: "run",
     entityId: newRun.id,
+  });
+  await dispatchWebhook(run.projectId, "run.created", serializeRun(newRun));
+  await notify(run.projectId, "run.created", {
+    title: `Run created: ${newRun.name}`,
+    url: `${notifyBaseUrl()}/projects/${run.project.slug}/runs/${newRun.id}`,
+    fields: [
+      { label: "Project", value: run.project.name },
+      { label: "Cases", value: String(run.results.length) },
+    ],
   });
   redirect(`/projects/${run.project.slug}/runs/${newRun.id}`);
 }
