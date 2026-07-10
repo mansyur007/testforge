@@ -33,6 +33,10 @@ export function openApiSpec() {
       { name: "Suites" },
       { name: "Runs" },
       { name: "Results" },
+      { name: "Attachments" },
+      { name: "Shared Steps" },
+      { name: "Custom Fields" },
+      { name: "Issues" },
     ],
     paths: {
       "/projects/{slug}/cases": {
@@ -213,6 +217,90 @@ export function openApiSpec() {
               },
             },
             "404": err("Case not found."),
+          },
+        },
+      },
+      "/projects/{slug}/issues": {
+        get: {
+          tags: ["Issues"],
+          summary: "List issue links (F-07)",
+          description:
+            "Issues in Jira/GitHub/GitLab linked to a case or run result. Tracker credentials are never exposed by any endpoint.",
+          parameters: [
+            slugParam,
+            { name: "entityType", in: "query", schema: { type: "string", enum: ["CASE", "RESULT"] } },
+            { name: "entityId", in: "query", schema: { type: "string" } },
+            { name: "cursor", in: "query", schema: { type: "string" } },
+            { name: "limit", in: "query", schema: { type: "integer", default: 50, maximum: 200 } },
+          ],
+          responses: {
+            "200": {
+              description: "OK.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      items: { type: "array", items: { $ref: "#/components/schemas/IssueLink" } },
+                      nextCursor: { type: ["string", "null"] },
+                    },
+                  },
+                },
+              },
+            },
+            "400": err("Invalid entityType."),
+            "404": err("Project not found."),
+          },
+        },
+        post: {
+          tags: ["Issues"],
+          summary: "Link an existing issue",
+          description:
+            "Accepts a bare key (QA-123, #42) or the full issue URL. The key is verified against the tracker before the link is stored.",
+          parameters: [slugParam],
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["entityType", "entityId", "issueKey"],
+                  properties: {
+                    entityType: { type: "string", enum: ["CASE", "RESULT"] },
+                    entityId: { type: "string" },
+                    issueKey: { type: "string", example: "QA-123" },
+                    provider: {
+                      type: "string",
+                      enum: ["JIRA", "GITHUB", "GITLAB"],
+                      description: "Required only when several trackers are configured.",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "201": {
+              description: "Linked (200 with the existing link when already present).",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/IssueLink" } } },
+            },
+            "403": err("API key is read-only."),
+            "404": err("Project not found."),
+            "422": err("Unknown entity, unrecognized key, or no active tracker."),
+          },
+        },
+      },
+      "/projects/{slug}/issues/{id}": {
+        delete: {
+          tags: ["Issues"],
+          summary: "Unlink an issue (the upstream issue is untouched)",
+          parameters: [
+            slugParam,
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": { description: "Unlinked." },
+            "403": err("API key is read-only."),
+            "404": err("Issue link not found."),
           },
         },
       },
@@ -861,6 +949,24 @@ export function openApiSpec() {
             },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },
+          },
+        },
+        IssueLink: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            provider: { type: "string", enum: ["JIRA", "GITHUB", "GITLAB"] },
+            issueKey: { type: "string", example: "QA-123" },
+            issueUrl: { type: "string" },
+            title: { type: ["string", "null"] },
+            status: {
+              type: ["string", "null"],
+              description: "Last synced status text (refreshed by the sync-issues cron).",
+            },
+            entityType: { type: "string", enum: ["CASE", "RESULT"] },
+            entityId: { type: "string" },
+            syncedAt: { type: ["string", "null"], format: "date-time" },
+            createdAt: { type: "string", format: "date-time" },
           },
         },
         CaseRevision: {

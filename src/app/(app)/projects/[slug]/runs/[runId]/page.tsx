@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { caseDisplayId, RESULT_COLORS, type TestStep } from "@/lib/constants";
 import { expandSteps, loadStepGroups } from "@/lib/steps";
+import { loadIssueLinks } from "@/lib/issues";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { RunExecutor } from "@/components/RunExecutor";
 import { completeRun, rerunFailed } from "@/app/actions/runs";
@@ -50,6 +51,16 @@ export default async function RunDetailPage({
 
   // F-04: executor renders shared references expanded.
   const stepGroups = await loadStepGroups(run.projectId);
+
+  // F-07: issue links per result + whether a tracker is connected at all.
+  const issueLinks = await loadIssueLinks(
+    "RESULT",
+    run.results.map((r) => r.id)
+  );
+  const hasIntegration =
+    (await db.integration.count({
+      where: { projectId: run.projectId, active: true },
+    })) > 0;
 
   // F-03: RESULT custom fields rendered in the executor's submit panel.
   const resultDefs = await db.customFieldDef.findMany({
@@ -137,6 +148,7 @@ export default async function RunDetailPage({
         projectSlug={run.project.slug}
         canWrite={session.role !== "VIEWER"}
         maxUploadMb={maxUploadMb}
+        hasIntegration={hasIntegration}
         customDefs={resultDefs.map((d) => ({
           key: d.key,
           label: d.label,
@@ -171,6 +183,14 @@ export default async function RunDetailPage({
             url: `/api/attachments/${a.id}`,
           })),
           custom: JSON.parse(r.customJson || "{}"),
+          issueLinks: (issueLinks.get(r.id) ?? []).map((l) => ({
+            id: l.id,
+            provider: l.provider,
+            issueKey: l.issueKey,
+            issueUrl: l.issueUrl,
+            title: l.title,
+            status: l.status,
+          })),
         }))}
       />
     </div>

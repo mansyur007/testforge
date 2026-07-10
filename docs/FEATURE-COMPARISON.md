@@ -98,7 +98,7 @@ Legenda: ✅ ada · 🟡 sebagian/terbatas · ❌ tidak ada · ➖ tidak relevan
 | **Integrasi** |
 | REST API + OpenAPI | ✅ | ✅ (tanpa OpenAPI resmi) | ✅ | 🟡 (XML-RPC) | ✅ |
 | Webhooks (HMAC-signed) | ✅ | 🟡 | ✅ | ❌ | ✅ |
-| Integrasi Jira native | ❌ | ✅ (plugin dua arah) | ✅ | ✅ | ✅ |
+| Integrasi Jira native | 🟡 (create/link/status; belum plugin sisi Jira) | ✅ (plugin dua arah) | ✅ | ✅ | ✅ |
 | GitHub/GitLab issues | ❌ | ✅ | ✅ | 🟡 | ➖ |
 | Slack/Teams notification | ✅ | ✅ | ✅ | ❌ | ✅ |
 | Import dari tool lain (TestRail/Qase/XML) | 🟡 (CSV saja) | ✅ | ✅ (TestRail, CSV) | ✅ (XML) | ➖ |
@@ -322,9 +322,10 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
 - [x] **Rich text (markdown)** untuk description/preconditions/steps + render aman
       (sanitized) dan inline image dari attachment. *(Selesai 2026-07-08 — GFM +
       rehype-sanitize, editor Write/Preview, paste screenshot → attach + embed.)*
-- [ ] **Integrasi Jira** (lalu GitHub/GitLab Issues) — bukan sekadar URL string:
+- [x] *(Selesai 2026-07-10)* **Integrasi Jira** (lalu GitHub/GitLab Issues) — bukan sekadar URL string:
       buat issue dari hasil FAILED dengan template otomatis (repro dari steps), link dua
       arah, tampilkan status issue live di case/run, konfigurasi per project.
+      *(Plugin sisi Jira yang menampilkan hasil test di dalam issue belum ada.)*
 - [x] *(Selesai 2026-07-10)* **Notifikasi Slack/Discord/Teams + email** — run selesai, hasil gagal, case
       di-assign; dibangun di atas sistem webhook yang sudah ada.
 - [x] *(Selesai 2026-07-09)* **Pencarian global** — satu kotak cari (⌘K) lintas case/run/suite/milestone dengan

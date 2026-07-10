@@ -18,9 +18,14 @@ export default defineConfig({
     // expect 3456. Without -p this only worked locally by reusing an already
     // running 3456 server; in CI there's none, so next dev bound 3000 and the
     // webServer wait timed out.
-    // TF_ALLOW_ANY_WEBHOOK_HOST: notifications e2e targets a local receiver,
-    // which the strict per-type host allowlist would reject.
-    command: "TF_ALLOW_ANY_WEBHOOK_HOST=1 npm run dev -- -p 3456",
+    // TF_ALLOW_ANY_WEBHOOK_HOST (F-08) and TF_ALLOW_INSECURE_INTEGRATION_URL
+    // (F-07): both e2e specs point the app at a local http receiver/mock, which
+    // the production host/scheme guards would otherwise reject. CRON_SECRET
+    // lets the issue-sync spec drive the guarded cron endpoint.
+    // Provider calls happen server-side, so page.route() cannot intercept them —
+    // the mock must be a real HTTP server the app can reach.
+    command:
+      "TF_ALLOW_ANY_WEBHOOK_HOST=1 TF_ALLOW_INSECURE_INTEGRATION_URL=1 CRON_SECRET=e2e-cron-secret npm run dev -- -p 3456",
     port: 3456,
     reuseExistingServer: true,
     timeout: 120_000,

@@ -14,6 +14,7 @@ export function ProjectTabs({
     | "import"
     | "fields"
     | "api"
+    | "integrations"
     | "notifications"
     | "members";
 }) {
@@ -24,6 +25,11 @@ export function ProjectTabs({
     { key: "import", label: "Import", href: `/projects/${slug}/import` },
     { key: "fields", label: "Fields", href: `/projects/${slug}/fields` },
     { key: "api", label: "API", href: `/projects/${slug}/api` },
+    {
+      key: "integrations",
+      label: "Integrations",
+      href: `/projects/${slug}/integrations`,
+    },
     {
       key: "notifications",
       label: "Notifications",

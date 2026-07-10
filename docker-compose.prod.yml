@@ -24,7 +24,7 @@ services:
       # SMTP — email verifikasi, reset password, undangan tim.
       SMTP_URL: ${SMTP_URL:-}
       SMTP_FROM: ${SMTP_FROM:-}
-      # Shared secret for the scheduled /api/cron/purge endpoint.
+      # Shared secret for the scheduled /api/cron/purge and /api/cron/sync-issues endpoints.
       CRON_SECRET: ${CRON_SECRET:-}
       # Attachments (F-01): files live next to the DB in the same volume.
       # Keep the per-file limit modest — the VPS disk is small.
@@ -32,8 +32,10 @@ services:
       TF_MAX_UPLOAD_MB: ${TF_MAX_UPLOAD_MB:-10}
       # Notifications (F-08): absolute links in Slack/Discord/Teams/email.
       TF_BASE_URL: ${TF_BASE_URL:-https://testforge.emha.space}
-      # TF_SECRET: ${TF_SECRET:-}      # webhook-URL encryption key (default: AUTH_SECRET)
+      # TF_SECRET: ${TF_SECRET:-}      # encrypts webhook URLs + tracker tokens (default: AUTH_SECRET)
       # TF_ALLOW_ANY_WEBHOOK_HOST: "1" # only for proxied self-hosted targets
+      # Issue trackers (F-07). Jira/GitHub/GitLab bases must be https unless:
+      # TF_ALLOW_INSECURE_INTEGRATION_URL: "1" # internal http host on a trusted network
     volumes:
       - testforge_data:/data
     expose:

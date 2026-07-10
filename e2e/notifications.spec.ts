@@ -120,6 +120,7 @@ test(`TC-${TC}-16 Slack channel: test message, run.completed delivery, event fil
       "case.assigned",
       "run.created",
       "result.failed",
+      "issue.created",
       "milestone.completed",
     ])
       await page.uncheck(`input[name="events"][value="${ev}"]`);
