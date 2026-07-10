@@ -45,6 +45,51 @@ export default async function CaseDetailPage({
     where: { entityType: "CASE", entityId: testCase.id },
     orderBy: { createdAt: "asc" },
   });
+
+  // F-03: custom field values. Shows every def that has a value (including
+  // disabled defs — old data keeps rendering) plus active defs without one.
+  const fieldDefs = await db.customFieldDef.findMany({
+    where: { projectId: testCase.projectId, entity: "CASE" },
+    orderBy: { order: "asc" },
+  });
+  const customValues: Record<string, unknown> = JSON.parse(
+    testCase.customJson || "{}"
+  );
+  const visibleDefs = fieldDefs.filter(
+    (d) => d.active || customValues[d.key] !== undefined
+  );
+  const memberNames = new Map(
+    (
+      await db.projectMember.findMany({
+        where: { projectId: testCase.projectId },
+        include: { user: { select: { id: true, name: true } } },
+      })
+    ).map((m) => [m.user.id, m.user.name])
+  );
+  const renderCustom = (d: (typeof fieldDefs)[number]) => {
+    const v = customValues[d.key];
+    if (v === undefined || v === "" || (Array.isArray(v) && v.length === 0))
+      return <span className="text-slate-300">—</span>;
+    if (d.type === "CHECKBOX") return v ? "✓ yes" : "– no";
+    if (d.type === "USER") return memberNames.get(String(v)) ?? String(v);
+    if (d.type === "URL")
+      return (
+        <a href={String(v)} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline">
+          {String(v)}
+        </a>
+      );
+    if (Array.isArray(v))
+      return (
+        <span className="flex flex-wrap gap-1">
+          {v.map((x) => (
+            <span key={String(x)} className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">
+              {String(x)}
+            </span>
+          ))}
+        </span>
+      );
+    return String(v);
+  };
   const maxUploadMb =
     parseInt(process.env.TF_MAX_UPLOAD_MB ?? "10", 10) || 10;
 
@@ -227,6 +272,27 @@ export default async function CaseDetailPage({
               )}
             </ul>
           </section>
+
+          {visibleDefs.length > 0 && (
+            <section className="rounded-xl border border-slate-200 bg-white p-6" data-testid="custom-fields-panel">
+              <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
+                Custom Fields
+              </h3>
+              <dl className="space-y-2 text-sm">
+                {visibleDefs.map((d) => (
+                  <div key={d.id} className="flex items-baseline justify-between gap-3">
+                    <dt className="text-slate-500">
+                      {d.label}
+                      {!d.active && (
+                        <span className="ml-1 text-xs text-slate-300">(disabled)</span>
+                      )}
+                    </dt>
+                    <dd className="text-right font-medium">{renderCustom(d)}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          )}
 
           {parseTags(testCase.tags).length > 0 && (
             <section className="rounded-xl border border-slate-200 bg-white p-6">

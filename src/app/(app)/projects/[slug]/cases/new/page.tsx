@@ -17,9 +17,17 @@ export default async function NewCasePage({
   const session = await requireSession();
   const project = await db.project.findFirst({
     where: { slug: params.slug, ...memberScope(session.userId) },
-    include: { suites: { orderBy: { order: "asc" } } },
+    include: {
+      suites: { orderBy: { order: "asc" } },
+      members: { include: { user: { select: { id: true, name: true } } } },
+    },
   });
   if (!project) notFound();
+
+  const customDefs = await db.customFieldDef.findMany({
+    where: { projectId: project.id, entity: "CASE", active: true },
+    orderBy: { order: "asc" },
+  });
 
   // Default the new case to the suite the user was viewing (passed via ?suite=),
   // but only if it's a real suite of this project. Still changeable in the form.
@@ -35,6 +43,14 @@ export default async function NewCasePage({
         projectId={project.id}
         suites={project.suites}
         defaultSuiteId={defaultSuiteId}
+        customDefs={customDefs.map((d) => ({
+          key: d.key,
+          label: d.label,
+          type: d.type,
+          options: JSON.parse(d.optionsJson || "[]"),
+          required: d.required,
+        }))}
+        members={project.members.map((m) => m.user)}
       />
     </div>
   );

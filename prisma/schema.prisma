@@ -57,6 +57,7 @@ model Project {
   webhooks   Webhook[]
   attachments Attachment[]
   savedViews SavedView[]
+  customFieldDefs CustomFieldDef[]
 }
 
 // Outbound webhooks: POST a signed JSON payload to `url` when a subscribed event
@@ -94,6 +95,27 @@ model Attachment {
 
   @@index([entityType, entityId])
   @@index([projectId, sha256])
+}
+
+// F-03: admin-defined extra fields on test cases and run results. Values live
+// on the entity itself (TestCase.customJson / TestRunResult.customJson) as a
+// {key: value} object — no join table. Defs are soft-disabled via `active`,
+// never hard-deleted once data exists, so old values keep rendering.
+model CustomFieldDef {
+  id          String  @id @default(cuid())
+  projectId   String
+  entity      String  // "CASE" | "RESULT"
+  key         String  // machine key ^[a-z][a-z0-9_]{1,30}$, unique per project+entity
+  label       String
+  type        String  // TEXT | TEXTAREA | NUMBER | CHECKBOX | DATE | URL | USER | DROPDOWN | MULTISELECT
+  optionsJson String  @default("[]") // string[] for DROPDOWN/MULTISELECT
+  required    Boolean @default(false)
+  order       Int     @default(0)
+  active      Boolean @default(true)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, entity, key])
 }
 
 // F-10: saved table filters ("views"). filtersJson holds a whitelisted subset
@@ -173,6 +195,7 @@ model TestCase {
   tags             String    @default("") // comma-separated
   assigneeId       String?
   linkedIssues     String? // URL bug tracker, dipisah koma
+  customJson       String    @default("{}") // F-03: {key: value} per CustomFieldDef CASE
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   deletedAt        DateTime? // soft delete (gap audit: recycle bin)
@@ -213,6 +236,7 @@ model TestRunResult {
   comment        String?
   elapsedSeconds Int?
   defectUrl      String?
+  customJson     String   @default("{}") // F-03: {key: value} per CustomFieldDef RESULT
   updatedAt      DateTime @updatedAt
   createdAt      DateTime @default(now())
 

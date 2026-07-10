@@ -100,6 +100,7 @@ export function serializeCase(slug: string, c: TestCase) {
     tags: c.tags,
     assigneeId: c.assigneeId,
     linkedIssues: c.linkedIssues,
+    custom: JSON.parse(c.customJson || "{}"),
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),
   };
@@ -147,6 +148,7 @@ export function serializeResult(r: TestRunResult) {
     elapsedSeconds: r.elapsedSeconds,
     defectUrl: r.defectUrl,
     assigneeId: r.assigneeId,
+    custom: JSON.parse(r.customJson || "{}"),
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   };

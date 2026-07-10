@@ -8,6 +8,11 @@ import { isProjectMember } from "@/lib/projects";
 import { logAudit } from "@/lib/audit";
 import { dispatchWebhook } from "@/lib/webhooks";
 import { serializeRun } from "@/lib/api";
+import {
+  collectCustomFromForm,
+  mergeCustomJson,
+  validateCustomValues,
+} from "@/lib/custom-fields";
 
 // Tenant guard for run-level mutations: the run must belong to a project the
 // user is a member of.
@@ -75,9 +80,30 @@ export async function submitResult(formData: FormData) {
       id: resultId,
       run: { project: { members: { some: { userId: session.userId } } } },
     },
-    select: { id: true },
+    select: { id: true, customJson: true, run: { select: { projectId: true } } },
   });
   if (!owned) notFound();
+
+  // F-03: validate RESULT custom fields; invalid values fail silently-safe
+  // (result still recorded, custom left unchanged) — the executor is a
+  // rapid-fire flow, blocking a P/F submit on a side field would be worse.
+  let customJson = owned.customJson;
+  const defs = await db.customFieldDef.findMany({
+    where: { projectId: owned.run.projectId, entity: "RESULT" },
+    orderBy: { order: "asc" },
+  });
+  if (defs.length > 0) {
+    const members = await db.projectMember.findMany({
+      where: { projectId: owned.run.projectId },
+      select: { userId: true },
+    });
+    const check = validateCustomValues(
+      defs,
+      collectCustomFromForm(defs, formData),
+      new Set(members.map((m) => m.userId))
+    );
+    if (check.ok) customJson = mergeCustomJson(owned.customJson, defs, check.values);
+  }
 
   const result = await db.testRunResult.update({
     where: { id: resultId },
@@ -85,6 +111,7 @@ export async function submitResult(formData: FormData) {
       status,
       comment,
       defectUrl,
+      customJson,
       assigneeId: session.userId,
       elapsedSeconds: Number.isFinite(elapsed) ? elapsed : undefined,
     },

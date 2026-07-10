@@ -68,6 +68,14 @@ async function globalSetup() {
     });
   }
 
+  // F-03 crash recovery: a failed custom-fields spec can leave a REQUIRED
+  // field active on the e2e project, which would break every later case
+  // creation. Start each run clean by disabling leftovers.
+  await db.customFieldDef.updateMany({
+    where: { project: { slug: E2E.projectSlug } },
+    data: { active: false },
+  });
+
   // F-09 tenant-isolation fixture: a project owned by a DIFFERENT user with a
   // distinctive case title. Global search as the e2e user must never surface it.
   const outsider = await db.user.upsert({

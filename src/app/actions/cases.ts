@@ -7,6 +7,37 @@ import { requireSession } from "@/lib/auth";
 import { isProjectMember } from "@/lib/projects";
 import { logAudit } from "@/lib/audit";
 import type { TestStep } from "@/lib/constants";
+import {
+  collectCustomFromForm,
+  mergeCustomJson,
+  validateCustomValues,
+} from "@/lib/custom-fields";
+
+// F-03: collect & validate custom_<key> form entries against the project's
+// CASE field defs. Returns the merged customJson or a user-facing error.
+async function readCustomJson(
+  projectId: string,
+  formData: FormData,
+  existingJson?: string | null
+): Promise<{ customJson: string } | { error: string }> {
+  const defs = await db.customFieldDef.findMany({
+    where: { projectId, entity: "CASE" },
+    orderBy: { order: "asc" },
+  });
+  if (defs.length === 0) return { customJson: existingJson ?? "{}" };
+
+  const members = await db.projectMember.findMany({
+    where: { projectId },
+    select: { userId: true },
+  });
+  const check = validateCustomValues(
+    defs,
+    collectCustomFromForm(defs, formData),
+    new Set(members.map((m) => m.userId))
+  );
+  if (!check.ok) return { error: check.errors.map((e) => e.message).join(" · ") };
+  return { customJson: mergeCustomJson(existingJson, defs, check.values) };
+}
 
 // Tenant guard for case-level mutations: the case must belong to a project the
 // user is a member of.
@@ -54,13 +85,21 @@ export async function createCase(
   if (!(await isProjectMember(session.userId, projectId)))
     return { error: "Project not found." };
 
+  const custom = await readCustomJson(projectId, formData);
+  if ("error" in custom) return { error: custom.error };
+
   const project = await db.project.update({
     where: { id: projectId },
     data: { caseCounter: { increment: 1 } },
   });
 
   const testCase = await db.testCase.create({
-    data: { projectId, seq: project.caseCounter, ...fields },
+    data: {
+      projectId,
+      seq: project.caseCounter,
+      customJson: custom.customJson,
+      ...fields,
+    },
   });
 
   await logAudit({
@@ -85,9 +124,20 @@ export async function updateCase(
   if (!fields.title) return { error: "Test case title is required." };
   await assertCaseAccess(session.userId, caseId);
 
+  const existing = await db.testCase.findUniqueOrThrow({
+    where: { id: caseId },
+    select: { projectId: true, customJson: true },
+  });
+  const custom = await readCustomJson(
+    existing.projectId,
+    formData,
+    existing.customJson
+  );
+  if ("error" in custom) return { error: custom.error };
+
   const testCase = await db.testCase.update({
     where: { id: caseId },
-    data: fields,
+    data: { ...fields, customJson: custom.customJson },
     include: { project: true },
   });
 
@@ -129,6 +179,7 @@ export async function cloneCase(formData: FormData) {
       status: "DRAFT",
       automationStatus: original.automationStatus,
       tags: original.tags,
+      customJson: original.customJson,
     },
   });
 

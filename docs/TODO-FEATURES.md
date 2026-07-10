@@ -335,7 +335,23 @@ exists and no dialog opened; screenshot-paste covered by a direct API insert + r
 
 ---
 
-### F-03 — Custom fields `[ ]`
+### F-03 — Custom fields `[x]`
+
+> **Status: DONE** (2026-07-09, branch `feat/custom-fields`), with these notes:
+> - All 9 types shipped (TEXT/TEXTAREA/NUMBER/CHECKBOX/DATE/URL/USER/DROPDOWN/MULTISELECT);
+>   one shared validator (`src/lib/custom-fields.ts`) serves forms, API, and CSV import.
+>   Keys **and types** are immutable after creation (stored values are keyed/typed by them).
+> - Fields tab (`/projects/[slug]/fields`) manages defs — project OWNER/ADMIN or org ADMIN;
+>   inactive defs disappear from forms/CSV export but stored values keep rendering
+>   (case detail marks them "(disabled)") and survive edits via `mergeCustomJson`.
+> - Wired: case form (create+edit), case detail panel, run executor submit panel
+>   (RESULT defs; invalid side-field values fail safe — the P/F submit still lands,
+>   custom left unchanged, to keep the rapid-fire keyboard flow unblocked),
+>   CSV export (`cf_<key>` per active def) and import (parses `cf_*`, per-row errors
+>   in the existing preview), API v1 (`custom` on Case/Result, 422 with
+>   `custom.<key>` details, `GET/POST /fields`, `PATCH /fields/[id]`, OpenAPI).
+> - **Deferred**: CasesTable optional columns + filter chips for custom fields
+>   (spec item 4) — the table is already dense; revisit alongside a column-picker.
 
 **Goal.** Project admins define extra fields on test cases and run results; fields appear in
 forms, tables, filters, CSV, and API. TestRail's #1 stickiness feature.

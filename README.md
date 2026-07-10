@@ -32,6 +32,9 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   and milestones (exact `TC-…` id lookup ranks first), scoped to your projects
 - **Saved views** — save case-table filter combos as named views (personal or
   shared with the project), star one as your default
+- **Custom fields** — define per-project fields on cases & run results
+  (9 types incl. dropdown, multi-select, user, date); enforced in forms,
+  CSV import/export (`cf_<key>` columns), and the REST API
 
 ## Running
 

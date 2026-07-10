@@ -3,6 +3,7 @@ import Papa from "papaparse";
 import { db } from "@/lib/db";
 import { getSession, authenticateApiKey } from "@/lib/auth";
 import { caseDisplayId, type TestStep } from "@/lib/constants";
+import { formatCustomValue, type CustomValue } from "@/lib/custom-fields";
 
 export async function GET(req: NextRequest) {
   const session = (await getSession()) ?? (await authenticateApiKey(req));
@@ -23,6 +24,29 @@ export async function GET(req: NextRequest) {
   });
   if (!project)
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
+
+  // F-03: one cf_<key> column per active CASE custom field.
+  const defs = await db.customFieldDef.findMany({
+    where: { projectId: project.id, entity: "CASE", active: true },
+    orderBy: { order: "asc" },
+  });
+  const memberNames = new Map(
+    (
+      await db.projectMember.findMany({
+        where: { projectId: project.id },
+        include: { user: { select: { id: true, name: true } } },
+      })
+    ).map((m) => [m.user.id, m.user.name])
+  );
+  const customCols = (c: { customJson: string }) => {
+    const values: Record<string, CustomValue> = JSON.parse(c.customJson || "{}");
+    return Object.fromEntries(
+      defs.map((d) => [
+        `cf_${d.key}`,
+        formatCustomValue(d, values[d.key], memberNames),
+      ])
+    );
+  };
 
   const csv = Papa.unparse(
     project.cases.map((c) => ({
@@ -45,6 +69,7 @@ export async function GET(req: NextRequest) {
       status: c.status,
       automation_status: c.automationStatus,
       tags: c.tags,
+      ...customCols(c),
     }))
   );
 

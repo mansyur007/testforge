@@ -10,6 +10,7 @@ import {
   type FieldError,
 } from "@/lib/api";
 import { dispatchWebhook } from "@/lib/webhooks";
+import { mergeCustomJson, validateCustomValues } from "@/lib/custom-fields";
 
 // REST API v1 (PRD §5.3): list & create test case.
 // Filtering via query params: ?priority=HIGH&type=SMOKE&tag=login&q=...
@@ -116,6 +117,29 @@ export async function POST(
       errors.push({ field: "suiteId", message: "not found in this project" });
   }
 
+  // F-03: optional `custom` object validated against the project's CASE defs.
+  let customJson = "{}";
+  if (body.custom !== undefined) {
+    if (!body.custom || typeof body.custom !== "object" || Array.isArray(body.custom)) {
+      errors.push({ field: "custom", message: "must be an object" });
+    } else {
+      const defs = await db.customFieldDef.findMany({
+        where: { projectId: allowed.id, entity: "CASE" },
+      });
+      const members = await db.projectMember.findMany({
+        where: { projectId: allowed.id },
+        select: { userId: true },
+      });
+      const check = validateCustomValues(
+        defs,
+        body.custom,
+        new Set(members.map((m) => m.userId))
+      );
+      if (!check.ok) errors.push(...check.errors);
+      else customJson = mergeCustomJson("{}", defs, check.values);
+    }
+  }
+
   if (errors.length) return validationError(errors);
 
   const project = await db.project.update({
@@ -136,6 +160,7 @@ export async function POST(
       priority,
       type,
       tags: body.tags ?? "",
+      customJson,
     },
   });
 

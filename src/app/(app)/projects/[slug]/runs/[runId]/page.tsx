@@ -47,6 +47,16 @@ export default async function RunDetailPage({
   }
   const maxUploadMb = parseInt(process.env.TF_MAX_UPLOAD_MB ?? "10", 10) || 10;
 
+  // F-03: RESULT custom fields rendered in the executor's submit panel.
+  const resultDefs = await db.customFieldDef.findMany({
+    where: { projectId: run.projectId, entity: "RESULT", active: true },
+    orderBy: { order: "asc" },
+  });
+  const members = await db.projectMember.findMany({
+    where: { projectId: run.projectId },
+    include: { user: { select: { id: true, name: true } } },
+  });
+
   const total = run.results.length || 1;
   const counts: Record<string, number> = {};
   run.results.forEach((r) => (counts[r.status] = (counts[r.status] ?? 0) + 1));
@@ -123,6 +133,14 @@ export default async function RunDetailPage({
         projectSlug={run.project.slug}
         canWrite={session.role !== "VIEWER"}
         maxUploadMb={maxUploadMb}
+        customDefs={resultDefs.map((d) => ({
+          key: d.key,
+          label: d.label,
+          type: d.type,
+          options: JSON.parse(d.optionsJson || "[]"),
+          required: d.required,
+        }))}
+        members={members.map((m) => m.user)}
         results={run.results.map((r) => ({
           id: r.id,
           status: r.status,
@@ -143,6 +161,7 @@ export default async function RunDetailPage({
             sizeBytes: a.sizeBytes,
             url: `/api/attachments/${a.id}`,
           })),
+          custom: JSON.parse(r.customJson || "{}"),
         }))}
       />
     </div>
