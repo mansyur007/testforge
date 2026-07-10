@@ -104,6 +104,33 @@ New env vars must: have a safe default for `docker compose up` zero-config start
 `docker-compose.yml` + `docker-compose.prod.yml` (commented), and be documented in `README.md`
 and `docs/SELF-HOSTED-MIGRATION.md` if they affect data location.
 
+### 0.8 Which model to use (for AI implementers)
+
+Every feature in §2 carries a **Model** recommendation. The rule of thumb: features that
+introduce a *new architectural concept* get the strongest model; features that follow patterns
+already established in this repo do not.
+
+**Checking the current model.** A model's self-report about its own identity is unreliable —
+the environment block in a system prompt can be stale after a mid-session switch. Read the
+session transcript instead, which records the model per message:
+
+```bash
+jq -r 'select(.message.model != null) | .message.model' \
+  ~/.claude/projects/-Users-<user>-testforge/<session-id>.jsonl | uniq -c | tail -3
+```
+
+**On mismatch.** Claude has no tool to change its own model mid-session — `/model` is a
+user-invoked command. So the agent must **stop and ask the user to run `/model <id>`** rather
+than proceeding on the wrong model or pretending it switched. Switch only at section
+boundaries: a mid-section switch invalidates the prompt cache and re-reads the whole context.
+
+| Model | `/model <id>` | Use for |
+|---|---|---|
+| Fable 5 | `claude-fable-5` | New architecture, cross-cutting redesign, security-critical design |
+| Opus 4.8 | `claude-opus-4-8` | Well-specified features following existing repo patterns (supports `/fast`) |
+| Sonnet 5 | `claude-sonnet-5` | Mechanical work: CSV columns, docs, small UI, test fixtures |
+| Haiku 4.5 | `claude-haiku-4-5-20251001` | Trivial edits, one-line doc fixes |
+
 ---
 
 ## 1. Definition of Done (applies to every feature)
@@ -126,19 +153,23 @@ A feature is **done** only when all boxes below are checked:
 
 ## 2. Recommended build order & dependencies
 
-| Order | Feature | Depends on | Why this order |
-|---|---|---|---|
-| 1 | F-01 Attachments | — | Prerequisite for F-02 image paste, F-16 comments, F-25 sessions |
-| 2 | F-02 Markdown | F-01 | Prerequisite UX for everything text-heavy |
-| 3 | F-09 Global search | — | Independent, high visible value, small |
-| 4 | F-10 Saved views | — | Independent, small |
-| 5 | F-03 Custom fields | — | Touches CSV + API broadly; do before importers (F-22) |
-| 6 | F-04 Shared steps | — | Touches steps rendering everywhere |
-| 7 | F-05 Case versioning | F-04 (snapshots must expand shared steps) | Snapshot format must be final-ish |
-| 8 | F-08 Notifications | — | Reuses webhook infra |
-| 9 | F-07 Jira/GitHub/GitLab | F-08 (shares config UI section) | Highest-demand integration |
-| 10 | F-06 Test plans & configurations | — | Biggest P1; schedule when above are stable |
-| 11+ | P2 (F-11…F-24), then L-01…L-05 interleaved, then P3 | see each | L-01/L-02 are small — ship early for marketing |
+Model column per §0.8 — check the running model before starting a row, and ask the user to
+switch if it does not match.
+
+| Order | Feature | Depends on | Why this order | Model |
+|---|---|---|---|---|
+| 1 | F-01 Attachments | — | Prerequisite for F-02 image paste, F-16 comments, F-25 sessions | ✅ done |
+| 2 | F-02 Markdown | F-01 | Prerequisite UX for everything text-heavy | ✅ done |
+| 3 | F-09 Global search | — | Independent, high visible value, small | ✅ done |
+| 4 | F-10 Saved views | — | Independent, small | ✅ done |
+| 5 | F-03 Custom fields | — | Touches CSV + API broadly; do before importers (F-22) | ✅ done |
+| 6 | F-04 Shared steps | — | Touches steps rendering everywhere | ✅ done |
+| 7 | F-05 Case versioning | F-04 (snapshots must expand shared steps) | Snapshot format must be final-ish | ✅ done |
+| 8 | F-08 Notifications | — | Reuses webhook infra | ✅ done |
+| 9 | F-07 Jira/GitHub/GitLab | F-08 (shares config UI section) | Highest-demand integration | **Opus 4.8** — spec is detailed, `lib/crypto.ts` already exists; but tokens are involved, so hold the line on §0.6 secret rules |
+| 10 | F-06 Test plans & configurations | — | Biggest P1; schedule when above are stable | **Fable 5** — the only P1 that adds a genuinely new entity graph (plan → config matrix → generated runs → aggregate progress) |
+| 11+ | P2 (F-11…F-24), then P3 | see each | L-01/L-02 are small — ship early for marketing | **Sonnet 5** for the mechanical ones (F-11 keywords, F-13 CSV, F-19 bulk ops); **Opus 4.8** where a new subsystem appears (F-16 comments, F-21 SSO) |
+| — | L-01…L-05 leapfrog, interleaved | see each | Designed to beat competitors, not match them | **Fable 5** — these are net-new product design, not ports of a known feature |
 
 ---
 
@@ -712,7 +743,29 @@ e2e `e2e/plans.spec.ts` for AC 1, 3, 5.
 
 ---
 
-### F-07 — Issue tracker integration: Jira, GitHub, GitLab `[ ]`
+### F-07 — Issue tracker integration: Jira, GitHub, GitLab `[x]`
+
+> **Status: DONE** (2026-07-10, branch `feat/issue-integrations`). Implemented as specified,
+> with these deliberate deviations:
+> - `lib/crypto.ts` already existed — it was built during F-08 for encrypted webhook URLs and
+>   is reused verbatim here for `authEnc`.
+> - **The spec's test plan was wrong.** Provider calls happen in server actions, so Playwright
+>   `route()` (a *browser*-side intercept) can never see them. `e2e/integrations.spec.ts`
+>   instead runs a real local HTTP mock of the GitHub API and points the integration's
+>   `baseUrl` at it. That required a new env, `TF_ALLOW_INSECURE_INTEGRATION_URL=1`, to permit
+>   an `http://` base — which is also a genuine need for self-hosters running internal
+>   GitLab/Jira on a trusted network. https remains mandatory by default.
+> - A connection is verified against the live provider **before** the row is written, so a bad
+>   token can never be persisted as active (AC 2 holds at the storage layer, not just the UI).
+> - `defectUrl` is still set alongside the `IssueLink` so existing reports keep working.
+> - Sync cron stamps `syncedAt` even when a refresh fails, so one broken link (deleted issue,
+>   revoked token) can't monopolise every subsequent batch.
+> - The model is named `Integration` (spec) — one row per project+provider, enforced by a
+>   unique constraint; deleting it leaves `IssueLink` rows readable.
+> - Webhook/notification event `issue.created` fires on both the UI and API link paths.
+> - No seed data: a demo `Integration` would carry a fake token pointing at a host that does
+>   not exist, so "Test connection" would fail on a fresh install and the sync cron would
+>   burn its batch on it. The Integrations tab explains itself when empty.
 
 **Goal.** Replace URL-string linking with real integration: create an issue from a failed
 result with one click (pre-filled repro), link issues both ways, and show live issue status.

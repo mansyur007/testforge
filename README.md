@@ -40,6 +40,11 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 - **Case history & versioning** — every change becomes a numbered revision
   (author, per-field diff) with one-click restore; run results remember which
   revision they executed and flag stale ones
+- **Issue tracker integration** — connect Jira, GitHub or GitLab per project;
+  file an issue straight from a failed result (steps, expected vs actual and a
+  backlink are pre-filled), link existing issues by key or URL, and see live
+  status badges refreshed by a sync job. Tokens are encrypted at rest and never
+  returned to the browser
 - **Notifications** — push run/case events to Slack, Discord, Microsoft Teams
   or email per project (event subscriptions, test button, failure-burst
   aggregation); links use `TF_BASE_URL`, chat webhook URLs are stored

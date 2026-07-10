@@ -11,12 +11,14 @@ import {
   type TestStep,
 } from "@/lib/constants";
 import { expandSteps, loadStepGroups } from "@/lib/steps";
+import { loadIssueLinks } from "@/lib/issues";
 import { serializeRevision } from "@/lib/case-revisions";
 import { cloneCase } from "@/app/actions/cases";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { DeleteCaseButton } from "@/components/DeleteCaseButton";
 import { AttachmentUploader } from "@/components/AttachmentUploader";
 import { CaseHistory, type RevisionView } from "@/components/CaseHistory";
+import { IssuePanel } from "@/components/IssuePanel";
 import { Markdown } from "@/components/Markdown";
 
 export const dynamic = "force-dynamic";
@@ -121,6 +123,15 @@ export default async function CaseDetailPage({
       ).map((s) => [s.id, s.name])
     );
   }
+
+  // F-07: issue links + whether this project has a tracker connected.
+  const caseIssueLinks = (await loadIssueLinks("CASE", [testCase.id])).get(
+    testCase.id
+  ) ?? [];
+  const hasIntegration =
+    (await db.integration.count({
+      where: { projectId: testCase.projectId, active: true },
+    })) > 0;
 
   // F-04: shared references render expanded, tagged with their group title.
   const rawSteps: TestStep[] = JSON.parse(testCase.stepsJson || "[]");
@@ -382,6 +393,34 @@ export default async function CaseDetailPage({
                   </span>
                 ))}
               </div>
+            </section>
+          )}
+
+          {/* F-07: tracker-backed issue links. Only rendered once a tracker is
+              connected (or links already exist) — otherwise the plain-URL
+              section below is the whole story, exactly as before. */}
+          {(hasIntegration || caseIssueLinks.length > 0) && (
+            <section
+              className="rounded-xl border border-slate-200 bg-white p-6"
+              data-testid="case-issues-panel"
+            >
+              <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
+                Issues
+              </h3>
+              <IssuePanel
+                entityType="CASE"
+                entityId={testCase.id}
+                links={caseIssueLinks.map((l) => ({
+                  id: l.id,
+                  provider: l.provider,
+                  issueKey: l.issueKey,
+                  issueUrl: l.issueUrl,
+                  title: l.title,
+                  status: l.status,
+                }))}
+                canWrite={session.role !== "VIEWER"}
+                hasIntegration={hasIntegration}
+              />
             </section>
           )}
 

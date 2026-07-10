@@ -1,0 +1,21 @@
+name: Sync issue statuses
+
+# F-07: refresh the cached status of linked Jira/GitHub/GitLab issues so the
+# badges on cases and run results stay current. Hits the app's guarded
+# /api/cron/sync-issues endpoint (same CRON_SECRET as the purge job; until it is
+# set the endpoint returns 503 and nothing is synced).
+# Each invocation refreshes at most 50 links older than 15 minutes, so a busy
+# project converges over a few runs rather than hammering the tracker's API.
+on:
+  schedule:
+    - cron: '*/20 * * * *' # every 20 minutes
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call sync-issues endpoint
+        run: |
+          curl -fsS -X GET https://testforge.emha.space/api/cron/sync-issues \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

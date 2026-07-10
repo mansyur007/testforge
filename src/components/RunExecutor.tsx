@@ -21,6 +21,7 @@ import {
   type CustomDefItem,
   type MemberOption,
 } from "@/components/CustomFieldInputs";
+import { IssuePanel, type IssueLinkView } from "@/components/IssuePanel";
 
 type ResultItem = {
   id: string;
@@ -39,6 +40,7 @@ type ResultItem = {
   steps: ExecutorStep[];
   attachments: AttachmentItem[];
   custom: Record<string, unknown>;
+  issueLinks: IssueLinkView[]; // F-07
 };
 
 // Eksekusi test run (PRD §4.3.3 + US-002):
@@ -51,6 +53,7 @@ export function RunExecutor({
   maxUploadMb,
   customDefs = [],
   members = [],
+  hasIntegration = false,
 }: {
   results: ResultItem[];
   runStatus: string;
@@ -59,6 +62,7 @@ export function RunExecutor({
   maxUploadMb: number;
   customDefs?: CustomDefItem[];
   members?: MemberOption[];
+  hasIntegration?: boolean; // F-07: an active issue tracker on this project
 }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [comment, setComment] = useState("");
@@ -242,6 +246,24 @@ export function RunExecutor({
               initial={active.attachments}
             />
           </div>
+
+          {/* F-07: issue links. Filing is offered only for a failed result. */}
+          {(hasIntegration || active.issueLinks.length > 0) && (
+            <div className="mt-4 border-t border-slate-100 pt-4">
+              <p className="mb-2 text-xs font-semibold uppercase text-slate-400">
+                Issues
+              </p>
+              <IssuePanel
+                key={active.id}
+                entityType="RESULT"
+                entityId={active.id}
+                links={active.issueLinks}
+                canWrite={canWrite}
+                hasIntegration={hasIntegration}
+                canCreate={active.status === "FAILED"}
+              />
+            </div>
+          )}
         </div>
 
         {runStatus === "ACTIVE" ? (

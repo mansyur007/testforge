@@ -61,6 +61,8 @@ model Project {
   customFieldDefs CustomFieldDef[]
   sharedStepGroups SharedStepGroup[]
   notificationChannels NotificationChannel[]
+  integrations Integration[]
+  issueLinks   IssueLink[]
 }
 
 // Outbound webhooks: POST a signed JSON payload to `url` when a subscribed event
@@ -113,6 +115,44 @@ model SharedStepGroup {
   updatedAt DateTime @updatedAt
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// F-07: per-project issue tracker connection. `authEnc` is an AES-256-GCM
+// encrypted credentials JSON (lib/crypto) — it must NEVER leave the server:
+// no serializer, no page prop, no audit detail. One row per provider.
+model Integration {
+  id        String   @id @default(cuid())
+  projectId String
+  provider  String // JIRA | GITHUB | GITLAB
+  baseUrl   String // Jira site url / GitLab host; api.github.com for GITHUB
+  targetKey String // Jira project key ("QA") | "owner/repo" | GitLab project path
+  authEnc   String // encrypted {email, apiToken} (Jira) | {token}
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, provider])
+}
+
+// F-07: an issue in an external tracker, linked to a case or a run result.
+// `status` is refreshed by the sync-issues cron; `syncedAt` gates staleness.
+model IssueLink {
+  id         String    @id @default(cuid())
+  projectId  String
+  provider   String
+  issueKey   String // "QA-123" | "42"
+  issueUrl   String
+  title      String?
+  status     String? // last synced status text
+  syncedAt   DateTime?
+  entityType String // CASE | RESULT
+  entityId   String
+  createdAt  DateTime  @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([entityType, entityId])
 }
 
 // F-08: push notifications to team chat / email. configJson holds the target:

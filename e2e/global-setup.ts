@@ -82,6 +82,11 @@ async function globalSetup() {
     where: { project: { slug: E2E.projectSlug } },
   });
 
+  // F-07: same reasoning — a leftover integration points at a dead mock port,
+  // which would make every later "create issue" call hang until it times out.
+  await db.issueLink.deleteMany({ where: { project: { slug: E2E.projectSlug } } });
+  await db.integration.deleteMany({ where: { project: { slug: E2E.projectSlug } } });
+
   // F-09 tenant-isolation fixture: a project owned by a DIFFERENT user with a
   // distinctive case title. Global search as the e2e user must never surface it.
   const outsider = await db.user.upsert({
