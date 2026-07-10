@@ -498,6 +498,96 @@ export function openApiSpec() {
           },
         },
       },
+      "/projects/{slug}/shared-steps": {
+        parameters: [slugParam],
+        get: {
+          tags: ["Shared Steps"],
+          summary: "List shared step groups (with usage counts)",
+          responses: {
+            "200": {
+              description: "All groups.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      items: { type: "array", items: { $ref: "#/components/schemas/SharedStepGroup" } },
+                    },
+                  },
+                },
+              },
+            },
+            "404": err("Project not found."),
+          },
+        },
+        post: {
+          tags: ["Shared Steps"],
+          summary: "Create a shared step group",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["title", "steps"],
+                  properties: {
+                    title: { type: "string" },
+                    steps: { type: "array", items: { $ref: "#/components/schemas/Step" } },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "201": {
+              description: "Created.",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/SharedStepGroup" } } },
+            },
+            "422": err("Validation failed."),
+          },
+        },
+      },
+      "/projects/{slug}/shared-steps/{id}": {
+        parameters: [
+          slugParam,
+          { name: "id", in: "path", required: true, schema: { type: "string" } },
+        ],
+        patch: {
+          tags: ["Shared Steps"],
+          summary: "Update a group (all referencing cases update instantly)",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    title: { type: "string" },
+                    steps: { type: "array", items: { $ref: "#/components/schemas/Step" } },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "200": {
+              description: "Updated.",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/SharedStepGroup" } } },
+            },
+            "404": err("Group not found."),
+            "422": err("Validation failed."),
+          },
+        },
+        delete: {
+          tags: ["Shared Steps"],
+          summary: "Delete a group (409 while any case references it)",
+          responses: {
+            "204": { description: "Deleted." },
+            "404": err("Group not found."),
+            "409": err("Still referenced by cases — unlink them first."),
+          },
+        },
+      },
       "/projects/{slug}/fields": {
         parameters: [slugParam],
         get: {
@@ -638,7 +728,13 @@ export function openApiSpec() {
         },
         Step: {
           type: "object",
-          properties: { action: { type: "string" }, expected: { type: "string" } },
+          description:
+            "Inline step {action, expected} — or a shared reference {shared: <groupId>} inside a case's raw `steps`. `stepsExpanded` always contains inline steps, tagged with `fromShared` when they came from a group.",
+          properties: {
+            action: { type: "string" },
+            expected: { type: "string" },
+            shared: { type: "string", description: "SharedStepGroup id (reference item)." },
+          },
         },
         CaseInput: {
           type: "object",
@@ -727,6 +823,17 @@ export function openApiSpec() {
               additionalProperties: true,
               description: "Custom RESULT field values keyed by field key.",
             },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" },
+          },
+        },
+        SharedStepGroup: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            title: { type: "string" },
+            steps: { type: "array", items: { $ref: "#/components/schemas/Step" } },
+            usageCount: { type: "integer", description: "Non-deleted cases referencing this group." },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },
           },

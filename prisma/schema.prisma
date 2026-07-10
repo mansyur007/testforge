@@ -58,6 +58,7 @@ model Project {
   attachments Attachment[]
   savedViews SavedView[]
   customFieldDefs CustomFieldDef[]
+  sharedStepGroups SharedStepGroup[]
 }
 
 // Outbound webhooks: POST a signed JSON payload to `url` when a subscribed event
@@ -95,6 +96,21 @@ model Attachment {
 
   @@index([entityType, entityId])
   @@index([projectId, sha256])
+}
+
+// F-04: reusable step blocks ("Log in as admin"). A case references a group
+// via a {shared: <id>} item inside its stepsJson; consumers expand at render
+// time (src/lib/steps.ts), so editing a group updates every referencing case.
+// Deletion is hard but only allowed while nothing references the group.
+model SharedStepGroup {
+  id        String   @id @default(cuid())
+  projectId String
+  title     String
+  stepsJson String   @default("[]") // InlineStep[] = [{action, expected}]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 // F-03: admin-defined extra fields on test cases and run results. Values live

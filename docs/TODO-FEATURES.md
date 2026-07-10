@@ -429,7 +429,23 @@ e2e `e2e/custom-fields.spec.ts`: admin creates field → case form shows it → 
 
 ---
 
-### F-04 — Shared steps `[ ]`
+### F-04 — Shared steps `[x]`
+
+> **Status: DONE** (2026-07-10, branch `feat/shared-steps`), with these notes:
+> - `TestStep` became the union `InlineStep | {shared: <groupId>}` — old data is inline-only,
+>   so it's backward-compatible with zero migration. Expansion (`src/lib/steps.ts`) runs in
+>   every consumer: case detail, run executor, CSV export (marker `[shared: <title>]`,
+>   re-import yields inline copies), and API (`stepsExpanded` alongside raw `steps` on GET).
+> - Library page at `/projects/[slug]/cases/shared-steps` (linked from the cases sidebar);
+>   groups show live usage counts (LIKE scan on stepsJson, fine at this scale).
+> - CaseForm renders a reference as a read-only indigo block with move / **unlink → copy
+>   inline** / remove; "⛓ Insert shared steps…" picker appends a reference. Clone keeps refs.
+> - Deletion blocked while referenced (UI error + API **409** listing up to 5 display ids);
+>   deviation from spec: **hard delete** when unreferenced instead of a deletedAt column —
+>   a soft-deleted group would still be a dangling ref, which we render as a visible
+>   "⚠ missing shared steps" placeholder anyway.
+> - Deviation: F-05 revision snapshots don't exist yet — the "snapshots store expanded
+>   copies" requirement moves to F-05 itself.
 
 **Goal.** Reusable step groups (e.g. "Login as admin") referenced by many cases; edit once,
 updated everywhere. Parity with TestRail/Qase.

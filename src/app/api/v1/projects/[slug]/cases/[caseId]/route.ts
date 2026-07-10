@@ -17,6 +17,7 @@ import {
 } from "@/lib/constants";
 import { dispatchWebhook } from "@/lib/webhooks";
 import { mergeCustomJson, validateCustomValues } from "@/lib/custom-fields";
+import { loadStepGroups } from "@/lib/steps";
 
 // Resolve the case only if it lives in a project the caller belongs to. Keeps
 // tenant isolation in one place for all three verbs.
@@ -45,7 +46,9 @@ export async function GET(
   const c = await findScopedCase(g.userId, params.slug, params.caseId);
   if (!c) return notFoundError("Case not found");
 
-  return NextResponse.json(serializeCase(params.slug, c));
+  return NextResponse.json(
+    serializeCase(params.slug, c, await loadStepGroups(c.projectId))
+  );
 }
 
 export async function PATCH(

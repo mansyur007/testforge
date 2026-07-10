@@ -11,6 +11,7 @@ import {
 } from "@/lib/api";
 import { dispatchWebhook } from "@/lib/webhooks";
 import { mergeCustomJson, validateCustomValues } from "@/lib/custom-fields";
+import { loadStepGroups } from "@/lib/steps";
 
 // REST API v1 (PRD §5.3): list & create test case.
 // Filtering via query params: ?priority=HIGH&type=SMOKE&tag=login&q=...
@@ -49,7 +50,7 @@ export async function GET(
   const cursor = sp.get("cursor");
   const limit = Math.min(parseInt(sp.get("limit") ?? "50", 10) || 50, 200);
 
-  const [total, cases] = await Promise.all([
+  const [total, cases, stepGroups] = await Promise.all([
     db.testCase.count({ where }),
     db.testCase.findMany({
       where,
@@ -57,13 +58,16 @@ export async function GET(
       take: limit + 1,
       ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
     }),
+    loadStepGroups(project.id),
   ]);
 
   const hasMore = cases.length > limit;
   const items = hasMore ? cases.slice(0, limit) : cases;
 
   return NextResponse.json({
-    data: items.map((c) => serializeCase(project.slug, c)),
+    data: items.map((c) =>
+      serializeCase(project.slug, c, stepGroups)
+    ),
     total,
     nextCursor: hasMore ? items[items.length - 1].id : null,
   });

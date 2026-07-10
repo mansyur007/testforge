@@ -3,6 +3,7 @@ import { TFIcon } from "@/components/icons";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { caseDisplayId, RESULT_COLORS, type TestStep } from "@/lib/constants";
+import { expandSteps, loadStepGroups } from "@/lib/steps";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { RunExecutor } from "@/components/RunExecutor";
 import { completeRun, rerunFailed } from "@/app/actions/runs";
@@ -46,6 +47,9 @@ export default async function RunDetailPage({
     attachmentsByResult.set(a.entityId, list);
   }
   const maxUploadMb = parseInt(process.env.TF_MAX_UPLOAD_MB ?? "10", 10) || 10;
+
+  // F-04: executor renders shared references expanded.
+  const stepGroups = await loadStepGroups(run.projectId);
 
   // F-03: RESULT custom fields rendered in the executor's submit panel.
   const resultDefs = await db.customFieldDef.findMany({
@@ -153,7 +157,10 @@ export default async function RunDetailPage({
           priority: r.testCase.priority,
           preconditions: r.testCase.preconditions ?? "",
           expectedResult: r.testCase.expectedResult ?? "",
-          steps: JSON.parse(r.testCase.stepsJson || "[]") as TestStep[],
+          steps: expandSteps(
+            JSON.parse(r.testCase.stepsJson || "[]") as TestStep[],
+            stepGroups
+          ),
           attachments: (attachmentsByResult.get(r.id) ?? []).map((a) => ({
             id: a.id,
             filename: a.filename,

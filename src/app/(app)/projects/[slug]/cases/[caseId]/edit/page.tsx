@@ -33,6 +33,10 @@ export default async function EditCasePage({
     where: { projectId: testCase.projectId, entity: "CASE", active: true },
     orderBy: { order: "asc" },
   });
+  const sharedGroups = await db.sharedStepGroup.findMany({
+    where: { projectId: testCase.projectId },
+    orderBy: { title: "asc" },
+  });
 
   return (
     <div className="space-y-6">
@@ -72,6 +76,10 @@ export default async function EditCasePage({
           required: d.required,
         }))}
         members={testCase.project.members.map((m) => m.user)}
+        sharedGroups={sharedGroups.map((g) => {
+          const steps = JSON.parse(g.stepsJson || "[]");
+          return { id: g.id, title: g.title, stepCount: steps.length, steps };
+        })}
       />
     </div>
   );

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getSession, authenticateApiKey } from "@/lib/auth";
 import { caseDisplayId, type TestStep } from "@/lib/constants";
 import { formatCustomValue, type CustomValue } from "@/lib/custom-fields";
+import { expandSteps, loadStepGroups } from "@/lib/steps";
 
 export async function GET(req: NextRequest) {
   const session = (await getSession()) ?? (await authenticateApiKey(req));
@@ -24,6 +25,8 @@ export async function GET(req: NextRequest) {
   });
   if (!project)
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
+
+  const stepGroups = await loadStepGroups(project.id);
 
   // F-03: one cf_<key> column per active CASE custom field.
   const defs = await db.customFieldDef.findMany({
@@ -58,10 +61,18 @@ export async function GET(req: NextRequest) {
       // Match the import/template format: "action :: expected" per step, steps
       // separated by " | ". The ":: expected" part is only added when present,
       // so an exported CSV round-trips cleanly back through import.
-      steps: (JSON.parse(c.stepsJson || "[]") as TestStep[])
-        .map((s) =>
-          s.expected?.trim() ? `${s.action} :: ${s.expected}` : s.action
-        )
+      // F-04: shared references export EXPANDED with a "[shared: <title>]"
+      // marker; re-importing yields plain inline steps (documented).
+      steps: expandSteps(
+        JSON.parse(c.stepsJson || "[]") as TestStep[],
+        stepGroups
+      )
+        .map((s) => {
+          const action = s.fromShared
+            ? `[shared: ${s.fromShared.title}] ${s.action}`
+            : s.action;
+          return s.expected?.trim() ? `${action} :: ${s.expected}` : action;
+        })
         .join(" | "),
       expected_result: c.expectedResult ?? "",
       priority: c.priority,

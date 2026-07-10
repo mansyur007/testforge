@@ -56,7 +56,7 @@ Legenda: ✅ ada · 🟡 sebagian/terbatas · ❌ tidak ada · ➖ tidak relevan
 | Soft delete / recycle bin | ✅ | ✅ | ✅ | ❌ | ➖ |
 | **Attachment / gambar di case & hasil** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Custom fields** | ✅ (9 tipe) | ✅ (sangat kuat) | ✅ | ✅ | ➖ |
-| **Shared steps (langkah reusable)** | ❌ | ✅ | ✅ | ❌ | ➖ |
+| **Shared steps (langkah reusable)** | ✅ | ✅ | ✅ | ❌ | ➖ |
 | **Versioning / riwayat perubahan case** | ❌ | ✅ | ✅ | ✅ | ➖ |
 | **Parameterisasi / dataset** | ❌ | ✅ | ✅ | ❌ | ➖ |
 | **Template case (teks/BDD/exploratory)** | ❌ | ✅ | 🟡 | ❌ | ➖ |
@@ -311,7 +311,7 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
 - [x] *(Selesai 2026-07-09 — 9 tipe field untuk case & result; kolom tabel/filter menyusul)* **Custom fields** — definisi field per project (tipe: text, dropdown, multi-select,
       checkbox, URL, user, date) untuk test case dan hasil run; tampil di form, tabel,
       filter, CSV import/export, dan API.
-- [ ] **Shared steps** — langkah reusable lintas case (mis. "login sebagai admin");
+- [x] *(Selesai 2026-07-10)* **Shared steps** — langkah reusable lintas case (mis. "login sebagai admin");
       edit sekali, ter-update di semua case pemakai; terhitung benar di export & run view.
 - [ ] **Riwayat & versioning test case** — simpan revisi tiap perubahan (siapa, kapan, diff
       per field/step), tampilkan di tab History, bisa restore versi; hasil run menyimpan

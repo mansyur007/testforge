@@ -2,7 +2,14 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { submitResult } from "@/app/actions/runs";
-import { RESULT_BADGES, PRIORITY_BADGES, type TestStep } from "@/lib/constants";
+import { RESULT_BADGES, PRIORITY_BADGES } from "@/lib/constants";
+
+// F-04: steps arrive pre-expanded from the server; fromShared tags the origin.
+type ExecutorStep = {
+  action: string;
+  expected: string;
+  fromShared?: { id: string; title: string };
+};
 import {
   AttachmentUploader,
   type AttachmentItem,
@@ -27,7 +34,7 @@ type ResultItem = {
   priority: string;
   preconditions: string;
   expectedResult: string;
-  steps: TestStep[];
+  steps: ExecutorStep[];
   attachments: AttachmentItem[];
   custom: Record<string, unknown>;
 };
@@ -166,6 +173,15 @@ export function RunExecutor({
                   {i + 1}
                 </span>
                 <div className="min-w-0">
+                  {s.fromShared && (
+                    <span
+                      className="mr-1.5 rounded bg-indigo-50 px-1.5 py-0.5 align-middle text-[10px] font-medium text-indigo-600"
+                      title={`From shared steps: ${s.fromShared.title}`}
+                      data-testid="shared-step-badge"
+                    >
+                      ⛓ {s.fromShared.title}
+                    </span>
+                  )}
                   <Markdown>{s.action}</Markdown>
                   {s.expected && (
                     <div className="flex gap-1 text-xs text-slate-500">
