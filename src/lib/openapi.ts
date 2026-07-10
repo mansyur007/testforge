@@ -185,6 +185,37 @@ export function openApiSpec() {
           },
         },
       },
+      "/projects/{slug}/cases/{caseId}/revisions": {
+        get: {
+          tags: ["Cases"],
+          summary: "List a case's revision history (F-05)",
+          description:
+            "Numbered snapshots recorded on every meaningful change, newest first. Snapshot steps are stored expanded (shared references resolved at write time).",
+          parameters: [
+            slugParam,
+            { name: "caseId", in: "path", required: true, schema: { type: "string" } },
+            { name: "cursor", in: "query", schema: { type: "string" } },
+            { name: "limit", in: "query", schema: { type: "integer", default: 50, maximum: 200 } },
+          ],
+          responses: {
+            "200": {
+              description: "OK.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      items: { type: "array", items: { $ref: "#/components/schemas/CaseRevision" } },
+                      nextCursor: { type: ["string", "null"] },
+                    },
+                  },
+                },
+              },
+            },
+            "404": err("Case not found."),
+          },
+        },
+      },
       "/projects/{slug}/suites": {
         get: {
           tags: ["Suites"],
@@ -772,6 +803,7 @@ export function openApiSpec() {
                 id: { type: "string" },
                 displayId: { type: "string", example: "TC-WEB-001" },
                 seq: { type: "integer" },
+                rev: { type: "integer", description: "Current revision number (F-05)." },
                 createdAt: { type: "string", format: "date-time" },
                 updatedAt: { type: "string", format: "date-time" },
               },
@@ -823,8 +855,32 @@ export function openApiSpec() {
               additionalProperties: true,
               description: "Custom RESULT field values keyed by field key.",
             },
+            caseRev: {
+              type: ["integer", "null"],
+              description: "Case revision this result executed (F-05); null for pre-F-05 results.",
+            },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },
+          },
+        },
+        CaseRevision: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            rev: { type: "integer" },
+            authorId: { type: ["string", "null"] },
+            authorName: { type: ["string", "null"] },
+            changeSummary: {
+              type: "string",
+              description: 'Comma list of changed fields, or "created" / "restored from rev N".',
+            },
+            snapshot: {
+              type: "object",
+              additionalProperties: true,
+              description:
+                "Full case fields at that moment: title, description, preconditions, steps (expanded), expectedResult, priority, type, status, automationStatus, tags, suiteId, assigneeId, linkedIssues, custom.",
+            },
+            createdAt: { type: "string", format: "date-time" },
           },
         },
         SharedStepGroup: {

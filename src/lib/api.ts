@@ -115,6 +115,7 @@ export function serializeCase(
     assigneeId: c.assigneeId,
     linkedIssues: c.linkedIssues,
     custom: JSON.parse(c.customJson || "{}"),
+    rev: c.rev,
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),
   };
@@ -163,6 +164,7 @@ export function serializeResult(r: TestRunResult) {
     defectUrl: r.defectUrl,
     assigneeId: r.assigneeId,
     custom: JSON.parse(r.customJson || "{}"),
+    caseRev: r.caseRev,
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   };

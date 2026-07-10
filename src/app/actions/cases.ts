@@ -6,6 +6,9 @@ import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { isProjectMember } from "@/lib/projects";
 import { logAudit } from "@/lib/audit";
+import { recordRevision, type CaseSnapshot } from "@/lib/case-revisions";
+import { dispatchWebhook } from "@/lib/webhooks";
+import { serializeCase } from "@/lib/api";
 import type { TestStep } from "@/lib/constants";
 import {
   collectCustomFromForm,
@@ -102,6 +105,7 @@ export async function createCase(
     },
   });
 
+  await recordRevision(testCase.id, session.userId); // F-05: rev 1 "created"
   await logAudit({
     userId: session.userId,
     action: "case.create",
@@ -141,6 +145,7 @@ export async function updateCase(
     include: { project: true },
   });
 
+  await recordRevision(caseId, session.userId); // F-05: no-op edits write nothing
   await logAudit({
     userId: session.userId,
     action: "case.update",
@@ -183,6 +188,7 @@ export async function cloneCase(formData: FormData) {
     },
   });
 
+  await recordRevision(copy.id, session.userId); // F-05: the copy starts its own history
   await logAudit({
     userId: session.userId,
     action: "case.clone",
@@ -224,13 +230,19 @@ export async function bulkUpdateCases(formData: FormData) {
   )
     return;
 
-  await db.testCase.updateMany({
+  // Resolve the accessible ids first — F-05 records one revision per case.
+  const owned = await db.testCase.findMany({
     where: {
       id: { in: ids },
       project: { members: { some: { userId: session.userId } } },
     },
+    select: { id: true },
+  });
+  await db.testCase.updateMany({
+    where: { id: { in: owned.map((c) => c.id) } },
     data: { [field]: value },
   });
+  for (const c of owned) await recordRevision(c.id, session.userId);
   await logAudit({
     userId: session.userId,
     action: "case.bulk_update",
@@ -275,6 +287,94 @@ export async function bulkDeleteCases(
   });
   revalidatePath(`/projects/${slug}`);
   return { ok: true, deleted: res.count };
+}
+
+// F-05: write a revision's snapshot fields back onto the case. History is
+// append-only — restoring records a NEW revision ("restored from rev N"),
+// never rewrites old ones. Snapshot steps are stored expanded, so a restore
+// flattens any shared-step references into plain inline steps.
+export async function restoreRevision(
+  _prev: { error?: string } | undefined,
+  formData: FormData
+): Promise<{ error?: string } | undefined> {
+  const session = await requireSession();
+  if (session.role === "VIEWER") return { error: "Viewers don't have write access." };
+
+  const revisionId = String(formData.get("revisionId"));
+  const revision = await db.testCaseRevision.findFirst({
+    where: {
+      id: revisionId,
+      testCase: { project: { members: { some: { userId: session.userId } } } },
+    },
+    include: { testCase: { select: { id: true, projectId: true } } },
+  });
+  if (!revision) notFound();
+
+  let snapshot: CaseSnapshot;
+  try {
+    snapshot = JSON.parse(revision.snapshotJson);
+  } catch {
+    return { error: "This revision's snapshot is unreadable." };
+  }
+
+  const { projectId } = revision.testCase;
+  // The referenced suite/assignee may be gone by now — drop rather than fail.
+  const suite = snapshot.suiteId
+    ? await db.testSuite.findFirst({
+        where: { id: snapshot.suiteId, projectId },
+        select: { id: true },
+      })
+    : null;
+  const assignee = snapshot.assigneeId
+    ? await db.projectMember.findFirst({
+        where: { projectId, userId: snapshot.assigneeId },
+        select: { userId: true },
+      })
+    : null;
+
+  const updated = await db.testCase.update({
+    where: { id: revision.caseId },
+    data: {
+      title: snapshot.title,
+      description: snapshot.description,
+      preconditions: snapshot.preconditions,
+      stepsJson: JSON.stringify(
+        snapshot.steps.map((s) => ({ action: s.action, expected: s.expected }))
+      ),
+      expectedResult: snapshot.expectedResult,
+      priority: snapshot.priority,
+      type: snapshot.type,
+      status: snapshot.status,
+      automationStatus: snapshot.automationStatus,
+      tags: snapshot.tags,
+      suiteId: suite?.id ?? null,
+      assigneeId: assignee?.userId ?? null,
+      linkedIssues: snapshot.linkedIssues,
+      customJson: JSON.stringify(snapshot.custom ?? {}),
+    },
+    include: { project: true },
+  });
+
+  await recordRevision(
+    revision.caseId,
+    session.userId,
+    `restored from rev ${revision.rev}`
+  );
+  await logAudit({
+    userId: session.userId,
+    action: "case.restore_revision",
+    entityType: "case",
+    entityId: revision.caseId,
+    detail: `rev ${revision.rev}`,
+  });
+  await dispatchWebhook(
+    projectId,
+    "case.updated",
+    serializeCase(updated.project.slug, updated)
+  );
+  revalidatePath(
+    `/projects/${updated.project.slug}/cases/${revision.caseId}`
+  );
 }
 
 // Move one or more cases into a suite/sub-suite, or unassign them (suiteId

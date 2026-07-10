@@ -57,7 +57,7 @@ Legenda: ✅ ada · 🟡 sebagian/terbatas · ❌ tidak ada · ➖ tidak relevan
 | **Attachment / gambar di case & hasil** | ✅ | ✅ | ✅ | ✅ | ✅ |
 | **Custom fields** | ✅ (9 tipe) | ✅ (sangat kuat) | ✅ | ✅ | ➖ |
 | **Shared steps (langkah reusable)** | ✅ | ✅ | ✅ | ❌ | ➖ |
-| **Versioning / riwayat perubahan case** | ❌ | ✅ | ✅ | ✅ | ➖ |
+| **Versioning / riwayat perubahan case** | ✅ | ✅ | ✅ | ✅ | ➖ |
 | **Parameterisasi / dataset** | ❌ | ✅ | ✅ | ❌ | ➖ |
 | **Template case (teks/BDD/exploratory)** | ❌ | ✅ | 🟡 | ❌ | ➖ |
 | Rich text / markdown + inline image | ✅ (GFM) | ✅ | ✅ | 🟡 | ➖ |
@@ -313,7 +313,7 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
       filter, CSV import/export, dan API.
 - [x] *(Selesai 2026-07-10)* **Shared steps** — langkah reusable lintas case (mis. "login sebagai admin");
       edit sekali, ter-update di semua case pemakai; terhitung benar di export & run view.
-- [ ] **Riwayat & versioning test case** — simpan revisi tiap perubahan (siapa, kapan, diff
+- [x] *(Selesai 2026-07-10)* **Riwayat & versioning test case** — simpan revisi tiap perubahan (siapa, kapan, diff
       per field/step), tampilkan di tab History, bisa restore versi; hasil run menyimpan
       snapshot versi case saat dieksekusi (seperti TestLink).
 - [ ] **Test plan + configurations** — entity Test Plan berisi banyak run; configurations

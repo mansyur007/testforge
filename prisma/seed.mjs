@@ -147,6 +147,49 @@ async function main() {
     data: { caseCounter: seq },
   });
 
+  // F-05: baseline revision per case + one edit on the first case so the
+  // History tab has a diff to show. Snapshot shape mirrors lib/case-revisions.
+  const snapshotOf = (c) => ({
+    title: c.title,
+    description: c.description ?? null,
+    preconditions: c.preconditions ?? null,
+    steps: JSON.parse(c.stepsJson || "[]"),
+    expectedResult: c.expectedResult ?? null,
+    priority: c.priority,
+    type: c.type,
+    status: c.status,
+    automationStatus: c.automationStatus,
+    tags: c.tags,
+    suiteId: c.suiteId ?? null,
+    assigneeId: c.assigneeId ?? null,
+    linkedIssues: c.linkedIssues ?? null,
+    custom: JSON.parse(c.customJson || "{}"),
+  });
+  for (const c of created) {
+    await db.testCaseRevision.create({
+      data: {
+        caseId: c.id,
+        rev: 1,
+        authorId: admin.id,
+        snapshotJson: JSON.stringify(snapshotOf(c)),
+        changeSummary: "created",
+      },
+    });
+  }
+  const edited = await db.testCase.update({
+    where: { id: created[0].id },
+    data: { title: `${created[0].title} (v2)`, priority: "CRITICAL", rev: 2 },
+  });
+  await db.testCaseRevision.create({
+    data: {
+      caseId: edited.id,
+      rev: 2,
+      authorId: admin.id,
+      snapshotJson: JSON.stringify(snapshotOf(edited)),
+      changeSummary: "title, priority",
+    },
+  });
+
   const milestone = await db.milestone.create({
     data: { projectId: project.id, name: "Release v1.0" },
   });
@@ -159,16 +202,18 @@ async function main() {
       createdById: admin.id,
       results: {
         create: [
-          { caseId: created[0].id, status: "PASSED", elapsedSeconds: 42 },
-          { caseId: created[1].id, status: "PASSED", elapsedSeconds: 30 },
+          // caseRev 1 while the case is at rev 2 → demo of the stale-rev chip.
+          { caseId: created[0].id, status: "PASSED", elapsedSeconds: 42, caseRev: 1 },
+          { caseId: created[1].id, status: "PASSED", elapsedSeconds: 30, caseRev: 1 },
           {
             caseId: created[2].id,
             status: "FAILED",
             comment: "Lockout tidak aktif setelah 5 percobaan",
             defectUrl: "https://github.com/example/repo/issues/12",
+            caseRev: 1,
           },
-          { caseId: created[3].id, status: "UNTESTED" },
-          { caseId: created[4].id, status: "UNTESTED" },
+          { caseId: created[3].id, status: "UNTESTED", caseRev: 1 },
+          { caseId: created[4].id, status: "UNTESTED", caseRev: 1 },
         ],
       },
     },

@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
     run.results.map((r) => ({
       case_id: caseDisplayId(run.project.slug, r.testCase.seq),
       title: r.testCase.title,
+      case_rev: r.caseRev ?? "",
       status: r.status,
       assignee: r.assignee?.name ?? "",
       comment: r.comment ?? "",

@@ -58,15 +58,17 @@ export async function POST(
   const errors: FieldError[] = [];
 
   const caseId = String(body.caseId ?? "");
+  let caseRev: number | undefined;
   if (!caseId) {
     errors.push({ field: "caseId", message: "caseId is required" });
   } else {
     const c = await db.testCase.findFirst({
       where: { id: caseId, projectId: run.projectId, deletedAt: null },
-      select: { id: true },
+      select: { id: true, rev: true },
     });
     if (!c)
       errors.push({ field: "caseId", message: "not a live case in this project" });
+    else caseRev = c.rev; // F-05: stamped when the result row is first created
   }
 
   const status = String(body.status ?? "").toUpperCase();
@@ -94,7 +96,7 @@ export async function POST(
 
   const result = await db.testRunResult.upsert({
     where: { runId_caseId: { runId: run.id, caseId } },
-    create: { runId: run.id, caseId, status, comment, elapsedSeconds, defectUrl },
+    create: { runId: run.id, caseId, caseRev, status, comment, elapsedSeconds, defectUrl },
     update: { status, comment, elapsedSeconds, defectUrl },
   });
 

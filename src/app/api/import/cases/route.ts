@@ -6,6 +6,7 @@ import { getSession } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
 import { PRIORITIES, CASE_TYPES } from "@/lib/constants";
 import { validateCustomValues } from "@/lib/custom-fields";
+import { recordRevision } from "@/lib/case-revisions";
 
 type CsvRow = Record<string, string>;
 
@@ -144,7 +145,7 @@ export async function POST(req: NextRequest) {
         const [action, ...rest] = segment.split("::");
         return { action: action.trim(), expected: rest.join("::").trim() };
       });
-    await db.testCase.create({
+    const created = await db.testCase.create({
       data: {
         projectId: project.id,
         suiteId: targetSuiteId,
@@ -160,6 +161,7 @@ export async function POST(req: NextRequest) {
         customJson,
       },
     });
+    await recordRevision(created.id, session.userId); // F-05: rev 1 "created"
     imported++;
   }
 

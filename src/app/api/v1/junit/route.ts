@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
     "i"
   );
 
-  const matched: { caseId: string; status: string; comment: string; time: number }[] = [];
+  const matched: { caseId: string; caseRev: number; status: string; comment: string; time: number }[] = [];
   const unmatched: string[] = [];
 
   for (const tc of testcases) {
@@ -106,6 +106,7 @@ export async function POST(req: NextRequest) {
     if (testCase) {
       matched.push({
         caseId: testCase.id,
+        caseRev: testCase.rev, // F-05: revision this automated result executed
         status,
         comment: `[${source}] ${name}`,
         time,
@@ -141,6 +142,7 @@ export async function POST(req: NextRequest) {
       results: {
         create: Array.from(byCase.values()).map((m) => ({
           caseId: m.caseId,
+          caseRev: m.caseRev,
           status: m.status,
           comment: m.comment,
           elapsedSeconds: m.time,
