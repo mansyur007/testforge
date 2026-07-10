@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { memberScope } from "@/lib/projects";
 import { RESULT_COLORS } from "@/lib/constants";
+import { parseRunConfig, configLabel } from "@/lib/plans";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { createMilestone } from "@/app/actions/projects";
 
@@ -66,6 +67,12 @@ export default async function RunsPage({
                     {run.origin && (
                       <span className="ml-1 rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
                         {run.origin}
+                      </span>
+                    )}
+                    {/* F-06: plan child runs show their config combo */}
+                    {run.planId && parseRunConfig(run.configJson) && (
+                      <span className="ml-1 rounded bg-indigo-50 px-1.5 py-0.5 text-xs text-indigo-700">
+                        {configLabel(parseRunConfig(run.configJson))}
                       </span>
                     )}
                   </p>

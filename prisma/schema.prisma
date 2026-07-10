@@ -37,6 +37,7 @@ model User {
   attachments    Attachment[]
   savedViews     SavedView[]
   caseRevisions  TestCaseRevision[] @relation("RevisionAuthor")
+  createdPlans   TestPlan[]         @relation("PlanCreator")
 }
 
 model Project {
@@ -63,6 +64,8 @@ model Project {
   notificationChannels NotificationChannel[]
   integrations Integration[]
   issueLinks   IssueLink[]
+  configGroups ConfigGroup[]
+  testPlans    TestPlan[]
 }
 
 // Outbound webhooks: POST a signed JSON payload to `url` when a subscribed event
@@ -115,6 +118,50 @@ model SharedStepGroup {
   updatedAt DateTime @updatedAt
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// F-06: a configuration axis for test plans ("Browser", "OS"). A plan picks
+// options across groups and gets one run per combination.
+model ConfigGroup {
+  id        String @id @default(cuid())
+  projectId String
+  name      String // "Browser"
+  order     Int    @default(0)
+
+  project Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  options ConfigOption[]
+
+  @@unique([projectId, name])
+}
+
+model ConfigOption {
+  id      String @id @default(cuid())
+  groupId String
+  name    String // "Chrome"
+  order   Int    @default(0)
+
+  group ConfigGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, name])
+}
+
+// F-06: a Test Plan bundles the runs generated from one case selection × a
+// configuration matrix, with aggregate progress across its child runs.
+model TestPlan {
+  id          String    @id @default(cuid())
+  projectId   String
+  name        String
+  description String?
+  status      String    @default("ACTIVE") // ACTIVE | COMPLETED
+  milestoneId String?
+  createdById String
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  milestone Milestone? @relation(fields: [milestoneId], references: [id])
+  createdBy User       @relation("PlanCreator", fields: [createdById], references: [id])
+  runs      TestRun[]
 }
 
 // F-07: per-project issue tracker connection. `authEnc` is an AES-256-GCM
@@ -253,8 +300,9 @@ model Milestone {
   dueDate   DateTime?
   status    String    @default("OPEN") // OPEN | COMPLETED
 
-  project Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
   runs    TestRun[]
+  plans   TestPlan[]
 }
 
 model TestSuite {
@@ -312,12 +360,18 @@ model TestRun {
   source      String    @default("MANUAL") // MANUAL | JUNIT | CYPRESS | PLAYWRIGHT | ...
   origin      String? // where an automation run came from, e.g. "CI · GitHub Actions (Linux)" / "Local · macOS"
   milestoneId String?
+  planId      String? // F-06: parent plan; null = standalone run (all pre-plan behavior)
+  // F-06: {"Browser":"Chrome","OS":"Windows"} — option NAMES copied at creation,
+  // not FK ids, so deleting a ConfigOption later never breaks an existing run.
+  // This denormalization is deliberate.
+  configJson  String?
   createdById String
   createdAt   DateTime  @default(now())
   completedAt DateTime?
 
   project   Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
   milestone Milestone?      @relation(fields: [milestoneId], references: [id])
+  plan      TestPlan?       @relation(fields: [planId], references: [id])
   createdBy User            @relation("RunCreator", fields: [createdById], references: [id])
   results   TestRunResult[]
 }

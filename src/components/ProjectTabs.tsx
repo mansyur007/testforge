@@ -10,6 +10,7 @@ export function ProjectTabs({
   active:
     | "cases"
     | "runs"
+    | "plans"
     | "reports"
     | "import"
     | "fields"
@@ -21,6 +22,7 @@ export function ProjectTabs({
   const tabs = [
     { key: "cases", label: "Test Cases", href: `/projects/${slug}` },
     { key: "runs", label: "Test Runs", href: `/projects/${slug}/runs` },
+    { key: "plans", label: "Plans", href: `/projects/${slug}/plans` },
     { key: "reports", label: "Reports", href: `/projects/${slug}/reports` },
     { key: "import", label: "Import", href: `/projects/${slug}/import` },
     { key: "fields", label: "Fields", href: `/projects/${slug}/fields` },

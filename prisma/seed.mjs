@@ -194,6 +194,65 @@ async function main() {
     data: { projectId: project.id, name: "Release v1.0" },
   });
 
+  // F-06: configuration axes + a demo plan (Browser × 2 → 2 child runs with a
+  // few executed results so the aggregate bar and matrix show something).
+  await db.configGroup.create({
+    data: {
+      projectId: project.id,
+      name: "Browser",
+      options: {
+        create: [
+          { name: "Chrome", order: 0 },
+          { name: "Firefox", order: 1 },
+        ],
+      },
+    },
+  });
+  await db.configGroup.create({
+    data: {
+      projectId: project.id,
+      name: "OS",
+      order: 1,
+      options: {
+        create: [
+          { name: "Windows", order: 0 },
+          { name: "macOS", order: 1 },
+        ],
+      },
+    },
+  });
+  const demoPlan = await db.testPlan.create({
+    data: {
+      projectId: project.id,
+      name: "Cross-browser Smoke",
+      description: "Login & checkout across browsers",
+      createdById: admin.id,
+    },
+  });
+  const planCases = [created[0], created[3]];
+  const planRuns = [
+    { browser: "Chrome", statuses: ["PASSED", "PASSED"] },
+    { browser: "Firefox", statuses: ["PASSED", "FAILED"] },
+  ];
+  for (const pr of planRuns) {
+    await db.testRun.create({
+      data: {
+        projectId: project.id,
+        planId: demoPlan.id,
+        name: `Cross-browser Smoke — ${pr.browser}`,
+        configJson: JSON.stringify({ Browser: pr.browser }),
+        createdById: admin.id,
+        results: {
+          create: planCases.map((c, i) => ({
+            caseId: c.id,
+            caseRev: c.id === created[0].id ? 2 : 1,
+            status: pr.statuses[i],
+          })),
+        },
+      },
+    });
+  }
+
   // F-08: demo notification channel. EMAIL is safe without SMTP_URL — the
   // mailer just logs the delivery to the console.
   await db.notificationChannel.create({

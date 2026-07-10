@@ -37,6 +37,7 @@ export function openApiSpec() {
       { name: "Shared Steps" },
       { name: "Custom Fields" },
       { name: "Issues" },
+      { name: "Plans" },
     ],
     paths: {
       "/projects/{slug}/cases": {
@@ -217,6 +218,144 @@ export function openApiSpec() {
               },
             },
             "404": err("Case not found."),
+          },
+        },
+      },
+      "/projects/{slug}/plans": {
+        get: {
+          tags: ["Plans"],
+          summary: "List test plans (F-06)",
+          parameters: [
+            slugParam,
+            { name: "status", in: "query", schema: { type: "string", enum: ["ACTIVE", "COMPLETED"] } },
+            { name: "cursor", in: "query", schema: { type: "string" } },
+            { name: "limit", in: "query", schema: { type: "integer", default: 50, maximum: 200 } },
+          ],
+          responses: {
+            "200": {
+              description: "OK.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      items: { type: "array", items: { $ref: "#/components/schemas/TestPlan" } },
+                      nextCursor: { type: ["string", "null"] },
+                    },
+                  },
+                },
+              },
+            },
+            "404": err("Project not found."),
+          },
+        },
+        post: {
+          tags: ["Plans"],
+          summary: "Create a plan (one run per configuration combination)",
+          description:
+            "Runs are the cartesian product of the selected options across their groups (max 50 combinations). No options → a single run without configuration. Every run is seeded with UNTESTED results for the selected cases.",
+          parameters: [slugParam],
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["name", "caseIds"],
+                  properties: {
+                    name: { type: "string" },
+                    description: { type: ["string", "null"] },
+                    milestoneId: { type: ["string", "null"] },
+                    caseIds: { type: "array", items: { type: "string" } },
+                    optionIds: {
+                      type: "array",
+                      items: { type: "string" },
+                      description: "ConfigOption ids (see /config-groups).",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "201": {
+              description: "Created — includes the generated child runs.",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/TestPlan" } } },
+            },
+            "403": err("API key is read-only."),
+            "404": err("Project not found."),
+            "422": err("Validation failed, or too many combinations."),
+          },
+        },
+      },
+      "/projects/{slug}/plans/{planId}": {
+        get: {
+          tags: ["Plans"],
+          summary: "Get a plan with child runs and aggregate stats",
+          parameters: [
+            slugParam,
+            { name: "planId", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "OK.",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/TestPlan" } } },
+            },
+            "404": err("Plan not found."),
+          },
+        },
+      },
+      "/projects/{slug}/config-groups": {
+        get: {
+          tags: ["Plans"],
+          summary: "List configuration groups & options",
+          parameters: [slugParam],
+          responses: {
+            "200": {
+              description: "OK.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      items: { type: "array", items: { $ref: "#/components/schemas/ConfigGroup" } },
+                    },
+                  },
+                },
+              },
+            },
+            "404": err("Project not found."),
+          },
+        },
+        post: {
+          tags: ["Plans"],
+          summary: "Create a configuration group (optionally with options)",
+          parameters: [slugParam],
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["name"],
+                  properties: {
+                    name: { type: "string", example: "Browser" },
+                    options: {
+                      type: "array",
+                      items: { type: "string" },
+                      example: ["Chrome", "Firefox"],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "201": {
+              description: "Created.",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/ConfigGroup" } } },
+            },
+            "403": err("API key is read-only."),
+            "404": err("Project not found."),
+            "422": err("Validation failed (e.g. duplicate group name)."),
           },
         },
       },
@@ -918,6 +1057,15 @@ export function openApiSpec() {
             source: { type: "string" },
             origin: { type: ["string", "null"] },
             milestoneId: { type: ["string", "null"] },
+            planId: {
+              type: ["string", "null"],
+              description: "Parent test plan (F-06); null for standalone runs.",
+            },
+            config: {
+              type: ["object", "null"],
+              additionalProperties: { type: "string" },
+              description: 'Configuration combo, e.g. {"Browser":"Chrome","OS":"Windows"}.',
+            },
             createdById: { type: "string" },
             createdAt: { type: "string", format: "date-time" },
             completedAt: { type: ["string", "null"], format: "date-time" },
@@ -925,6 +1073,49 @@ export function openApiSpec() {
               type: "object",
               additionalProperties: { type: "integer" },
               description: "Result counts per status (detail endpoint only).",
+            },
+          },
+        },
+        TestPlan: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            name: { type: "string" },
+            description: { type: ["string", "null"] },
+            status: { type: "string", enum: ["ACTIVE", "COMPLETED"] },
+            milestoneId: { type: ["string", "null"] },
+            createdById: { type: "string" },
+            createdAt: { type: "string", format: "date-time" },
+            completedAt: { type: ["string", "null"], format: "date-time" },
+            runCount: { type: "integer", description: "List endpoint only." },
+            runs: {
+              type: "array",
+              items: { $ref: "#/components/schemas/Run" },
+              description: "Child runs (detail & create responses).",
+            },
+            stats: {
+              type: "object",
+              additionalProperties: { type: "integer" },
+              description: "Aggregate result counts across child runs.",
+            },
+          },
+        },
+        ConfigGroup: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            name: { type: "string", example: "Browser" },
+            order: { type: "integer" },
+            options: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  id: { type: "string" },
+                  name: { type: "string", example: "Chrome" },
+                  order: { type: "integer" },
+                },
+              },
             },
           },
         },

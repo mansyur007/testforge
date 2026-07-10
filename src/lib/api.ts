@@ -88,6 +88,15 @@ export async function guard(
 // ---------------------------------------------------------------------------
 // Serializers — single source of truth for each resource's API shape.
 // ---------------------------------------------------------------------------
+function safeParse(json: string | null): Record<string, string> | null {
+  if (!json) return null;
+  try {
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+}
+
 // F-04: pass the project's step groups to include `stepsExpanded` (shared
 // references resolved). Callers without groups get raw steps only.
 export function serializeCase(
@@ -133,6 +142,9 @@ export function serializeRun(
     source: r.source,
     origin: r.origin,
     milestoneId: r.milestoneId,
+    // F-06: parent plan + config combo ({"Browser":"Chrome"}), null when standalone.
+    planId: r.planId,
+    config: safeParse(r.configJson),
     createdById: r.createdById,
     createdAt: r.createdAt.toISOString(),
     completedAt: r.completedAt ? r.completedAt.toISOString() : null,

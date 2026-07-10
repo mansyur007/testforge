@@ -40,6 +40,10 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 - **Case history & versioning** — every change becomes a numbered revision
   (author, per-field diff) with one-click restore; run results remember which
   revision they executed and flag stale ones
+- **Test plans & configurations** — bundle runs generated from one case
+  selection × a configuration matrix (e.g. Browser × OS → 4 runs, max 50),
+  with aggregate progress, a per-combo result matrix, and one-click
+  complete-plan; configuration axes are managed under Fields
 - **Issue tracker integration** — connect Jira, GitHub or GitLab per project;
   file an issue straight from a failed result (steps, expected vs actual and a
   backlink are pre-filled), link existing issues by key or URL, and see live

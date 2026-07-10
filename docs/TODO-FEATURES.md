@@ -646,7 +646,26 @@ e2e `e2e/case-history.spec.ts` for AC 1–3.
 
 ---
 
-### F-06 — Test plans & configurations `[ ]`
+### F-06 — Test plans & configurations `[x]`
+
+> **Status: DONE** (2026-07-10, branch `feat/test-plans`). Implemented as specified, with
+> these deliberate deviations:
+> - The case picker was extracted into `src/components/CaseSelector.tsx` (controlled — the
+>   parent form owns the selection) and `NewRunForm` was refactored onto it, exactly as the
+>   spec's "extract if needed" allowed.
+> - Groups with zero selected options simply don't participate as an axis (documented in
+>   `buildCombinations`); zero groups → one run with `configJson = null`.
+> - Plan creation emits ONE `plan.created` webhook carrying the child runs instead of N×
+>   `run.created` — a batch birth as N events would just be noise. Complete-plan emits
+>   `run.completed` per newly-closed child (external systems track runs) but only one
+>   human-facing `plan.completed` notification.
+> - A "Plans" tab was added to `ProjectTabs` (the spec named pages but no navigation).
+> - Config management lives on the Fields page as a "Configurations" section, per spec;
+>   deletion is allowed while in use because runs copy option NAMES into `configJson`
+>   (commented on the schema).
+> - `plan.created`/`plan.completed` were added to WEBHOOK_EVENTS; existing notification-
+>   channel e2e unchecks them to stay subscribed to `run.completed` only.
+> - F-05 interplay: every generated result is stamped with the case's current `caseRev`.
 
 **Goal.** A Test Plan bundles multiple runs generated from a case selection × a configuration
 matrix (e.g. Browser {Chrome, Firefox} × OS {Windows, macOS} → 4 runs), with aggregate
