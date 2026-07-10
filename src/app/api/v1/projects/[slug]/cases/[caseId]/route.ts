@@ -17,6 +17,7 @@ import {
 } from "@/lib/constants";
 import { dispatchWebhook } from "@/lib/webhooks";
 import { mergeCustomJson, validateCustomValues } from "@/lib/custom-fields";
+import { recordRevision } from "@/lib/case-revisions";
 import { loadStepGroups } from "@/lib/steps";
 
 // Resolve the case only if it lives in a project the caller belongs to. Keeps
@@ -161,10 +162,13 @@ export async function PATCH(
 
   if (errors.length) return validationError(errors);
 
-  const updated = await db.testCase.update({
+  let updated = await db.testCase.update({
     where: { id: existing.id },
     data,
   });
+  await recordRevision(updated.id, g.userId); // F-05
+  // recordRevision may have bumped `rev` — re-read so the response shows it.
+  updated = await db.testCase.findUniqueOrThrow({ where: { id: updated.id } });
   await logAudit({
     userId: g.userId,
     action: "case.update",

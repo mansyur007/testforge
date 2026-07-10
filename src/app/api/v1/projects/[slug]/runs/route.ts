@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 import { logAudit } from "@/lib/audit";
+import { loadCaseRevs } from "@/lib/case-revisions";
 import {
   guard,
   notFoundError,
@@ -115,6 +116,8 @@ export async function POST(
 
   if (errors.length) return validationError(errors);
 
+  // F-05: stamp each seeded result with the case's current revision.
+  const revs = await loadCaseRevs(caseIds);
   const run = await db.testRun.create({
     data: {
       projectId: project.id,
@@ -124,7 +127,9 @@ export async function POST(
       origin: body.origin ?? null,
       milestoneId,
       createdById: g.userId,
-      results: { create: caseIds.map((caseId) => ({ caseId })) },
+      results: {
+        create: caseIds.map((caseId) => ({ caseId, caseRev: revs.get(caseId) })),
+      },
     },
   });
 

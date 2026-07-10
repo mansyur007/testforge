@@ -528,7 +528,19 @@ e2e `e2e/shared-steps.spec.ts` covering AC 1–3.
 
 ---
 
-### F-05 — Test case history & versioning `[ ]`
+### F-05 — Test case history & versioning `[x]`
+
+> **Status: DONE** (2026-07-10, branch `feat/case-history`). Implemented as specified, with
+> these deliberate deviations:
+> - No revision backfill: legacy cases get their baseline revision ("created") on their
+>   first post-F-05 edit, so that first edit shows no field diff — history starts there.
+> - Restore flattens shared-step references into inline steps (snapshots store the
+>   expanded form by design, so the reference is no longer known at restore time).
+> - "Restore from trash" write point skipped — that flow doesn't exist yet (soft-deleted
+>   cases are purged, never restored).
+> - Bonus: `caseRev` is also stamped by the JUnit upload and the run-results upsert API,
+>   `rev`/`caseRev` are exposed in `serializeCase`/`serializeResult`, and the run CSV
+>   export gained a `case_rev` column.
 
 **Goal.** Every change to a case is recorded as a numbered revision with author, timestamp and
 diff; any revision can be restored; run results remember which revision they executed.

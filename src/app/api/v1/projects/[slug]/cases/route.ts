@@ -11,6 +11,7 @@ import {
 } from "@/lib/api";
 import { dispatchWebhook } from "@/lib/webhooks";
 import { mergeCustomJson, validateCustomValues } from "@/lib/custom-fields";
+import { recordRevision } from "@/lib/case-revisions";
 import { loadStepGroups } from "@/lib/steps";
 
 // REST API v1 (PRD §5.3): list & create test case.
@@ -168,6 +169,7 @@ export async function POST(
     },
   });
 
+  await recordRevision(testCase.id, g.userId); // F-05: rev 1 "created"
   await dispatchWebhook(project.id, "case.created", serializeCase(project.slug, testCase));
 
   return NextResponse.json(

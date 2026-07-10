@@ -11,18 +11,22 @@ import {
   type TestStep,
 } from "@/lib/constants";
 import { expandSteps, loadStepGroups } from "@/lib/steps";
+import { serializeRevision } from "@/lib/case-revisions";
 import { cloneCase } from "@/app/actions/cases";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { DeleteCaseButton } from "@/components/DeleteCaseButton";
 import { AttachmentUploader } from "@/components/AttachmentUploader";
+import { CaseHistory, type RevisionView } from "@/components/CaseHistory";
 import { Markdown } from "@/components/Markdown";
 
 export const dynamic = "force-dynamic";
 
 export default async function CaseDetailPage({
   params,
+  searchParams,
 }: {
   params: { slug: string; caseId: string };
+  searchParams: { tab?: string };
 }) {
   const session = await requireSession();
   const testCase = await db.testCase.findFirst({
@@ -94,6 +98,30 @@ export default async function CaseDetailPage({
   const maxUploadMb =
     parseInt(process.env.TF_MAX_UPLOAD_MB ?? "10", 10) || 10;
 
+  // F-05: History tab — revision list rendered client-side with diffs.
+  const tab = searchParams.tab === "history" ? "history" : "details";
+  let revisions: RevisionView[] = [];
+  let suiteNames: Record<string, string> = {};
+  if (tab === "history") {
+    const rows = await db.testCaseRevision.findMany({
+      where: { caseId: testCase.id },
+      include: { author: { select: { name: true } } },
+      orderBy: { rev: "desc" },
+    });
+    revisions = rows.map((r) => {
+      const { snapshot, ...rest } = serializeRevision(r);
+      return { ...rest, authorName: r.author?.name ?? null, snapshot } as RevisionView;
+    });
+    suiteNames = Object.fromEntries(
+      (
+        await db.testSuite.findMany({
+          where: { projectId: testCase.projectId },
+          select: { id: true, name: true },
+        })
+      ).map((s) => [s.id, s.name])
+    );
+  }
+
   // F-04: shared references render expanded, tagged with their group title.
   const rawSteps: TestStep[] = JSON.parse(testCase.stepsJson || "[]");
   const steps = expandSteps(rawSteps, await loadStepGroups(testCase.projectId));
@@ -162,6 +190,40 @@ export default async function CaseDetailPage({
         </div>
       </div>
 
+      {/* F-05: Details | History tabs */}
+      <div className="flex gap-1 border-b border-slate-200 text-sm">
+        {(
+          [
+            ["details", "Details", ""],
+            ["history", `History (rev ${testCase.rev})`, "?tab=history"],
+          ] as const
+        ).map(([key, label, qs]) => (
+          <Link
+            key={key}
+            href={`/projects/${testCase.project.slug}/cases/${testCase.id}${qs}`}
+            data-testid={`case-tab-${key}`}
+            className={`-mb-px border-b-2 px-4 py-2 font-medium ${
+              tab === key
+                ? "border-indigo-600 text-indigo-700"
+                : "border-transparent text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            {label}
+          </Link>
+        ))}
+      </div>
+
+      {tab === "history" && (
+        <CaseHistory
+          revisions={revisions}
+          currentRev={testCase.rev}
+          canWrite={session.role !== "VIEWER"}
+          suiteNames={suiteNames}
+          memberNames={Object.fromEntries(memberNames)}
+        />
+      )}
+
+      {tab === "details" && (
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           {testCase.description && (
@@ -346,6 +408,7 @@ export default async function CaseDetailPage({
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }

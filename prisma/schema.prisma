@@ -36,6 +36,7 @@ model User {
   auditLogs      AuditLog[]
   attachments    Attachment[]
   savedViews     SavedView[]
+  caseRevisions  TestCaseRevision[] @relation("RevisionAuthor")
 }
 
 model Project {
@@ -111,6 +112,25 @@ model SharedStepGroup {
   updatedAt DateTime @updatedAt
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// F-05: immutable numbered snapshots of a case, one per meaningful change.
+// snapshotJson holds every human-diffable field (steps stored EXPANDED via
+// lib/steps so a snapshot survives later shared-group edits/deletes). Written
+// only through recordRevision (src/lib/case-revisions.ts) — never updated.
+model TestCaseRevision {
+  id            String   @id @default(cuid())
+  caseId        String
+  rev           Int // 1,2,3… per case
+  authorId      String?
+  snapshotJson  String
+  changeSummary String // comma list of changed field names, or "created" / "restored from rev N"
+  createdAt     DateTime @default(now())
+
+  testCase TestCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  author   User?    @relation("RevisionAuthor", fields: [authorId], references: [id])
+
+  @@unique([caseId, rev])
 }
 
 // F-03: admin-defined extra fields on test cases and run results. Values live
@@ -212,14 +232,16 @@ model TestCase {
   assigneeId       String?
   linkedIssues     String? // URL bug tracker, dipisah koma
   customJson       String    @default("{}") // F-03: {key: value} per CustomFieldDef CASE
+  rev              Int       @default(1) // F-05: current revision number
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   deletedAt        DateTime? // soft delete (gap audit: recycle bin)
 
-  project  Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  suite    TestSuite?      @relation(fields: [suiteId], references: [id], onDelete: SetNull)
-  assignee User?           @relation("CaseAssignee", fields: [assigneeId], references: [id])
-  results  TestRunResult[]
+  project   Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  suite     TestSuite?         @relation(fields: [suiteId], references: [id], onDelete: SetNull)
+  assignee  User?              @relation("CaseAssignee", fields: [assigneeId], references: [id])
+  results   TestRunResult[]
+  revisions TestCaseRevision[]
 
   @@unique([projectId, seq])
 }
@@ -253,6 +275,7 @@ model TestRunResult {
   elapsedSeconds Int?
   defectUrl      String?
   customJson     String   @default("{}") // F-03: {key: value} per CustomFieldDef RESULT
+  caseRev        Int? // F-05: the case revision this result executed (null = pre-F-05)
   updatedAt      DateTime @updatedAt
   createdAt      DateTime @default(now())
 

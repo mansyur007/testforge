@@ -8,6 +8,7 @@ import { isProjectMember } from "@/lib/projects";
 import { logAudit } from "@/lib/audit";
 import { dispatchWebhook } from "@/lib/webhooks";
 import { serializeRun } from "@/lib/api";
+import { loadCaseRevs } from "@/lib/case-revisions";
 import {
   collectCustomFromForm,
   mergeCustomJson,
@@ -44,6 +45,8 @@ export async function createRun(
 
   const project = await db.project.findUniqueOrThrow({ where: { id: projectId } });
 
+  // F-05: remember which revision of each case this run executes.
+  const revs = await loadCaseRevs(caseIds);
   const run = await db.testRun.create({
     data: {
       projectId,
@@ -52,7 +55,7 @@ export async function createRun(
       milestoneId,
       createdById: session.userId,
       results: {
-        create: caseIds.map((caseId) => ({ caseId })),
+        create: caseIds.map((caseId) => ({ caseId, caseRev: revs.get(caseId) })),
       },
     },
   });
@@ -167,6 +170,8 @@ export async function rerunFailed(formData: FormData) {
   if (!run) notFound();
   if (!run.results.length) return;
 
+  // F-05: the rerun executes the cases as they are NOW, not at the old run's rev.
+  const revs = await loadCaseRevs(run.results.map((r) => r.caseId));
   const newRun = await db.testRun.create({
     data: {
       projectId: run.projectId,
@@ -174,7 +179,10 @@ export async function rerunFailed(formData: FormData) {
       description: `Automatic rerun of "${run.name}" (${run.results.length} failed/blocked/retest cases).`,
       createdById: session.userId,
       results: {
-        create: run.results.map((r) => ({ caseId: r.caseId })),
+        create: run.results.map((r) => ({
+          caseId: r.caseId,
+          caseRev: revs.get(r.caseId),
+        })),
       },
     },
   });

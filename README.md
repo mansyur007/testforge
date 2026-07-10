@@ -37,6 +37,9 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   CSV import/export (`cf_<key>` columns), and the REST API
 - **Shared steps** — reusable step blocks ("Log in as admin") inserted into
   any case; edit once and every case updates, delete only when unused
+- **Case history & versioning** — every change becomes a numbered revision
+  (author, per-field diff) with one-click restore; run results remember which
+  revision they executed and flag stale ones
 
 ## Running
 

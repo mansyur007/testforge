@@ -32,6 +32,8 @@ type ResultItem = {
   displayId: string;
   title: string;
   priority: string;
+  caseRev: number | null; // F-05: revision executed (null = pre-F-05 result)
+  currentRev: number;
   preconditions: string;
   expectedResult: string;
   steps: ExecutorStep[];
@@ -143,6 +145,15 @@ export function RunExecutor({
           >
             <span className="font-mono text-xs text-slate-400">{r.displayId}</span>
             <span className="flex-1 truncate">{r.title}</span>
+            {r.caseRev != null && r.caseRev < r.currentRev && (
+              <span
+                className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
+                title="Case has changed since this run"
+                data-testid="stale-rev-chip"
+              >
+                rev {r.caseRev}
+              </span>
+            )}
             <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${RESULT_BADGES[r.status]}`}>
               {r.status}
             </span>
@@ -155,8 +166,18 @@ export function RunExecutor({
         <div className="rounded-xl border border-slate-200 bg-white p-6">
           <div className="flex items-center justify-between">
             <p className="font-mono text-xs text-slate-400">{active.displayId}</p>
-            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PRIORITY_BADGES[active.priority]}`}>
-              {active.priority}
+            <span className="flex items-center gap-2">
+              {active.caseRev != null && active.caseRev < active.currentRev && (
+                <span
+                  className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
+                  title="Case has changed since this run"
+                >
+                  executed at rev {active.caseRev} (now rev {active.currentRev})
+                </span>
+              )}
+              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PRIORITY_BADGES[active.priority]}`}>
+                {active.priority}
+              </span>
             </span>
           </div>
           <h3 className="mt-1 text-lg font-bold">{active.title}</h3>

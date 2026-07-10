@@ -155,6 +155,8 @@ export default async function RunDetailPage({
           displayId: caseDisplayId(run.project.slug, r.testCase.seq),
           title: r.testCase.title,
           priority: r.testCase.priority,
+          caseRev: r.caseRev,
+          currentRev: r.testCase.rev,
           preconditions: r.testCase.preconditions ?? "",
           expectedResult: r.testCase.expectedResult ?? "",
           steps: expandSteps(
