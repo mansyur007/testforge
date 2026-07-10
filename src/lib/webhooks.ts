@@ -1,12 +1,18 @@
 import crypto from "crypto";
 import { db } from "@/lib/db";
 
-// Events a webhook can subscribe to. Kept small and explicit.
+// Events a webhook (and, since F-08, a notification channel) can subscribe to.
+// Kept small and explicit. `milestone.completed` is in the vocabulary but has
+// no producer yet — the app has no milestone-completion flow (comes with F-06).
 export const WEBHOOK_EVENTS = [
   "case.created",
   "case.updated",
   "case.deleted",
+  "case.assigned",
+  "run.created",
   "run.completed",
+  "result.failed",
+  "milestone.completed",
 ] as const;
 export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number];
 

@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
 import { logAudit } from "@/lib/audit";
 import { loadCaseRevs } from "@/lib/case-revisions";
+import { dispatchWebhook } from "@/lib/webhooks";
+import { notify, notifyBaseUrl } from "@/lib/notifications";
 import {
   guard,
   notFoundError,
@@ -139,6 +141,12 @@ export async function POST(
     entityType: "run",
     entityId: run.id,
     detail: `${name} (${caseIds.length} cases)`,
+  });
+  await dispatchWebhook(project.id, "run.created", serializeRun(run));
+  await notify(project.id, "run.created", {
+    title: `Run created: ${name}`,
+    url: `${notifyBaseUrl()}/projects/${params.slug}/runs/${run.id}`,
+    fields: [{ label: "Cases", value: String(caseIds.length) }],
   });
 
   return NextResponse.json(serializeRun(run), { status: 201 });

@@ -18,7 +18,9 @@ export default defineConfig({
     // expect 3456. Without -p this only worked locally by reusing an already
     // running 3456 server; in CI there's none, so next dev bound 3000 and the
     // webServer wait timed out.
-    command: "npm run dev -- -p 3456",
+    // TF_ALLOW_ANY_WEBHOOK_HOST: notifications e2e targets a local receiver,
+    // which the strict per-type host allowlist would reject.
+    command: "TF_ALLOW_ANY_WEBHOOK_HOST=1 npm run dev -- -p 3456",
     port: 3456,
     reuseExistingServer: true,
     timeout: 120_000,

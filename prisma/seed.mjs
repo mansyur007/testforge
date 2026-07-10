@@ -194,6 +194,18 @@ async function main() {
     data: { projectId: project.id, name: "Release v1.0" },
   });
 
+  // F-08: demo notification channel. EMAIL is safe without SMTP_URL — the
+  // mailer just logs the delivery to the console.
+  await db.notificationChannel.create({
+    data: {
+      projectId: project.id,
+      type: "EMAIL",
+      name: "QA inbox",
+      configJson: JSON.stringify({ to: ["admin@testforge.local"] }),
+      events: "run.completed,result.failed",
+    },
+  });
+
   await db.testRun.create({
     data: {
       projectId: project.id,

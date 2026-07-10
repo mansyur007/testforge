@@ -9,11 +9,12 @@ import {
   type FieldError,
 } from "@/lib/api";
 import { RESULT_STATUSES } from "@/lib/constants";
+import { notify, notifyBaseUrl } from "@/lib/notifications";
 
 async function findScopedRun(userId: string, slug: string, runId: string) {
   return db.testRun.findFirst({
     where: { id: runId, project: { slug, members: { some: { userId } } } },
-    select: { id: true, projectId: true },
+    select: { id: true, projectId: true, name: true },
   });
 }
 
@@ -59,16 +60,20 @@ export async function POST(
 
   const caseId = String(body.caseId ?? "");
   let caseRev: number | undefined;
+  let caseTitle = "";
   if (!caseId) {
     errors.push({ field: "caseId", message: "caseId is required" });
   } else {
     const c = await db.testCase.findFirst({
       where: { id: caseId, projectId: run.projectId, deletedAt: null },
-      select: { id: true, rev: true },
+      select: { id: true, rev: true, title: true },
     });
     if (!c)
       errors.push({ field: "caseId", message: "not a live case in this project" });
-    else caseRev = c.rev; // F-05: stamped when the result row is first created
+    else {
+      caseRev = c.rev; // F-05: stamped when the result row is first created
+      caseTitle = c.title;
+    }
   }
 
   const status = String(body.status ?? "").toUpperCase();
@@ -107,6 +112,14 @@ export async function POST(
     entityId: run.id,
     detail: `${caseId} → ${status}`,
   });
+  if (status === "FAILED")
+    await notify(run.projectId, "result.failed", {
+      title: `Test failed: ${caseTitle}`,
+      url: `${notifyBaseUrl()}/projects/${params.slug}/runs/${run.id}`,
+      tone: "bad",
+      runId: run.id, // keys the 1-per-minute aggregation window
+      fields: [{ label: "Run", value: run.name }],
+    });
 
   return NextResponse.json(serializeResult(result));
 }

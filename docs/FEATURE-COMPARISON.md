@@ -100,7 +100,7 @@ Legenda: ✅ ada · 🟡 sebagian/terbatas · ❌ tidak ada · ➖ tidak relevan
 | Webhooks (HMAC-signed) | ✅ | 🟡 | ✅ | ❌ | ✅ |
 | Integrasi Jira native | ❌ | ✅ (plugin dua arah) | ✅ | ✅ | ✅ |
 | GitHub/GitLab issues | ❌ | ✅ | ✅ | 🟡 | ➖ |
-| Slack/Teams notification | ❌ | ✅ | ✅ | ❌ | ✅ |
+| Slack/Teams notification | ✅ | ✅ | ✅ | ❌ | ✅ |
 | Import dari tool lain (TestRail/Qase/XML) | 🟡 (CSV saja) | ✅ | ✅ (TestRail, CSV) | ✅ (XML) | ➖ |
 | Export CSV | ✅ | ✅ (+XLSX/XML) | ✅ (+JSON) | ✅ (XML) | ➖ |
 | **Kolaborasi** |
@@ -325,7 +325,7 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
 - [ ] **Integrasi Jira** (lalu GitHub/GitLab Issues) — bukan sekadar URL string:
       buat issue dari hasil FAILED dengan template otomatis (repro dari steps), link dua
       arah, tampilkan status issue live di case/run, konfigurasi per project.
-- [ ] **Notifikasi Slack/Discord/Teams + email** — run selesai, hasil gagal, case
+- [x] *(Selesai 2026-07-10)* **Notifikasi Slack/Discord/Teams + email** — run selesai, hasil gagal, case
       di-assign; dibangun di atas sistem webhook yang sudah ada.
 - [x] *(Selesai 2026-07-09)* **Pencarian global** — satu kotak cari (⌘K) lintas case/run/suite/milestone dengan
       full-text di title/description/steps.

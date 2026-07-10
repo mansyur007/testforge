@@ -76,6 +76,12 @@ async function globalSetup() {
     data: { active: false },
   });
 
+  // F-08 crash recovery: leftover channels point at dead local receiver ports
+  // and would skew row-count assertions. Start clean.
+  await db.notificationChannel.deleteMany({
+    where: { project: { slug: E2E.projectSlug } },
+  });
+
   // F-09 tenant-isolation fixture: a project owned by a DIFFERENT user with a
   // distinctive case title. Global search as the e2e user must never surface it.
   const outsider = await db.user.upsert({

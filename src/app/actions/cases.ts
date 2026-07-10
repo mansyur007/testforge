@@ -8,6 +8,7 @@ import { isProjectMember } from "@/lib/projects";
 import { logAudit } from "@/lib/audit";
 import { recordRevision, type CaseSnapshot } from "@/lib/case-revisions";
 import { dispatchWebhook } from "@/lib/webhooks";
+import { notify, notifyBaseUrl } from "@/lib/notifications";
 import { serializeCase } from "@/lib/api";
 import type { TestStep } from "@/lib/constants";
 import {
@@ -372,6 +373,11 @@ export async function restoreRevision(
     "case.updated",
     serializeCase(updated.project.slug, updated)
   );
+  await notify(projectId, "case.updated", {
+    title: `Case updated: ${updated.title}`,
+    url: `${notifyBaseUrl()}/projects/${updated.project.slug}/cases/${revision.caseId}`,
+    fields: [{ label: "Changed", value: `restored from rev ${revision.rev}` }],
+  });
   revalidatePath(
     `/projects/${updated.project.slug}/cases/${revision.caseId}`
   );

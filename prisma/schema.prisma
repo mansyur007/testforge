@@ -60,6 +60,7 @@ model Project {
   savedViews SavedView[]
   customFieldDefs CustomFieldDef[]
   sharedStepGroups SharedStepGroup[]
+  notificationChannels NotificationChannel[]
 }
 
 // Outbound webhooks: POST a signed JSON payload to `url` when a subscribed event
@@ -110,6 +111,22 @@ model SharedStepGroup {
   stepsJson String   @default("[]") // InlineStep[] = [{action, expected}]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+// F-08: push notifications to team chat / email. configJson holds the target:
+// SLACK/DISCORD/TEAMS {webhookUrl} — stored AES-256-GCM encrypted (lib/crypto),
+// EMAIL {to: string[]} — plain. Delivery is best-effort via lib/notifications.
+model NotificationChannel {
+  id         String   @id @default(cuid())
+  projectId  String
+  type       String // SLACK | DISCORD | TEAMS | EMAIL
+  name       String // display label, e.g. "#qa-alerts"
+  configJson String
+  events     String // comma-separated, same vocabulary as WEBHOOK_EVENTS
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
