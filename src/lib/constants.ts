@@ -55,7 +55,16 @@ export const PRIORITY_BADGES: Record<string, string> = {
   LOW: "bg-gray-100 text-gray-600",
 };
 
-export type TestStep = { action: string; expected: string };
+// F-04: a case's stepsJson array mixes inline steps with references to a
+// SharedStepGroup. Old data contains only inline items, so the union is
+// backward-compatible. Expansion lives in src/lib/steps.ts.
+export type InlineStep = { action: string; expected: string };
+export type SharedStepRef = { shared: string }; // SharedStepGroup id
+export type TestStep = InlineStep | SharedStepRef;
+
+export function isSharedRef(s: TestStep): s is SharedStepRef {
+  return typeof s === "object" && s !== null && "shared" in s;
+}
 
 /** Format ID display: TC-[SLUG]-[NUMBER], contoh TC-WEB-001 (PRD §4.2.1). */
 export function caseDisplayId(projectSlug: string, seq: number) {

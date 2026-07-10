@@ -124,6 +124,14 @@ export default async function ProjectPage({
               />
             </div>
           </div>
+          {/* F-04: reusable step blocks library */}
+          <Link
+            href={`/projects/${project.slug}/cases/shared-steps`}
+            data-testid="shared-steps-link"
+            className="block rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 hover:border-indigo-300 hover:text-indigo-700"
+          >
+            ⛓ Shared Steps
+          </Link>
         </aside>
 
         {/* Case list */}

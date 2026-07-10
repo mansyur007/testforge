@@ -14,8 +14,18 @@ import {
   CASE_TYPES,
   CASE_STATUSES,
   AUTOMATION_STATUSES,
+  isSharedRef,
+  type InlineStep,
   type TestStep,
 } from "@/lib/constants";
+
+// F-04: shared step groups offered by the "Insert shared steps" picker.
+export type SharedGroupOption = {
+  id: string;
+  title: string;
+  stepCount: number;
+  steps: InlineStep[];
+};
 
 const inputCls =
   "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none";
@@ -43,6 +53,7 @@ export function CaseForm({
   defaultSuiteId,
   customDefs = [],
   members = [],
+  sharedGroups = [],
 }: {
   projectId: string;
   // Enables paste-a-screenshot in the Markdown editors (edit mode only — a
@@ -52,6 +63,7 @@ export function CaseForm({
   defaultSuiteId?: string;
   customDefs?: CustomDefItem[];
   members?: MemberOption[];
+  sharedGroups?: SharedGroupOption[];
   initial?: {
     caseId: string;
     title: string;
@@ -78,10 +90,21 @@ export function CaseForm({
     initial?.steps?.length ? initial.steps : [{ action: "", expected: "" }]
   );
 
-  const setStep = (i: number, key: keyof TestStep, value: string) => {
+  const setStep = (i: number, key: keyof InlineStep, value: string) => {
     setSteps((prev) =>
       prev.map((s, idx) => (idx === i ? { ...s, [key]: value } : s))
     );
+  };
+
+  // F-04: replace a shared reference with an editable copy of its steps.
+  const unlinkShared = (i: number) => {
+    setSteps((prev) => {
+      const ref = prev[i];
+      if (!isSharedRef(ref)) return prev;
+      const group = sharedGroups.find((g) => g.id === ref.shared);
+      const copy = group?.steps.length ? group.steps.map((s) => ({ ...s })) : [];
+      return [...prev.slice(0, i), ...copy, ...prev.slice(i + 1)];
+    });
   };
 
   const moveStep = (i: number, dir: -1 | 1) => {
@@ -101,7 +124,9 @@ export function CaseForm({
       <input
         type="hidden"
         name="stepsJson"
-        value={JSON.stringify(steps.filter((s) => s.action.trim()))}
+        value={JSON.stringify(
+          steps.filter((s) => isSharedRef(s) || s.action.trim())
+        )}
       />
 
       {state?.error && (
@@ -239,44 +264,104 @@ export function CaseForm({
           Steps to Reproduce <span className="text-red-500">*</span>
         </h3>
         <div className="space-y-3">
-          {steps.map((step, i) => (
-            <div key={i} className="flex items-start gap-2">
-              <span className="mt-2 w-6 text-right text-sm font-medium text-slate-400">
-                {i + 1}.
-              </span>
-              <textarea
-                rows={1}
-                value={step.action}
-                onChange={(e) => setStep(i, "action", e.target.value)}
-                placeholder="Action step, e.g. Open the /login page"
-                className={inputCls}
-              />
-              <textarea
-                rows={1}
-                value={step.expected}
-                onChange={(e) => setStep(i, "expected", e.target.value)}
-                placeholder="Expected result for this step"
-                className={inputCls}
-              />
-              <div className="flex shrink-0 gap-1 pt-1.5">
-                <button type="button" onClick={() => moveStep(i, -1)} title="Move up"
-                  className="rounded border border-slate-200 px-1.5 py-0.5 text-xs text-slate-500 hover:bg-slate-100">↑</button>
-                <button type="button" onClick={() => moveStep(i, 1)} title="Move down"
-                  className="rounded border border-slate-200 px-1.5 py-0.5 text-xs text-slate-500 hover:bg-slate-100">↓</button>
-                <button type="button" title="Delete"
-                  onClick={() => setSteps((p) => p.filter((_, idx) => idx !== i))}
-                  className="rounded border border-red-200 px-1.5 py-0.5 text-xs text-red-500 hover:bg-red-50">✕</button>
+          {steps.map((step, i) =>
+            isSharedRef(step) ? (
+              // F-04: a shared-steps reference — read-only block; edit the
+              // group in the library, or unlink to copy the steps inline.
+              (() => {
+                const group = sharedGroups.find((g) => g.id === step.shared);
+                return (
+                  <div key={i} className="flex items-start gap-2" data-testid="shared-ref-row">
+                    <span className="mt-2 w-6 text-right text-sm font-medium text-slate-400">
+                      {i + 1}.
+                    </span>
+                    <div className="flex-1 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2">
+                      <p className="text-sm font-medium text-indigo-800">
+                        ⛓ {group?.title ?? "Missing shared steps"}
+                        <span className="ml-2 font-normal text-indigo-500">
+                          {group ? `${group.stepCount} shared steps` : "group was deleted"}
+                        </span>
+                      </p>
+                      {group && (
+                        <p className="mt-0.5 truncate text-xs text-indigo-500/80">
+                          {group.steps.map((s) => s.action).join(" → ")}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex shrink-0 gap-1 pt-1.5">
+                      <button type="button" onClick={() => moveStep(i, -1)} title="Move up"
+                        className="rounded border border-slate-200 px-1.5 py-0.5 text-xs text-slate-500 hover:bg-slate-100">↑</button>
+                      <button type="button" onClick={() => moveStep(i, 1)} title="Move down"
+                        className="rounded border border-slate-200 px-1.5 py-0.5 text-xs text-slate-500 hover:bg-slate-100">↓</button>
+                      <button type="button" title="Unlink — copy the steps inline"
+                        onClick={() => unlinkShared(i)}
+                        className="rounded border border-indigo-200 px-1.5 py-0.5 text-xs text-indigo-600 hover:bg-indigo-100">⛓✕</button>
+                      <button type="button" title="Remove"
+                        onClick={() => setSteps((p) => p.filter((_, idx) => idx !== i))}
+                        className="rounded border border-red-200 px-1.5 py-0.5 text-xs text-red-500 hover:bg-red-50">✕</button>
+                    </div>
+                  </div>
+                );
+              })()
+            ) : (
+              <div key={i} className="flex items-start gap-2">
+                <span className="mt-2 w-6 text-right text-sm font-medium text-slate-400">
+                  {i + 1}.
+                </span>
+                <textarea
+                  rows={1}
+                  value={step.action}
+                  onChange={(e) => setStep(i, "action", e.target.value)}
+                  placeholder="Action step, e.g. Open the /login page"
+                  className={inputCls}
+                />
+                <textarea
+                  rows={1}
+                  value={step.expected}
+                  onChange={(e) => setStep(i, "expected", e.target.value)}
+                  placeholder="Expected result for this step"
+                  className={inputCls}
+                />
+                <div className="flex shrink-0 gap-1 pt-1.5">
+                  <button type="button" onClick={() => moveStep(i, -1)} title="Move up"
+                    className="rounded border border-slate-200 px-1.5 py-0.5 text-xs text-slate-500 hover:bg-slate-100">↑</button>
+                  <button type="button" onClick={() => moveStep(i, 1)} title="Move down"
+                    className="rounded border border-slate-200 px-1.5 py-0.5 text-xs text-slate-500 hover:bg-slate-100">↓</button>
+                  <button type="button" title="Delete"
+                    onClick={() => setSteps((p) => p.filter((_, idx) => idx !== i))}
+                    className="rounded border border-red-200 px-1.5 py-0.5 text-xs text-red-500 hover:bg-red-50">✕</button>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          )}
         </div>
-        <button
-          type="button"
-          onClick={() => setSteps((p) => [...p, { action: "", expected: "" }])}
-          className="mt-3 rounded-lg border border-dashed border-slate-300 px-4 py-2 text-sm text-slate-500 hover:border-indigo-400 hover:text-indigo-600"
-        >
-          + Add Step
-        </button>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setSteps((p) => [...p, { action: "", expected: "" }])}
+            className="rounded-lg border border-dashed border-slate-300 px-4 py-2 text-sm text-slate-500 hover:border-indigo-400 hover:text-indigo-600"
+          >
+            + Add Step
+          </button>
+          {sharedGroups.length > 0 && (
+            <select
+              value=""
+              data-testid="insert-shared-steps"
+              onChange={(e) => {
+                if (e.target.value)
+                  setSteps((p) => [...p, { shared: e.target.value }]);
+              }}
+              className="rounded-lg border border-dashed border-indigo-300 px-3 py-2 text-sm text-indigo-600 hover:border-indigo-400"
+            >
+              <option value="">⛓ Insert shared steps…</option>
+              {sharedGroups.map((g) => (
+                <option key={g.id} value={g.id}>
+                  {g.title} ({g.stepCount})
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
         <div className="mt-4">
           <label className={labelCls}>Overall Expected Result (Markdown supported)</label>
           <MarkdownEditor

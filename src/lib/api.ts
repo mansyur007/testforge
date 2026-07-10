@@ -1,8 +1,14 @@
-import type { Attachment, TestCase, TestRun, TestRunResult } from "@prisma/client";
+import type {
+  Attachment,
+  TestCase,
+  TestRun,
+  TestRunResult,
+} from "@prisma/client";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSession, verifyApiKey } from "@/lib/auth";
 import { caseDisplayId } from "@/lib/constants";
 import { rateLimit, type RateResult } from "@/lib/rate-limit";
+import { expandSteps, type StepGroupLite } from "@/lib/steps";
 
 // ---------------------------------------------------------------------------
 // Uniform error envelope: every v1 error is { error: { code, message, details? } }
@@ -82,7 +88,14 @@ export async function guard(
 // ---------------------------------------------------------------------------
 // Serializers — single source of truth for each resource's API shape.
 // ---------------------------------------------------------------------------
-export function serializeCase(slug: string, c: TestCase) {
+// F-04: pass the project's step groups to include `stepsExpanded` (shared
+// references resolved). Callers without groups get raw steps only.
+export function serializeCase(
+  slug: string,
+  c: TestCase,
+  stepGroups?: Map<string, StepGroupLite>
+) {
+  const steps = JSON.parse(c.stepsJson || "[]");
   return {
     id: c.id,
     displayId: caseDisplayId(slug, c.seq),
@@ -90,7 +103,8 @@ export function serializeCase(slug: string, c: TestCase) {
     title: c.title,
     description: c.description,
     preconditions: c.preconditions,
-    steps: JSON.parse(c.stepsJson || "[]"),
+    steps,
+    ...(stepGroups ? { stepsExpanded: expandSteps(steps, stepGroups) } : {}),
     expectedResult: c.expectedResult,
     priority: c.priority,
     type: c.type,

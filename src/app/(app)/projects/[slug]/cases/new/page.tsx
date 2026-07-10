@@ -28,6 +28,10 @@ export default async function NewCasePage({
     where: { projectId: project.id, entity: "CASE", active: true },
     orderBy: { order: "asc" },
   });
+  const sharedGroups = await db.sharedStepGroup.findMany({
+    where: { projectId: project.id },
+    orderBy: { title: "asc" },
+  });
 
   // Default the new case to the suite the user was viewing (passed via ?suite=),
   // but only if it's a real suite of this project. Still changeable in the form.
@@ -51,6 +55,10 @@ export default async function NewCasePage({
           required: d.required,
         }))}
         members={project.members.map((m) => m.user)}
+        sharedGroups={sharedGroups.map((g) => {
+          const steps = JSON.parse(g.stepsJson || "[]");
+          return { id: g.id, title: g.title, stepCount: steps.length, steps };
+        })}
       />
     </div>
   );

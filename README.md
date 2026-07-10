@@ -35,6 +35,8 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 - **Custom fields** — define per-project fields on cases & run results
   (9 types incl. dropdown, multi-select, user, date); enforced in forms,
   CSV import/export (`cf_<key>` columns), and the REST API
+- **Shared steps** — reusable step blocks ("Log in as admin") inserted into
+  any case; edit once and every case updates, delete only when unused
 
 ## Running
 

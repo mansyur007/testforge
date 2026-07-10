@@ -10,6 +10,7 @@ import {
   RESULT_BADGES,
   type TestStep,
 } from "@/lib/constants";
+import { expandSteps, loadStepGroups } from "@/lib/steps";
 import { cloneCase } from "@/app/actions/cases";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { DeleteCaseButton } from "@/components/DeleteCaseButton";
@@ -93,7 +94,9 @@ export default async function CaseDetailPage({
   const maxUploadMb =
     parseInt(process.env.TF_MAX_UPLOAD_MB ?? "10", 10) || 10;
 
-  const steps: TestStep[] = JSON.parse(testCase.stepsJson || "[]");
+  // F-04: shared references render expanded, tagged with their group title.
+  const rawSteps: TestStep[] = JSON.parse(testCase.stepsJson || "[]");
+  const steps = expandSteps(rawSteps, await loadStepGroups(testCase.projectId));
   const displayId = caseDisplayId(testCase.project.slug, testCase.seq);
   // Back link returns to the cases list, scoped to this case's suite if it has one.
   const backHref = `/projects/${testCase.project.slug}${testCase.suiteId ? `?suite=${testCase.suiteId}` : ""}`;
@@ -191,7 +194,18 @@ export default async function CaseDetailPage({
                     {i + 1}
                   </span>
                   <div className="grid flex-1 gap-2 md:grid-cols-2">
-                    <Markdown>{step.action}</Markdown>
+                    <div className="min-w-0">
+                      {step.fromShared && (
+                        <span
+                          className="mr-1.5 rounded bg-indigo-50 px-1.5 py-0.5 align-middle text-[10px] font-medium text-indigo-600"
+                          title={`From shared steps: ${step.fromShared.title}`}
+                          data-testid="shared-step-badge"
+                        >
+                          ⛓ {step.fromShared.title}
+                        </span>
+                      )}
+                      <Markdown>{step.action}</Markdown>
+                    </div>
                     <div className="flex gap-1 text-slate-500">
                       {step.expected && (
                         <>
