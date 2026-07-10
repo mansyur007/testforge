@@ -90,6 +90,8 @@ const EVENT_EMOJI: Record<string, string> = {
   "run.completed": "🏁",
   "result.failed": "❌",
   "issue.created": "🐞",
+  "plan.created": "🗂️",
+  "plan.completed": "🏁",
   "milestone.completed": "🎯",
 };
 

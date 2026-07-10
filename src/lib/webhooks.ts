@@ -13,6 +13,8 @@ export const WEBHOOK_EVENTS = [
   "run.completed",
   "result.failed",
   "issue.created",
+  "plan.created",
+  "plan.completed",
   "milestone.completed",
 ] as const;
 export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number];

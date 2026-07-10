@@ -4,7 +4,9 @@ import { requireSession } from "@/lib/auth";
 import { memberScope } from "@/lib/projects";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { CustomFieldsManager } from "@/components/CustomFieldsManager";
+import { ConfigurationsManager } from "@/components/ConfigurationsManager";
 import { parseOptions } from "@/lib/custom-fields";
+import { loadConfigGroups } from "@/lib/plans";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +27,9 @@ export default async function FieldsPage({
     where: { projectId: project.id },
     orderBy: [{ entity: "asc" }, { order: "asc" }],
   });
+
+  // F-06: configuration groups managed alongside fields.
+  const configGroups = await loadConfigGroups(project.id);
 
   const canManage =
     session.role === "ADMIN" ||
@@ -53,6 +58,24 @@ export default async function FieldsPage({
           options: parseOptions(d),
           required: d.required,
           active: d.active,
+        }))}
+      />
+
+      {/* F-06: matrix axes for test plans (Browser × OS × …). */}
+      <div className="pt-2">
+        <h2 className="text-lg font-semibold">Configurations</h2>
+        <p className="text-sm text-slate-400">
+          Axes for test plans — a plan picks options across groups and creates
+          one run per combination (e.g. Browser × OS).
+        </p>
+      </div>
+      <ConfigurationsManager
+        projectId={project.id}
+        canManage={canManage}
+        groups={configGroups.map((g) => ({
+          id: g.id,
+          name: g.name,
+          options: g.options.map((o) => ({ id: o.id, name: o.name })),
         }))}
       />
     </div>

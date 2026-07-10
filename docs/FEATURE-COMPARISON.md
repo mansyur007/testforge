@@ -68,8 +68,8 @@ Legenda: ✅ ada · 🟡 sebagian/terbatas · ❌ tidak ada · ➖ tidak relevan
 | Timer otomatis per hasil | ✅ | 🟡 (elapsed manual) | ✅ | ❌ | ➖ |
 | Rerun failed only | ✅ | ✅ | ✅ | ❌ | ➖ |
 | Milestone | ✅ (basic) | ✅ (+sub-milestone) | ✅ | 🟡 (build) | ➖ |
-| **Test plan (kumpulan run + konfigurasi)** | ❌ | ✅ | ✅ | ✅ | ➖ |
-| **Configurations (matriks browser×OS)** | ❌ | ✅ | ✅ | ✅ (platforms) | ➖ |
+| **Test plan (kumpulan run + konfigurasi)** | ✅ | ✅ | ✅ | ✅ | ➖ |
+| **Configurations (matriks browser×OS)** | ✅ | ✅ | ✅ | ✅ (platforms) | ➖ |
 | **Environments per run** | ❌ | 🟡 | ✅ | ❌ | ➖ |
 | **Custom result status** | ❌ (hardcoded) | ✅ | ✅ | ✅ | ➖ |
 | Estimasi waktu & forecast | ❌ | ✅ | 🟡 | ❌ | ➖ |
@@ -316,7 +316,7 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
 - [x] *(Selesai 2026-07-10)* **Riwayat & versioning test case** — simpan revisi tiap perubahan (siapa, kapan, diff
       per field/step), tampilkan di tab History, bisa restore versi; hasil run menyimpan
       snapshot versi case saat dieksekusi (seperti TestLink).
-- [ ] **Test plan + configurations** — entity Test Plan berisi banyak run; configurations
+- [x] *(Selesai 2026-07-10)* **Test plan + configurations** — entity Test Plan berisi banyak run; configurations
       (mis. Browser: Chrome/Firefox × OS: Win/macOS) menghasilkan run per kombinasi;
       progres agregat per plan. *Fitur pembeda utama TestRail.*
 - [x] **Rich text (markdown)** untuk description/preconditions/steps + render aman

@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { memberScope } from "@/lib/projects";
 import { caseDisplayId, RESULT_COLORS } from "@/lib/constants";
+import { parseRunConfig, configLabel } from "@/lib/plans";
 import { ProjectTabs } from "@/components/ProjectTabs";
 
 export const dynamic = "force-dynamic";
@@ -80,8 +81,11 @@ export default async function ReportsPage({
         ["PASSED", "FAILED", "BLOCKED", "SKIPPED", "RETEST"].includes(r.status)
       );
       const p = ex.filter((r) => r.status === "PASSED").length;
+      // F-06: plan child runs carry their config combo into the tooltip.
+      const config = parseRunConfig(run.configJson);
       return {
         name: run.name,
+        config: run.planId && config ? configLabel(config) : null,
         rate: ex.length ? Math.round((p / ex.length) * 100) : 0,
         executed: ex.length,
       };
@@ -131,7 +135,7 @@ export default async function ReportsPage({
                 <div
                   className={`w-full rounded-t ${t.rate >= 80 ? "bg-green-400" : t.rate >= 50 ? "bg-yellow-400" : "bg-red-400"}`}
                   style={{ height: `${Math.max(t.rate, 3)}%` }}
-                  title={`${t.name}: ${t.rate}% (${t.executed} executed)`}
+                  title={`${t.name}${t.config ? ` [${t.config}]` : ""}: ${t.rate}% (${t.executed} executed)`}
                 />
                 <span className="w-full truncate text-center text-[10px] text-slate-400">
                   {t.name}

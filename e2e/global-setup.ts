@@ -87,6 +87,17 @@ async function globalSetup() {
   await db.issueLink.deleteMany({ where: { project: { slug: E2E.projectSlug } } });
   await db.integration.deleteMany({ where: { project: { slug: E2E.projectSlug } } });
 
+  // F-06: config groups are unique per (project, name) and plan child runs
+  // pile up across runs of the suite — start clean. Runs referencing a plan
+  // must go before the plan (the FK has no cascade).
+  await db.testRun.deleteMany({
+    where: { project: { slug: E2E.projectSlug }, planId: { not: null } },
+  });
+  await db.testPlan.deleteMany({ where: { project: { slug: E2E.projectSlug } } });
+  await db.configGroup.deleteMany({
+    where: { project: { slug: E2E.projectSlug } },
+  });
+
   // F-09 tenant-isolation fixture: a project owned by a DIFFERENT user with a
   // distinctive case title. Global search as the e2e user must never surface it.
   const outsider = await db.user.upsert({
