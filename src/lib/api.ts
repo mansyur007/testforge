@@ -109,6 +109,7 @@ export function serializeCase(
     id: c.id,
     displayId: caseDisplayId(slug, c.seq),
     seq: c.seq,
+    order: c.order,
     title: c.title,
     description: c.description,
     preconditions: c.preconditions,

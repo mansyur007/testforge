@@ -365,7 +365,9 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
       XML TestLink (bukan cuma CSV) untuk menurunkan biaya pindah — funnel adopsi utama.
 - [ ] **Estimasi & forecast** — field estimasi per case, agregat per run/plan, forecast sisa
       waktu berdasar kecepatan aktual tester (data timer sudah ada).
-- [ ] **Bulk move/copy antar suite & antar project** + reorder drag-and-drop case dalam suite.
+- [x] *(Selesai 2026-07-11)* **Bulk move/copy antar suite & antar project** + reorder
+      drag-and-drop case dalam suite. Move antar suite lewat drag-drop ternyata sudah lama ada;
+      yang baru ditambahkan cuma Copy-to-project dan drag-reorder.
 
 ### P3 — Nice-to-have / segmen khusus
 

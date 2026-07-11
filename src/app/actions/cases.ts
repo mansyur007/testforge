@@ -10,6 +10,9 @@ import { recordRevision, type CaseSnapshot } from "@/lib/case-revisions";
 import { dispatchWebhook } from "@/lib/webhooks";
 import { notify, notifyBaseUrl } from "@/lib/notifications";
 import { serializeCase } from "@/lib/api";
+import { expandSteps, loadStepGroups } from "@/lib/steps";
+import { saveAttachment } from "@/lib/attachments";
+import { getStorage } from "@/lib/storage";
 import type { TestStep } from "@/lib/constants";
 import {
   collectCustomFromForm,
@@ -427,4 +430,144 @@ export async function moveCases(
   });
   revalidatePath(`/projects/${slug}`);
   return { ok: true, moved: res.count };
+}
+
+// F-24: persist a new relative order for a set of cases after a drag-and-drop
+// reorder in the table. `caseIds` arrives already in its final order — every
+// id gets order = its index (× 10, leaving room for a future insert-between
+// optimization) so the list's default sort (order, seq) matches what was dropped.
+export async function reorderCases(
+  formData: FormData
+): Promise<{ ok?: boolean; error?: string }> {
+  const session = await requireSession();
+  if (session.role === "VIEWER")
+    return { error: "Viewers don't have write access." };
+
+  const slug = String(formData.get("projectSlug"));
+  const ids = formData.getAll("caseIds").map(String).filter(Boolean);
+  if (ids.length < 2) return { error: "Nothing to reorder." };
+
+  const project = await db.project.findFirst({
+    where: { slug, members: { some: { userId: session.userId } } },
+    select: { id: true },
+  });
+  if (!project) return { error: "Project not found." };
+
+  const owned = await db.testCase.findMany({
+    where: { id: { in: ids }, projectId: project.id, deletedAt: null },
+    select: { id: true },
+  });
+  const ownedIds = new Set(owned.map((c) => c.id));
+  const ordered = ids.filter((id) => ownedIds.has(id));
+
+  await db.$transaction(
+    ordered.map((id, index) =>
+      db.testCase.update({ where: { id }, data: { order: index * 10 } })
+    )
+  );
+  revalidatePath(`/projects/${slug}`);
+  return { ok: true };
+}
+
+// F-24: duplicate cases into another project the user is a member of (with
+// write access in both). Copies get a fresh seq in the target project;
+// attachments are duplicated as genuinely new files (not shared storage rows,
+// since dedupe is scoped per-project); shared-step references are flattened
+// to inline steps, since SharedStepGroup is project-scoped and wouldn't
+// resolve in the target project. Copies start as DRAFT, same as same-project
+// clone, so the receiving team reviews before activating.
+export async function copyCasesToProject(
+  formData: FormData
+): Promise<{ ok?: boolean; error?: string; copied?: number; targetSlug?: string }> {
+  const session = await requireSession();
+  if (session.role === "VIEWER")
+    return { error: "Viewers don't have write access." };
+
+  const slug = String(formData.get("projectSlug"));
+  const targetProjectId = String(formData.get("targetProjectId") ?? "");
+  const ids = formData.getAll("caseIds").map(String).filter(Boolean);
+  if (!ids.length) return { error: "No test cases selected." };
+  if (!targetProjectId) return { error: "Choose a target project." };
+
+  const project = await db.project.findFirst({
+    where: { slug, members: { some: { userId: session.userId } } },
+    select: { id: true },
+  });
+  if (!project) return { error: "Project not found." };
+  if (targetProjectId === project.id)
+    return { error: "Choose a different project to copy into." };
+
+  const targetMembership = await db.projectMember.findUnique({
+    where: { projectId_userId: { projectId: targetProjectId, userId: session.userId } },
+    select: { role: true, project: { select: { slug: true } } },
+  });
+  if (!targetMembership) return { error: "Target project not found." };
+  if (targetMembership.role === "VIEWER")
+    return { error: "You don't have write access to the target project." };
+
+  const originals = await db.testCase.findMany({
+    where: { id: { in: ids }, projectId: project.id, deletedAt: null },
+  });
+  if (!originals.length) return { error: "No test cases selected." };
+
+  const groups = await loadStepGroups(project.id);
+  let copiedCount = 0;
+
+  for (const original of originals) {
+    const flattened = expandSteps(JSON.parse(original.stepsJson || "[]"), groups).map(
+      (s) => ({ action: s.action, expected: s.expected })
+    );
+
+    const targetProject = await db.project.update({
+      where: { id: targetProjectId },
+      data: { caseCounter: { increment: 1 } },
+    });
+
+    const copy = await db.testCase.create({
+      data: {
+        projectId: targetProjectId,
+        seq: targetProject.caseCounter,
+        title: original.title,
+        description: original.description,
+        preconditions: original.preconditions,
+        stepsJson: JSON.stringify(flattened),
+        expectedResult: original.expectedResult,
+        priority: original.priority,
+        type: original.type,
+        status: "DRAFT",
+        automationStatus: original.automationStatus,
+        tags: original.tags,
+        customJson: original.customJson,
+      },
+    });
+
+    const attachments = await db.attachment.findMany({
+      where: { projectId: project.id, entityType: "CASE", entityId: original.id },
+    });
+    for (const att of attachments) {
+      const data = await getStorage().get(att.storageKey);
+      await saveAttachment({
+        projectId: targetProjectId,
+        uploaderId: session.userId,
+        entityType: "CASE",
+        entityId: copy.id,
+        filename: att.filename,
+        mimeType: att.mimeType,
+        data,
+      });
+    }
+
+    await recordRevision(copy.id, session.userId); // rev 1 "created"
+    copiedCount++;
+  }
+
+  await logAudit({
+    userId: session.userId,
+    action: "case.copy",
+    entityType: "project",
+    entityId: project.id,
+    detail: `${copiedCount} case(s) → project ${targetMembership.project.slug}`,
+  });
+  revalidatePath(`/projects/${slug}`);
+  return { ok: true, copied: copiedCount, targetSlug: targetMembership.project.slug };
 }

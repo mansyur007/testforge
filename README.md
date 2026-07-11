@@ -8,7 +8,10 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 
 - **Multi-project workspace** — create, archive, namespace tests per project
 - **Test case management** — all standard PRD §4.2.1 fields, dynamic steps,
-  clone, bulk edit, tags, soft delete, automatic ID `TC-[SLUG]-[NUM]`
+  clone, bulk edit, tags, soft delete, automatic ID `TC-[SLUG]-[NUM]`; bulk
+  select → drag onto a suite to move or onto another row to reorder, or
+  "Copy to project…" to duplicate into another project you belong to
+  (fresh IDs, flattened shared steps, duplicated attachments)
 - **Suite → section → case hierarchy** (PRD §4.1.2)
 - **Test run & execution** — select cases via filter, 7-color status (§4.3.2),
   keyboard shortcuts `P/F/B/S/R` + `J/K` (US-002), automatic timer, partial run,
