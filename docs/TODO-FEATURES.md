@@ -1367,6 +1367,17 @@ Manifest + service worker; the run executor gets a mobile layout (big status but
 next/prev). Offline queue for result saves (retry on reconnect, last-write-wins with a visible
 conflict toast). Kills the "walking around with a tablet in a lab" pain no competitor solves well.
 
+### F-37 — In-app user docs / help center `[ ]`
+TestForge only has developer-facing docs today (`/docs/api`, `/docs/self-hosting`) — nothing for
+an end user asking "how do I do X here". Add a `/docs/help` (or `/help`) section, same route-group
+pattern as the existing `src/app/docs/*` pages, with one markdown page per area (Getting started,
+Test cases & suites, Runs & execution, Test plans & configurations, Automation & CI upload,
+Integrations, Notifications, Reports, Team & roles) rendered through the existing sanitized
+markdown pipeline (F-02). Link from the app shell (a `?`/"Help" nav entry, not buried in Settings)
+and from empty-state screens ("no cases yet → learn how test cases work"). Content sourced from
+this repo's own feature docs/README so it doesn't drift; a lightweight `docs/help/*.md` folder
+checked into the repo is simplest — no CMS. Screenshots optional v1; text-first is enough to ship.
+
 ---
 
 ## 6. Leapfrog features
