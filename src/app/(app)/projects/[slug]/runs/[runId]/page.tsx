@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { caseDisplayId, RESULT_COLORS, type TestStep } from "@/lib/constants";
 import { expandSteps, loadStepGroups } from "@/lib/steps";
+import { parseDatasets, substituteVars } from "@/lib/datasets";
 import { loadIssueLinks } from "@/lib/issues";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { RunExecutor } from "@/components/RunExecutor";
@@ -157,7 +158,35 @@ export default async function RunDetailPage({
           required: d.required,
         }))}
         members={members.map((m) => m.user)}
-        results={run.results.map((r) => ({
+        results={run.results.map((r) => {
+          // F-13: substitute {{var}} -> this result's dataset row values;
+          // cases without datasets (datasetName null) render unchanged.
+          const expanded = expandSteps(
+            JSON.parse(r.testCase.stepsJson || "[]") as TestStep[],
+            stepGroups
+          );
+          const datasetValues = r.datasetName
+            ? parseDatasets(r.testCase.datasetJson).find(
+                (d) => d.name === r.datasetName
+              )?.values ?? {}
+            : null;
+          const title = datasetValues
+            ? substituteVars(r.testCase.title, datasetValues)
+            : r.testCase.title;
+          const preconditions = datasetValues
+            ? substituteVars(r.testCase.preconditions, datasetValues)
+            : r.testCase.preconditions ?? "";
+          const expectedResult = datasetValues
+            ? substituteVars(r.testCase.expectedResult, datasetValues)
+            : r.testCase.expectedResult ?? "";
+          const steps = datasetValues
+            ? expanded.map((s) => ({
+                ...s,
+                action: substituteVars(s.action, datasetValues),
+                expected: substituteVars(s.expected, datasetValues),
+              }))
+            : expanded;
+          return {
           id: r.id,
           status: r.status,
           comment: r.comment ?? "",
@@ -165,16 +194,14 @@ export default async function RunDetailPage({
           elapsedSeconds: r.elapsedSeconds,
           assigneeName: r.assignee?.name ?? null,
           displayId: caseDisplayId(run.project.slug, r.testCase.seq),
-          title: r.testCase.title,
+          title,
           priority: r.testCase.priority,
           caseRev: r.caseRev,
           currentRev: r.testCase.rev,
-          preconditions: r.testCase.preconditions ?? "",
-          expectedResult: r.testCase.expectedResult ?? "",
-          steps: expandSteps(
-            JSON.parse(r.testCase.stepsJson || "[]") as TestStep[],
-            stepGroups
-          ),
+          datasetName: r.datasetName,
+          preconditions,
+          expectedResult,
+          steps,
           attachments: (attachmentsByResult.get(r.id) ?? []).map((a) => ({
             id: a.id,
             filename: a.filename,
@@ -191,7 +218,8 @@ export default async function RunDetailPage({
             title: l.title,
             status: l.status,
           })),
-        }))}
+          };
+        })}
       />
     </div>
   );

@@ -35,6 +35,7 @@ type ResultItem = {
   priority: string;
   caseRev: number | null; // F-05: revision executed (null = pre-F-05 result)
   currentRev: number;
+  datasetName: string | null; // F-13: which parameter row this result executes
   preconditions: string;
   expectedResult: string;
   steps: ExecutorStep[];
@@ -149,6 +150,15 @@ export function RunExecutor({
           >
             <span className="font-mono text-xs text-slate-400">{r.displayId}</span>
             <span className="flex-1 truncate">{r.title}</span>
+            {r.datasetName && (
+              <span
+                className="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600"
+                data-testid="dataset-chip"
+                title="Parameterized run (F-13)"
+              >
+                {r.datasetName}
+              </span>
+            )}
             {r.caseRev != null && r.caseRev < r.currentRev && (
               <span
                 className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
@@ -171,6 +181,14 @@ export function RunExecutor({
           <div className="flex items-center justify-between">
             <p className="font-mono text-xs text-slate-400">{active.displayId}</p>
             <span className="flex items-center gap-2">
+              {active.datasetName && (
+                <span
+                  className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700"
+                  data-testid="dataset-chip-detail"
+                >
+                  Dataset: {active.datasetName}
+                </span>
+              )}
               {active.caseRev != null && active.caseRev < active.currentRev && (
                 <span
                   className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"

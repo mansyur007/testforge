@@ -338,6 +338,7 @@ model TestCase {
   assigneeId       String?
   linkedIssues     String? // URL bug tracker, dipisah koma
   customJson       String    @default("{}") // F-03: {key: value} per CustomFieldDef CASE
+  datasetJson      String    @default("[]") // F-13: [{name, values: {var: value}}] — {{var}} in title/steps/preconditions/expectedResult
   rev              Int       @default(1) // F-05: current revision number
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
@@ -388,6 +389,7 @@ model TestRunResult {
   defectUrl      String?
   customJson     String   @default("{}") // F-03: {key: value} per CustomFieldDef RESULT
   caseRev        Int? // F-05: the case revision this result executed (null = pre-F-05)
+  datasetName    String? // F-13: which dataset row this result executes; null = no parameters
   updatedAt      DateTime @updatedAt
   createdAt      DateTime @default(now())
 
@@ -395,7 +397,8 @@ model TestRunResult {
   testCase TestCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
   assignee User?    @relation("ResultAssignee", fields: [assigneeId], references: [id])
 
-  @@unique([runId, caseId])
+  // F-13: a case with N dataset rows seeds N results per run, one per row.
+  @@unique([runId, caseId, datasetName])
 }
 
 // Gap audit: PRD §5.3 mensyaratkan API key untuk CI/CD tapi tabelnya

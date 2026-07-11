@@ -118,6 +118,26 @@ async function main() {
       ],
       expectedResult: "Checkout diblokir dengan pesan jelas",
     },
+    {
+      // F-13: parameters/datasets demo — one case, three data-driven runs.
+      suiteId: loginSection.id,
+      title: "Login sebagai berbagai role user",
+      priority: "MEDIUM",
+      type: "FUNCTIONAL",
+      automationStatus: "NOT_AUTOMATED",
+      tags: "login,parameters",
+      steps: [
+        { action: "Buka halaman /login", expected: "" },
+        { action: "Input email {{email}} dan password {{password}}", expected: "" },
+        { action: "Klik tombol Login", expected: "Redirect ke dashboard {{role}}" },
+      ],
+      expectedResult: "User dengan role {{role}} berhasil masuk",
+      dataset: [
+        { name: "Admin", values: { email: "admin@demo.test", password: "Admin123!", role: "Admin" } },
+        { name: "Member", values: { email: "member@demo.test", password: "Member123!", role: "Member" } },
+        { name: "Viewer", values: { email: "viewer@demo.test", password: "Viewer123!", role: "Viewer" } },
+      ],
+    },
   ];
 
   let seq = 0;
@@ -138,6 +158,7 @@ async function main() {
           preconditions: c.preconditions ?? null,
           stepsJson: JSON.stringify(c.steps),
           expectedResult: c.expectedResult,
+          datasetJson: JSON.stringify(c.dataset ?? []),
         },
       })
     );

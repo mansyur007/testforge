@@ -146,6 +146,23 @@ export async function POST(
     }
   }
 
+  // F-13: optional `datasets` array, [{name, values: {var: value}}].
+  let datasetJson = "[]";
+  if (body.datasets !== undefined) {
+    if (!Array.isArray(body.datasets)) {
+      errors.push({ field: "datasets", message: "must be an array" });
+    } else {
+      datasetJson = JSON.stringify(
+        body.datasets
+          .filter((d: unknown) => d && typeof d === "object" && "name" in d && String((d as { name: unknown }).name).trim())
+          .map((d: { name: unknown; values?: unknown }) => ({
+            name: String(d.name).trim(),
+            values: d.values && typeof d.values === "object" ? d.values : {},
+          }))
+      );
+    }
+  }
+
   if (errors.length) return validationError(errors);
 
   const project = await db.project.update({
@@ -167,6 +184,7 @@ export async function POST(
       type,
       tags: body.tags ?? "",
       customJson,
+      datasetJson,
     },
   });
 

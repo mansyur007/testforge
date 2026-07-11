@@ -1150,7 +1150,38 @@ unless marked (large).
 - AC: running the repo's own Playwright e2e with the reporter against a local TestForge
   creates a live-updating run.
 
-### F-13 — Parameters / datasets `[ ]`
+### F-13 — Parameters / datasets `[x]`
+
+> **Status: DONE** (2026-07-12, branch `feat/parameters-datasets`). Implemented close to spec,
+> with these deviations:
+> - `{{var}}` auto-discovery in `CaseForm` only scans **step action/expected text** (the
+>   `steps` state is already tracked reactively); title/description/preconditions/expectedResult
+>   are uncontrolled inputs in this form, so wiring live discovery from them would mean
+>   converting those fields to controlled — out of scope for a P2 mechanical feature. A "+ Add
+>   variable column" button covers the gap (add a column manually for a var used elsewhere).
+> - Substitution at execution time (run detail page, building `RunExecutor` props) *does* apply
+>   to title/preconditions/expectedResult/steps — not just steps — since that data is already
+>   server-side and not tied to form control state.
+> - `TestRunResult`'s unique constraint became `@@unique([runId, caseId, datasetName])`; the
+>   migration was verified lossless locally (140/140 rows before/after — every existing row has
+>   `datasetName = null`, and the old `[runId, caseId]` uniqueness already guaranteed no
+>   collisions on the new triple).
+> - The `POST /api/v1/projects/[slug]/runs/[runId]/results` upsert-by-case endpoint couldn't use
+>   Prisma's generated compound-unique object once `datasetName` (nullable) joined the key —
+>   Prisma's `upsert` typing rejects `null` there — so it's now a manual find-then-write
+>   (`findFirst` → `update`/`create`) instead of `upsert`. Accepts an optional `datasetName` in
+>   the body.
+> - `rerunFailed` and the CSV/API run-seeding paths all carry `datasetName` through so a rerun
+>   or API-created run preserves which row each result belongs to instead of collapsing rows.
+> - Case CSV import/export were left untouched — the spec's CSV requirement was for the **run
+>   results** export only (`dataset` column added to `/api/export/run`), which naturally gets
+>   one row per dataset row since each row is already its own `TestRunResult`.
+> - No revision-history integration (F-05 snapshot shape is unchanged) — dataset edits aren't
+>   tracked as case history, consistent with attachments/other side-data being out of that shape.
+> - Seed demo: one case ("Login sebagai berbagai role user") with 3 dataset rows (Admin/Member/
+>   Viewer) in `prisma/seed.mjs`. e2e `e2e/parameters-datasets.spec.ts` covers 2 dataset rows
+>   seeding 2 results, substitution, and the missing-var `⚠{{var}}` marker; full suite 33/33 on
+>   a fresh DB.
 
 - Add to `TestCase`: `datasetJson String @default("[]")` — array of rows
   `{ name: string, values: Record<string,string> }`. Steps/description may contain `{{var}}`.

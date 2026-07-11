@@ -87,6 +87,21 @@ export async function PATCH(
       errors.push({ field: "steps", message: "must be an array" });
     else data.stepsJson = JSON.stringify(body.steps);
   }
+  // F-13: `datasets` replaces the full array, [{name, values: {var: value}}].
+  if ("datasets" in body) {
+    if (!Array.isArray(body.datasets)) {
+      errors.push({ field: "datasets", message: "must be an array" });
+    } else {
+      data.datasetJson = JSON.stringify(
+        body.datasets
+          .filter((d: unknown) => d && typeof d === "object" && "name" in d && String((d as { name: unknown }).name).trim())
+          .map((d: { name: unknown; values?: unknown }) => ({
+            name: String(d.name).trim(),
+            values: d.values && typeof d.values === "object" ? d.values : {},
+          }))
+      );
+    }
+  }
 
   // F-03: `custom` merges over the stored values (validated per CASE defs).
   if ("custom" in body) {

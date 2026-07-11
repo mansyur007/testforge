@@ -9,6 +9,7 @@ import { getSession, verifyApiKey } from "@/lib/auth";
 import { caseDisplayId } from "@/lib/constants";
 import { rateLimit, type RateResult } from "@/lib/rate-limit";
 import { expandSteps, type StepGroupLite } from "@/lib/steps";
+import { parseDatasets } from "@/lib/datasets";
 
 // ---------------------------------------------------------------------------
 // Uniform error envelope: every v1 error is { error: { code, message, details? } }
@@ -125,6 +126,7 @@ export function serializeCase(
     assigneeId: c.assigneeId,
     linkedIssues: c.linkedIssues,
     custom: JSON.parse(c.customJson || "{}"),
+    datasets: parseDatasets(c.datasetJson), // F-13
     rev: c.rev,
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),
@@ -178,6 +180,7 @@ export function serializeResult(r: TestRunResult) {
     assigneeId: r.assigneeId,
     custom: JSON.parse(r.customJson || "{}"),
     caseRev: r.caseRev,
+    datasetName: r.datasetName, // F-13
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   };

@@ -9,6 +9,7 @@ import { logAudit } from "@/lib/audit";
 import { dispatchWebhook } from "@/lib/webhooks";
 import { notify, notifyBaseUrl } from "@/lib/notifications";
 import { serializeRun } from "@/lib/api";
+import { buildResultSeeds } from "@/lib/datasets";
 import { loadCaseRevs } from "@/lib/case-revisions";
 import {
   collectCustomFromForm,
@@ -47,7 +48,8 @@ export async function createRun(
   const project = await db.project.findUniqueOrThrow({ where: { id: projectId } });
 
   // F-05: remember which revision of each case this run executes.
-  const revs = await loadCaseRevs(caseIds);
+  // F-13: cases with dataset rows seed one result per row instead of one.
+  const seeds = await buildResultSeeds(caseIds);
   const run = await db.testRun.create({
     data: {
       projectId,
@@ -55,9 +57,7 @@ export async function createRun(
       description: description || null,
       milestoneId,
       createdById: session.userId,
-      results: {
-        create: caseIds.map((caseId) => ({ caseId, caseRev: revs.get(caseId) })),
-      },
+      results: { create: seeds },
     },
   });
 
@@ -221,10 +221,12 @@ export async function rerunFailed(formData: FormData) {
       name: `${run.name} — Rerun Failed`,
       description: `Automatic rerun of "${run.name}" (${run.results.length} failed/blocked/retest cases).`,
       createdById: session.userId,
+      // F-13: preserve which dataset row each rerun result belongs to.
       results: {
         create: run.results.map((r) => ({
           caseId: r.caseId,
           caseRev: revs.get(r.caseId),
+          datasetName: r.datasetName,
         })),
       },
     },
