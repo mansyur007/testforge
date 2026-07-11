@@ -38,12 +38,20 @@ export async function createRun(
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const milestoneId = String(formData.get("milestoneId") ?? "") || null;
+  const environmentId = String(formData.get("environmentId") ?? "") || null; // F-19
   const caseIds = formData.getAll("caseIds").map(String);
 
   if (!name) return { error: "Test run name is required." };
   if (!caseIds.length) return { error: "Select at least one test case." };
   if (!(await isProjectMember(session.userId, projectId)))
     return { error: "Project not found." };
+  if (environmentId) {
+    const env = await db.environment.findFirst({
+      where: { id: environmentId, projectId },
+      select: { id: true },
+    });
+    if (!env) return { error: "Environment not found in this project." };
+  }
 
   const project = await db.project.findUniqueOrThrow({ where: { id: projectId } });
 
@@ -56,6 +64,7 @@ export async function createRun(
       name,
       description: description || null,
       milestoneId,
+      environmentId,
       createdById: session.userId,
       results: { create: seeds },
     },

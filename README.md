@@ -65,6 +65,9 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 - **Parameters / datasets** — `{{var}}` placeholders in a case's steps,
   substituted per named dataset row; a run seeds one result per row instead
   of one per case, each tagged with its dataset name
+- **Environments** — tag runs with where they executed (Staging, Prod, …);
+  `&env=<name>` on an automation upload auto-creates one; filter runs and
+  reports by environment
 
 ## Running
 

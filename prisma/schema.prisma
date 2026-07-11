@@ -47,6 +47,7 @@ model Project {
   description String?
   status      String   @default("ACTIVE") // ACTIVE | ARCHIVED
   caseCounter Int      @default(0) // untuk auto-generate TC-[SLUG]-[NUMBER]
+  autoCreateEnvs Boolean @default(true) // F-19: auto-create an Environment from &env= on automation upload
   createdById String
   createdAt   DateTime @default(now())
 
@@ -66,6 +67,7 @@ model Project {
   issueLinks   IssueLink[]
   configGroups ConfigGroup[]
   testPlans    TestPlan[]
+  environments Environment[]
 }
 
 // Outbound webhooks: POST a signed JSON payload to `url` when a subscribed event
@@ -366,16 +368,35 @@ model TestRun {
   // F-06: {"Browser":"Chrome","OS":"Windows"} — option NAMES copied at creation,
   // not FK ids, so deleting a ConfigOption later never breaks an existing run.
   // This denormalization is deliberate.
-  configJson  String?
-  createdById String
-  createdAt   DateTime  @default(now())
-  completedAt DateTime?
+  configJson    String?
+  environmentId String? // F-19: which Environment this ran against; null = unset
+  createdById   String
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
 
-  project   Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  milestone Milestone?      @relation(fields: [milestoneId], references: [id])
-  plan      TestPlan?       @relation(fields: [planId], references: [id])
-  createdBy User            @relation("RunCreator", fields: [createdById], references: [id])
-  results   TestRunResult[]
+  project     Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  milestone   Milestone?      @relation(fields: [milestoneId], references: [id])
+  plan        TestPlan?       @relation(fields: [planId], references: [id])
+  environment Environment?    @relation(fields: [environmentId], references: [id], onDelete: SetNull)
+  createdBy   User            @relation("RunCreator", fields: [createdById], references: [id])
+  results     TestRunResult[]
+}
+
+// F-19: named environments a run can be tagged against (Staging, Prod, …).
+// Deleting one just clears the tag on old runs (onDelete: SetNull) — unlike
+// F-06 ConfigOption, there's no per-run name copy to keep, so an FK is fine.
+model Environment {
+  id        String   @id @default(cuid())
+  projectId String
+  name      String
+  url       String?
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+
+  project Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  runs    TestRun[]
+
+  @@unique([projectId, name])
 }
 
 model TestRunResult {

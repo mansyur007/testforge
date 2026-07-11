@@ -215,6 +215,14 @@ async function main() {
     data: { projectId: project.id, name: "Release v1.0" },
   });
 
+  // F-19: demo environments — one run below is tagged Staging.
+  const stagingEnv = await db.environment.create({
+    data: { projectId: project.id, name: "Staging", url: "https://staging.demo.test" },
+  });
+  await db.environment.create({
+    data: { projectId: project.id, name: "Production", url: "https://demo.test", order: 1 },
+  });
+
   // F-06: configuration axes + a demo plan (Browser × 2 → 2 child runs with a
   // few executed results so the aggregate bar and matrix show something).
   await db.configGroup.create({
@@ -291,6 +299,7 @@ async function main() {
       projectId: project.id,
       name: "Smoke Test Sprint 1",
       milestoneId: milestone.id,
+      environmentId: stagingEnv.id,
       createdById: admin.id,
       results: {
         create: [
