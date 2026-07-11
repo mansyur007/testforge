@@ -9,6 +9,8 @@ export const E2E = {
   email: "e2e@testforge.local",
   password: "E2eDemo123",
   projectSlug: "e2e",
+  // F-24: a second project the e2e user owns, used as the "Copy to project…" target.
+  targetProjectSlug: "e2e-target",
 };
 
 // Seed a deterministic fixture into the LOCAL dev.db before the suite runs:
@@ -66,6 +68,27 @@ async function globalSetup() {
         },
       },
     });
+  }
+
+  // F-24: empty project the e2e user owns, used as the "Copy to project…"
+  // target so the copy e2e spec doesn't need a third account.
+  const existingTarget = await db.project.findUnique({
+    where: { slug: E2E.targetProjectSlug },
+  });
+  if (!existingTarget) {
+    await db.project.create({
+      data: {
+        name: "E2E Target",
+        slug: E2E.targetProjectSlug,
+        description: "Playwright E2E fixture — copy-to-project destination",
+        createdById: user.id,
+        members: { create: { userId: user.id, role: "OWNER" } },
+      },
+    });
+  } else {
+    // F-24 crash recovery: a failed copy spec can leave cases from a previous
+    // run sitting here and skew "copied N cases" assertions. Start clean.
+    await db.testCase.deleteMany({ where: { project: { slug: E2E.targetProjectSlug } } });
   }
 
   // F-03 crash recovery: a failed custom-fields spec can leave a REQUIRED

@@ -67,8 +67,16 @@ export default async function ProjectPage({
 
   const cases = await db.testCase.findMany({
     where,
-    orderBy: { seq: "asc" },
+    orderBy: [{ order: "asc" }, { seq: "asc" }], // F-24: manual drag-reorder, tie-broken by creation order
     include: { suite: true },
+  });
+
+  // F-24: target project picker for "Copy to project…" — the user's other
+  // projects where they have write access (VIEWER can't hold the copy).
+  const otherProjects = await db.projectMember.findMany({
+    where: { userId: session.userId, role: { not: "VIEWER" }, project: { slug: { not: project.slug } } },
+    select: { project: { select: { id: true, slug: true, name: true } } },
+    orderBy: { project: { name: "asc" } },
   });
 
   const canWrite = session.role !== "VIEWER";
@@ -213,6 +221,7 @@ export default async function ProjectPage({
             projectName={project.name}
             canWrite={session.role !== "VIEWER"}
             searchParams={searchParams}
+            otherProjects={otherProjects.map((m) => m.project)}
             cases={cases.map((c) => ({
               id: c.id,
               seq: c.seq,

@@ -12,7 +12,12 @@ import {
   CASE_STATUSES,
   AUTOMATION_STATUSES,
 } from "@/lib/constants";
-import { bulkUpdateCases, bulkDeleteCases } from "@/app/actions/cases";
+import {
+  bulkUpdateCases,
+  bulkDeleteCases,
+  reorderCases,
+  copyCasesToProject,
+} from "@/app/actions/cases";
 import { CASE_DND_MIME, CASES_MOVED_EVENT } from "@/lib/dnd";
 
 const AUTOMATION_LABELS: Record<string, string> = {
@@ -41,18 +46,22 @@ type SearchParams = {
   tag?: string;
 };
 
+type OtherProject = { id: string; slug: string; name: string };
+
 export function CasesTable({
   cases,
   projectSlug,
   projectName,
   canWrite,
   searchParams,
+  otherProjects = [],
 }: {
   cases: CaseRow[];
   projectSlug: string;
   projectName: string;
   canWrite: boolean;
   searchParams: SearchParams;
+  otherProjects?: OtherProject[];
 }) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkField, setBulkField] = useState("priority");
@@ -63,6 +72,11 @@ export function CasesTable({
   const [pending, startTransition] = useTransition();
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [showCopy, setShowCopy] = useState(false);
+  const [copyTarget, setCopyTarget] = useState<string>(otherProjects[0]?.id ?? "");
+  const [copyError, setCopyError] = useState<string | null>(null);
+  const [copyDone, setCopyDone] = useState<{ copied: number; targetSlug: string } | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
   const selectAllRef = useRef<HTMLInputElement>(null);
 
   const allIds = cases.map((c) => c.id);
@@ -202,6 +216,74 @@ export function CasesTable({
     });
   }
 
+  // F-24: drop onto another row in the table reorders within the current
+  // (filtered) list, as opposed to dropping onto the sidebar (SuiteDropZone),
+  // which moves cases between suites. Both read the same drag payload.
+  function onRowDragOver(e: React.DragEvent, targetId: string) {
+    if (!e.dataTransfer.types.includes(CASE_DND_MIME)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (dragOverId !== targetId) setDragOverId(targetId);
+  }
+
+  function onRowDrop(e: React.DragEvent, targetId: string) {
+    e.preventDefault();
+    setDragOverId(null);
+    const raw = e.dataTransfer.getData(CASE_DND_MIME);
+    if (!raw) return;
+    let ids: string[];
+    try {
+      ids = JSON.parse(raw);
+    } catch {
+      return;
+    }
+    if (!Array.isArray(ids) || ids.length === 0) return;
+    const draggedSet = new Set(ids);
+    if (draggedSet.has(targetId)) return; // dropped onto itself/its own selection
+
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const before = e.clientY < rect.top + rect.height / 2;
+
+    const remaining = cases.filter((c) => !draggedSet.has(c.id));
+    const targetIdx = remaining.findIndex((c) => c.id === targetId);
+    if (targetIdx === -1) return;
+    const insertAt = before ? targetIdx : targetIdx + 1;
+    const reordered = [
+      ...remaining.slice(0, insertAt).map((c) => c.id),
+      ...ids,
+      ...remaining.slice(insertAt).map((c) => c.id),
+    ];
+
+    const fd = new FormData();
+    fd.set("projectSlug", projectSlug);
+    reordered.forEach((id) => fd.append("caseIds", id));
+    startTransition(async () => {
+      await reorderCases(fd);
+    });
+  }
+
+  function submitCopy() {
+    setCopyError(null);
+    if (!copyTarget) {
+      setCopyError("Choose a target project.");
+      return;
+    }
+    const fd = new FormData();
+    fd.set("projectSlug", projectSlug);
+    fd.set("targetProjectId", copyTarget);
+    selected.forEach((id) => fd.append("caseIds", id));
+    startTransition(async () => {
+      const res = await copyCasesToProject(fd);
+      if (res?.error) {
+        setCopyError(res.error);
+        return;
+      }
+      setShowCopy(false);
+      setCopyDone({ copied: res?.copied ?? 0, targetSlug: res?.targetSlug ?? "" });
+      clear();
+    });
+  }
+
   function confirmDelete() {
     setError(null);
     const fd = new FormData();
@@ -277,6 +359,24 @@ export function CasesTable({
           >
             Apply
           </button>
+          {otherProjects.length > 0 && (
+            <>
+              <span className="text-slate-300">|</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setCopyError(null);
+                  setCopyTarget(otherProjects[0].id);
+                  setShowCopy(true);
+                }}
+                disabled={pending}
+                data-testid="cases-bulk-copy"
+                className="inline-flex items-center gap-1 rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+              >
+                Copy to project…
+              </button>
+            </>
+          )}
           <span className="text-slate-300">|</span>
           <button
             type="button"
@@ -290,6 +390,25 @@ export function CasesTable({
             className="inline-flex items-center gap-1 rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
           >
             <TFIcon name="delete" className="h-3.5 w-3.5" /> Delete ({selected.size})
+          </button>
+        </div>
+      )}
+
+      {copyDone && (
+        <div className="flex items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-800">
+          <span>
+            Copied {copyDone.copied} test case{copyDone.copied === 1 ? "" : "s"} to{" "}
+            <Link href={`/projects/${copyDone.targetSlug}`} className="underline">
+              {copyDone.targetSlug}
+            </Link>{" "}
+            as drafts.
+          </span>
+          <button
+            type="button"
+            onClick={() => setCopyDone(null)}
+            className="text-emerald-700 hover:text-emerald-900"
+          >
+            Dismiss
           </button>
         </div>
       )}
@@ -328,7 +447,13 @@ export function CasesTable({
                   onDragStart={
                     canWrite ? (e) => onDragStart(e, c.id) : undefined
                   }
-                  className={`${isSel ? "bg-indigo-50/60" : "hover:bg-slate-50"} ${canWrite ? "cursor-grab active:cursor-grabbing" : ""}`}
+                  onDragOver={canWrite ? (e) => onRowDragOver(e, c.id) : undefined}
+                  onDragLeave={
+                    canWrite ? () => setDragOverId((id) => (id === c.id ? null : id)) : undefined
+                  }
+                  onDrop={canWrite ? (e) => onRowDrop(e, c.id) : undefined}
+                  data-testid={`case-row-${c.id}`}
+                  className={`${isSel ? "bg-indigo-50/60" : "hover:bg-slate-50"} ${canWrite ? "cursor-grab active:cursor-grabbing" : ""} ${dragOverId === c.id ? "ring-2 ring-inset ring-indigo-400" : ""}`}
                 >
                   {canWrite && (
                     <td className="px-3 py-2.5">
@@ -444,7 +569,7 @@ export function CasesTable({
             ? "0 test cases"
             : `Showing ${pageStart + 1}–${pageStart + pageRows.length} of ${cases.length}`}
           {canWrite &&
-            " · Ctrl/Cmd+A to select all · drag onto a suite to move"}
+            " · Ctrl/Cmd+A to select all · drag onto a suite to move · drag onto a row to reorder"}
         </span>
         <div className="flex items-center gap-2">
           <label className="flex items-center gap-1.5">
@@ -528,6 +653,54 @@ export function CasesTable({
                 className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
               >
                 {pending ? "Deleting…" : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCopy && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+          <div className="w-full max-w-md space-y-4 rounded-xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-semibold text-slate-900">
+              Copy {selected.size} test case{selected.size === 1 ? "" : "s"} to another project
+            </h3>
+            <p className="text-sm text-slate-500">
+              Copies get a fresh ID in the target project, start as{" "}
+              <span className="font-medium text-slate-700">Draft</span>, and any
+              shared steps are flattened into plain steps (shared-step groups
+              don&apos;t cross projects). Attachments are duplicated as new files.
+            </p>
+            <select
+              autoFocus
+              value={copyTarget}
+              onChange={(e) => setCopyTarget(e.target.value)}
+              data-testid="cases-copy-target"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            >
+              {otherProjects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+            {copyError && <p className="text-sm text-red-600">{copyError}</p>}
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowCopy(false)}
+                className="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={submitCopy}
+                disabled={pending}
+                data-testid="cases-copy-confirm"
+                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              >
+                {pending ? "Copying…" : "Copy"}
               </button>
             </div>
           </div>

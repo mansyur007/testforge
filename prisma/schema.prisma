@@ -324,6 +324,7 @@ model TestCase {
   projectId        String
   suiteId          String?
   seq              Int // nomor urut per project, display: TC-[SLUG]-[seq]
+  order            Int       @default(0) // F-24: manual drag-reorder within a suite view; sort key is order,seq
   title            String
   description      String?
   preconditions    String?

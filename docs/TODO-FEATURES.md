@@ -169,7 +169,8 @@ switch if it does not match.
 | 9 | F-07 Jira/GitHub/GitLab | F-08 (shares config UI section) | Highest-demand integration | **Opus 4.8** — spec is detailed, `lib/crypto.ts` already exists; but tokens are involved, so hold the line on §0.6 secret rules |
 | 10 | F-06 Test plans & configurations | — | Biggest P1; schedule when above are stable | **Fable 5** — the only P1 that adds a genuinely new entity graph (plan → config matrix → generated runs → aggregate progress) |
 | 11 | F-11 Additional automation result formats | — | Mechanical: one parser per format, same matching pipeline | ✅ done |
-| 12+ | P2 (F-12…F-24), then P3 | see each | L-01/L-02 are small — ship early for marketing | **Sonnet 5** for the mechanical ones (F-13 datasets, F-24 bulk move/copy); **Opus 4.8** where a new subsystem appears (F-16 comments, F-20 SSO) |
+| 12 | F-24 Bulk move/copy & drag reorder | — | Mechanical; move-to-suite already existed, only copy+reorder were missing | ✅ done |
+| 13+ | P2 (F-12…F-23), then P3 | see each | L-01/L-02 are small — ship early for marketing | **Sonnet 5** for the mechanical ones (F-13 datasets, F-23 estimates); **Opus 4.8** where a new subsystem appears (F-16 comments, F-20 SSO) |
 | — | L-01…L-05 leapfrog, interleaved | see each | Designed to beat competitors, not match them | **Fable 5** — these are net-new product design, not ports of a known feature |
 
 ---
@@ -1289,15 +1290,30 @@ Split into 4 sequential PRs:
   else project median 120 s default). Show "≈ 2h 15m remaining".
 - Milestone/plan roll-up = sum of child runs. CSV/API expose `estimateSeconds`.
 
-### F-24 — Bulk move/copy & drag reorder `[ ]`
+### F-24 — Bulk move/copy & drag reorder `[x]`
 
-- Cases table multi-select gains: "Move to suite…" (this project), "Copy to project…"
-  (target project picker limited to user's projects; copies get fresh `seq` in target,
-  attachments duplicated (new files), shared-step refs converted to inline copies since
-  groups are project-scoped — state this in the confirm dialog).
-- Drag-reorder cases within a suite: add `TestCase.order Int @default(0)`; persist via the
-  existing dnd helper (`src/lib/dnd.ts`, same pattern as `SuiteDropZone`); default sort
-  becomes `order, seq`.
+> **Status: DONE** (2026-07-11, branch `feat/bulk-copy-reorder`). "Move to suite…" turned out to
+> already exist — multi-select + drag onto the sidebar suite tree (`moveCases()`, shipped with
+> the original suite REST API work) — so this PR only added Copy-to-project and drag-reorder.
+> Deviations:
+> - Copy-to-project reuses `CASE_DND_MIME`'s drag source for reorder too, but the *drop target*
+>   is now also each table row (not just `SuiteDropZone` in the sidebar) — same payload, two
+>   destinations. `TestCase.order Int @default(0)`, default sort `order, seq`.
+> - Reorder renumbers the *currently visible* (filtered) list densely (`index × 10`) on every
+>   drop rather than fractional insert-between — simplest correct option for typical suite
+>   sizes; cases outside the current filter keep their existing `order` untouched.
+> - `GET /api/v1/projects/{slug}/cases` intentionally still sorts by `seq` only (cursor
+>   pagination wants a stable, unique key) — `order` is exposed in the serializer for clients
+>   that want to mirror the UI's sort themselves, not as the list endpoint's own order.
+> - Copies start as `DRAFT` (same convention as same-project clone) since custom fields may not
+>   exist in the target project; shared-step refs are flattened to inline steps (groups are
+>   project-scoped); attachments are duplicated as genuinely new files (storage dedupe is
+>   per-project, so bytes are re-written, not just re-referenced).
+> - CSV import/export and the seed script were left untouched — `order` is a UI-only
+>   presentation field, not case content.
+> - e2e: native HTML5 drag-and-drop doesn't fire from Playwright's `locator.dragTo()` (it drives
+>   plain mouse events, not real OS-level drag); the spec dispatches `DragEvent`s by hand
+>   instead. `e2e/bulk-copy-reorder.spec.ts`, full suite 31/31.
 
 ---
 
