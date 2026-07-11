@@ -392,9 +392,8 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
 - [ ] **Print-friendly view** test case & run untuk audit/compliance.
 - [ ] **PWA/mobile execution view** — eksekusi run nyaman dari ponsel/tablet saat testing
       device fisik.
-- [ ] **Docs/help center in-app** — saat ini TestForge cuma punya docs untuk developer
-      (`/docs/api`, `/docs/self-hosting`); belum ada panduan fitur & cara pakai untuk end
-      user seperti aplikasi SaaS pada umumnya. Lihat F-37.
+- [x] *(Selesai 2026-07-11)* **Docs/help center in-app** — `/docs/help`, panduan cara pakai per
+      area fitur untuk end user (terpisah dari `/docs/api` yang untuk developer). Lihat F-37.
 
 ### Catatan implementasi
 
