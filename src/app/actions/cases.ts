@@ -76,7 +76,24 @@ function readCaseFields(formData: FormData) {
     linkedIssues: String(formData.get("linkedIssues") ?? "").trim() || null,
     suiteId: String(formData.get("suiteId") ?? "") || null,
     stepsJson: JSON.stringify(steps),
+    datasetJson: readDatasetJson(formData),
   };
+}
+
+// F-13: parses & sanitizes the dataset rows submitted by CaseForm.
+function readDatasetJson(formData: FormData): string {
+  let datasets: { name: string; values: Record<string, string> }[] = [];
+  try {
+    const parsed = JSON.parse(String(formData.get("datasetJson") ?? "[]"));
+    if (Array.isArray(parsed)) {
+      datasets = parsed
+        .filter((d) => d && typeof d.name === "string" && d.name.trim())
+        .map((d) => ({ name: String(d.name).trim(), values: d.values ?? {} }));
+    }
+  } catch {
+    datasets = [];
+  }
+  return JSON.stringify(datasets);
 }
 
 export async function createCase(
@@ -189,6 +206,7 @@ export async function cloneCase(formData: FormData) {
       automationStatus: original.automationStatus,
       tags: original.tags,
       customJson: original.customJson,
+      datasetJson: original.datasetJson,
     },
   });
 
@@ -538,6 +556,7 @@ export async function copyCasesToProject(
         automationStatus: original.automationStatus,
         tags: original.tags,
         customJson: original.customJson,
+        datasetJson: original.datasetJson,
       },
     });
 

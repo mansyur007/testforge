@@ -62,6 +62,9 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 - **In-app help center** — `/docs/help`, a guide per feature area (test
   cases, runs, plans, automation, integrations, notifications, reports, team
   & roles) for end users, separate from the developer-facing `/docs/api`
+- **Parameters / datasets** — `{{var}}` placeholders in a case's steps,
+  substituted per named dataset row; a run seeds one result per row instead
+  of one per case, each tagged with its dataset name
 
 ## Running
 

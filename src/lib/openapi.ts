@@ -1103,6 +1103,22 @@ export function openApiSpec() {
               description:
                 "Custom field values keyed by field key (see /fields). Validated per definition; unknown keys are rejected with 422.",
             },
+            datasets: {
+              type: "array",
+              description:
+                "F-13: parameter rows. A case with N rows seeds N results per run, one per row, {{var}} substituted from `values`.",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string", example: "Admin user" },
+                  values: {
+                    type: "object",
+                    additionalProperties: { type: "string" },
+                    example: { username: "admin", password: "hunter2" },
+                  },
+                },
+              },
+            },
           },
         },
         Case: {
@@ -1221,6 +1237,10 @@ export function openApiSpec() {
             caseRev: {
               type: ["integer", "null"],
               description: "Case revision this result executed (F-05); null for pre-F-05 results.",
+            },
+            datasetName: {
+              type: ["string", "null"],
+              description: "F-13: which of the case's dataset rows this result executes; null when the case has no parameters.",
             },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },

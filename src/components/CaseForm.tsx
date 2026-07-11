@@ -18,6 +18,7 @@ import {
   type InlineStep,
   type TestStep,
 } from "@/lib/constants";
+import { extractVars, type Dataset } from "@/lib/datasets";
 
 // F-04: shared step groups offered by the "Insert shared steps" picker.
 export type SharedGroupOption = {
@@ -79,6 +80,7 @@ export function CaseForm({
     suiteId: string;
     steps: TestStep[];
     custom?: Record<string, unknown>;
+    datasets?: Dataset[];
   };
 }) {
   const isEdit = Boolean(initial);
@@ -89,6 +91,14 @@ export function CaseForm({
   const [steps, setSteps] = useState<TestStep[]>(
     initial?.steps?.length ? initial.steps : [{ action: "", expected: "" }]
   );
+  // F-13: parameters/datasets — {{var}} tokens in step text become columns;
+  // "extraVars" lets a user add a column for a var used elsewhere (e.g. title).
+  const [datasets, setDatasets] = useState<Dataset[]>(initial?.datasets ?? []);
+  const [extraVars, setExtraVars] = useState<string[]>([]);
+  const discoveredVars = steps
+    .filter((s): s is InlineStep => !isSharedRef(s))
+    .flatMap((s) => extractVars(s.action, s.expected));
+  const vars = Array.from(new Set([...discoveredVars, ...extraVars]));
 
   const setStep = (i: number, key: keyof InlineStep, value: string) => {
     setSteps((prev) =>
@@ -127,6 +137,11 @@ export function CaseForm({
         value={JSON.stringify(
           steps.filter((s) => isSharedRef(s) || s.action.trim())
         )}
+      />
+      <input
+        type="hidden"
+        name="datasetJson"
+        value={JSON.stringify(datasets.filter((d) => d.name.trim()))}
       />
 
       {state?.error && (
@@ -374,6 +389,102 @@ export function CaseForm({
             entityId={initial?.caseId}
           />
         </div>
+      </div>
+
+      {/* F-13: parameters/datasets — data-driven runs, one result per row. */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <div className="mb-3 flex items-center justify-between">
+          <h3 className="font-semibold">Parameters</h3>
+          <button
+            type="button"
+            onClick={() => setExtraVars((p) => [...p, `var${p.length + 1}`])}
+            className="rounded-lg border border-dashed border-slate-300 px-3 py-1.5 text-xs text-slate-500 hover:border-indigo-400 hover:text-indigo-600"
+          >
+            + Add variable column
+          </button>
+        </div>
+        <p className="mb-3 text-xs text-slate-400">
+          Use <code className="rounded bg-slate-100 px-1">{"{{var}}"}</code> in
+          steps; each dataset row below runs the case once with those values
+          substituted. Leave empty for a single, non-parameterized case.
+        </p>
+        {vars.length > 0 && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm" data-testid="dataset-table">
+              <thead>
+                <tr className="text-left text-xs font-medium uppercase text-slate-400">
+                  <th className="pb-2 pr-2">Dataset name</th>
+                  {vars.map((v) => (
+                    <th key={v} className="pb-2 pr-2">
+                      {"{{" + v + "}}"}
+                    </th>
+                  ))}
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {datasets.map((d, i) => (
+                  <tr key={i}>
+                    <td className="pb-2 pr-2">
+                      <input
+                        value={d.name}
+                        data-testid="dataset-name-input"
+                        placeholder="e.g. Admin user"
+                        onChange={(e) =>
+                          setDatasets((prev) =>
+                            prev.map((row, idx) =>
+                              idx === i ? { ...row, name: e.target.value } : row
+                            )
+                          )
+                        }
+                        className={inputCls}
+                      />
+                    </td>
+                    {vars.map((v) => (
+                      <td key={v} className="pb-2 pr-2">
+                        <input
+                          value={d.values[v] ?? ""}
+                          onChange={(e) =>
+                            setDatasets((prev) =>
+                              prev.map((row, idx) =>
+                                idx === i
+                                  ? {
+                                      ...row,
+                                      values: { ...row.values, [v]: e.target.value },
+                                    }
+                                  : row
+                              )
+                            )
+                          }
+                          className={inputCls}
+                        />
+                      </td>
+                    ))}
+                    <td className="pb-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setDatasets((prev) => prev.filter((_, idx) => idx !== i))
+                        }
+                        className="rounded border border-red-200 px-1.5 py-0.5 text-xs text-red-500 hover:bg-red-50"
+                      >
+                        ✕
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <button
+          type="button"
+          data-testid="add-dataset-row"
+          onClick={() => setDatasets((p) => [...p, { name: "", values: {} }])}
+          className="mt-2 rounded-lg border border-dashed border-slate-300 px-4 py-2 text-sm text-slate-500 hover:border-indigo-400 hover:text-indigo-600"
+        >
+          + Add Dataset Row
+        </button>
       </div>
 
       <SubmitButton isEdit={isEdit} />

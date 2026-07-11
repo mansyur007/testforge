@@ -4,6 +4,7 @@ import { requireSession } from "@/lib/auth";
 import { CaseForm } from "@/components/CaseForm";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { caseDisplayId } from "@/lib/constants";
+import { parseDatasets } from "@/lib/datasets";
 
 export const dynamic = "force-dynamic";
 
@@ -67,6 +68,7 @@ export default async function EditCasePage({
           suiteId: testCase.suiteId ?? "",
           steps: JSON.parse(testCase.stepsJson || "[]"),
           custom: JSON.parse(testCase.customJson || "{}"),
+          datasets: parseDatasets(testCase.datasetJson),
         }}
         customDefs={customDefs.map((d) => ({
           key: d.key,

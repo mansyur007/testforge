@@ -98,12 +98,22 @@ export async function POST(
 
   const comment = body.comment ?? null;
   const defectUrl = body.defectUrl ?? null;
+  // F-13: optional — which dataset row this result is for (null = no
+  // parameters). Prisma's compound-unique upsert can't take a null member,
+  // so this is a manual find-then-write instead.
+  const datasetName = body.datasetName ? String(body.datasetName) : null;
 
-  const result = await db.testRunResult.upsert({
-    where: { runId_caseId: { runId: run.id, caseId } },
-    create: { runId: run.id, caseId, caseRev, status, comment, elapsedSeconds, defectUrl },
-    update: { status, comment, elapsedSeconds, defectUrl },
+  const existing = await db.testRunResult.findFirst({
+    where: { runId: run.id, caseId, datasetName },
   });
+  const result = existing
+    ? await db.testRunResult.update({
+        where: { id: existing.id },
+        data: { status, comment, elapsedSeconds, defectUrl },
+      })
+    : await db.testRunResult.create({
+        data: { runId: run.id, caseId, caseRev, status, comment, elapsedSeconds, defectUrl, datasetName },
+      });
 
   await logAudit({
     userId: g.userId,

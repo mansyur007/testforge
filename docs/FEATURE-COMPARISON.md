@@ -58,7 +58,7 @@ Legenda: ✅ ada · 🟡 sebagian/terbatas · ❌ tidak ada · ➖ tidak relevan
 | **Custom fields** | ✅ (9 tipe) | ✅ (sangat kuat) | ✅ | ✅ | ➖ |
 | **Shared steps (langkah reusable)** | ✅ | ✅ | ✅ | ❌ | ➖ |
 | **Versioning / riwayat perubahan case** | ✅ | ✅ | ✅ | ✅ | ➖ |
-| **Parameterisasi / dataset** | ❌ | ✅ | ✅ | ❌ | ➖ |
+| **Parameterisasi / dataset** | ✅ | ✅ | ✅ | ❌ | ➖ |
 | **Template case (teks/BDD/exploratory)** | ❌ | ✅ | 🟡 | ❌ | ➖ |
 | Rich text / markdown + inline image | ✅ (GFM) | ✅ | ✅ | 🟡 | ➖ |
 | Review/approval workflow untuk case | ❌ | 🟡 | ✅ | ❌ | ➖ |
@@ -341,8 +341,8 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
 - [ ] **Reporter resmi per framework** — paket npm `@testforge/playwright`,
       `@testforge/cypress`, pip `testforge-pytest` yang stream hasil real-time (bukan hanya
       upload XML di akhir), + **CLI `testforge-cli`** untuk CI.
-- [ ] **Parameterisasi / dataset** — variabel `{{param}}` di steps + tabel dataset per case;
-      run mengeksekusi satu baris dataset sebagai satu hasil.
+- [x] *(Selesai 2026-07-12)* **Parameterisasi / dataset** — variabel `{{param}}` di steps + tabel
+      dataset per case; run mengeksekusi satu baris dataset sebagai satu hasil.
 - [ ] **Custom result status & custom role** — admin bisa menambah/mengubah status hasil
       (warna, makna pass/fail) dan membuat role dengan permission granular.
 - [ ] **Review workflow case** — status alur `DRAFT → IN_REVIEW → APPROVED` dengan reviewer,
