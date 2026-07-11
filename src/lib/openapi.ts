@@ -959,6 +959,90 @@ export function openApiSpec() {
           },
         },
       },
+      "/results": {
+        post: {
+          tags: ["Results"],
+          summary: "Upload an automation result file, creating a completed run",
+          description:
+            "Flat upload endpoint for CI, independent of the project-nested resources — " +
+            "the project is given as a query param so any framework's plugin can POST " +
+            "straight to this URL. Matches each test to a case via a `TC-<SLUG>-<n>` " +
+            "annotation in its name, else an exact title match; unmatched tests are " +
+            "reported but don't block the run. `POST /api/v1/junit` is a permanent " +
+            "alias of `format=junit` kept for existing integrations.",
+          parameters: [
+            { name: "project", in: "query", required: true, schema: { type: "string" }, description: "Project slug." },
+            { name: "name", in: "query", schema: { type: "string" }, description: "Run name. Defaults to a timestamped name." },
+            {
+              name: "format",
+              in: "query",
+              schema: { type: "string", enum: ["junit", "trx", "nunit3", "xunit2", "cucumber", "mocha"] },
+              description: "Result format. Auto-detected from the body when omitted.",
+            },
+            { name: "source", in: "query", schema: { type: "string" }, description: "Recorded run source label. Defaults to the format name." },
+            { name: "origin", in: "query", schema: { type: "string" }, description: "Free-text origin, e.g. CI/Local/VPS (max 120 chars)." },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              "application/xml": { schema: { type: "string" }, examples: { junit: {}, trx: {}, nunit3: {}, xunit2: {} } },
+              "application/json": { schema: { type: "string" }, examples: { cucumber: {}, mocha: {} } },
+            },
+          },
+          responses: {
+            "201": {
+              description: "Run created from the matched results.",
+              content: {
+                "application/json": {
+                  schema: {
+                    allOf: [
+                      { $ref: "#/components/schemas/Run" },
+                      {
+                        type: "object",
+                        properties: {
+                          runUrl: { type: "string" },
+                          matched: { type: "integer" },
+                          automated: { type: "integer" },
+                          unmatched: { type: "array", items: { type: "string" } },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            "400": err("Missing project param, or the body could not be parsed as the given/detected format."),
+            "401": err("Missing or invalid credentials."),
+            "403": err("API key is read-only."),
+            "404": err("Project not found."),
+            "422": err("No test in the file matched any case (details lists each unmatched test name)."),
+          },
+        },
+      },
+      "/junit": {
+        post: {
+          tags: ["Results"],
+          summary: "Upload a JUnit XML result file (alias of POST /results?format=junit)",
+          description: "Kept forever for backward compatibility. See `/results` for the current, multi-format endpoint.",
+          parameters: [
+            { name: "project", in: "query", required: true, schema: { type: "string" }, description: "Project slug." },
+            { name: "name", in: "query", schema: { type: "string" } },
+            { name: "source", in: "query", schema: { type: "string" }, description: "Defaults to JUNIT." },
+            { name: "origin", in: "query", schema: { type: "string" } },
+          ],
+          requestBody: {
+            required: true,
+            content: { "application/xml": { schema: { type: "string" } } },
+          },
+          responses: {
+            "200": { description: "Run created from the matched results." },
+            "400": err("Invalid XML, or no <testcase> elements found."),
+            "401": err("Missing or invalid credentials."),
+            "404": err("Project not found."),
+            "422": err("No test in the file matched any case."),
+          },
+        },
+      },
     },
     components: {
       securitySchemes: {

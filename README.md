@@ -13,9 +13,11 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 - **Test run & execution** — select cases via filter, 7-color status (§4.3.2),
   keyboard shortcuts `P/F/B/S/R` + `J/K` (US-002), automatic timer, partial run,
   **rerun failed only**, milestone
-- **Automation integration** — upload framework-agnostic JUnit XML
-  (Cypress/Playwright/Jest/Pytest/etc.) via `POST /api/v1/junit`, auto-matching
-  to test cases via `TC-WEB-001` annotation in test name or exact title (US-010)
+- **Automation integration** — upload results from JUnit, TRX (MSTest), NUnit3,
+  xUnit.net v2, Cucumber JSON or Mocha JSON via `POST /api/v1/results` (format
+  auto-detected, or `POST /api/v1/junit` for the original JUnit-only alias),
+  auto-matching to test cases via `TC-WEB-001` annotation in test name or exact
+  title (US-010)
 - **REST API v1** — Bearer API key (hashed), cursor pagination, filtering
 - **Import/Export CSV** — with preview & validation before import (US-004)
 - **Reports** — pass rate trend, flaky test detection, bug correlation,
@@ -88,11 +90,14 @@ hosted site goes away, see
 ## Upload CI/CD results
 
 ```bash
-# Create an API key in Settings → API Keys, then:
-curl -X POST "http://localhost:3000/api/v1/junit?project=web&name=CI%20Run&source=cypress" \
+# Create a WRITE-scoped API key in Settings → API Keys, then:
+curl -X POST "http://localhost:3000/api/v1/results?project=web&name=CI%20Run" \
   -H "Authorization: Bearer <API_KEY>" \
   -H "Content-Type: application/xml" \
   --data-binary @results/junit.xml
+
+# format is auto-detected (junit/trx/nunit3/xunit2/cucumber/mocha); pass
+# &format=trx etc. to be explicit. POST /api/v1/junit still works unchanged.
 ```
 
 ## Structure
