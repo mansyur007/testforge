@@ -7,6 +7,7 @@ import { memberScope } from "@/lib/projects";
 import { RESULT_COLORS } from "@/lib/constants";
 import { parseRunConfig, configLabel } from "@/lib/plans";
 import { loadEnvironments } from "@/lib/environments";
+import { bucketStatus, isMuted, NON_EXECUTED_BUCKETS } from "@/lib/mute";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { createMilestone } from "@/app/actions/projects";
 
@@ -24,7 +25,12 @@ export default async function RunsPage({
     where: { slug: params.slug, ...memberScope(session.userId) },
     include: {
       runs: {
-        include: { results: true, milestone: true, createdBy: true, environment: true },
+        include: {
+          results: { include: { testCase: { select: { mutedAt: true } } } },
+          milestone: true,
+          createdBy: true,
+          environment: true,
+        },
         orderBy: { createdAt: "desc" },
       },
       milestones: { include: { runs: true } },
@@ -85,8 +91,12 @@ export default async function RunsPage({
       <div className="space-y-3">
         {filteredRuns.map((run) => {
           const total = run.results.length || 1;
-          const done = run.results.filter(
-            (r) => !["UNTESTED", "IN_PROGRESS"].includes(r.status)
+          // F-21: muted cases bucket separately, excluded from "executed".
+          const buckets = run.results.map((r) =>
+            bucketStatus(r.status, isMuted(r.testCase.mutedAt))
+          );
+          const done = buckets.filter(
+            (b) => !NON_EXECUTED_BUCKETS.includes(b)
           ).length;
           return (
             <Link
@@ -144,16 +154,16 @@ export default async function RunsPage({
                 </div>
               </div>
               <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-gray-100">
-                {["PASSED", "FAILED", "BLOCKED", "RETEST", "SKIPPED", "IN_PROGRESS"].map(
+                {["PASSED", "FAILED", "BLOCKED", "RETEST", "SKIPPED", "IN_PROGRESS", "MUTED"].map(
                   (st) => {
-                    const count = run.results.filter((r) => r.status === st).length;
+                    const count = buckets.filter((b) => b === st).length;
                     if (!count) return null;
                     return (
                       <div
                         key={st}
                         className={RESULT_COLORS[st]}
                         style={{ width: `${(count / total) * 100}%` }}
-                        title={`${st}: ${count}`}
+                        title={`${st === "MUTED" ? "Muted" : st}: ${count}`}
                       />
                     );
                   }

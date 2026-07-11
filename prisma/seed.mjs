@@ -168,6 +168,18 @@ async function main() {
     data: { caseCounter: seq },
   });
 
+  // F-21: demo mute — this case has a FAILED result below (Smoke Test Sprint
+  // 1); muting it flips that run's pass-rate green while the executor still
+  // shows the real failure.
+  await db.testCase.update({
+    where: { id: created[2].id },
+    data: {
+      mutedAt: new Date(),
+      mutedReason: "Known flaky — lockout timing depends on Redis TTL, tracked in JIRA-123",
+      mutedById: admin.id,
+    },
+  });
+
   // F-05: baseline revision per case + one edit on the first case so the
   // History tab has a diff to show. Snapshot shape mirrors lib/case-revisions.
   const snapshotOf = (c) => ({

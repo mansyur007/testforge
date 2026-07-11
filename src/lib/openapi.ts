@@ -1188,6 +1188,11 @@ export function openApiSpec() {
                 displayId: { type: "string", example: "TC-WEB-001" },
                 seq: { type: "integer" },
                 rev: { type: "integer", description: "Current revision number (F-05)." },
+                muted: {
+                  type: "boolean",
+                  description: "F-21: quarantined — its results are excluded from pass-rate math everywhere.",
+                },
+                mutedReason: { type: ["string", "null"] },
                 createdAt: { type: "string", format: "date-time" },
                 updatedAt: { type: "string", format: "date-time" },
               },
@@ -1312,6 +1317,10 @@ export function openApiSpec() {
             datasetName: {
               type: ["string", "null"],
               description: "F-13: which of the case's dataset rows this result executes; null when the case has no parameters.",
+            },
+            muted: {
+              type: "boolean",
+              description: "F-21: mirrors the case's quarantine state; `status` keeps its real value, exclude this result from pass-rate math when true.",
             },
             createdAt: { type: "string", format: "date-time" },
             updatedAt: { type: "string", format: "date-time" },

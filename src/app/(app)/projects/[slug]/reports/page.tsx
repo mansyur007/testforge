@@ -7,7 +7,9 @@ import { memberScope } from "@/lib/projects";
 import { caseDisplayId, RESULT_COLORS } from "@/lib/constants";
 import { parseRunConfig, configLabel } from "@/lib/plans";
 import { loadEnvironments } from "@/lib/environments";
+import { bucketStatus, NON_EXECUTED_BUCKETS } from "@/lib/mute";
 import { ProjectTabs } from "@/components/ProjectTabs";
+import { MuteButton, UnmuteButton } from "@/components/MuteControls";
 
 export const dynamic = "force-dynamic";
 
@@ -39,9 +41,18 @@ export default async function ReportsPage({
     : project.runs;
   project.runs = scopedRuns;
 
+  // F-21: a muted case's results keep their real status but bucket as
+  // "MUTED" for every aggregate below — never UNTESTED/IN_PROGRESS/MUTED
+  // counts toward "executed".
+  const mutedCaseIds = new Set(
+    project.cases.filter((c) => c.mutedAt).map((c) => c.id)
+  );
+  const bucket = (r: { caseId: string; status: string }) =>
+    bucketStatus(r.status, mutedCaseIds.has(r.caseId));
+
   const allResults = project.runs.flatMap((r) => r.results);
   const executed = allResults.filter(
-    (r) => !["UNTESTED", "IN_PROGRESS"].includes(r.status)
+    (r) => !NON_EXECUTED_BUCKETS.includes(bucket(r))
   );
   const passed = executed.filter((r) => r.status === "PASSED").length;
   const failed = executed.filter((r) => r.status === "FAILED").length;
@@ -57,7 +68,8 @@ export default async function ReportsPage({
     ? Math.round((automated / project.cases.length) * 100)
     : 0;
 
-  // Flaky test report (PRD §4.5.3): case yang status pass/fail-nya berganti-ganti
+  // Flaky test report (PRD §4.5.3): case yang status pass/fail-nya berganti-ganti.
+  // Muted cases are excluded — they're already acknowledged/quarantined.
   const byCase = new Map<string, { statuses: string[] }>();
   for (const run of [...project.runs].reverse()) {
     for (const r of run.results) {
@@ -68,6 +80,7 @@ export default async function ReportsPage({
     }
   }
   const flaky = Array.from(byCase.entries())
+    .filter(([caseId]) => !mutedCaseIds.has(caseId))
     .map(([caseId, { statuses }]) => {
       let flips = 0;
       for (let i = 1; i < statuses.length; i++)
@@ -83,13 +96,24 @@ export default async function ReportsPage({
     testCase: project.cases.find((c) => c.id === f.caseId),
   }));
 
+  // F-21: muted tests panel — name, reason, days muted, last-10 sparkline.
+  const mutedCases = project.cases
+    .filter((c) => c.mutedAt)
+    .map((c) => ({
+      ...c,
+      daysMuted: Math.floor(
+        (Date.now() - c.mutedAt!.getTime()) / (1000 * 60 * 60 * 24)
+      ),
+      last10: (byCase.get(c.id)?.statuses ?? []).slice(-10),
+    }));
+
   // Pass rate trend per run (proxy mingguan untuk MVP)
   const trend = [...project.runs]
     .reverse()
     .slice(-12)
     .map((run) => {
-      const ex = run.results.filter((r) =>
-        ["PASSED", "FAILED", "BLOCKED", "SKIPPED", "RETEST"].includes(r.status)
+      const ex = run.results.filter(
+        (r) => !NON_EXECUTED_BUCKETS.includes(bucket(r))
       );
       const p = ex.filter((r) => r.status === "PASSED").length;
       // F-06: plan child runs carry their config combo into the tooltip.
@@ -200,15 +224,18 @@ export default async function ReportsPage({
                 <li key={f.caseId} className="flex items-center justify-between">
                   <Link
                     href={`/projects/${project.slug}/cases/${f.caseId}`}
-                    className="truncate text-slate-700 hover:text-indigo-600"
+                    className="min-w-0 truncate text-slate-700 hover:text-indigo-600"
                   >
                     <span className="font-mono text-xs text-slate-400">
                       {f.testCase && caseDisplayId(project.slug, f.testCase.seq)}
                     </span>{" "}
                     {f.testCase?.title}
                   </Link>
-                  <span className="ml-2 shrink-0 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
-                    {f.flips} flip / {f.total} run
+                  <span className="flex shrink-0 items-center">
+                    <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+                      {f.flips} flip / {f.total} run
+                    </span>
+                    <MuteButton caseId={f.caseId} />
                   </span>
                 </li>
               ))}
@@ -243,6 +270,51 @@ export default async function ReportsPage({
         </section>
       </div>
 
+      {/* F-21: muted/quarantined cases — excluded from every pass-rate above. */}
+      <section className="rounded-xl border border-slate-200 bg-white p-6">
+        <h3 className="mb-4 flex items-center gap-2 font-semibold">
+          <TFIcon name="flaky" className="h-5 w-5" /> Muted Tests
+        </h3>
+        <p className="mb-3 text-xs text-slate-400">
+          Quarantined cases — results still recorded, but excluded from pass-rate math everywhere.
+        </p>
+        {mutedCases.length === 0 ? (
+          <p className="text-sm text-slate-400">No muted tests.</p>
+        ) : (
+          <ul className="space-y-3 text-sm">
+            {mutedCases.map((c) => (
+              <li key={c.id} className="flex items-center justify-between gap-3" data-testid={`muted-row-${c.id}`}>
+                <div className="min-w-0 flex-1">
+                  <Link
+                    href={`/projects/${project.slug}/cases/${c.id}`}
+                    className="truncate text-slate-700 hover:text-indigo-600"
+                  >
+                    <span className="font-mono text-xs text-slate-400">
+                      {caseDisplayId(project.slug, c.seq)}
+                    </span>{" "}
+                    {c.title}
+                  </Link>
+                  <p className="mt-0.5 truncate text-xs text-slate-400">
+                    {c.mutedReason} · muted {c.daysMuted}d ago
+                  </p>
+                </div>
+                {c.last10.length > 0 && (
+                  <div className="flex shrink-0 gap-0.5" title="Last 10 outcomes">
+                    {c.last10.map((st, i) => (
+                      <span
+                        key={i}
+                        className={`h-3 w-1.5 rounded-sm ${st === "PASSED" ? "bg-green-400" : "bg-red-400"}`}
+                      />
+                    ))}
+                  </div>
+                )}
+                <UnmuteButton caseId={c.id} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       <section className="rounded-xl border border-slate-200 bg-white p-6">
         <h3 className="mb-4 flex items-center gap-2 font-semibold"><TFIcon name="breakdown" className="h-5 w-5" /> Breakdown per Run</h3>
         <table className="w-full text-sm">
@@ -257,7 +329,7 @@ export default async function ReportsPage({
             {project.runs.map((run) => {
               const total = run.results.length || 1;
               const ex = run.results.filter(
-                (r) => !["UNTESTED", "IN_PROGRESS"].includes(r.status)
+                (r) => !NON_EXECUTED_BUCKETS.includes(bucket(r))
               );
               const p = ex.filter((r) => r.status === "PASSED").length;
               return (
@@ -279,7 +351,8 @@ export default async function ReportsPage({
                     <div className="flex h-2 overflow-hidden rounded-full bg-gray-100">
                       {Object.entries(
                         run.results.reduce<Record<string, number>>((acc, r) => {
-                          acc[r.status] = (acc[r.status] ?? 0) + 1;
+                          const b = bucket(r);
+                          acc[b] = (acc[b] ?? 0) + 1;
                           return acc;
                         }, {})
                       ).map(([st, count]) => (
@@ -287,6 +360,7 @@ export default async function ReportsPage({
                           key={st}
                           className={RESULT_COLORS[st]}
                           style={{ width: `${(count / total) * 100}%` }}
+                          title={st === "MUTED" ? "Muted" : st}
                         />
                       ))}
                     </div>

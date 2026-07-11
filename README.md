@@ -68,6 +68,9 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 - **Environments** — tag runs with where they executed (Staging, Prod, …);
   `&env=<name>` on an automation upload auto-creates one; filter runs and
   reports by environment
+- **Mute / quarantine flaky tests** — quarantine a known-flaky case (reason
+  required) from the Reports Flaky panel; its results still record but are
+  excluded from pass-rate math everywhere, shown as a separate grey segment
 
 ## Running
 

@@ -177,6 +177,54 @@ export async function updateCase(
   redirect(`/projects/${testCase.project.slug}/cases/${caseId}`);
 }
 
+// F-21: mute/quarantine — exclude a case from pass-rate math everywhere
+// without hiding its results. Reason is required so quarantine has a paper
+// trail; unmute needs none.
+export async function muteCase(formData: FormData) {
+  const session = await requireSession();
+  if (session.role === "VIEWER") return;
+  const caseId = String(formData.get("caseId"));
+  const reason = String(formData.get("reason") ?? "").trim();
+  if (!reason) return;
+  await assertCaseAccess(session.userId, caseId);
+
+  const testCase = await db.testCase.update({
+    where: { id: caseId },
+    data: { mutedAt: new Date(), mutedReason: reason, mutedById: session.userId },
+    include: { project: true },
+  });
+  await logAudit({
+    userId: session.userId,
+    action: "case.mute",
+    entityType: "case",
+    entityId: caseId,
+    detail: reason,
+  });
+  revalidatePath(`/projects/${testCase.project.slug}/reports`);
+  revalidatePath(`/projects/${testCase.project.slug}/cases/${caseId}`);
+}
+
+export async function unmuteCase(formData: FormData) {
+  const session = await requireSession();
+  if (session.role === "VIEWER") return;
+  const caseId = String(formData.get("caseId"));
+  await assertCaseAccess(session.userId, caseId);
+
+  const testCase = await db.testCase.update({
+    where: { id: caseId },
+    data: { mutedAt: null, mutedReason: null, mutedById: null },
+    include: { project: true },
+  });
+  await logAudit({
+    userId: session.userId,
+    action: "case.unmute",
+    entityType: "case",
+    entityId: caseId,
+  });
+  revalidatePath(`/projects/${testCase.project.slug}/reports`);
+  revalidatePath(`/projects/${testCase.project.slug}/cases/${caseId}`);
+}
+
 export async function cloneCase(formData: FormData) {
   const session = await requireSession();
   const caseId = String(formData.get("caseId"));

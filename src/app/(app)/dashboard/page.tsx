@@ -2,6 +2,7 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { RESULT_COLORS } from "@/lib/constants";
+import { bucketStatus, isMuted, NON_EXECUTED_BUCKETS } from "@/lib/mute";
 
 export const dynamic = "force-dynamic";
 
@@ -29,13 +30,17 @@ export default async function DashboardPage() {
       db.testCase.count({ where: { deletedAt: null, project: mine } }),
       db.testRun.findMany({
         where: { status: "ACTIVE", project: mine },
-        include: { project: true, results: true },
+        include: {
+          project: true,
+          results: { include: { testCase: { select: { mutedAt: true } } } },
+        },
         orderBy: { createdAt: "desc" },
         take: 5,
       }),
-      db.testRunResult.groupBy({
-        by: ["status"],
-        _count: { status: true },
+      // F-21: fetched raw (not groupBy) so a muted case's results can be
+      // bucketed as "MUTED" in JS before counting toward the KPI below.
+      db.testRunResult.findMany({
+        select: { status: true, testCase: { select: { mutedAt: true } } },
         where: { run: { project: mine } },
       }),
       db.auditLog.findMany({
@@ -46,13 +51,15 @@ export default async function DashboardPage() {
       }),
     ]);
 
-  const statusCounts = Object.fromEntries(
-    recentResults.map((r) => [r.status, r._count.status])
-  );
-  const executed =
-    (statusCounts.PASSED ?? 0) + (statusCounts.FAILED ?? 0) +
-    (statusCounts.BLOCKED ?? 0) + (statusCounts.SKIPPED ?? 0) +
-    (statusCounts.RETEST ?? 0);
+  // F-21: bucket a muted case's result as "MUTED" — excluded from the KPI.
+  const statusCounts: Record<string, number> = {};
+  for (const r of recentResults) {
+    const b = bucketStatus(r.status, isMuted(r.testCase?.mutedAt));
+    statusCounts[b] = (statusCounts[b] ?? 0) + 1;
+  }
+  const executed = Object.entries(statusCounts)
+    .filter(([st]) => !NON_EXECUTED_BUCKETS.includes(st))
+    .reduce((n, [, c]) => n + c, 0);
   const passRate = executed
     ? Math.round(((statusCounts.PASSED ?? 0) / executed) * 100)
     : 0;
@@ -94,8 +101,11 @@ export default async function DashboardPage() {
           <div className="space-y-4">
             {activeRuns.map((run) => {
               const total = run.results.length || 1;
-              const done = run.results.filter(
-                (r) => r.status !== "UNTESTED" && r.status !== "IN_PROGRESS"
+              const buckets = run.results.map((r) =>
+                bucketStatus(r.status, isMuted(r.testCase.mutedAt))
+              );
+              const done = buckets.filter(
+                (b) => !NON_EXECUTED_BUCKETS.includes(b)
               ).length;
               return (
                 <Link
@@ -110,11 +120,9 @@ export default async function DashboardPage() {
                     </span>
                   </div>
                   <div className="mt-2 flex h-2 overflow-hidden rounded-full bg-gray-100">
-                    {["PASSED", "FAILED", "BLOCKED", "RETEST", "SKIPPED"].map(
+                    {["PASSED", "FAILED", "BLOCKED", "RETEST", "SKIPPED", "MUTED"].map(
                       (st) => {
-                        const count = run.results.filter(
-                          (r) => r.status === st
-                        ).length;
+                        const count = buckets.filter((b) => b === st).length;
                         if (!count) return null;
                         return (
                           <div

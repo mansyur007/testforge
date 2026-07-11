@@ -5,6 +5,7 @@ import { requireSession } from "@/lib/auth";
 import { caseDisplayId, RESULT_COLORS, type TestStep } from "@/lib/constants";
 import { expandSteps, loadStepGroups } from "@/lib/steps";
 import { parseDatasets, substituteVars } from "@/lib/datasets";
+import { bucketStatus, isMuted } from "@/lib/mute";
 import { loadIssueLinks } from "@/lib/issues";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { RunExecutor } from "@/components/RunExecutor";
@@ -75,8 +76,14 @@ export default async function RunDetailPage({
   });
 
   const total = run.results.length || 1;
+  // F-21: a muted case's results bucket as "MUTED" in the summary bar/legend,
+  // excluded from pass-rate math, while the executor below still shows their
+  // real status per-result.
   const counts: Record<string, number> = {};
-  run.results.forEach((r) => (counts[r.status] = (counts[r.status] ?? 0) + 1));
+  run.results.forEach((r) => {
+    const b = bucketStatus(r.status, isMuted(r.testCase.mutedAt));
+    counts[b] = (counts[b] ?? 0) + 1;
+  });
   const failedish =
     (counts.FAILED ?? 0) + (counts.BLOCKED ?? 0) + (counts.RETEST ?? 0);
 
@@ -142,12 +149,12 @@ export default async function RunDetailPage({
           ))}
         </div>
         <div className="mt-3 flex flex-wrap gap-4 text-sm">
-          {["PASSED", "FAILED", "BLOCKED", "SKIPPED", "RETEST", "IN_PROGRESS", "UNTESTED"].map(
+          {["PASSED", "FAILED", "BLOCKED", "SKIPPED", "RETEST", "IN_PROGRESS", "UNTESTED", "MUTED"].map(
             (st) =>
               counts[st] ? (
                 <span key={st} className="flex items-center gap-1.5">
                   <span className={`inline-block h-2.5 w-2.5 rounded-full ${RESULT_COLORS[st]} ${st === "UNTESTED" ? "border border-gray-300" : ""}`} />
-                  {st} <b>{counts[st]}</b>
+                  {st === "MUTED" ? "Muted" : st} <b>{counts[st]}</b>
                   <span className="text-slate-400">
                     ({Math.round((counts[st] / total) * 100)}%)
                   </span>
@@ -212,6 +219,8 @@ export default async function RunDetailPage({
           caseRev: r.caseRev,
           currentRev: r.testCase.rev,
           datasetName: r.datasetName,
+          muted: isMuted(r.testCase.mutedAt), // F-21
+
           preconditions,
           expectedResult,
           steps,
