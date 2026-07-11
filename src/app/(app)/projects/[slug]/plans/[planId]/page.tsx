@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { RESULT_COLORS } from "@/lib/constants";
 import { aggregateResults, parseRunConfig, configLabel } from "@/lib/plans";
+import { bucketStatus, isMuted } from "@/lib/mute";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { CompletePlanButton } from "@/components/CompletePlanButton";
 
@@ -27,7 +28,11 @@ export default async function PlanDetailPage({
       milestone: true,
       createdBy: true,
       runs: {
-        include: { results: { select: { status: true } } },
+        include: {
+          results: {
+            select: { status: true, testCase: { select: { mutedAt: true } } },
+          },
+        },
         orderBy: { createdAt: "asc" },
       },
     },
@@ -94,14 +99,14 @@ export default async function PlanDetailPage({
           ))}
         </div>
         <div className="mt-3 flex flex-wrap gap-4 text-sm">
-          {["PASSED", "FAILED", "BLOCKED", "SKIPPED", "RETEST", "IN_PROGRESS", "UNTESTED"].map(
+          {["PASSED", "FAILED", "BLOCKED", "SKIPPED", "RETEST", "IN_PROGRESS", "UNTESTED", "MUTED"].map(
             (st) =>
               counts[st] ? (
                 <span key={st} className="flex items-center gap-1.5">
                   <span
                     className={`inline-block h-2.5 w-2.5 rounded-full ${RESULT_COLORS[st]} ${st === "UNTESTED" ? "border border-gray-300" : ""}`}
                   />
-                  {st} <b>{counts[st]}</b>
+                  {st === "MUTED" ? "Muted" : st} <b>{counts[st]}</b>
                   <span className="text-slate-400">
                     ({Math.round((counts[st] / total) * 100)}%)
                   </span>
@@ -158,15 +163,17 @@ export default async function PlanDetailPage({
                   </td>
                   <td className="w-1/3 px-4 py-3">
                     <div className="flex h-2 overflow-hidden rounded-full bg-gray-100">
-                      {["PASSED", "FAILED", "BLOCKED", "RETEST", "SKIPPED", "IN_PROGRESS"].map(
+                      {["PASSED", "FAILED", "BLOCKED", "RETEST", "SKIPPED", "IN_PROGRESS", "MUTED"].map(
                         (st) => {
-                          const c = run.results.filter((r) => r.status === st).length;
+                          const c = run.results.filter(
+                            (r) => bucketStatus(r.status, isMuted(r.testCase?.mutedAt)) === st
+                          ).length;
                           return c ? (
                             <div
                               key={st}
                               className={RESULT_COLORS[st]}
                               style={{ width: `${(c / runTotal) * 100}%` }}
-                              title={`${st}: ${c}`}
+                              title={`${st === "MUTED" ? "Muted" : st}: ${c}`}
                             />
                           ) : null;
                         }
@@ -191,7 +198,10 @@ export default async function PlanDetailPage({
         </table>
       </section>
 
-      {/* Matrix view */}
+      {/* Matrix view — intentionally NOT mute-bucketed: this is a per-status
+          detail breakdown, not a pass-rate aggregate, so a muted case's real
+          status stays visible here (same "still showing" principle as the
+          run detail executor). */}
       <section className="rounded-xl border border-slate-200 bg-white p-6">
         <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
           Result Matrix

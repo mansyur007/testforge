@@ -1,6 +1,7 @@
 import type { TestPlan, TestRun, TestRunResult } from "@prisma/client";
 import { db } from "@/lib/db";
 import { serializeRun } from "@/lib/api";
+import { bucketStatus, isMuted } from "@/lib/mute";
 
 // F-06: test plans. A plan owns the runs generated from one case selection ×
 // a configuration matrix. Everything combinatorial lives here so the server
@@ -51,13 +52,22 @@ export function buildCombinations(
   return combos;
 }
 
-/** Aggregate result counts across a set of runs (the plan progress bar). */
+type ResultWithMute = Pick<TestRunResult, "status"> & {
+  testCase?: { mutedAt: Date | null } | null;
+};
+
+/** Aggregate result counts across a set of runs (the plan progress bar).
+ * F-21: a result whose case is muted buckets as "MUTED" instead of its raw
+ * status — callers that didn't join `testCase` just get the old behavior. */
 export function aggregateResults(
-  runs: { results: Pick<TestRunResult, "status">[] }[]
+  runs: { results: ResultWithMute[] }[]
 ): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const run of runs)
-    for (const r of run.results) counts[r.status] = (counts[r.status] ?? 0) + 1;
+    for (const r of run.results) {
+      const b = bucketStatus(r.status, isMuted(r.testCase?.mutedAt));
+      counts[b] = (counts[b] ?? 0) + 1;
+    }
   return counts;
 }
 

@@ -5,6 +5,7 @@ import { requireSession } from "@/lib/auth";
 import { memberScope } from "@/lib/projects";
 import { RESULT_COLORS } from "@/lib/constants";
 import { aggregateResults } from "@/lib/plans";
+import { NON_EXECUTED_BUCKETS } from "@/lib/mute";
 import { ProjectTabs } from "@/components/ProjectTabs";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +25,13 @@ export default async function PlansPage({
         include: {
           milestone: true,
           createdBy: true,
-          runs: { include: { results: { select: { status: true } } } },
+          runs: {
+            include: {
+              results: {
+                select: { status: true, testCase: { select: { mutedAt: true } } },
+              },
+            },
+          },
         },
         orderBy: { createdAt: "desc" },
       },
@@ -53,7 +60,7 @@ export default async function PlansPage({
           const totalRaw = Object.values(counts).reduce((n, c) => n + c, 0);
           const total = totalRaw || 1; // avoid /0 in the bar widths
           const done = Object.entries(counts)
-            .filter(([st]) => !["UNTESTED", "IN_PROGRESS"].includes(st))
+            .filter(([st]) => !NON_EXECUTED_BUCKETS.includes(st))
             .reduce((n, [, c]) => n + c, 0);
           return (
             <Link
@@ -87,14 +94,14 @@ export default async function PlansPage({
                 </div>
               </div>
               <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-gray-100">
-                {["PASSED", "FAILED", "BLOCKED", "RETEST", "SKIPPED", "IN_PROGRESS"].map(
+                {["PASSED", "FAILED", "BLOCKED", "RETEST", "SKIPPED", "IN_PROGRESS", "MUTED"].map(
                   (st) =>
                     counts[st] ? (
                       <div
                         key={st}
                         className={RESULT_COLORS[st]}
                         style={{ width: `${(counts[st] / total) * 100}%` }}
-                        title={`${st}: ${counts[st]}`}
+                        title={`${st === "MUTED" ? "Muted" : st}: ${counts[st]}`}
                       />
                     ) : null
                 )}

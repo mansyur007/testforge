@@ -20,6 +20,7 @@ import { AttachmentUploader } from "@/components/AttachmentUploader";
 import { CaseHistory, type RevisionView } from "@/components/CaseHistory";
 import { IssuePanel } from "@/components/IssuePanel";
 import { Markdown } from "@/components/Markdown";
+import { UnmuteButton } from "@/components/MuteControls";
 
 export const dynamic = "force-dynamic";
 
@@ -181,6 +182,16 @@ export default async function CaseDetailPage({
             </span>
             {testCase.suite && (
               <span className="flex items-center gap-1 text-slate-400"><TFIcon name="nav-tree" className="h-4 w-4" /> {testCase.suite.name}</span>
+            )}
+            {testCase.mutedAt && (
+              <span
+                className="flex items-center gap-1 rounded-full bg-slate-200 px-2 py-0.5 font-medium text-slate-600"
+                data-testid="case-muted-banner"
+                title={testCase.mutedReason ?? undefined}
+              >
+                🔇 Muted{testCase.mutedReason ? `: ${testCase.mutedReason}` : ""}
+                <UnmuteButton caseId={testCase.id} />
+              </span>
             )}
           </div>
         </div>

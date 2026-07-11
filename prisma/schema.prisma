@@ -38,6 +38,7 @@ model User {
   savedViews     SavedView[]
   caseRevisions  TestCaseRevision[] @relation("RevisionAuthor")
   createdPlans   TestPlan[]         @relation("PlanCreator")
+  mutedCases     TestCase[]         @relation("CaseMutedBy")
 }
 
 model Project {
@@ -342,6 +343,9 @@ model TestCase {
   customJson       String    @default("{}") // F-03: {key: value} per CustomFieldDef CASE
   datasetJson      String    @default("[]") // F-13: [{name, values: {var: value}}] — {{var}} in title/steps/preconditions/expectedResult
   rev              Int       @default(1) // F-05: current revision number
+  mutedAt          DateTime? // F-21: quarantined — excluded from pass-rate math everywhere
+  mutedReason      String?
+  mutedById        String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   deletedAt        DateTime? // soft delete (gap audit: recycle bin)
@@ -349,6 +353,7 @@ model TestCase {
   project   Project            @relation(fields: [projectId], references: [id], onDelete: Cascade)
   suite     TestSuite?         @relation(fields: [suiteId], references: [id], onDelete: SetNull)
   assignee  User?              @relation("CaseAssignee", fields: [assigneeId], references: [id])
+  mutedBy   User?              @relation("CaseMutedBy", fields: [mutedById], references: [id])
   results   TestRunResult[]
   revisions TestCaseRevision[]
 

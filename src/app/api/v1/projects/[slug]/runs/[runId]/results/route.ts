@@ -10,6 +10,7 @@ import {
 } from "@/lib/api";
 import { RESULT_STATUSES } from "@/lib/constants";
 import { notify, notifyBaseUrl } from "@/lib/notifications";
+import { isMuted } from "@/lib/mute";
 
 async function findScopedRun(userId: string, slug: string, runId: string) {
   return db.testRun.findFirst({
@@ -30,11 +31,12 @@ export async function GET(
 
   const results = await db.testRunResult.findMany({
     where: { runId: run.id },
+    include: { testCase: { select: { mutedAt: true } } },
     orderBy: { createdAt: "asc" },
   });
 
   return NextResponse.json({
-    data: results.map(serializeResult),
+    data: results.map((r) => serializeResult(r, isMuted(r.testCase.mutedAt))),
     total: results.length,
   });
 }
@@ -61,18 +63,20 @@ export async function POST(
   const caseId = String(body.caseId ?? "");
   let caseRev: number | undefined;
   let caseTitle = "";
+  let caseMuted = false;
   if (!caseId) {
     errors.push({ field: "caseId", message: "caseId is required" });
   } else {
     const c = await db.testCase.findFirst({
       where: { id: caseId, projectId: run.projectId, deletedAt: null },
-      select: { id: true, rev: true, title: true },
+      select: { id: true, rev: true, title: true, mutedAt: true },
     });
     if (!c)
       errors.push({ field: "caseId", message: "not a live case in this project" });
     else {
       caseRev = c.rev; // F-05: stamped when the result row is first created
       caseTitle = c.title;
+      caseMuted = isMuted(c.mutedAt); // F-21
     }
   }
 
@@ -131,5 +135,5 @@ export async function POST(
       fields: [{ label: "Run", value: run.name }],
     });
 
-  return NextResponse.json(serializeResult(result));
+  return NextResponse.json(serializeResult(result, caseMuted));
 }

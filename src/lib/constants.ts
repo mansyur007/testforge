@@ -36,6 +36,7 @@ export const RESULT_COLORS: Record<string, string> = {
   IN_PROGRESS: "bg-blue-500",
   UNTESTED: "bg-gray-200",
   RETEST: "bg-purple-500",
+  MUTED: "bg-slate-300", // F-21: bucket label, not a real TestRunResult.status value
 };
 
 export const RESULT_BADGES: Record<string, string> = {
@@ -46,6 +47,7 @@ export const RESULT_BADGES: Record<string, string> = {
   IN_PROGRESS: "bg-blue-100 text-blue-800",
   UNTESTED: "bg-gray-50 text-gray-500 border border-gray-200",
   RETEST: "bg-purple-100 text-purple-800",
+  MUTED: "bg-slate-100 text-slate-500",
 };
 
 export const PRIORITY_BADGES: Record<string, string> = {

@@ -1311,7 +1311,38 @@ Split into 4 sequential PRs:
 3. **SAML/SCIM**: defer to a follow-up doc — out of scope here; note in README that OIDC covers
    Google Workspace/Azure AD/Okta/Keycloak.
 
-### F-21 — Mute / quarantine flaky tests `[ ]`
+### F-21 — Mute / quarantine flaky tests `[x]`
+
+> **Status: DONE** (2026-07-12, branch `feat/mute-flaky`). Implemented as specified, with these
+> notes:
+> - Central helper `lib/mute.ts`: `bucketStatus(status, muted)` returns `"MUTED"` instead of the
+>   raw status for aggregate tallies; `NON_EXECUTED_BUCKETS = ["UNTESTED","IN_PROGRESS","MUTED"]`
+>   is the one list every pass-rate/executed calculation filters against. `"MUTED"` is a bucket
+>   label only — never a real `TestRunResult.status` value — added to `RESULT_COLORS`/
+>   `RESULT_BADGES` (grey) alongside the real enum.
+> - Swept every aggregate site: Reports (KPI pass rate, trend, breakdown-per-run bar, flaky
+>   detection — muted cases are excluded from the flaky list itself, already acknowledged),
+>   dashboard KPI + active-runs bar, runs list per-run bar, run detail summary bar, plans list +
+>   plan detail aggregate bar and per-run bar. The plan detail **Result Matrix** (per-status
+>   breakdown table) was deliberately left un-bucketed — it's a detail view, not a pass-rate
+>   aggregate, so a muted case's real status stays visible there (same "still showing" principle
+>   as the run executor).
+> - The run executor (`RunExecutor.tsx`) shows a "muted" chip per result but never changes the
+>   displayed `status` — satisfies "still showing the muted failure in run detail" literally.
+> - Mute requires a reason (`window.prompt`, `MuteControls.tsx`); unmute doesn't. Both call the
+>   server action directly via `startTransition` (same pattern as `RunExecutor.submit`), relying
+>   on the action's `revalidatePath` to refresh the page — no client-side state needed.
+> - Mute is only reachable from the Reports Flaky panel (per spec); a case must have ≥2 flips to
+>   appear there. `serializeResult` gained a `muted` boolean (default `false` for callers that
+>   didn't join `testCase`); `serializeCase` gained `muted`/`mutedReason`. Dashboard's global pass-rate
+>   query switched from `groupBy` to a raw `findMany` so results can be bucketed in JS before
+>   counting — acceptable at this app's scale, consistent with how Reports already aggregates.
+> - Seed demo: the case with a FAILED result in "Smoke Test Sprint 1" is muted with a reason,
+>   so the seeded run visibly demonstrates the AC.
+> - e2e `e2e/mute-flaky.spec.ts` builds 2-flip flaky history via the API (fast/deterministic),
+>   mutes from the Flaky panel, confirms exclusion from Flaky + appearance in Muted Tests + the
+>   muted chip in the run executor + the case-detail banner, then unmutes and confirms reversal.
+>   Full suite 36/36 on a fresh DB.
 
 - `TestCase.mutedAt DateTime?`, `mutedReason String?`, `mutedById String?`.
 - Muted case results are recorded but excluded from pass-rate math everywhere (reports, run

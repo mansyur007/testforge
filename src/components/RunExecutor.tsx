@@ -36,6 +36,7 @@ type ResultItem = {
   caseRev: number | null; // F-05: revision executed (null = pre-F-05 result)
   currentRev: number;
   datasetName: string | null; // F-13: which parameter row this result executes
+  muted: boolean; // F-21: case is quarantined — excluded from pass-rate math
   preconditions: string;
   expectedResult: string;
   steps: ExecutorStep[];
@@ -150,6 +151,15 @@ export function RunExecutor({
           >
             <span className="font-mono text-xs text-slate-400">{r.displayId}</span>
             <span className="flex-1 truncate">{r.title}</span>
+            {r.muted && (
+              <span
+                className="shrink-0 rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600"
+                data-testid="muted-chip"
+                title="Muted — excluded from pass-rate math"
+              >
+                muted
+              </span>
+            )}
             {r.datasetName && (
               <span
                 className="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600"

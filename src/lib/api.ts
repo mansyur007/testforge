@@ -128,6 +128,8 @@ export function serializeCase(
     custom: JSON.parse(c.customJson || "{}"),
     datasets: parseDatasets(c.datasetJson), // F-13
     rev: c.rev,
+    muted: c.mutedAt != null, // F-21
+    mutedReason: c.mutedReason,
     createdAt: c.createdAt.toISOString(),
     updatedAt: c.updatedAt.toISOString(),
   };
@@ -170,7 +172,9 @@ export function serializeAttachment(a: Attachment) {
   };
 }
 
-export function serializeResult(r: TestRunResult) {
+// F-21: `muted` mirrors the case's quarantine state — the result keeps its
+// real `status` (e.g. FAILED), callers just know to exclude it from pass-rate math.
+export function serializeResult(r: TestRunResult, muted = false) {
   return {
     id: r.id,
     caseId: r.caseId,
@@ -182,6 +186,7 @@ export function serializeResult(r: TestRunResult) {
     custom: JSON.parse(r.customJson || "{}"),
     caseRev: r.caseRev,
     datasetName: r.datasetName, // F-13
+    muted, // F-21
     createdAt: r.createdAt.toISOString(),
     updatedAt: r.updatedAt.toISOString(),
   };
