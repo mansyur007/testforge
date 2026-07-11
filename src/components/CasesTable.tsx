@@ -555,7 +555,11 @@ export function CasesTable({
                   colSpan={canWrite ? 7 : 6}
                   className="px-3 py-10 text-center text-slate-400"
                 >
-                  No test cases. Create one or import from CSV.
+                  No test cases. Create one, import from CSV, or{" "}
+                  <Link href="/docs/help/test-cases" className="text-indigo-600 hover:underline">
+                    learn how test cases work
+                  </Link>
+                  .
                 </td>
               </tr>
             )}

@@ -59,6 +59,9 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   aggregation); links use `TF_BASE_URL`, chat webhook URLs are stored
   encrypted (`TF_SECRET`, falls back to `AUTH_SECRET`), and non-standard
   webhook hosts require `TF_ALLOW_ANY_WEBHOOK_HOST=1`
+- **In-app help center** — `/docs/help`, a guide per feature area (test
+  cases, runs, plans, automation, integrations, notifications, reports, team
+  & roles) for end users, separate from the developer-facing `/docs/api`
 
 ## Running
 
