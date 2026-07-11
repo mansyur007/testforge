@@ -6,14 +6,17 @@ import { requireSession } from "@/lib/auth";
 import { memberScope } from "@/lib/projects";
 import { caseDisplayId, RESULT_COLORS } from "@/lib/constants";
 import { parseRunConfig, configLabel } from "@/lib/plans";
+import { loadEnvironments } from "@/lib/environments";
 import { ProjectTabs } from "@/components/ProjectTabs";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReportsPage({
   params,
+  searchParams,
 }: {
   params: { slug: string };
+  searchParams: { env?: string };
 }) {
   const session = await requireSession();
   const project = await db.project.findFirst({
@@ -27,6 +30,14 @@ export default async function ReportsPage({
     },
   });
   if (!project) notFound();
+
+  // F-19: every metric below is scoped to the selected environment when set.
+  const environments = await loadEnvironments(project.id);
+  const activeEnv = searchParams.env ?? "";
+  const scopedRuns = activeEnv
+    ? project.runs.filter((r) => r.environmentId === activeEnv)
+    : project.runs;
+  project.runs = scopedRuns;
 
   const allResults = project.runs.flatMap((r) => r.results);
   const executed = allResults.filter(
@@ -108,6 +119,35 @@ export default async function ReportsPage({
   return (
     <div className="space-y-6">
       <ProjectTabs slug={project.slug} name={project.name} active="reports" />
+
+      {environments.length > 0 && (
+        <div className="flex flex-wrap gap-2" data-testid="env-filter-chips">
+          <Link
+            href={`/projects/${project.slug}/reports`}
+            className={`rounded-full px-3 py-1 text-xs font-medium ${
+              !activeEnv
+                ? "bg-indigo-600 text-white"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            All environments
+          </Link>
+          {environments.map((e) => (
+            <Link
+              key={e.id}
+              href={`/projects/${project.slug}/reports?env=${e.id}`}
+              data-testid={`env-filter-${e.name}`}
+              className={`rounded-full px-3 py-1 text-xs font-medium ${
+                activeEnv === e.id
+                  ? "bg-indigo-600 text-white"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              {e.name}
+            </Link>
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[

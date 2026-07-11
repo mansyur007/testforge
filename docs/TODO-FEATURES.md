@@ -1266,7 +1266,31 @@ Split into 4 sequential PRs:
   export as CSV. "COVERED" auto-derives: ≥1 linked, non-deleted, non-deprecated case.
 - This fills TestLink's niche that modern SaaS tools skip — key differentiator for regulated teams.
 
-### F-19 — Environments `[ ]`
+### F-19 — Environments `[x]`
+
+> **Status: DONE** (2026-07-12, branch `feat/environments`). Implemented as specified, with
+> these notes:
+> - `Environment` uses a real FK (`TestRun.environmentId`) rather than F-06's name-copy pattern
+>   — the spec's shape doesn't ask for denormalization, so `onDelete: SetNull` just clears the
+>   tag on old runs when an environment is deleted, no dangling-reference rendering needed.
+> - Managed on the Fields page (new "Environments" section, `EnvironmentsManager.tsx`) alongside
+>   Custom Fields and Configurations — OWNER/ADMIN only, same gate as those two.
+> - `&env=<name>` auto-create is wired through both F-11 upload endpoints (`/api/v1/results` and
+>   the permanent `/api/v1/junit` alias) via a shared `resolveOrCreateEnvironment()` in
+>   `lib/environments.ts`, gated by the new `Project.autoCreateEnvs` flag (default on, toggle
+>   checkbox on the Fields page). F-12 (CLI/reporters) doesn't exist yet, so only F-11 needed
+>   wiring.
+> - Filter chips (`?env=<id>`) added to both the runs list and the reports page as plain
+>   server-rendered links (no client filter bar existed on either page before this). On Reports,
+>   the chip re-scopes the project's `runs` array before any metric is computed, so pass rate,
+>   trend, flaky, bug correlation and the per-run breakdown table all become "per environment"
+>   automatically — no separate chart type was needed to satisfy "trend lines per environment".
+> - `GET/POST /api/v1/projects/[slug]/environments` added for API parity with `/config-groups`.
+> - Run CSV export gained an `environment` column (run-level, not per-row, since environment is
+>   a run attribute).
+> - Seed demo: two environments (Staging/Production); "Smoke Test Sprint 1" tagged Staging.
+> - e2e `e2e/environments.spec.ts`: UI flow (create → tag a run → badge + filter chip) and the
+>   `&env=` auto-create path via a real upload; full suite 35/35 on a fresh DB.
 
 - `Environment { id, projectId, name, url?, order, active }`; `TestRun.environmentId String?`.
 - Select at run creation (and in F-11/F-12 via `&env=<name>`, auto-create if missing —

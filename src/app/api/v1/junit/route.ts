@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
     `Automation Run ${new Date().toISOString()}`;
   const source = (req.nextUrl.searchParams.get("source") ?? "JUNIT").toUpperCase();
   const origin = req.nextUrl.searchParams.get("origin")?.slice(0, 120) || null;
+  const env = req.nextUrl.searchParams.get("env"); // F-19
 
   const xml = await req.text();
   let normalized;
@@ -39,6 +40,7 @@ export async function POST(req: NextRequest) {
     runName,
     source,
     origin,
+    env,
   });
 
   if (!outcome.ok) {

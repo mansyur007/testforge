@@ -6,6 +6,7 @@ import { requireSession } from "@/lib/auth";
 import { memberScope } from "@/lib/projects";
 import { RESULT_COLORS } from "@/lib/constants";
 import { parseRunConfig, configLabel } from "@/lib/plans";
+import { loadEnvironments } from "@/lib/environments";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { createMilestone } from "@/app/actions/projects";
 
@@ -13,21 +14,30 @@ export const dynamic = "force-dynamic";
 
 export default async function RunsPage({
   params,
+  searchParams,
 }: {
   params: { slug: string };
+  searchParams: { env?: string };
 }) {
   const session = await requireSession();
   const project = await db.project.findFirst({
     where: { slug: params.slug, ...memberScope(session.userId) },
     include: {
       runs: {
-        include: { results: true, milestone: true, createdBy: true },
+        include: { results: true, milestone: true, createdBy: true, environment: true },
         orderBy: { createdAt: "desc" },
       },
       milestones: { include: { runs: true } },
     },
   });
   if (!project) notFound();
+
+  // F-19: filter chip by environment.
+  const environments = await loadEnvironments(project.id);
+  const activeEnv = searchParams.env ?? "";
+  const filteredRuns = activeEnv
+    ? project.runs.filter((r) => r.environmentId === activeEnv)
+    : project.runs;
 
   return (
     <div className="space-y-6">
@@ -43,8 +53,37 @@ export default async function RunsPage({
         </Link>
       </div>
 
+      {environments.length > 0 && (
+        <div className="flex flex-wrap gap-2" data-testid="env-filter-chips">
+          <Link
+            href={`/projects/${project.slug}/runs`}
+            className={`rounded-full px-3 py-1 text-xs font-medium ${
+              !activeEnv
+                ? "bg-indigo-600 text-white"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            All
+          </Link>
+          {environments.map((e) => (
+            <Link
+              key={e.id}
+              href={`/projects/${project.slug}/runs?env=${e.id}`}
+              data-testid={`env-filter-${e.name}`}
+              className={`rounded-full px-3 py-1 text-xs font-medium ${
+                activeEnv === e.id
+                  ? "bg-indigo-600 text-white"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              {e.name}
+            </Link>
+          ))}
+        </div>
+      )}
+
       <div className="space-y-3">
-        {project.runs.map((run) => {
+        {filteredRuns.map((run) => {
           const total = run.results.length || 1;
           const done = run.results.filter(
             (r) => !["UNTESTED", "IN_PROGRESS"].includes(r.status)
@@ -73,6 +112,14 @@ export default async function RunsPage({
                     {run.planId && parseRunConfig(run.configJson) && (
                       <span className="ml-1 rounded bg-indigo-50 px-1.5 py-0.5 text-xs text-indigo-700">
                         {configLabel(parseRunConfig(run.configJson))}
+                      </span>
+                    )}
+                    {run.environment && (
+                      <span
+                        className="ml-1 rounded bg-teal-50 px-1.5 py-0.5 text-xs text-teal-700"
+                        data-testid="run-env-badge"
+                      >
+                        {run.environment.name}
                       </span>
                     )}
                   </p>
@@ -115,9 +162,11 @@ export default async function RunsPage({
             </Link>
           );
         })}
-        {project.runs.length === 0 && (
+        {filteredRuns.length === 0 && (
           <p className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">
-            No test runs yet. Create a new run or upload automation results via the API.
+            {activeEnv
+              ? "No runs tagged with this environment."
+              : "No test runs yet. Create a new run or upload automation results via the API."}
           </p>
         )}
       </div>

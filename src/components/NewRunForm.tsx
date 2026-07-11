@@ -23,10 +23,12 @@ function SubmitButton({ count }: { count: number }) {
 export function NewRunForm({
   projectId,
   milestones,
+  environments = [],
   cases,
 }: {
   projectId: string;
   milestones: { id: string; name: string }[];
+  environments?: { id: string; name: string }[];
   cases: SelectableCase[];
 }) {
   const [state, formAction] = useFormState(createRun, undefined);
@@ -74,6 +76,25 @@ export function NewRunForm({
               ))}
             </select>
           </div>
+          {environments.length > 0 && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">
+                Environment
+              </label>
+              <select
+                name="environmentId"
+                data-testid="run-environment-select"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              >
+                <option value="">(none)</option>
+                {environments.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="md:col-span-3">
             <label className="mb-1 block text-sm font-medium text-slate-700">
               Description

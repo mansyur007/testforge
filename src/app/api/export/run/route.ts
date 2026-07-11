@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
     where: { id, project: { members: { some: { userId } } } },
     include: {
       project: true,
+      environment: true,
       results: {
         include: { testCase: true, assignee: true },
         orderBy: { testCase: { seq: "asc" } },
@@ -30,6 +31,7 @@ export async function GET(req: NextRequest) {
       title: r.testCase.title,
       case_rev: r.caseRev ?? "",
       dataset: r.datasetName ?? "", // F-13
+      environment: run.environment?.name ?? "", // F-19
       status: r.status,
       assignee: r.assignee?.name ?? "",
       comment: r.comment ?? "",

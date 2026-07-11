@@ -70,7 +70,7 @@ Legenda: ✅ ada · 🟡 sebagian/terbatas · ❌ tidak ada · ➖ tidak relevan
 | Milestone | ✅ (basic) | ✅ (+sub-milestone) | ✅ | 🟡 (build) | ➖ |
 | **Test plan (kumpulan run + konfigurasi)** | ✅ | ✅ | ✅ | ✅ | ➖ |
 | **Configurations (matriks browser×OS)** | ✅ | ✅ | ✅ | ✅ (platforms) | ➖ |
-| **Environments per run** | ❌ | 🟡 | ✅ | ❌ | ➖ |
+| **Environments per run** | ✅ | 🟡 | ✅ | ❌ | ➖ |
 | **Custom result status** | ❌ (hardcoded) | ✅ | ✅ | ✅ | ➖ |
 | Estimasi waktu & forecast | ❌ | ✅ | 🟡 | ❌ | ➖ |
 | Exploratory / session-based testing | ❌ | 🟡 (template) | 🟡 | ❌ | ✅ (inti produk) |
@@ -355,8 +355,8 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
 - [ ] **Requirement management & traceability** — entity Requirement (atau import dari
       Jira epic/story), link N:M ke case, matrix coverage requirement→case→hasil terakhir
       (mengisi kekosongan yang ditinggal TestLink).
-- [ ] **Environments** — daftar environment per project (staging/prod/…), dipilih saat
-      membuat run, jadi dimensi filter di reports.
+- [x] *(Selesai 2026-07-12)* **Environments** — daftar environment per project (staging/prod/…),
+      dipilih saat membuat run, jadi dimensi filter di reports.
 - [ ] **SSO SAML/OIDC + 2FA (TOTP)** — wajib untuk adopsi perusahaan; OIDC dulu (lebih
       mudah, mencakup Google Workspace/Azure AD/Keycloak), SAML menyusul; SCIM paling akhir.
 - [ ] **Mute/quarantine test** — tandai case automation sebagai muted; hasilnya tercatat

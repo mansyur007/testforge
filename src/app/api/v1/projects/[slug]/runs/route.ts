@@ -116,6 +116,17 @@ export async function POST(
       errors.push({ field: "milestoneId", message: "not found in this project" });
   }
 
+  // Optional environment (F-19) — must belong to this project.
+  const environmentId = body.environmentId ? String(body.environmentId) : null;
+  if (environmentId) {
+    const env = await db.environment.findFirst({
+      where: { id: environmentId, projectId: project.id },
+      select: { id: true },
+    });
+    if (!env)
+      errors.push({ field: "environmentId", message: "not found in this project" });
+  }
+
   if (errors.length) return validationError(errors);
 
   // F-05: stamp each seeded result with the case's current revision.
@@ -129,6 +140,7 @@ export async function POST(
       source: body.source ? String(body.source).toUpperCase() : "MANUAL",
       origin: body.origin ?? null,
       milestoneId,
+      environmentId,
       createdById: g.userId,
       results: { create: seeds },
     },

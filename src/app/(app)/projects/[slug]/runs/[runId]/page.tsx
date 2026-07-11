@@ -26,6 +26,7 @@ export default async function RunDetailPage({
     include: {
       project: true,
       milestone: true,
+      environment: true,
       results: {
         include: { testCase: true, assignee: true },
         orderBy: { testCase: { seq: "asc" } },
@@ -89,6 +90,18 @@ export default async function RunDetailPage({
           <p className="text-sm text-slate-400">
             {run.description}
             {run.milestone && <> · {run.milestone.name}</>}
+            {run.environment && (
+              <>
+                {" "}
+                ·{" "}
+                <span
+                  className="rounded bg-teal-50 px-1.5 py-0.5 text-xs text-teal-700"
+                  data-testid="run-detail-env-badge"
+                >
+                  {run.environment.name}
+                </span>
+              </>
+            )}
           </p>
         </div>
         <div className="flex shrink-0 gap-2">

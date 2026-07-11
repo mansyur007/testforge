@@ -359,6 +359,59 @@ export function openApiSpec() {
           },
         },
       },
+      "/projects/{slug}/environments": {
+        get: {
+          tags: ["Runs"],
+          summary: "List environments (F-19)",
+          description:
+            "Named environments (Staging, Prod, …) a run can be tagged with, via TestRun.environmentId.",
+          parameters: [slugParam],
+          responses: {
+            "200": {
+              description: "OK.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      items: { type: "array", items: { $ref: "#/components/schemas/Environment" } },
+                    },
+                  },
+                },
+              },
+            },
+            "404": err("Project not found."),
+          },
+        },
+        post: {
+          tags: ["Runs"],
+          summary: "Create an environment",
+          parameters: [slugParam],
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["name"],
+                  properties: {
+                    name: { type: "string", example: "Staging" },
+                    url: { type: ["string", "null"] },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "201": {
+              description: "Created.",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/Environment" } } },
+            },
+            "403": err("API key is read-only."),
+            "404": err("Project not found."),
+            "422": err("Validation failed (e.g. duplicate name)."),
+          },
+        },
+      },
       "/projects/{slug}/issues": {
         get: {
           tags: ["Issues"],
@@ -577,6 +630,10 @@ export function openApiSpec() {
                     source: { type: "string", description: "e.g. MANUAL, PLAYWRIGHT, CYPRESS." },
                     origin: { type: ["string", "null"] },
                     milestoneId: { type: ["string", "null"] },
+                    environmentId: {
+                      type: ["string", "null"],
+                      description: "F-19: which Environment this run targets (see /environments).",
+                    },
                     caseIds: { type: "array", items: { type: "string" } },
                   },
                 },
@@ -1157,6 +1214,10 @@ export function openApiSpec() {
             source: { type: "string" },
             origin: { type: ["string", "null"] },
             milestoneId: { type: ["string", "null"] },
+            environmentId: {
+              type: ["string", "null"],
+              description: "F-19: which Environment this run targets (see /environments); null if untagged.",
+            },
             planId: {
               type: ["string", "null"],
               description: "Parent test plan (F-06); null for standalone runs.",
@@ -1217,6 +1278,16 @@ export function openApiSpec() {
                 },
               },
             },
+          },
+        },
+        Environment: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            name: { type: "string", example: "Staging" },
+            url: { type: ["string", "null"] },
+            order: { type: "integer" },
+            active: { type: "boolean" },
           },
         },
         Result: {

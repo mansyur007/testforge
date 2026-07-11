@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
 
   const runName = sp.get("name") ?? `Automation Run ${new Date().toISOString()}`;
   const origin = sp.get("origin")?.slice(0, 120) || null;
+  const env = sp.get("env"); // F-19
   const formatParam = sp.get("format")?.toLowerCase();
 
   if (formatParam && !RESULT_FORMATS.includes(formatParam as ResultFormat))
@@ -49,6 +50,7 @@ export async function POST(req: NextRequest) {
     runName,
     source,
     origin,
+    env,
   });
 
   if (!outcome.ok) {

@@ -148,6 +148,7 @@ export function serializeRun(
     // F-06: parent plan + config combo ({"Browser":"Chrome"}), null when standalone.
     planId: r.planId,
     config: safeParse(r.configJson),
+    environmentId: r.environmentId, // F-19
     createdById: r.createdById,
     createdAt: r.createdAt.toISOString(),
     completedAt: r.completedAt ? r.completedAt.toISOString() : null,

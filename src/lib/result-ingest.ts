@@ -3,6 +3,7 @@ import { logAudit } from "@/lib/audit";
 import { dispatchWebhook } from "@/lib/webhooks";
 import { notify, notifyBaseUrl } from "@/lib/notifications";
 import { serializeRun } from "@/lib/api";
+import { resolveOrCreateEnvironment } from "@/lib/environments";
 import type { NormalizedResults } from "@/lib/result-parsers";
 
 export type IngestOptions = {
@@ -11,6 +12,7 @@ export type IngestOptions = {
   runName: string;
   source: string;
   origin: string | null;
+  env?: string | null; // F-19: &env=<name>, auto-creates if the project allows it
 };
 
 export type IngestOutcome =
@@ -30,6 +32,7 @@ async function createRun(
     name: string;
     source: string;
     origin: string | null;
+    environmentId: string | null;
     createdById: string;
     results: { caseId: string; caseRev: number; status: string; comment: string; elapsedSeconds: number }[];
   }
@@ -40,6 +43,7 @@ async function createRun(
       name: data.name,
       source: data.source,
       origin: data.origin,
+      environmentId: data.environmentId,
       status: "COMPLETED",
       completedAt: new Date(),
       createdById: data.createdById,
@@ -108,10 +112,15 @@ export async function ingestResults(
   const byCase = new Map<string, (typeof matched)[number]>();
   matched.forEach((m) => byCase.set(m.caseId, m));
 
+  // F-19: &env=<name> tags the run, auto-creating the environment when the
+  // project allows it (Project.autoCreateEnvs).
+  const environmentId = await resolveOrCreateEnvironment(project.id, opts.env ?? null);
+
   const run = await createRun(project.id, {
     name: opts.runName,
     source: opts.source,
     origin: opts.origin,
+    environmentId,
     createdById: opts.userId,
     results: Array.from(byCase.values()).map((m) => ({
       caseId: m.caseId,

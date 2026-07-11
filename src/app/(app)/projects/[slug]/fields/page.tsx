@@ -5,8 +5,10 @@ import { memberScope } from "@/lib/projects";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { CustomFieldsManager } from "@/components/CustomFieldsManager";
 import { ConfigurationsManager } from "@/components/ConfigurationsManager";
+import { EnvironmentsManager } from "@/components/EnvironmentsManager";
 import { parseOptions } from "@/lib/custom-fields";
 import { loadConfigGroups } from "@/lib/plans";
+import { loadEnvironments } from "@/lib/environments";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +32,8 @@ export default async function FieldsPage({
 
   // F-06: configuration groups managed alongside fields.
   const configGroups = await loadConfigGroups(project.id);
+  // F-19: environments managed alongside fields.
+  const environments = await loadEnvironments(project.id);
 
   const canManage =
     session.role === "ADMIN" ||
@@ -76,6 +80,26 @@ export default async function FieldsPage({
           id: g.id,
           name: g.name,
           options: g.options.map((o) => ({ id: o.id, name: o.name })),
+        }))}
+      />
+
+      {/* F-19: environments a run can be tagged against. */}
+      <div className="pt-2">
+        <h2 className="text-lg font-semibold">Environments</h2>
+        <p className="text-sm text-slate-400">
+          Tag runs with where they executed (Staging, Prod, …); filter runs
+          and reports by environment.
+        </p>
+      </div>
+      <EnvironmentsManager
+        projectId={project.id}
+        canManage={canManage}
+        autoCreateEnvs={project.autoCreateEnvs}
+        environments={environments.map((e) => ({
+          id: e.id,
+          name: e.name,
+          url: e.url,
+          active: e.active,
         }))}
       />
     </div>
