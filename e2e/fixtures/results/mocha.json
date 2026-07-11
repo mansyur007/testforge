@@ -1,0 +1,21 @@
+{
+  "stats": { "tests": 2, "passes": 1, "failures": 1, "pending": 0 },
+  "tests": [
+    { "title": "passes", "fullTitle": "TC-E2E-1 mocha passes", "duration": 420, "err": {} },
+    {
+      "title": "fails",
+      "fullTitle": "Language switcher on login",
+      "duration": 110,
+      "err": { "message": "expected true to equal false" }
+    }
+  ],
+  "pending": [],
+  "passes": [{ "title": "passes", "fullTitle": "TC-E2E-1 mocha passes" }],
+  "failures": [
+    {
+      "title": "fails",
+      "fullTitle": "Language switcher on login",
+      "err": { "message": "expected true to equal false" }
+    }
+  ]
+}

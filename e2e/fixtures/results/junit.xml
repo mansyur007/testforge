@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="F-11 fixture" tests="2">
+    <testcase name="TC-E2E-1 junit passes" classname="fixtures.junit" time="0.42" />
+    <testcase name="Language switcher on login" classname="fixtures.junit" time="0.11">
+      <failure message="assertion failed">Expected true, got false</failure>
+    </testcase>
+  </testsuite>
+</testsuites>

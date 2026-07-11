@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<test-run id="1" result="Failed">
+  <test-suite type="TestFixture" name="FixtureTests">
+    <test-case fullname="TC-E2E-1 nunit3 passes" name="TC-E2E-1 nunit3 passes" classname="Fixtures.NUnit3Tests" result="Passed" duration="0.42" />
+    <test-case fullname="Language switcher on login" name="Language switcher on login" classname="Fixtures.NUnit3Tests" result="Failed" duration="0.11">
+      <failure>
+        <message><![CDATA[Expected: True But was: False]]></message>
+      </failure>
+    </test-case>
+  </test-suite>
+</test-run>

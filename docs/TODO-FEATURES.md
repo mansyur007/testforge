@@ -168,7 +168,8 @@ switch if it does not match.
 | 8 | F-08 Notifications | — | Reuses webhook infra | ✅ done |
 | 9 | F-07 Jira/GitHub/GitLab | F-08 (shares config UI section) | Highest-demand integration | **Opus 4.8** — spec is detailed, `lib/crypto.ts` already exists; but tokens are involved, so hold the line on §0.6 secret rules |
 | 10 | F-06 Test plans & configurations | — | Biggest P1; schedule when above are stable | **Fable 5** — the only P1 that adds a genuinely new entity graph (plan → config matrix → generated runs → aggregate progress) |
-| 11+ | P2 (F-11…F-24), then P3 | see each | L-01/L-02 are small — ship early for marketing | **Sonnet 5** for the mechanical ones (F-11 keywords, F-13 CSV, F-19 bulk ops); **Opus 4.8** where a new subsystem appears (F-16 comments, F-21 SSO) |
+| 11 | F-11 Additional automation result formats | — | Mechanical: one parser per format, same matching pipeline | ✅ done |
+| 12+ | P2 (F-12…F-24), then P3 | see each | L-01/L-02 are small — ship early for marketing | **Sonnet 5** for the mechanical ones (F-13 datasets, F-24 bulk move/copy); **Opus 4.8** where a new subsystem appears (F-16 comments, F-20 SSO) |
 | — | L-01…L-05 leapfrog, interleaved | see each | Designed to beat competitors, not match them | **Fable 5** — these are net-new product design, not ports of a known feature |
 
 ---
@@ -1100,7 +1101,24 @@ e2e `e2e/saved-views.spec.ts`: AC 1–2.
 Compact work orders — same conventions (§0, §1) apply. Each is still a single PR-sized unit
 unless marked (large).
 
-### F-11 — Additional automation result formats `[ ]`
+### F-11 — Additional automation result formats `[x]`
+
+> **Status: DONE** (2026-07-11, branch `feat/result-formats`). Implemented as specified, with
+> these deviations:
+> - `src/lib/result-parsers/*.ts` export pure parsers only; matching + run creation moved into
+>   a new shared `src/lib/result-ingest.ts` (`ingestResults()`) so both `/api/v1/results` and
+>   `/api/v1/junit` call the same pipeline instead of `/api/v1/junit` delegating to `/results`.
+> - `/api/v1/junit` keeps its original auth (`authenticateApiKey`, bare Bearer key, no WRITE-scope
+>   check) and response shape (`runId`, flat `summary`) unchanged — it predates `guard()` and is
+>   used daily by prod CI, so behavior was preserved exactly rather than upgraded to §0.3.
+>   `/api/v1/results` is new, so it uses the current `guard(req, { write: true })` convention.
+> - Ambiguous status mappings (documented in each parser): TRX `NotExecuted`/`Inconclusive`/
+>   `Disconnected` → SKIPPED, `Error`/`Timeout`/`Aborted` → FAILED; NUnit3 `Inconclusive` →
+>   SKIPPED; Cucumber `undefined`/`ambiguous` steps → FAILED (broken automation, not a skip),
+>   `pending` → SKIPPED; Mocha status derived from `err` emptiness + membership in `pending`.
+> - e2e: one 2-test fixture per format under `e2e/fixtures/results/` (one pass via `TC-E2E-1`
+>   annotation, one fail via exact-title match) plus an auto-detect case and a malformed-upload
+>   422 case, `e2e/result-formats.spec.ts`. Full suite 29/29 green.
 
 - New endpoint `POST /api/v1/results?project=<slug>&name=<run name>&format=<fmt>` accepting:
   `junit` (delegate to the existing parser), `trx` (MSTest XML), `nunit3`, `xunit2`,

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assemblies>
+  <assembly name="Fixtures.dll">
+    <collection name="Fixture tests" total="2">
+      <test name="TC-E2E-1 xunit2 passes" type="Fixtures.XUnit2Tests" method="Passes" time="0.42" result="Pass" />
+      <test name="Language switcher on login" type="Fixtures.XUnit2Tests" method="Fails" time="0.11" result="Fail">
+        <failure exception-type="Xunit.Sdk.TrueException">
+          <message><![CDATA[Assert.True() Failure]]></message>
+        </failure>
+      </test>
+    </collection>
+  </assembly>
+</assemblies>

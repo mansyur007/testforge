@@ -1,28 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { XMLParser } from "fast-xml-parser";
-import { db } from "@/lib/db";
 import { authenticateApiKey } from "@/lib/auth";
-import { logAudit } from "@/lib/audit";
-import { dispatchWebhook } from "@/lib/webhooks";
-import { notify, notifyBaseUrl } from "@/lib/notifications";
-import { serializeRun } from "@/lib/api";
-
-type JUnitCase = {
-  name: string;
-  classname?: string;
-  time?: string;
-  failure?: unknown;
-  error?: unknown;
-  skipped?: unknown;
-};
-
-function toArray<T>(x: T | T[] | undefined): T[] {
-  if (x === undefined) return [];
-  return Array.isArray(x) ? x : [x];
-}
+import { parseJUnit } from "@/lib/result-parsers/junit";
+import { ResultParseError } from "@/lib/result-parsers/types";
+import { ingestResults } from "@/lib/result-ingest";
 
 // Upload hasil automation framework-agnostic via JUnit XML (PRD §7.1 P1, US-010).
 // Matching ke test case: anotasi TC-[SLUG]-[NUM] di nama test, atau exact title.
+// Kept as a permanent alias of POST /api/v1/results?format=junit (F-11) —
+// same auth (plain API key, no WRITE-scope check) and response shape as
+// before, so existing CI integrations never break.
 export async function POST(req: NextRequest) {
   const user = await authenticateApiKey(req);
   if (!user)
@@ -38,171 +24,40 @@ export async function POST(req: NextRequest) {
   const source = (req.nextUrl.searchParams.get("source") ?? "JUNIT").toUpperCase();
   const origin = req.nextUrl.searchParams.get("origin")?.slice(0, 120) || null;
 
-  const project = await db.project.findFirst({
-    where: { slug, members: { some: { userId: user.id } } },
-    include: { cases: { where: { deletedAt: null } } },
-  });
-  if (!project)
-    return NextResponse.json(
-      { error: `Proyek dengan slug "${slug}" tidak ditemukan` },
-      { status: 404 }
-    );
-
-  type JUnitSuite = { testcase?: JUnitCase | JUnitCase[] };
-  type JUnitDoc = {
-    testsuites?: { testsuite?: JUnitSuite | JUnitSuite[] };
-    testsuite?: JUnitSuite | JUnitSuite[];
-  };
-
   const xml = await req.text();
-  let parsed: JUnitDoc;
+  let normalized;
   try {
-    parsed = new XMLParser({
-      ignoreAttributes: false,
-      attributeNamePrefix: "",
-    }).parse(xml) as JUnitDoc;
-  } catch {
-    return NextResponse.json({ error: "Invalid XML" }, { status: 400 });
+    normalized = parseJUnit(xml);
+  } catch (err) {
+    const message = err instanceof ResultParseError ? err.message : "Invalid XML";
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 
-  const suites = toArray(
-    parsed.testsuites ? parsed.testsuites.testsuite : parsed.testsuite
-  );
-  const testcases: JUnitCase[] = suites.flatMap((s) => toArray(s?.testcase));
-  if (!testcases.length)
+  const outcome = await ingestResults(normalized, {
+    projectSlug: slug,
+    userId: user.id,
+    runName,
+    source,
+    origin,
+  });
+
+  if (!outcome.ok) {
+    if (outcome.status === 404)
+      return NextResponse.json({ error: outcome.error }, { status: 404 });
+    if (outcome.status === 400)
+      return NextResponse.json({ error: outcome.error }, { status: 400 });
     return NextResponse.json(
-      { error: "No <testcase> found in the JUnit XML" },
-      { status: 400 }
-    );
-
-  const idPattern = new RegExp(
-    `TC-${project.slug.toUpperCase()}-(\\d+)`,
-    "i"
-  );
-
-  const matched: { caseId: string; caseRev: number; status: string; comment: string; time: number }[] = [];
-  const unmatched: string[] = [];
-
-  for (const tc of testcases) {
-    const name = String(tc.name ?? "");
-    const status =
-      tc.failure !== undefined || tc.error !== undefined
-        ? "FAILED"
-        : tc.skipped !== undefined
-          ? "SKIPPED"
-          : "PASSED";
-    const time = Math.round(parseFloat(String(tc.time ?? "0")) || 0);
-
-    // 1) match via anotasi TC-SLUG-NUM di nama test
-    const idMatch = name.match(idPattern);
-    let testCase = idMatch
-      ? project.cases.find((c) => c.seq === parseInt(idMatch[1], 10))
-      : undefined;
-    // 2) fallback: exact title match (auto-matching, PRD §4.4.2)
-    if (!testCase) {
-      const cleanName = name.replace(idPattern, "").trim();
-      testCase = project.cases.find(
-        (c) => c.title.toLowerCase() === cleanName.toLowerCase()
-      );
-    }
-
-    if (testCase) {
-      matched.push({
-        caseId: testCase.id,
-        caseRev: testCase.rev, // F-05: revision this automated result executed
-        status,
-        comment: `[${source}] ${name}`,
-        time,
-      });
-    } else {
-      unmatched.push(name);
-    }
-  }
-
-  if (!matched.length)
-    return NextResponse.json(
-      {
-        error:
-          "No tests matched any test case. Add a TC-ID annotation to the test name, or use an identical title.",
-        unmatched,
-      },
+      { error: outcome.error, unmatched: outcome.unmatched },
       { status: 422 }
     );
-
-  // dedupe: satu result per case per run (ambil status terakhir)
-  const byCase = new Map<string, (typeof matched)[number]>();
-  matched.forEach((m) => byCase.set(m.caseId, m));
-
-  const run = await db.testRun.create({
-    data: {
-      projectId: project.id,
-      name: runName,
-      source,
-      origin,
-      status: "COMPLETED",
-      completedAt: new Date(),
-      createdById: user.id,
-      results: {
-        create: Array.from(byCase.values()).map((m) => ({
-          caseId: m.caseId,
-          caseRev: m.caseRev,
-          status: m.status,
-          comment: m.comment,
-          elapsedSeconds: m.time,
-        })),
-      },
-    },
-    include: { results: true },
-  });
-
-  // A matched case now has a real automated test, so flip its coverage status.
-  // Any matched result counts (pass or fail) — the case is automated either way.
-  // Only touch cases not already AUTOMATED to keep the change (and audit) meaningful.
-  const automated = await db.testCase.updateMany({
-    where: {
-      id: { in: Array.from(byCase.keys()) },
-      projectId: project.id,
-      automationStatus: { not: "AUTOMATED" },
-    },
-    data: { automationStatus: "AUTOMATED" },
-  });
-
-  await logAudit({
-    userId: user.id,
-    action: "automation.upload",
-    entityType: "run",
-    entityId: run.id,
-    detail: `${source}: ${byCase.size} matched, ${unmatched.length} unmatched, ${automated.count} → AUTOMATED`,
-  });
-
-  // F-08: a JUnit run is born completed, so only run.completed fires (a
-  // separate run.created for the same instant would just be noise).
-  const failedCount = run.results.filter((r) => r.status === "FAILED").length;
-  await dispatchWebhook(project.id, "run.completed", serializeRun(run));
-  await notify(project.id, "run.completed", {
-    title: `Run completed: ${runName}`,
-    url: `${notifyBaseUrl()}/projects/${project.slug}/runs/${run.id}`,
-    tone: failedCount > 0 ? "bad" : "good",
-    fields: [
-      {
-        label: "Passed",
-        value: String(run.results.filter((r) => r.status === "PASSED").length),
-      },
-      { label: "Failed", value: String(failedCount) },
-      { label: "Source", value: source },
-    ],
-  });
+  }
 
   return NextResponse.json({
-    runId: run.id,
-    runUrl: `/projects/${project.slug}/runs/${run.id}`,
-    matched: byCase.size,
-    automated: automated.count,
-    unmatched,
-    summary: {
-      passed: run.results.filter((r) => r.status === "PASSED").length,
-      failed: run.results.filter((r) => r.status === "FAILED").length,
-      skipped: run.results.filter((r) => r.status === "SKIPPED").length,
-    },
+    runId: outcome.run.id,
+    runUrl: `/projects/${slug}/runs/${outcome.run.id}`,
+    matched: outcome.matched,
+    automated: outcome.automated,
+    unmatched: outcome.unmatched,
+    summary: outcome.summary,
   });
 }

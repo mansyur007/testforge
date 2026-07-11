@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Results>
+    <UnitTestResult testId="11111111-1111-1111-1111-111111111111" testName="TC-E2E-1 trx passes" duration="00:00:00.4200000" outcome="Passed" />
+    <UnitTestResult testId="22222222-2222-2222-2222-222222222222" testName="Language switcher on login" duration="00:00:00.1100000" outcome="Failed">
+      <Output>
+        <ErrorInfo>
+          <Message>Assert.IsTrue failed</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="TC-E2E-1 trx passes" id="11111111-1111-1111-1111-111111111111">
+      <TestMethod className="Fixtures.TrxTests" />
+    </UnitTest>
+    <UnitTest name="Language switcher on login" id="22222222-2222-2222-2222-222222222222">
+      <TestMethod className="Fixtures.TrxTests" />
+    </UnitTest>
+  </TestDefinitions>
+</TestRun>

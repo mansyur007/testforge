@@ -81,7 +81,7 @@ Legenda: ✅ ada · 🟡 sebagian/terbatas · ❌ tidak ada · ➖ tidak relevan
 | **Otomasi** |
 | Upload JUnit XML via API | ✅ | 🟡 (via API custom) | ✅ | 🟡 (XML-RPC) | ➖ |
 | Auto-match hasil ↔ case (anotasi ID) | ✅ | 🟡 | ✅ | 🟡 | ➖ |
-| Format lain (TRX/NUnit/Allure/Cucumber JSON) | ❌ | 🟡 | ✅ | ❌ | ➖ |
+| Format lain (TRX/NUnit/Allure/Cucumber JSON) | 🟡 (TRX/NUnit3/xUnit2/Cucumber/Mocha, belum Allure) | 🟡 | ✅ | ❌ | ➖ |
 | Reporter/SDK per framework (npm/pip) | ❌ | 🟡 (pihak ketiga) | ✅ (10+ resmi) | ❌ | ➖ |
 | CLI uploader | ❌ | ❌ | ✅ | ❌ | ➖ |
 | Flaky detection | ✅ | ❌ | ✅ | ❌ | ➖ |
@@ -335,8 +335,9 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
 
 ### P2 — Pembeda kompetitif (setara paket bisnis Qase/TestRail)
 
-- [ ] **Format hasil automasi tambahan** — parser TRX (MSTest), NUnit3, xUnit v2, Allure,
-      Cucumber JSON, Mocha JSON di endpoint `/api/v1/results` generik (JUnit tetap jalan).
+- [x] *(Selesai 2026-07-11)* **Format hasil automasi tambahan** — parser TRX (MSTest), NUnit3,
+      xUnit v2, Cucumber JSON, Mocha JSON di endpoint `/api/v1/results` generik (JUnit tetap
+      jalan lewat `/api/v1/junit`); Allure belum.
 - [ ] **Reporter resmi per framework** — paket npm `@testforge/playwright`,
       `@testforge/cypress`, pip `testforge-pytest` yang stream hasil real-time (bukan hanya
       upload XML di akhir), + **CLI `testforge-cli`** untuk CI.
