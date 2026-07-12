@@ -1224,18 +1224,35 @@ unless marked (large).
 - Runs: creating a run from non-APPROVED/ACTIVE cases shows a count warning (not a block).
 - AC: full loop author→reviewer→approve visible in history (F-05 records status transitions).
 
-### F-16 — Comments & @mentions `[ ]`
+### F-16 — Comments & @mentions `[x]`
 
-- `Comment` model: `{ id, projectId, entityType: "CASE"|"RUN"|"RESULT", entityId, authorId, bodyMd, createdAt, updatedAt, deletedAt }`.
-- Markdown body (F-02 renderer), attachments allowed (F-01 `entityType: "COMMENT"`).
-- `@` triggers a member autocomplete (client queries a small internal endpoint
-  `GET /api/projects/[slug]/members?q=`); mentions stored as `@[userId]` in raw body, rendered
-  as name chips; mentioned users notified (F-08 event `comment.mentioned`, email fallback).
-- Threaded? **No** — flat list per entity, newest last, edit/delete own (soft delete shows
-  "deleted"), OWNER/ADMIN may delete any. Mounted on case detail + run page + per-result
-  drawer in the executor. Audit `comment.create|delete`.
-- AC: mention delivers a notification containing a deep link; VIEWER can comment (comments
-  are collaboration, not test data — explicitly allowed); XSS payload inert.
+> **Status: DONE** (2026-07-12, branch `feat/comments-mentions`, Opus 4.8). Implemented to spec:
+> - `Comment` model (`{projectId, entityType CASE|RUN|RESULT, entityId, authorId, bodyMd,
+>   createdAt, updatedAt, editedAt, deletedAt}`); soft delete leaves a "This comment was deleted"
+>   tombstone. Added an explicit `editedAt` (not in the original field list) to drive the
+>   "edited" marker deterministically — a create-then-edit within the same second made a
+>   `updatedAt − createdAt` heuristic unreliable.
+> - Mentions stored inline as `@[userId]` (the body is the single source of truth for
+>   notifications). The composer submits the display text (`@Name`) plus the explicit userIds the
+>   author picked from autocomplete; the server encodes `@Name → @[userId]` from that list, so a
+>   name that is a substring of another can't be mis-encoded. `GET /api/projects/[slug]/members?q=`
+>   (new non-versioned, cookie-auth endpoint) backs the autocomplete. Chips render via a tokenizer
+>   + the F-02 sanitized renderer in an inline mode (new `inline` prop on `<Markdown>`), so a
+>   mention sits inline between markdown fragments; `.tf-mention` styles the chip.
+> - Mentioned members are notified through F-08 (`comment.mentioned` event added to
+>   `WEBHOOK_EVENTS` + channels) **and** a personal email fallback (`sendMail` per mentioned user
+>   with a deep link). `comment.created` also added for teams that want every-comment pings.
+> - Mounted on case detail, run page, and per-result in the executor (self-contained client
+>   panel; reads/writes via server actions so it works without navigation inside the executor).
+>   VIEWER may comment (the action deliberately omits the VIEWER write-gate); OWNER/ADMIN may
+>   delete anyone's. Audit `comment.create|delete`.
+> - **Comment attachments** (F-01 `entityType: "COMMENT"`): the type is wired end-to-end
+>   (`ATTACHMENT_ENTITY_TYPES`, orphan sweep, delete-on-comment-delete) but the composer does not
+>   yet expose an uploader — a new comment has no id to attach to before it exists (a two-phase
+>   draft-id flow). Deferred; markdown body + inline-image paste can follow the case-editor
+>   pattern later.
+> - e2e `comments.spec.ts` 3/3 (lifecycle+XSS-inert, mention chip + notification deep link,
+>   VIEWER can comment); full suite 45/45.
 
 ### F-17 — Dashboards, run comparison, PDF & scheduled reports, public share links (large) `[ ]`
 

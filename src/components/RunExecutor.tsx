@@ -22,6 +22,7 @@ import {
   type MemberOption,
 } from "@/components/CustomFieldInputs";
 import { IssuePanel, type IssueLinkView } from "@/components/IssuePanel";
+import { CommentPanel } from "@/components/CommentPanel";
 
 type ResultItem = {
   id: string;
@@ -292,6 +293,16 @@ export function RunExecutor({
               />
             </div>
           )}
+
+          {/* F-16: per-result discussion — remounts per case via key. */}
+          <div className="mt-4 border-t border-slate-100 pt-4">
+            <CommentPanel
+              key={active.id}
+              entityType="RESULT"
+              entityId={active.id}
+              projectSlug={projectSlug}
+            />
+          </div>
         </div>
 
         {runStatus === "ACTIVE" ? (
