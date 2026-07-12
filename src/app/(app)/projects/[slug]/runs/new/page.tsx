@@ -47,6 +47,7 @@ export default async function NewRunPage({
           priority: c.priority,
           type: c.type,
           tags: c.tags,
+          status: c.status, // F-15: drives the "not approved" run warning
           suiteName: c.suite?.name ?? "(tanpa suite)",
         }))}
       />

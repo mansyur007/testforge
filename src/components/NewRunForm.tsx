@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { createRun } from "@/app/actions/runs";
 import { CaseSelector, type SelectableCase } from "@/components/CaseSelector";
+import { RUNNABLE_CASE_STATUSES } from "@/lib/constants";
 
 function SubmitButton({ count }: { count: number }) {
   const { pending } = useFormStatus();
@@ -116,6 +117,25 @@ export function NewRunForm({
         </h3>
         <CaseSelector cases={cases} selected={selected} onChange={setSelected} />
       </div>
+
+      {(() => {
+        // F-15: warn (don't block) when the run includes not-yet-approved cases.
+        const notApproved = cases.filter(
+          (c) =>
+            selected.has(c.id) &&
+            c.status != null &&
+            !(RUNNABLE_CASE_STATUSES as readonly string[]).includes(c.status)
+        ).length;
+        return notApproved > 0 ? (
+          <p
+            data-testid="run-unapproved-warning"
+            className="rounded-lg bg-amber-50 px-4 py-2.5 text-sm text-amber-800"
+          >
+            ⚠️ {notApproved} selected case{notApproved === 1 ? " is" : "s are"} not
+            approved yet. You can still create the run.
+          </p>
+        ) : null;
+      })()}
 
       <SubmitButton count={selected.size} />
     </form>

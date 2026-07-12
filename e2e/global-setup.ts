@@ -16,6 +16,10 @@ export const E2E = {
   teammateEmail: "teammate@testforge.local",
   teammatePassword: "E2eDemo123",
   teammateName: "E2E Teammate",
+  // F-15: a MEMBER (write access) of the e2e project — a valid case reviewer.
+  reviewerEmail: "reviewer@testforge.local",
+  reviewerPassword: "E2eDemo123",
+  reviewerName: "E2E Reviewer",
 };
 
 // Seed a deterministic fixture into the LOCAL dev.db before the suite runs:
@@ -119,6 +123,25 @@ async function globalSetup() {
     where: { projectId_userId: { projectId: eProject.id, userId: teammate.id } },
     update: { role: "VIEWER" },
     create: { projectId: eProject.id, userId: teammate.id, role: "VIEWER" },
+  });
+  // F-15: a MEMBER-role reviewer (write access) on the e2e project.
+  const reviewer = await db.user.upsert({
+    where: { email: E2E.reviewerEmail },
+    update: { passwordHash, emailVerifiedAt: new Date(), onboardedAt: new Date() },
+    create: {
+      name: E2E.reviewerName,
+      email: E2E.reviewerEmail,
+      passwordHash,
+      role: "MEMBER",
+      emailVerifiedAt: new Date(),
+      onboardedAt: new Date(),
+      organizationId: org.id,
+    },
+  });
+  await db.projectMember.upsert({
+    where: { projectId_userId: { projectId: eProject.id, userId: reviewer.id } },
+    update: { role: "MEMBER" },
+    create: { projectId: eProject.id, userId: reviewer.id, role: "MEMBER" },
   });
   // Start each run with a clean comment thread so counts don't drift.
   await db.comment.deleteMany({ where: { projectId: eProject.id } });

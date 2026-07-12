@@ -15,6 +15,7 @@ export type SelectableCase = {
   type: string;
   tags: string;
   suiteName: string;
+  status?: string; // F-15: used to warn about not-yet-approved cases in a run
 };
 
 export function CaseSelector({

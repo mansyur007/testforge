@@ -9,7 +9,28 @@ export const CASE_TYPES = [
   "SECURITY",
   "E2E",
 ] as const;
-export const CASE_STATUSES = ["DRAFT", "ACTIVE", "DEPRECATED"] as const;
+// F-15: IN_REVIEW & APPROVED are driven by the review flow (a reviewer acts on
+// them), never set directly from the case form or bulk edit — those use
+// CASE_FORM_STATUSES. ACTIVE stays the "approved-legacy" runnable state.
+export const CASE_STATUSES = [
+  "DRAFT",
+  "IN_REVIEW",
+  "APPROVED",
+  "ACTIVE",
+  "DEPRECATED",
+] as const;
+export const CASE_FORM_STATUSES = ["DRAFT", "ACTIVE", "DEPRECATED"] as const;
+// Cases in these statuses are considered ready to run; the rest trigger the
+// F-15 "not approved" warning on run creation.
+export const RUNNABLE_CASE_STATUSES = ["APPROVED", "ACTIVE"] as const;
+
+export const STATUS_BADGES: Record<string, string> = {
+  DRAFT: "bg-slate-100 text-slate-600",
+  IN_REVIEW: "bg-amber-100 text-amber-800",
+  APPROVED: "bg-green-100 text-green-800",
+  ACTIVE: "bg-blue-100 text-blue-800",
+  DEPRECATED: "bg-gray-100 text-gray-500 line-through",
+};
 export const AUTOMATION_STATUSES = [
   "NOT_AUTOMATED",
   "IN_PROGRESS",

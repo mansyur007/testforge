@@ -7,6 +7,7 @@ import {
   caseDisplayId,
   parseTags,
   PRIORITY_BADGES,
+  STATUS_BADGES,
   RESULT_BADGES,
   type TestStep,
 } from "@/lib/constants";
@@ -22,6 +23,7 @@ import { IssuePanel } from "@/components/IssuePanel";
 import { Markdown } from "@/components/Markdown";
 import { UnmuteButton } from "@/components/MuteControls";
 import { CommentPanel } from "@/components/CommentPanel";
+import { ReviewPanel } from "@/components/ReviewPanel";
 import { formatDuration } from "@/lib/duration";
 
 export const dynamic = "force-dynamic";
@@ -68,14 +70,15 @@ export default async function CaseDetailPage({
   const visibleDefs = fieldDefs.filter(
     (d) => d.active || customValues[d.key] !== undefined
   );
-  const memberNames = new Map(
-    (
-      await db.projectMember.findMany({
-        where: { projectId: testCase.projectId },
-        include: { user: { select: { id: true, name: true } } },
-      })
-    ).map((m) => [m.user.id, m.user.name])
-  );
+  const projectMembers = await db.projectMember.findMany({
+    where: { projectId: testCase.projectId },
+    include: { user: { select: { id: true, name: true } } },
+  });
+  const memberNames = new Map(projectMembers.map((m) => [m.user.id, m.user.name]));
+  // F-15: only members with write access can be assigned as reviewers.
+  const reviewerCandidates = projectMembers
+    .filter((m) => m.role !== "VIEWER")
+    .map((m) => ({ id: m.user.id, name: m.user.name }));
   const renderCustom = (d: (typeof fieldDefs)[number]) => {
     const v = customValues[d.key];
     if (v === undefined || v === "" || (Array.isArray(v) && v.length === 0))
@@ -176,8 +179,11 @@ export default async function CaseDetailPage({
             <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600">
               {testCase.type}
             </span>
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600">
-              {testCase.status}
+            <span
+              className={`rounded-full px-2 py-0.5 font-medium ${STATUS_BADGES[testCase.status] ?? "bg-slate-100 text-slate-600"}`}
+              data-testid="case-status-badge"
+            >
+              {testCase.status.replace(/_/g, " ")}
             </span>
             <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600">
               {testCase.automationStatus.replace(/_/g, " ")}
@@ -466,6 +472,26 @@ export default async function CaseDetailPage({
               </ul>
             </section>
           )}
+
+          {/* F-15: review workflow — request review, approve, request changes. */}
+          <section className="rounded-xl border border-slate-200 bg-white p-6">
+            <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
+              Review
+            </h3>
+            <ReviewPanel
+              caseId={testCase.id}
+              status={testCase.status}
+              canWrite={session.role !== "VIEWER"}
+              currentUserId={session.userId}
+              reviewerId={testCase.reviewerId}
+              reviewerName={
+                testCase.reviewerId ? memberNames.get(testCase.reviewerId) ?? null : null
+              }
+              reviewedAt={testCase.reviewedAt ? testCase.reviewedAt.toISOString() : null}
+              reviewNote={testCase.reviewNote}
+              members={reviewerCandidates}
+            />
+          </section>
 
           {/* F-16: discussion thread on this case. */}
           <section className="rounded-xl border border-slate-200 bg-white p-6">

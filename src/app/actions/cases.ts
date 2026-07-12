@@ -159,7 +159,7 @@ export async function updateCase(
 
   const existing = await db.testCase.findUniqueOrThrow({
     where: { id: caseId },
-    select: { projectId: true, customJson: true },
+    select: { projectId: true, customJson: true, status: true },
   });
   const custom = await readCustomJson(
     existing.projectId,
@@ -168,9 +168,20 @@ export async function updateCase(
   );
   if ("error" in custom) return { error: custom.error };
 
+  // F-15: IN_REVIEW/APPROVED are owned by the review flow — the form may keep an
+  // already-review case in its state (edit while in review) or move it out
+  // manually, but it can never fabricate those states on a case that wasn't
+  // already there (that must go through requestReview / approveCase).
+  const data = { ...fields, customJson: custom.customJson };
+  if (
+    (data.status === "IN_REVIEW" || data.status === "APPROVED") &&
+    data.status !== existing.status
+  )
+    data.status = existing.status;
+
   const testCase = await db.testCase.update({
     where: { id: caseId },
-    data: { ...fields, customJson: custom.customJson },
+    data,
     include: { project: true },
   });
 
@@ -306,6 +317,10 @@ export async function bulkUpdateCases(formData: FormData) {
     !ids.length ||
     !["priority", "type", "status", "automationStatus"].includes(field)
   )
+    return;
+  // F-15: review states are flow-driven — bulk edit can set only manual
+  // lifecycle statuses, never IN_REVIEW/APPROVED.
+  if (field === "status" && !["DRAFT", "ACTIVE", "DEPRECATED"].includes(value))
     return;
 
   // Resolve the accessible ids first — F-05 records one revision per case.

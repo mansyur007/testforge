@@ -20,7 +20,7 @@ export default async function ProjectPage({
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { suite?: string; priority?: string; type?: string; q?: string; tag?: string; v?: string };
+  searchParams: { suite?: string; priority?: string; type?: string; q?: string; tag?: string; v?: string; review?: string };
 }) {
   const session = await requireSession();
   const project = await db.project.findFirst({
@@ -64,6 +64,11 @@ export default async function ProjectPage({
   if (searchParams.type) where.type = searchParams.type;
   if (searchParams.q) where.title = { contains: searchParams.q };
   if (searchParams.tag) where.tags = { contains: searchParams.tag };
+  // F-15: "Needs my review" — cases in review assigned to the current user.
+  if (searchParams.review === "mine") {
+    where.status = "IN_REVIEW";
+    where.reviewerId = session.userId;
+  }
 
   const cases = await db.testCase.findMany({
     where,
@@ -78,6 +83,17 @@ export default async function ProjectPage({
     select: { project: { select: { id: true, slug: true, name: true } } },
     orderBy: { project: { name: "asc" } },
   });
+
+  // F-15: how many cases are waiting on this user's review (for the chip badge).
+  const needsMyReview = await db.testCase.count({
+    where: {
+      projectId: project.id,
+      deletedAt: null,
+      status: "IN_REVIEW",
+      reviewerId: session.userId,
+    },
+  });
+  const reviewMine = searchParams.review === "mine";
 
   const canWrite = session.role !== "VIEWER";
   const rootSuites = project.suites.filter((s) => !s.parentId);
@@ -195,6 +211,30 @@ export default async function ProjectPage({
                 Filter
               </button>
             </form>
+            {/* F-15: "Needs my review" toggle chip. */}
+            <Link
+              href={
+                reviewMine
+                  ? `/projects/${project.slug}?v=all${searchParams.suite ? `&suite=${searchParams.suite}` : ""}`
+                  : `/projects/${project.slug}?review=mine${searchParams.suite ? `&suite=${searchParams.suite}` : ""}`
+              }
+              data-testid="review-filter-chip"
+              className={`rounded-lg border px-3 py-2 text-sm ${
+                reviewMine
+                  ? "border-amber-400 bg-amber-50 text-amber-800"
+                  : "border-slate-300 hover:bg-slate-100"
+              }`}
+            >
+              🧐 Needs my review
+              {needsMyReview > 0 && (
+                <span
+                  className="ml-1.5 rounded-full bg-amber-500 px-1.5 py-0.5 text-xs font-semibold text-white"
+                  data-testid="review-filter-count"
+                >
+                  {needsMyReview}
+                </span>
+              )}
+            </Link>
             <a
               href={`/api/export/cases?project=${project.slug}`}
               className="rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
@@ -229,6 +269,7 @@ export default async function ProjectPage({
               suiteName: c.suite?.name ?? null,
               priority: c.priority,
               type: c.type,
+              status: c.status,
               automationStatus: c.automationStatus,
               tags: c.tags,
             }))}

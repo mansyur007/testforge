@@ -95,6 +95,9 @@ const EVENT_EMOJI: Record<string, string> = {
   "milestone.completed": "🎯",
   "comment.created": "💬",
   "comment.mentioned": "📣",
+  "case.review_requested": "🧐",
+  "case.approved": "✅",
+  "case.changes_requested": "🔁",
 };
 
 export function slackMessage(event: string, d: NotifyData) {

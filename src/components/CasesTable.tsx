@@ -7,9 +7,10 @@ import {
   caseDisplayId,
   parseTags,
   PRIORITY_BADGES,
+  STATUS_BADGES,
   PRIORITIES,
   CASE_TYPES,
-  CASE_STATUSES,
+  CASE_FORM_STATUSES,
   AUTOMATION_STATUSES,
 } from "@/lib/constants";
 import {
@@ -34,6 +35,7 @@ type CaseRow = {
   suiteName: string | null;
   priority: string;
   type: string;
+  status: string;
   automationStatus: string;
   tags: string;
 };
@@ -188,7 +190,7 @@ export function CasesTable({
         ? CASE_TYPES
         : field === "automationStatus"
           ? AUTOMATION_STATUSES
-          : CASE_STATUSES;
+          : CASE_FORM_STATUSES; // F-15: bulk edit can't set review states
 
   const bulkOptions = optionsFor(bulkField);
 
@@ -470,12 +472,24 @@ export function CasesTable({
                     {caseDisplayId(projectSlug, c.seq)}
                   </td>
                   <td className="px-3 py-2.5">
-                    <Link
-                      href={`/projects/${projectSlug}/cases/${c.id}`}
-                      className="font-medium text-slate-800 hover:text-indigo-600"
-                    >
-                      {c.title}
-                    </Link>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Link
+                        href={`/projects/${projectSlug}/cases/${c.id}`}
+                        className="font-medium text-slate-800 hover:text-indigo-600"
+                      >
+                        {c.title}
+                      </Link>
+                      {/* F-15: surface non-runnable/review states inline; ACTIVE
+                          (the common runnable state) stays unlabeled. */}
+                      {c.status && c.status !== "ACTIVE" && (
+                        <span
+                          className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${STATUS_BADGES[c.status] ?? "bg-slate-100 text-slate-600"}`}
+                          data-testid={`case-row-status-${c.id}`}
+                        >
+                          {c.status.replace(/_/g, " ")}
+                        </span>
+                      )}
+                    </span>
                     {c.suiteName && (
                       <p className="text-xs text-slate-400">{c.suiteName}</p>
                     )}
