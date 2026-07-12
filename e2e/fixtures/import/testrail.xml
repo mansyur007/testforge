@@ -1,0 +1,51 @@
+<suite>
+  <name>Web App</name>
+  <sections>
+    <section>
+      <name>Auth</name>
+      <sections>
+        <section>
+          <name>Login</name>
+          <cases>
+            <case>
+              <title>Valid login redirects to dashboard</title>
+              <priority>4</priority>
+              <type>Functional</type>
+              <custom>
+                <preconds>User is registered</preconds>
+                <steps_separated>
+                  <step>
+                    <content>Open /login</content>
+                    <expected>Form is visible</expected>
+                  </step>
+                  <step>
+                    <content>Submit valid credentials</content>
+                    <expected>Redirected to dashboard</expected>
+                  </step>
+                </steps_separated>
+              </custom>
+            </case>
+            <case>
+              <title>Invalid password shows an error</title>
+              <priority>high</priority>
+              <type>Regression</type>
+              <custom>
+                <steps>Freeform fallback step text</steps>
+              </custom>
+            </case>
+          </cases>
+        </section>
+      </sections>
+    </section>
+    <section>
+      <name>Checkout</name>
+      <cases>
+        <case>
+          <title>Checkout with a valid card</title>
+          <priority>99</priority>
+          <type>Unknown Type</type>
+        </case>
+      </cases>
+    </section>
+  </sections>
+</suite>

@@ -101,7 +101,7 @@ Legenda: ✅ ada · 🟡 sebagian/terbatas · ❌ tidak ada · ➖ tidak relevan
 | Integrasi Jira native | 🟡 (create/link/status; belum plugin sisi Jira) | ✅ (plugin dua arah) | ✅ | ✅ | ✅ |
 | GitHub/GitLab issues | ❌ | ✅ | ✅ | 🟡 | ➖ |
 | Slack/Teams notification | ✅ | ✅ | ✅ | ❌ | ✅ |
-| Import dari tool lain (TestRail/Qase/XML) | 🟡 (CSV saja) | ✅ | ✅ (TestRail, CSV) | ✅ (XML) | ➖ |
+| Import dari tool lain (TestRail/Qase/XML) | ✅ (CSV + TestRail/Qase/TestLink) | ✅ | ✅ (TestRail, CSV) | ✅ (XML) | ➖ |
 | Export CSV | ✅ | ✅ (+XLSX/XML) | ✅ (+JSON) | ✅ (XML) | ➖ |
 | **Kolaborasi** |
 | Komentar & @mention di case/run | ❌ | 🟡 | ✅ | ❌ | ✅ |
@@ -361,8 +361,8 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
       mudah, mencakup Google Workspace/Azure AD/Keycloak), SAML menyusul; SCIM paling akhir.
 - [x] *(Selesai 2026-07-12)* **Mute/quarantine test** — tandai case automation sebagai muted;
       hasilnya tercatat tapi tidak menggagalkan pass rate; laporan test yang lama di-mute.
-- [ ] **Import dari TestRail/Qase/TestLink** — importer XML TestRail, export JSON Qase, dan
-      XML TestLink (bukan cuma CSV) untuk menurunkan biaya pindah — funnel adopsi utama.
+- [x] *(Selesai 2026-07-12)* **Import dari TestRail/Qase/TestLink** — importer XML TestRail,
+      export JSON Qase, dan XML TestLink (bukan cuma CSV) untuk menurunkan biaya pindah.
 - [ ] **Estimasi & forecast** — field estimasi per case, agregat per run/plan, forecast sisa
       waktu berdasar kecepatan aktual tester (data timer sudah ada).
 - [x] *(Selesai 2026-07-11)* **Bulk move/copy antar suite & antar project** + reorder

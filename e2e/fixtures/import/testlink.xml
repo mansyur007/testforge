@@ -1,0 +1,25 @@
+<testsuite name="Web App">
+  <testsuite name="Auth">
+    <testcase name="Valid login with correct credentials">
+      <summary>Happy path login</summary>
+      <preconditions>User is registered</preconditions>
+      <importance>3</importance>
+      <steps>
+        <step>
+          <step_number>1</step_number>
+          <actions>Open /login</actions>
+          <expectedresults>Form is visible</expectedresults>
+        </step>
+        <step>
+          <step_number>2</step_number>
+          <actions>Submit valid credentials</actions>
+          <expectedresults>Redirected to dashboard</expectedresults>
+        </step>
+      </steps>
+    </testcase>
+    <testcase name="Unknown importance defaults to medium">
+      <importance>9</importance>
+      <steps></steps>
+    </testcase>
+  </testsuite>
+</testsuite>

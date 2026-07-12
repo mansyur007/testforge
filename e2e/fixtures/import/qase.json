@@ -1,0 +1,38 @@
+{
+  "suites": [
+    { "id": 1, "title": "Auth", "parent_id": null },
+    { "id": 2, "title": "Login", "parent_id": 1 }
+  ],
+  "cases": [
+    {
+      "id": 10,
+      "title": "Valid login with a registered email",
+      "description": "Checks the happy path login flow",
+      "preconditions": "User exists and is verified",
+      "suite_id": 2,
+      "priority": "high",
+      "type": "functional",
+      "tags": ["smoke", "auth"],
+      "steps": [
+        { "action": "Open /login", "expected_result": "Form is visible" },
+        { "action": "Submit valid credentials", "expected_result": "Dashboard renders" }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Locked out after 5 failed attempts",
+      "suite_id": 2,
+      "severity": "major",
+      "type": "security",
+      "steps": []
+    },
+    {
+      "id": 12,
+      "title": "Unknown priority defaults to medium",
+      "suite_id": 1,
+      "priority": "urgent",
+      "type": "made-up-type",
+      "steps": []
+    }
+  ]
+}
