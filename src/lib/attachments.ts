@@ -14,7 +14,7 @@ export const INLINE_IMAGE_MIMES = [
   "image/webp",
 ];
 
-export const ATTACHMENT_ENTITY_TYPES = ["CASE", "RESULT"] as const;
+export const ATTACHMENT_ENTITY_TYPES = ["CASE", "RESULT", "COMMENT"] as const;
 
 export function maxUploadBytes(): number {
   const mb = parseInt(process.env.TF_MAX_UPLOAD_MB ?? "10", 10);
@@ -118,15 +118,26 @@ export async function sweepOrphanAttachments(): Promise<number> {
 
   const caseIds = atts.filter((a) => a.entityType === "CASE").map((a) => a.entityId);
   const resultIds = atts.filter((a) => a.entityType === "RESULT").map((a) => a.entityId);
+  // F-16: a comment attachment is orphaned once its comment is hard-deleted.
+  const commentIds = atts.filter((a) => a.entityType === "COMMENT").map((a) => a.entityId);
 
-  const [cases, results] = await Promise.all([
+  const [cases, results, comments] = await Promise.all([
     db.testCase.findMany({ where: { id: { in: caseIds } }, select: { id: true } }),
     db.testRunResult.findMany({ where: { id: { in: resultIds } }, select: { id: true } }),
+    db.comment.findMany({ where: { id: { in: commentIds } }, select: { id: true } }),
   ]);
-  const alive = new Set([...cases.map((c) => c.id), ...results.map((r) => r.id)]);
+  const alive = new Set([
+    ...cases.map((c) => c.id),
+    ...results.map((r) => r.id),
+    ...comments.map((c) => c.id),
+  ]);
 
   const orphanIds = atts
-    .filter((a) => ["CASE", "RESULT"].includes(a.entityType) && !alive.has(a.entityId))
+    .filter(
+      (a) =>
+        ["CASE", "RESULT", "COMMENT"].includes(a.entityType) &&
+        !alive.has(a.entityId)
+    )
     .map((a) => a.id);
   if (orphanIds.length === 0) return 0;
   return removeAttachments({ id: { in: orphanIds } });

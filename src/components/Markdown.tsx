@@ -32,13 +32,18 @@ const urlTransform: UrlTransform = (url, key) => {
 export function Markdown({
   children,
   className = "",
+  inline = false,
 }: {
   children: string;
   className?: string;
+  // F-16: render as an inline flow (paragraphs unwrapped) so mention chips can
+  // sit inline between text fragments without forcing block breaks.
+  inline?: boolean;
 }) {
   if (!children || !children.trim()) return null;
+  const Wrapper = inline ? "span" : "div";
   return (
-    <div className={`tf-markdown text-sm ${className}`}>
+    <Wrapper className={`tf-markdown text-sm ${className}`}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[[rehypeSanitize, schema]]}
@@ -49,10 +54,19 @@ export function Markdown({
             void _node;
             return <a {...rest} target="_blank" rel="noreferrer" />;
           },
+          ...(inline
+            ? {
+                p: (props) => {
+                  const { node: _node, ...rest } = props;
+                  void _node;
+                  return <span {...rest} />;
+                },
+              }
+            : {}),
         }}
       >
         {children}
       </ReactMarkdown>
-    </div>
+    </Wrapper>
   );
 }

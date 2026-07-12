@@ -39,6 +39,7 @@ model User {
   caseRevisions  TestCaseRevision[] @relation("RevisionAuthor")
   createdPlans   TestPlan[]         @relation("PlanCreator")
   mutedCases     TestCase[]         @relation("CaseMutedBy")
+  comments       Comment[]          @relation("CommentAuthor")
 }
 
 model Project {
@@ -69,6 +70,7 @@ model Project {
   configGroups ConfigGroup[]
   testPlans    TestPlan[]
   environments Environment[]
+  comments     Comment[]
 }
 
 // Outbound webhooks: POST a signed JSON payload to `url` when a subscribed event
@@ -426,6 +428,27 @@ model TestRunResult {
 
   // F-13: a case with N dataset rows seeds N results per run, one per row.
   @@unique([runId, caseId, datasetName])
+}
+
+// F-16: flat (non-threaded) comments on a case, run, or run result. bodyMd is
+// Markdown (F-02 renderer); mentions are stored inline as `@[userId]` tokens.
+// Soft delete keeps the row so the thread reads "deleted" instead of collapsing.
+model Comment {
+  id         String    @id @default(cuid())
+  projectId  String
+  entityType String // CASE | RUN | RESULT
+  entityId   String
+  authorId   String
+  bodyMd     String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  editedAt   DateTime? // set on an author edit; drives the "edited" marker
+  deletedAt  DateTime?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  author  User    @relation("CommentAuthor", fields: [authorId], references: [id])
+
+  @@index([projectId, entityType, entityId])
 }
 
 // Gap audit: PRD §5.3 mensyaratkan API key untuk CI/CD tapi tabelnya

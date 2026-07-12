@@ -11,6 +11,7 @@ import { computeRunEstimates, projectMedianEstimate } from "@/lib/estimates";
 import { formatDuration, formatRemaining } from "@/lib/duration";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { RunExecutor } from "@/components/RunExecutor";
+import { CommentPanel } from "@/components/CommentPanel";
 import { completeRun, rerunFailed } from "@/app/actions/runs";
 
 export const dynamic = "force-dynamic";
@@ -286,6 +287,11 @@ export default async function RunDetailPage({
           };
         })}
       />
+
+      {/* F-16: run-level discussion thread. */}
+      <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <CommentPanel entityType="RUN" entityId={run.id} projectSlug={run.project.slug} />
+      </div>
     </div>
   );
 }

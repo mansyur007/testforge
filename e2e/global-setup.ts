@@ -11,6 +11,11 @@ export const E2E = {
   projectSlug: "e2e",
   // F-24: a second project the e2e user owns, used as the "Copy to project…" target.
   targetProjectSlug: "e2e-target",
+  // F-16: a VIEWER member of the e2e project — a target for @mentions and proof
+  // that a VIEWER may still comment.
+  teammateEmail: "teammate@testforge.local",
+  teammatePassword: "E2eDemo123",
+  teammateName: "E2E Teammate",
 };
 
 // Seed a deterministic fixture into the LOCAL dev.db before the suite runs:
@@ -90,6 +95,33 @@ async function globalSetup() {
     // run sitting here and skew "copied N cases" assertions. Start clean.
     await db.testCase.deleteMany({ where: { project: { slug: E2E.targetProjectSlug } } });
   }
+
+  // F-16: a VIEWER teammate on the e2e project — @mention target + proof a
+  // VIEWER can comment. Idempotent membership so reruns don't duplicate.
+  const teammate = await db.user.upsert({
+    where: { email: E2E.teammateEmail },
+    update: { passwordHash, emailVerifiedAt: new Date(), onboardedAt: new Date() },
+    create: {
+      name: E2E.teammateName,
+      email: E2E.teammateEmail,
+      passwordHash,
+      role: "MEMBER",
+      emailVerifiedAt: new Date(),
+      onboardedAt: new Date(),
+      organizationId: org.id,
+    },
+  });
+  const eProject = await db.project.findUniqueOrThrow({
+    where: { slug: E2E.projectSlug },
+    select: { id: true },
+  });
+  await db.projectMember.upsert({
+    where: { projectId_userId: { projectId: eProject.id, userId: teammate.id } },
+    update: { role: "VIEWER" },
+    create: { projectId: eProject.id, userId: teammate.id, role: "VIEWER" },
+  });
+  // Start each run with a clean comment thread so counts don't drift.
+  await db.comment.deleteMany({ where: { projectId: eProject.id } });
 
   // F-03 crash recovery: a failed custom-fields spec can leave a REQUIRED
   // field active on the e2e project, which would break every later case

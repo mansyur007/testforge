@@ -21,6 +21,7 @@ import { CaseHistory, type RevisionView } from "@/components/CaseHistory";
 import { IssuePanel } from "@/components/IssuePanel";
 import { Markdown } from "@/components/Markdown";
 import { UnmuteButton } from "@/components/MuteControls";
+import { CommentPanel } from "@/components/CommentPanel";
 import { formatDuration } from "@/lib/duration";
 
 export const dynamic = "force-dynamic";
@@ -465,6 +466,15 @@ export default async function CaseDetailPage({
               </ul>
             </section>
           )}
+
+          {/* F-16: discussion thread on this case. */}
+          <section className="rounded-xl border border-slate-200 bg-white p-6">
+            <CommentPanel
+              entityType="CASE"
+              entityId={testCase.id}
+              projectSlug={testCase.project.slug}
+            />
+          </section>
         </div>
       </div>
       )}
