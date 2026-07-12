@@ -1154,6 +1154,10 @@ export function openApiSpec() {
             assigneeId: { type: ["string", "null"] },
             tags: { type: "string", description: "Comma-separated." },
             linkedIssues: { type: ["string", "null"] },
+            estimateSeconds: {
+              type: ["integer", "null"],
+              description: "F-23: expected execution time in seconds, rolled up into run/plan totals and forecasts.",
+            },
             custom: {
               type: "object",
               additionalProperties: true,

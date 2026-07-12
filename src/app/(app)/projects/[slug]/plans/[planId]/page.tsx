@@ -5,6 +5,8 @@ import { requireSession } from "@/lib/auth";
 import { RESULT_COLORS } from "@/lib/constants";
 import { aggregateResults, parseRunConfig, configLabel } from "@/lib/plans";
 import { bucketStatus, isMuted } from "@/lib/mute";
+import { computeRunEstimates, projectMedianEstimate, sumRunEstimates } from "@/lib/estimates";
+import { formatDuration, formatRemaining } from "@/lib/duration";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { CompletePlanButton } from "@/components/CompletePlanButton";
 
@@ -30,7 +32,12 @@ export default async function PlanDetailPage({
       runs: {
         include: {
           results: {
-            select: { status: true, testCase: { select: { mutedAt: true } } },
+            select: {
+              status: true,
+              elapsedSeconds: true,
+              assigneeId: true,
+              testCase: { select: { mutedAt: true, estimateSeconds: true } },
+            },
           },
         },
         orderBy: { createdAt: "asc" },
@@ -43,6 +50,29 @@ export default async function PlanDetailPage({
   const totalRaw = Object.values(counts).reduce((n, c) => n + c, 0);
   const total = totalRaw || 1;
   const activeRuns = plan.runs.filter((r) => r.status === "ACTIVE").length;
+
+  // F-23: roll-up = sum of each child run's own estimate/elapsed/forecast
+  // (each run's forecast uses its own per-tester medians).
+  const projectEstimates = await db.testCase.findMany({
+    where: { projectId: plan.projectId, deletedAt: null },
+    select: { estimateSeconds: true },
+  });
+  const projectDefault = projectMedianEstimate(
+    projectEstimates.map((c) => c.estimateSeconds)
+  );
+  const planEstimates = sumRunEstimates(
+    plan.runs.map((run) =>
+      computeRunEstimates(
+        run.results.map((r) => ({
+          status: r.status,
+          elapsedSeconds: r.elapsedSeconds,
+          assigneeId: r.assigneeId,
+          estimateSeconds: r.testCase.estimateSeconds,
+        })),
+        projectDefault
+      )
+    )
+  );
 
   const MATRIX_COLS = ["PASSED", "FAILED", "BLOCKED", "UNTESTED"] as const;
   const rowCount = (
@@ -117,6 +147,29 @@ export default async function PlanDetailPage({
             <span className="text-slate-400">No results yet.</span>
           )}
         </div>
+        {(planEstimates.totalEstimateSeconds > 0 ||
+          planEstimates.actualElapsedSeconds > 0) && (
+          <div
+            className="mt-3 flex flex-wrap gap-4 border-t border-slate-100 pt-3 text-sm text-slate-500"
+            data-testid="plan-estimate-summary"
+          >
+            {planEstimates.totalEstimateSeconds > 0 && (
+              <span>
+                Estimate: <b>{formatDuration(planEstimates.totalEstimateSeconds)}</b>
+              </span>
+            )}
+            {planEstimates.actualElapsedSeconds > 0 && (
+              <span>
+                Elapsed: <b>{formatDuration(planEstimates.actualElapsedSeconds)}</b>
+              </span>
+            )}
+            {planEstimates.remainingCount > 0 && (
+              <span data-testid="plan-forecast">
+                {formatRemaining(planEstimates.forecastSeconds)}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Child runs */}

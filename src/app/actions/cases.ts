@@ -19,6 +19,7 @@ import {
   mergeCustomJson,
   validateCustomValues,
 } from "@/lib/custom-fields";
+import { parseDuration } from "@/lib/duration";
 
 // F-03: collect & validate custom_<key> form entries against the project's
 // CASE field defs. Returns the merged customJson or a user-facing error.
@@ -63,6 +64,7 @@ function readCaseFields(formData: FormData) {
   } catch {
     steps = [];
   }
+  const estimateRaw = String(formData.get("estimate") ?? "").trim();
   return {
     title: String(formData.get("title") ?? "").trim(),
     description: String(formData.get("description") ?? "").trim() || null,
@@ -77,6 +79,8 @@ function readCaseFields(formData: FormData) {
     suiteId: String(formData.get("suiteId") ?? "") || null,
     stepsJson: JSON.stringify(steps),
     datasetJson: readDatasetJson(formData),
+    estimateRaw,
+    estimateSeconds: estimateRaw ? parseDuration(estimateRaw) : null,
   };
 }
 
@@ -104,8 +108,10 @@ export async function createCase(
   if (session.role === "VIEWER") return { error: "Viewers don't have write access." };
 
   const projectId = String(formData.get("projectId"));
-  const fields = readCaseFields(formData);
+  const { estimateRaw, ...fields } = readCaseFields(formData);
   if (!fields.title) return { error: "Test case title is required." };
+  if (estimateRaw && fields.estimateSeconds == null)
+    return { error: `Invalid estimate: "${estimateRaw}". Try "90", "1m 30s", or "1:30".` };
   if (!(await isProjectMember(session.userId, projectId)))
     return { error: "Project not found." };
 
@@ -145,8 +151,10 @@ export async function updateCase(
   if (session.role === "VIEWER") return { error: "Viewers don't have write access." };
 
   const caseId = String(formData.get("caseId"));
-  const fields = readCaseFields(formData);
+  const { estimateRaw, ...fields } = readCaseFields(formData);
   if (!fields.title) return { error: "Test case title is required." };
+  if (estimateRaw && fields.estimateSeconds == null)
+    return { error: `Invalid estimate: "${estimateRaw}". Try "90", "1m 30s", or "1:30".` };
   await assertCaseAccess(session.userId, caseId);
 
   const existing = await db.testCase.findUniqueOrThrow({

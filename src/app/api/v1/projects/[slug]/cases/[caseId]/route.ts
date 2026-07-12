@@ -82,6 +82,16 @@ export async function PATCH(
     data.expectedResult = body.expectedResult ?? null;
   if ("linkedIssues" in body) data.linkedIssues = body.linkedIssues ?? null;
   if ("tags" in body) data.tags = String(body.tags ?? "");
+  // F-23: null clears the estimate; otherwise must be a non-negative number.
+  if ("estimateSeconds" in body) {
+    if (body.estimateSeconds == null) data.estimateSeconds = null;
+    else {
+      const n = Number(body.estimateSeconds);
+      if (!Number.isFinite(n) || n < 0)
+        errors.push({ field: "estimateSeconds", message: "must be a non-negative number" });
+      else data.estimateSeconds = n;
+    }
+  }
   if ("steps" in body) {
     if (!Array.isArray(body.steps))
       errors.push({ field: "steps", message: "must be an array" });

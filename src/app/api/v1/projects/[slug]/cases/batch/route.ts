@@ -81,6 +81,14 @@ export async function POST(
         field: `cases[${i}].suiteId`,
         message: "not found in this project",
       });
+    if (c.estimateSeconds != null) {
+      const n = Number(c.estimateSeconds);
+      if (!Number.isFinite(n) || n < 0)
+        errors.push({
+          field: `cases[${i}].estimateSeconds`,
+          message: "must be a non-negative number",
+        });
+    }
   });
 
   if (errors.length) return validationError(errors);
@@ -108,6 +116,7 @@ export async function POST(
           priority: c.priority ? String(c.priority).toUpperCase() : "MEDIUM",
           type: c.type ? String(c.type).toUpperCase() : "FUNCTIONAL",
           tags: (c.tags as string) ?? "",
+          estimateSeconds: c.estimateSeconds != null ? Number(c.estimateSeconds) : null,
         },
         select: { id: true, seq: true },
       })
