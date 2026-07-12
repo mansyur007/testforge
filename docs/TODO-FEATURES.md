@@ -1212,17 +1212,31 @@ unless marked (large).
   colored in charts, exported in CSV; create role "Executor" (run.execute only) → member with
   it can execute runs but cannot edit cases (server-enforced).
 
-### F-15 — Case review workflow `[ ]`
+### F-15 — Case review workflow `[x]`
 
-- Extend `TestCase.status` values: `DRAFT | IN_REVIEW | APPROVED | ACTIVE | DEPRECATED`
-  (keep `ACTIVE` meaning approved-legacy; migration maps nothing).
-- New fields: `reviewerId String?`, `reviewedAt DateTime?`, `reviewNote String?`.
-- Flow: author sets IN_REVIEW + picks reviewer (notify via F-08 `case.assigned`-style event
-  `case.review_requested`) → reviewer sees "Needs my review" filter chip on cases page →
-  Approve (→ APPROVED, stamps reviewer/date) or Request changes (→ DRAFT + required note).
-  Guard: reviewer ≠ author (server-side).
-- Runs: creating a run from non-APPROVED/ACTIVE cases shows a count warning (not a block).
-- AC: full loop author→reviewer→approve visible in history (F-05 records status transitions).
+> **Status: DONE** (2026-07-12, branch `feat/case-review`, Opus 4.8). Implemented to spec:
+> - `TestCase.status` now `DRAFT | IN_REVIEW | APPROVED | ACTIVE | DEPRECATED`; `ACTIVE` stays the
+>   approved-legacy runnable state. New fields `reviewerId / reviewedAt / reviewNote`.
+> - `IN_REVIEW` & `APPROVED` are **flow-driven only** — the case form / bulk edit expose a manual
+>   subset (`CASE_FORM_STATUSES` = DRAFT/ACTIVE/DEPRECATED); `updateCase` refuses to fabricate a
+>   review state on a case that wasn't already there, but lets an in-review case round-trip its
+>   status through a content edit. `CASE_STATUSES` (all 5) drives validation/badges/`STATUS_BADGES`.
+> - Flow (`src/app/actions/review.ts`): `requestReview` (writer picks a reviewer) → `approveCase`
+>   / `requestChanges` (assigned reviewer only). Events `case.review_requested / case.approved /
+>   case.changes_requested` added to `WEBHOOK_EVENTS` + notify emoji; `notify()` fires like
+>   `case.assigned` (project channels). Each transition calls `recordRevision` with a summary
+>   override, so F-05 history shows the DRAFT→IN_REVIEW→APPROVED trail.
+> - **Guards** (interpretation): "author" = the review requester, so `reviewer ≠ self`
+>   (server-side) — the picker also excludes self. Added a rule the spec implied but didn't state:
+>   a **VIEWER can't be a reviewer** (they can't act on cases), enforced server-side and by only
+>   offering write-access members in the picker.
+> - "Needs my review" filter chip (`?review=mine`, `reviewerId=me & IN_REVIEW`) with a live count
+>   badge on the cases page; a small inline status pill on non-ACTIVE case rows.
+> - Run creation shows a count **warning** (not a block) when selected cases aren't APPROVED/ACTIVE
+>   (`RUNNABLE_CASE_STATUSES`). API v1 case serializer + OpenAPI expose the review fields and the
+>   widened status enum.
+> - e2e `review.spec.ts` 3/3 (approve loop + author≠reviewer/VIEWER guards + history; request-changes
+>   → DRAFT + note; run warning); full suite 48/48. Fixture gained a MEMBER `reviewer@testforge.local`.
 
 ### F-16 — Comments & @mentions `[x]`
 

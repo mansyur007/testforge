@@ -128,6 +128,10 @@ export function serializeCase(
     custom: JSON.parse(c.customJson || "{}"),
     datasets: parseDatasets(c.datasetJson), // F-13
     estimateSeconds: c.estimateSeconds, // F-23
+    // F-15: review workflow state.
+    reviewerId: c.reviewerId,
+    reviewedAt: c.reviewedAt ? c.reviewedAt.toISOString() : null,
+    reviewNote: c.reviewNote,
     rev: c.rev,
     muted: c.mutedAt != null, // F-21
     mutedReason: c.mutedReason,

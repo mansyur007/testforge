@@ -1145,7 +1145,11 @@ export function openApiSpec() {
             expectedResult: { type: ["string", "null"] },
             priority: { type: "string", enum: ["CRITICAL", "HIGH", "MEDIUM", "LOW"] },
             type: { type: "string", enum: ["FUNCTIONAL", "REGRESSION", "SMOKE", "PERFORMANCE", "SECURITY", "E2E"] },
-            status: { type: "string", enum: ["DRAFT", "ACTIVE", "DEPRECATED"] },
+            status: {
+              type: "string",
+              enum: ["DRAFT", "IN_REVIEW", "APPROVED", "ACTIVE", "DEPRECATED"],
+              description: "F-15: IN_REVIEW & APPROVED are normally set by the review flow.",
+            },
             automationStatus: {
               type: "string",
               enum: ["NOT_AUTOMATED", "IN_PROGRESS", "AUTOMATED", "TO_BE_UPDATED"],
@@ -1197,6 +1201,9 @@ export function openApiSpec() {
                   description: "F-21: quarantined — its results are excluded from pass-rate math everywhere.",
                 },
                 mutedReason: { type: ["string", "null"] },
+                reviewerId: { type: ["string", "null"], description: "F-15: assigned reviewer." },
+                reviewedAt: { type: ["string", "null"], format: "date-time" },
+                reviewNote: { type: ["string", "null"], description: "F-15: reviewer's request-changes note." },
                 createdAt: { type: "string", format: "date-time" },
                 updatedAt: { type: "string", format: "date-time" },
               },

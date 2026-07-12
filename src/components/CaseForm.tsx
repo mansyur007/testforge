@@ -12,7 +12,7 @@ import {
 import {
   PRIORITIES,
   CASE_TYPES,
-  CASE_STATUSES,
+  CASE_FORM_STATUSES,
   AUTOMATION_STATUSES,
   isSharedRef,
   type InlineStep,
@@ -205,9 +205,20 @@ export function CaseForm({
           </div>
           <div>
             <label className={labelCls}>Status</label>
+            {/* F-15: IN_REVIEW/APPROVED are driven by the review panel, not this
+                form. Keep the current value selectable so editing a case that is
+                under review round-trips its real status. */}
             <select name="status" defaultValue={initial?.status ?? "ACTIVE"} className={inputCls}>
-              {CASE_STATUSES.map((s) => (
-                <option key={s}>{s}</option>
+              {(initial?.status &&
+              !CASE_FORM_STATUSES.includes(
+                initial.status as (typeof CASE_FORM_STATUSES)[number]
+              )
+                ? [initial.status, ...CASE_FORM_STATUSES]
+                : CASE_FORM_STATUSES
+              ).map((s) => (
+                <option key={s} value={s}>
+                  {s.replace(/_/g, " ")}
+                </option>
               ))}
             </select>
           </div>

@@ -39,6 +39,7 @@ model User {
   caseRevisions  TestCaseRevision[] @relation("RevisionAuthor")
   createdPlans   TestPlan[]         @relation("PlanCreator")
   mutedCases     TestCase[]         @relation("CaseMutedBy")
+  reviewingCases TestCase[]         @relation("CaseReviewer")
   comments       Comment[]          @relation("CommentAuthor")
 }
 
@@ -349,6 +350,9 @@ model TestCase {
   mutedAt          DateTime? // F-21: quarantined — excluded from pass-rate math everywhere
   mutedReason      String?
   mutedById        String?
+  reviewerId       String? // F-15: assigned reviewer while status is IN_REVIEW (also who approved / requested changes)
+  reviewedAt       DateTime? // F-15: when the reviewer approved or requested changes
+  reviewNote       String? // F-15: the reviewer's "request changes" note
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   deletedAt        DateTime? // soft delete (gap audit: recycle bin)
@@ -357,6 +361,7 @@ model TestCase {
   suite     TestSuite?         @relation(fields: [suiteId], references: [id], onDelete: SetNull)
   assignee  User?              @relation("CaseAssignee", fields: [assigneeId], references: [id])
   mutedBy   User?              @relation("CaseMutedBy", fields: [mutedById], references: [id])
+  reviewer  User?              @relation("CaseReviewer", fields: [reviewerId], references: [id])
   results   TestRunResult[]
   revisions TestCaseRevision[]
 

@@ -18,6 +18,9 @@ export const WEBHOOK_EVENTS = [
   "milestone.completed",
   "comment.created",
   "comment.mentioned",
+  "case.review_requested",
+  "case.approved",
+  "case.changes_requested",
 ] as const;
 export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number];
 
