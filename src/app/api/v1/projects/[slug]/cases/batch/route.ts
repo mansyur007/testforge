@@ -6,6 +6,7 @@ import {
   notFoundError,
   validationError,
   type FieldError,
+  requirePerm,
 } from "@/lib/api";
 import { caseDisplayId, PRIORITIES, CASE_TYPES } from "@/lib/constants";
 
@@ -26,6 +27,8 @@ export async function POST(
     select: { id: true },
   });
   if (!project) return notFoundError("Project not found");
+  const denied = await requirePerm(g.userId, project.id, "case.write"); // F-14
+  if (denied) return denied;
 
   const body = await req.json().catch(() => null);
   if (!body || !Array.isArray(body.cases))

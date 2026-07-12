@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
-import { getProjectRole, canManageMembers } from "@/lib/projects";
 import { logAudit } from "@/lib/audit";
 import { encrypt } from "@/lib/crypto";
 import { WEBHOOK_EVENTS } from "@/lib/webhooks";
@@ -14,6 +13,7 @@ import {
   validateWebhookTarget,
   type ChannelType,
 } from "@/lib/notifications";
+import { can } from "@/lib/permissions";
 
 // F-08: manage a project's notification channels. OWNER/ADMIN only (same
 // gate as member management — canManageMembers covers exactly those roles).
@@ -24,9 +24,8 @@ async function requireChannelAdmin(
   projectId: string
 ): Promise<{ userId: string; slug: string } | { error: string }> {
   const session = await requireSession();
-  const role = await getProjectRole(session.userId, projectId);
-  if (!role) return { error: "Project not found." };
-  if (!canManageMembers(role))
+  // F-14: central permission check (covers custom roles too).
+  if (!(await can(session.userId, projectId, "project.admin")))
     return { error: "Only project owners/admins can manage notifications." };
   const project = await db.project.findUniqueOrThrow({
     where: { id: projectId },

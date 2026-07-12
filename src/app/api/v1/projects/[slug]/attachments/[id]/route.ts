@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { guard, forbidden, notFoundError } from "@/lib/api";
+import { loadPerms } from "@/lib/permissions";
 import { removeAttachments } from "@/lib/attachments";
 import { logAudit } from "@/lib/audit";
 
@@ -21,20 +22,13 @@ export async function DELETE(
   });
   if (!attachment) return notFoundError("Attachment not found");
 
-  const [user, membership] = await Promise.all([
-    db.user.findUnique({ where: { id: g.userId }, select: { role: true } }),
-    db.projectMember.findUnique({
-      where: {
-        projectId_userId: { projectId: attachment.projectId, userId: g.userId },
-      },
-      select: { role: true },
-    }),
-  ]);
+  // F-14: the uploader may remove their own file (if they can still write at
+  // all); anyone with project.admin may remove any.
+  const perms = await loadPerms(g.userId, attachment.projectId);
+  const mayWrite = perms.has("case.write") || perms.has("run.execute");
   const allowed =
-    attachment.uploaderId === g.userId ||
-    user?.role === "ADMIN" ||
-    ["OWNER", "ADMIN"].includes(membership?.role ?? "");
-  if (!allowed || user?.role === "VIEWER")
+    perms.has("project.admin") || (attachment.uploaderId === g.userId && mayWrite);
+  if (!allowed)
     return forbidden("Only the uploader or a project admin can delete this");
 
   await removeAttachments({ id: attachment.id });

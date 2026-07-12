@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { memberScope } from "@/lib/projects";
-import { RESULT_COLORS } from "@/lib/constants";
 import { aggregateResults } from "@/lib/plans";
+import { loadStatusDefs } from "@/lib/result-status-defs";
+import { statusMeta } from "@/lib/result-statuses";
 import { NON_EXECUTED_BUCKETS } from "@/lib/mute";
 import { ProjectTabs } from "@/components/ProjectTabs";
 
@@ -38,6 +39,14 @@ export default async function PlansPage({
     },
   });
   if (!project) notFound();
+
+  // F-14: colors + bar order come from the project's status defs.
+  const statusDefs = await loadStatusDefs(project.id);
+  const { colorOf, labelOf } = statusMeta(statusDefs);
+  const barKeys = [
+    ...statusDefs.filter((d) => d.key !== "UNTESTED").map((d) => d.key),
+    "MUTED",
+  ];
 
   return (
     <div className="space-y-6">
@@ -94,16 +103,17 @@ export default async function PlansPage({
                 </div>
               </div>
               <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-gray-100">
-                {["PASSED", "FAILED", "BLOCKED", "RETEST", "SKIPPED", "IN_PROGRESS", "MUTED"].map(
-                  (st) =>
-                    counts[st] ? (
-                      <div
-                        key={st}
-                        className={RESULT_COLORS[st]}
-                        style={{ width: `${(counts[st] / total) * 100}%` }}
-                        title={`${st === "MUTED" ? "Muted" : st}: ${counts[st]}`}
-                      />
-                    ) : null
+                {barKeys.map((st) =>
+                  counts[st] ? (
+                    <div
+                      key={st}
+                      style={{
+                        backgroundColor: colorOf(st),
+                        width: `${(counts[st] / total) * 100}%`,
+                      }}
+                      title={`${labelOf(st)}: ${counts[st]}`}
+                    />
+                  ) : null
                 )}
               </div>
             </Link>

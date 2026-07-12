@@ -7,6 +7,7 @@ import {
   notFoundError,
   validationError,
   type FieldError,
+  requirePerm,
 } from "@/lib/api";
 
 // Load the suite plus every other suite in the same project — the sibling set is
@@ -44,6 +45,8 @@ export async function PATCH(
 
   const ctx = await loadSuiteContext(g.userId, params.slug, params.suiteId);
   if (!ctx) return notFoundError("Suite not found");
+  const denied = await requirePerm(g.userId, ctx.suite.projectId, "case.write"); // F-14
+  if (denied) return denied;
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object")
@@ -118,6 +121,8 @@ export async function DELETE(
 
   const ctx = await loadSuiteContext(g.userId, params.slug, params.suiteId);
   if (!ctx) return notFoundError("Suite not found");
+  const denied = await requirePerm(g.userId, ctx.suite.projectId, "case.write"); // F-14
+  if (denied) return denied;
 
   // Remove the suite and any sub-suites. Cases keep existing — their suiteId is
   // set null automatically (onDelete: SetNull), i.e. they become unassigned.

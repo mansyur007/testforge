@@ -6,6 +6,7 @@ import {
   notFoundError,
   validationError,
   type FieldError,
+  requirePerm,
 } from "@/lib/api";
 import { dispatchWebhook } from "@/lib/webhooks";
 import { loadCaseRevs } from "@/lib/case-revisions";
@@ -68,6 +69,8 @@ export async function POST(
     select: { id: true },
   });
   if (!project) return notFoundError("Project not found");
+  const denied = await requirePerm(g.userId, project.id, "run.manage"); // F-14
+  if (denied) return denied;
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object")

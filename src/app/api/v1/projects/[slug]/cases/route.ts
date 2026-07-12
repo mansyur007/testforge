@@ -8,6 +8,7 @@ import {
   validationError,
   serializeCase,
   type FieldError,
+  requirePerm,
 } from "@/lib/api";
 import { dispatchWebhook } from "@/lib/webhooks";
 import { notify, notifyBaseUrl } from "@/lib/notifications";
@@ -87,6 +88,8 @@ export async function POST(
     select: { id: true },
   });
   if (!allowed) return notFoundError("Project not found");
+  const denied = await requirePerm(g.userId, allowed.id, "case.write"); // F-14
+  if (denied) return denied;
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object")

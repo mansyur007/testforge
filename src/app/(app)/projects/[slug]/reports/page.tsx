@@ -4,9 +4,11 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { memberScope } from "@/lib/projects";
-import { caseDisplayId, RESULT_COLORS } from "@/lib/constants";
+import { caseDisplayId } from "@/lib/constants";
 import { parseRunConfig, configLabel } from "@/lib/plans";
 import { loadEnvironments } from "@/lib/environments";
+import { loadStatusDefs } from "@/lib/result-status-defs";
+import { statusMeta } from "@/lib/result-statuses";
 import { bucketStatus, NON_EXECUTED_BUCKETS } from "@/lib/mute";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { MuteButton, UnmuteButton } from "@/components/MuteControls";
@@ -50,12 +52,16 @@ export default async function ReportsPage({
   const bucket = (r: { caseId: string; status: string }) =>
     bucketStatus(r.status, mutedCaseIds.has(r.caseId));
 
+  // F-14: aggregate math keys off each status's kind, never its key — a custom
+  // "Known Issue" (NEUTRAL) never skews the pass rate.
+  const { colorOf, kindOf } = statusMeta(await loadStatusDefs(project.id));
+
   const allResults = project.runs.flatMap((r) => r.results);
   const executed = allResults.filter(
     (r) => !NON_EXECUTED_BUCKETS.includes(bucket(r))
   );
-  const passed = executed.filter((r) => r.status === "PASSED").length;
-  const failed = executed.filter((r) => r.status === "FAILED").length;
+  const passed = executed.filter((r) => kindOf(r.status) === "PASS").length;
+  const failed = executed.filter((r) => kindOf(r.status) === "FAIL").length;
   const passRate = executed.length
     ? Math.round((passed / executed.length) * 100)
     : 0;
@@ -73,9 +79,11 @@ export default async function ReportsPage({
   const byCase = new Map<string, { statuses: string[] }>();
   for (const run of [...project.runs].reverse()) {
     for (const r of run.results) {
-      if (!["PASSED", "FAILED"].includes(r.status)) continue;
+      // F-14: flakiness = flips between PASS-kind and FAIL-kind outcomes.
+      const kind = kindOf(r.status);
+      if (!["PASS", "FAIL"].includes(kind)) continue;
       const entry = byCase.get(r.caseId) ?? { statuses: [] };
-      entry.statuses.push(r.status);
+      entry.statuses.push(kind);
       byCase.set(r.caseId, entry);
     }
   }
@@ -115,7 +123,7 @@ export default async function ReportsPage({
       const ex = run.results.filter(
         (r) => !NON_EXECUTED_BUCKETS.includes(bucket(r))
       );
-      const p = ex.filter((r) => r.status === "PASSED").length;
+      const p = ex.filter((r) => kindOf(r.status) === "PASS").length;
       // F-06: plan child runs carry their config combo into the tooltip.
       const config = parseRunConfig(run.configJson);
       return {
@@ -300,10 +308,10 @@ export default async function ReportsPage({
                 </div>
                 {c.last10.length > 0 && (
                   <div className="flex shrink-0 gap-0.5" title="Last 10 outcomes">
-                    {c.last10.map((st, i) => (
+                    {c.last10.map((kind, i) => (
                       <span
                         key={i}
-                        className={`h-3 w-1.5 rounded-sm ${st === "PASSED" ? "bg-green-400" : "bg-red-400"}`}
+                        className={`h-3 w-1.5 rounded-sm ${kind === "PASS" ? "bg-green-400" : "bg-red-400"}`}
                       />
                     ))}
                   </div>
@@ -331,7 +339,7 @@ export default async function ReportsPage({
               const ex = run.results.filter(
                 (r) => !NON_EXECUTED_BUCKETS.includes(bucket(r))
               );
-              const p = ex.filter((r) => r.status === "PASSED").length;
+              const p = ex.filter((r) => kindOf(r.status) === "PASS").length;
               return (
                 <tr key={run.id}>
                   <td className="py-2">
@@ -358,8 +366,10 @@ export default async function ReportsPage({
                       ).map(([st, count]) => (
                         <div
                           key={st}
-                          className={RESULT_COLORS[st]}
-                          style={{ width: `${(count / total) * 100}%` }}
+                          style={{
+                            backgroundColor: colorOf(st),
+                            width: `${(count / total) * 100}%`,
+                          }}
                           title={st === "MUTED" ? "Muted" : st}
                         />
                       ))}

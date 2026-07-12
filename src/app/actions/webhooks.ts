@@ -7,18 +7,20 @@ import { requireSession } from "@/lib/auth";
 import { isProjectMember } from "@/lib/projects";
 import { logAudit } from "@/lib/audit";
 import { WEBHOOK_EVENTS } from "@/lib/webhooks";
+import { can } from "@/lib/permissions";
 
 export async function createWebhook(
   _prev: { error?: string } | undefined,
   formData: FormData
 ): Promise<{ error?: string; ok?: boolean }> {
   const session = await requireSession();
-  if (session.role === "VIEWER")
-    return { error: "Viewers can't manage webhooks." };
 
   const projectId = String(formData.get("projectId"));
   if (!(await isProjectMember(session.userId, projectId)))
     return { error: "Project not found." };
+  // F-14: webhooks are project administration.
+  if (!(await can(session.userId, projectId, "project.admin")))
+    return { error: "You don't have permission to manage webhooks." };
 
   const url = String(formData.get("url") ?? "").trim();
   if (!/^https?:\/\/.+/.test(url))

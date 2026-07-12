@@ -4,9 +4,10 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { memberScope } from "@/lib/projects";
-import { RESULT_COLORS } from "@/lib/constants";
 import { parseRunConfig, configLabel } from "@/lib/plans";
 import { loadEnvironments } from "@/lib/environments";
+import { loadStatusDefs } from "@/lib/result-status-defs";
+import { statusMeta } from "@/lib/result-statuses";
 import { bucketStatus, isMuted, NON_EXECUTED_BUCKETS } from "@/lib/mute";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { createMilestone } from "@/app/actions/projects";
@@ -44,6 +45,14 @@ export default async function RunsPage({
   const filteredRuns = activeEnv
     ? project.runs.filter((r) => r.environmentId === activeEnv)
     : project.runs;
+
+  // F-14: colors + bar order come from the project's status defs.
+  const statusDefs = await loadStatusDefs(project.id);
+  const { colorOf, labelOf } = statusMeta(statusDefs);
+  const barKeys = [
+    ...statusDefs.filter((d) => d.key !== "UNTESTED").map((d) => d.key),
+    "MUTED",
+  ];
 
   return (
     <div className="space-y-6">
@@ -154,20 +163,20 @@ export default async function RunsPage({
                 </div>
               </div>
               <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-gray-100">
-                {["PASSED", "FAILED", "BLOCKED", "RETEST", "SKIPPED", "IN_PROGRESS", "MUTED"].map(
-                  (st) => {
-                    const count = buckets.filter((b) => b === st).length;
-                    if (!count) return null;
-                    return (
-                      <div
-                        key={st}
-                        className={RESULT_COLORS[st]}
-                        style={{ width: `${(count / total) * 100}%` }}
-                        title={`${st === "MUTED" ? "Muted" : st}: ${count}`}
-                      />
-                    );
-                  }
-                )}
+                {barKeys.map((st) => {
+                  const count = buckets.filter((b) => b === st).length;
+                  if (!count) return null;
+                  return (
+                    <div
+                      key={st}
+                      style={{
+                        backgroundColor: colorOf(st),
+                        width: `${(count / total) * 100}%`,
+                      }}
+                      title={`${labelOf(st)}: ${count}`}
+                    />
+                  );
+                })}
               </div>
             </Link>
           );

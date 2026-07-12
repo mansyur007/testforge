@@ -2,13 +2,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
-import { RESULT_COLORS } from "@/lib/constants";
 import { aggregateResults, parseRunConfig, configLabel } from "@/lib/plans";
+import { loadStatusDefs } from "@/lib/result-status-defs";
+import { statusMeta } from "@/lib/result-statuses";
 import { bucketStatus, isMuted } from "@/lib/mute";
 import { computeRunEstimates, projectMedianEstimate, sumRunEstimates } from "@/lib/estimates";
 import { formatDuration, formatRemaining } from "@/lib/duration";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { CompletePlanButton } from "@/components/CompletePlanButton";
+import { loadPerms } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -46,10 +48,22 @@ export default async function PlanDetailPage({
   });
   if (!plan || plan.project.slug !== params.slug) notFound();
 
+  // F-14: permission-derived access (covers custom roles).
+  const perms = await loadPerms(session.userId, plan.projectId);
+
   const counts = aggregateResults(plan.runs);
   const totalRaw = Object.values(counts).reduce((n, c) => n + c, 0);
   const total = totalRaw || 1;
   const activeRuns = plan.runs.filter((r) => r.status === "ACTIVE").length;
+
+  // F-14: colors/labels + kind-based matrix come from the status defs.
+  const statusDefs = await loadStatusDefs(plan.projectId);
+  const { colorOf, labelOf, kindOf } = statusMeta(statusDefs);
+  const legendKeys = [...statusDefs.map((d) => d.key), "MUTED"];
+  const barKeys = [
+    ...statusDefs.filter((d) => d.key !== "UNTESTED").map((d) => d.key),
+    "MUTED",
+  ];
 
   // F-23: roll-up = sum of each child run's own estimate/elapsed/forecast
   // (each run's forecast uses its own per-tester medians).
@@ -74,11 +88,16 @@ export default async function PlanDetailPage({
     )
   );
 
-  const MATRIX_COLS = ["PASSED", "FAILED", "BLOCKED", "UNTESTED"] as const;
+  // F-14: matrix columns bucket by KIND (custom statuses land in the right
+  // column), except Untested which is the one key-based pending state.
+  const MATRIX_COLS = ["PASS", "FAIL", "BLOCKED", "UNTESTED"] as const;
   const rowCount = (
     results: { status: string }[],
     col: (typeof MATRIX_COLS)[number]
-  ) => results.filter((r) => r.status === col).length;
+  ) =>
+    results.filter((r) =>
+      col === "UNTESTED" ? r.status === "UNTESTED" : kindOf(r.status) === col
+    ).length;
 
   return (
     <div className="space-y-6">
@@ -111,7 +130,7 @@ export default async function PlanDetailPage({
           >
             {plan.status === "COMPLETED" ? "Completed" : "Active"}
           </span>
-          {plan.status === "ACTIVE" && session.role !== "VIEWER" && (
+          {plan.status === "ACTIVE" && perms.has("run.manage") && (
             <CompletePlanButton planId={plan.id} activeRuns={activeRuns} />
           )}
         </div>
@@ -123,25 +142,27 @@ export default async function PlanDetailPage({
           {Object.entries(counts).map(([st, count]) => (
             <div
               key={st}
-              className={RESULT_COLORS[st]}
-              style={{ width: `${(count / total) * 100}%` }}
+              style={{
+                backgroundColor: colorOf(st),
+                width: `${(count / total) * 100}%`,
+              }}
             />
           ))}
         </div>
         <div className="mt-3 flex flex-wrap gap-4 text-sm">
-          {["PASSED", "FAILED", "BLOCKED", "SKIPPED", "RETEST", "IN_PROGRESS", "UNTESTED", "MUTED"].map(
-            (st) =>
-              counts[st] ? (
-                <span key={st} className="flex items-center gap-1.5">
-                  <span
-                    className={`inline-block h-2.5 w-2.5 rounded-full ${RESULT_COLORS[st]} ${st === "UNTESTED" ? "border border-gray-300" : ""}`}
-                  />
-                  {st === "MUTED" ? "Muted" : st} <b>{counts[st]}</b>
-                  <span className="text-slate-400">
-                    ({Math.round((counts[st] / total) * 100)}%)
-                  </span>
+          {legendKeys.map((st) =>
+            counts[st] ? (
+              <span key={st} className="flex items-center gap-1.5">
+                <span
+                  className={`inline-block h-2.5 w-2.5 rounded-full ${st === "UNTESTED" ? "border border-gray-300" : ""}`}
+                  style={{ backgroundColor: colorOf(st) }}
+                />
+                {labelOf(st)} <b>{counts[st]}</b>
+                <span className="text-slate-400">
+                  ({Math.round((counts[st] / total) * 100)}%)
                 </span>
-              ) : null
+              </span>
+            ) : null
           )}
           {totalRaw === 0 && (
             <span className="text-slate-400">No results yet.</span>
@@ -216,21 +237,21 @@ export default async function PlanDetailPage({
                   </td>
                   <td className="w-1/3 px-4 py-3">
                     <div className="flex h-2 overflow-hidden rounded-full bg-gray-100">
-                      {["PASSED", "FAILED", "BLOCKED", "RETEST", "SKIPPED", "IN_PROGRESS", "MUTED"].map(
-                        (st) => {
-                          const c = run.results.filter(
-                            (r) => bucketStatus(r.status, isMuted(r.testCase?.mutedAt)) === st
-                          ).length;
-                          return c ? (
-                            <div
-                              key={st}
-                              className={RESULT_COLORS[st]}
-                              style={{ width: `${(c / runTotal) * 100}%` }}
-                              title={`${st === "MUTED" ? "Muted" : st}: ${c}`}
-                            />
-                          ) : null;
-                        }
-                      )}
+                      {barKeys.map((st) => {
+                        const c = run.results.filter(
+                          (r) => bucketStatus(r.status, isMuted(r.testCase?.mutedAt)) === st
+                        ).length;
+                        return c ? (
+                          <div
+                            key={st}
+                            style={{
+                              backgroundColor: colorOf(st),
+                              width: `${(c / runTotal) * 100}%`,
+                            }}
+                            title={`${labelOf(st)}: ${c}`}
+                          />
+                        ) : null;
+                      })}
                     </div>
                   </td>
                   <td className="px-4 py-3">

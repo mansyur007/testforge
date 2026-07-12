@@ -8,6 +8,7 @@ import {
   validationError,
   serializeRun,
   type FieldError,
+  requirePerm,
 } from "@/lib/api";
 import { dispatchWebhook } from "@/lib/webhooks";
 
@@ -56,6 +57,8 @@ export async function PATCH(
 
   const run = await findScopedRun(g.userId, params.slug, params.runId);
   if (!run) return notFoundError("Run not found");
+  const denied = await requirePerm(g.userId, run.projectId, "run.manage"); // F-14
+  if (denied) return denied;
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object")

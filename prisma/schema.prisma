@@ -72,6 +72,7 @@ model Project {
   testPlans    TestPlan[]
   environments Environment[]
   comments     Comment[]
+  resultStatusDefs ResultStatusDef[]
 }
 
 // Outbound webhooks: POST a signed JSON payload to `url` when a subscribed event
@@ -247,6 +248,28 @@ model TestCaseRevision {
 // on the entity itself (TestCase.customJson / TestRunResult.customJson) as a
 // {key: value} object — no join table. Defs are soft-disabled via `active`,
 // never hard-deleted once data exists, so old values keep rendering.
+// F-14: per-project result-status definitions. The 7 built-in statuses become
+// `system: true` rows (key & kind immutable, label/color editable, cannot be
+// deactivated); teams add their own. Aggregate math keys off `kind`, never
+// `key` — so a custom "Known Issue" (NEUTRAL) never skews the pass rate.
+// A project with no rows uses the in-memory defaults (see lib/result-statuses);
+// rows are seeded on the first edit, never on a read path.
+model ResultStatusDef {
+  id        String  @id @default(cuid())
+  projectId String
+  key       String // UPPER_SNAKE, immutable after create
+  label     String
+  color     String // hex, e.g. #a855f7
+  kind      String // PASS | FAIL | NEUTRAL | BLOCKED
+  order     Int     @default(0)
+  active    Boolean @default(true)
+  system    Boolean @default(false)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, key])
+}
+
 model CustomFieldDef {
   id          String  @id @default(cuid())
   projectId   String
@@ -481,6 +504,23 @@ model Organization {
 
   users       User[]
   invitations Invitation[]
+  roleDefs    RoleDef[]
+}
+
+// F-14: custom project-member roles. `name` is what ProjectMember.role stores
+// (built-in OWNER/ADMIN/MEMBER/VIEWER stay as fixed presets and may not be
+// redefined); permissionsJson is a JSON array of permission keys
+// (see src/lib/permissions.ts PERMISSIONS).
+model RoleDef {
+  id              String   @id @default(cuid())
+  organizationId  String
+  name            String
+  permissionsJson String   @default("[]")
+  createdAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, name])
 }
 
 // PRD §12.3/§12.5/§12.6.2: token verifikasi email & reset password (hash, expiry).

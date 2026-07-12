@@ -20,6 +20,7 @@ import {
   validateCustomValues,
 } from "@/lib/custom-fields";
 import { parseDuration } from "@/lib/duration";
+import { can } from "@/lib/permissions";
 
 // F-03: collect & validate custom_<key> form entries against the project's
 // CASE field defs. Returns the merged customJson or a user-facing error.
@@ -49,12 +50,16 @@ async function readCustomJson(
 
 // Tenant guard for case-level mutations: the case must belong to a project the
 // user is a member of.
-async function assertCaseAccess(userId: string, caseId: string) {
+// F-14: case-content mutations require case.write on the case's project.
+// Throws notFound for non-members (tenant isolation, like assertCaseAccess);
+// returns whether the member may write — the caller picks the refusal shape.
+async function caseWriteAccess(userId: string, caseId: string): Promise<boolean> {
   const owned = await db.testCase.findFirst({
     where: { id: caseId, project: { members: { some: { userId } } } },
-    select: { id: true },
+    select: { projectId: true },
   });
   if (!owned) notFound();
+  return can(userId, owned.projectId, "case.write");
 }
 
 function readCaseFields(formData: FormData) {
@@ -105,7 +110,6 @@ export async function createCase(
   formData: FormData
 ) {
   const session = await requireSession();
-  if (session.role === "VIEWER") return { error: "Viewers don't have write access." };
 
   const projectId = String(formData.get("projectId"));
   const { estimateRaw, ...fields } = readCaseFields(formData);
@@ -114,6 +118,9 @@ export async function createCase(
     return { error: `Invalid estimate: "${estimateRaw}". Try "90", "1m 30s", or "1:30".` };
   if (!(await isProjectMember(session.userId, projectId)))
     return { error: "Project not found." };
+  // F-14: permission, not role name — covers custom roles too.
+  if (!(await can(session.userId, projectId, "case.write")))
+    return { error: "You don't have permission to create test cases." };
 
   const custom = await readCustomJson(projectId, formData);
   if ("error" in custom) return { error: custom.error };
@@ -148,14 +155,14 @@ export async function updateCase(
   formData: FormData
 ) {
   const session = await requireSession();
-  if (session.role === "VIEWER") return { error: "Viewers don't have write access." };
 
   const caseId = String(formData.get("caseId"));
   const { estimateRaw, ...fields } = readCaseFields(formData);
   if (!fields.title) return { error: "Test case title is required." };
   if (estimateRaw && fields.estimateSeconds == null)
     return { error: `Invalid estimate: "${estimateRaw}". Try "90", "1m 30s", or "1:30".` };
-  await assertCaseAccess(session.userId, caseId);
+  if (!(await caseWriteAccess(session.userId, caseId)))
+    return { error: "You don't have permission to edit test cases." };
 
   const existing = await db.testCase.findUniqueOrThrow({
     where: { id: caseId },
@@ -201,11 +208,10 @@ export async function updateCase(
 // trail; unmute needs none.
 export async function muteCase(formData: FormData) {
   const session = await requireSession();
-  if (session.role === "VIEWER") return;
   const caseId = String(formData.get("caseId"));
   const reason = String(formData.get("reason") ?? "").trim();
   if (!reason) return;
-  await assertCaseAccess(session.userId, caseId);
+  if (!(await caseWriteAccess(session.userId, caseId))) return; // F-14
 
   const testCase = await db.testCase.update({
     where: { id: caseId },
@@ -225,9 +231,8 @@ export async function muteCase(formData: FormData) {
 
 export async function unmuteCase(formData: FormData) {
   const session = await requireSession();
-  if (session.role === "VIEWER") return;
   const caseId = String(formData.get("caseId"));
-  await assertCaseAccess(session.userId, caseId);
+  if (!(await caseWriteAccess(session.userId, caseId))) return; // F-14
 
   const testCase = await db.testCase.update({
     where: { id: caseId },
@@ -247,7 +252,7 @@ export async function unmuteCase(formData: FormData) {
 export async function cloneCase(formData: FormData) {
   const session = await requireSession();
   const caseId = String(formData.get("caseId"));
-  await assertCaseAccess(session.userId, caseId);
+  if (!(await caseWriteAccess(session.userId, caseId))) return; // F-14
   const original = await db.testCase.findUniqueOrThrow({
     where: { id: caseId },
   });
@@ -291,7 +296,7 @@ export async function cloneCase(formData: FormData) {
 export async function deleteCase(formData: FormData) {
   const session = await requireSession();
   const caseId = String(formData.get("caseId"));
-  await assertCaseAccess(session.userId, caseId);
+  if (!(await caseWriteAccess(session.userId, caseId))) return; // F-14
   const testCase = await db.testCase.update({
     where: { id: caseId },
     data: { deletedAt: new Date() },
@@ -323,6 +328,14 @@ export async function bulkUpdateCases(formData: FormData) {
   if (field === "status" && !["DRAFT", "ACTIVE", "DEPRECATED"].includes(value))
     return;
 
+  // F-14: bulk edits are case writes.
+  const bulkProject = await db.project.findFirst({
+    where: { slug, members: { some: { userId: session.userId } } },
+    select: { id: true },
+  });
+  if (!bulkProject) return;
+  if (!(await can(session.userId, bulkProject.id, "case.write"))) return;
+
   // Resolve the accessible ids first — F-05 records one revision per case.
   const owned = await db.testCase.findMany({
     where: {
@@ -351,8 +364,6 @@ export async function bulkDeleteCases(
   formData: FormData
 ): Promise<{ ok?: boolean; error?: string; deleted?: number }> {
   const session = await requireSession();
-  if (session.role === "VIEWER")
-    return { error: "Viewers don't have write access." };
 
   const slug = String(formData.get("projectSlug"));
   const ids = formData.getAll("caseIds").map(String);
@@ -364,6 +375,8 @@ export async function bulkDeleteCases(
     select: { id: true, name: true },
   });
   if (!project) return { error: "Project not found." };
+  if (!(await can(session.userId, project.id, "case.write")))
+    return { error: "You don't have permission to delete test cases." };
   if (confirmName !== project.name)
     return { error: "Project name does not match." };
 
@@ -391,7 +404,6 @@ export async function restoreRevision(
   formData: FormData
 ): Promise<{ error?: string } | undefined> {
   const session = await requireSession();
-  if (session.role === "VIEWER") return { error: "Viewers don't have write access." };
 
   const revisionId = String(formData.get("revisionId"));
   const revision = await db.testCaseRevision.findFirst({
@@ -402,6 +414,8 @@ export async function restoreRevision(
     include: { testCase: { select: { id: true, projectId: true } } },
   });
   if (!revision) notFound();
+  if (!(await can(session.userId, revision.testCase.projectId, "case.write")))
+    return { error: "You don't have permission to edit test cases." };
 
   let snapshot: CaseSnapshot;
   try {
@@ -483,8 +497,6 @@ export async function moveCases(
   formData: FormData
 ): Promise<{ ok?: boolean; error?: string; moved?: number }> {
   const session = await requireSession();
-  if (session.role === "VIEWER")
-    return { error: "Viewers don't have write access." };
 
   const slug = String(formData.get("projectSlug"));
   const ids = formData.getAll("caseIds").map(String).filter(Boolean);
@@ -496,6 +508,8 @@ export async function moveCases(
     select: { id: true },
   });
   if (!project) return { error: "Project not found." };
+  if (!(await can(session.userId, project.id, "case.write")))
+    return { error: "You don't have permission to edit test cases." };
 
   // Guard against dropping into another project's suite.
   if (suiteId) {
@@ -529,8 +543,6 @@ export async function reorderCases(
   formData: FormData
 ): Promise<{ ok?: boolean; error?: string }> {
   const session = await requireSession();
-  if (session.role === "VIEWER")
-    return { error: "Viewers don't have write access." };
 
   const slug = String(formData.get("projectSlug"));
   const ids = formData.getAll("caseIds").map(String).filter(Boolean);
@@ -541,6 +553,8 @@ export async function reorderCases(
     select: { id: true },
   });
   if (!project) return { error: "Project not found." };
+  if (!(await can(session.userId, project.id, "case.write")))
+    return { error: "You don't have permission to edit test cases." };
 
   const owned = await db.testCase.findMany({
     where: { id: { in: ids }, projectId: project.id, deletedAt: null },
@@ -569,8 +583,6 @@ export async function copyCasesToProject(
   formData: FormData
 ): Promise<{ ok?: boolean; error?: string; copied?: number; targetSlug?: string }> {
   const session = await requireSession();
-  if (session.role === "VIEWER")
-    return { error: "Viewers don't have write access." };
 
   const slug = String(formData.get("projectSlug"));
   const targetProjectId = String(formData.get("targetProjectId") ?? "");
@@ -591,8 +603,11 @@ export async function copyCasesToProject(
     select: { role: true, project: { select: { slug: true } } },
   });
   if (!targetMembership) return { error: "Target project not found." };
-  if (targetMembership.role === "VIEWER")
+  // F-14: copying needs case.write on BOTH sides.
+  if (!(await can(session.userId, targetProjectId, "case.write")))
     return { error: "You don't have write access to the target project." };
+  if (!(await can(session.userId, project.id, "case.write")))
+    return { error: "You don't have permission to edit test cases." };
 
   const originals = await db.testCase.findMany({
     where: { id: { in: ids }, projectId: project.id, deletedAt: null },

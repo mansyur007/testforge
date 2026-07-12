@@ -7,6 +7,7 @@ import { isProjectMember } from "@/lib/projects";
 import { logAudit } from "@/lib/audit";
 import { caseDisplayId, type InlineStep } from "@/lib/constants";
 import { findReferencingCases } from "@/lib/steps";
+import { can } from "@/lib/permissions";
 
 // F-04 shared step groups. Any writer (non-VIEWER member) can manage them —
 // they're test content, like cases. Deleting is blocked while referenced.
@@ -32,7 +33,6 @@ export async function createSharedGroup(
   formData: FormData
 ) {
   const session = await requireSession();
-  if (session.role === "VIEWER") return { error: "Viewers don't have write access." };
 
   const projectId = String(formData.get("projectId") ?? "");
   const title = String(formData.get("title") ?? "").trim().slice(0, 80);
@@ -41,6 +41,9 @@ export async function createSharedGroup(
   if (steps.length === 0) return { error: "Add at least one step." };
   if (!(await isProjectMember(session.userId, projectId)))
     return { error: "Project not found." };
+  // F-14: shared steps are case content.
+  if (!(await can(session.userId, projectId, "case.write")))
+    return { error: "You don't have permission to edit shared steps." };
 
   const group = await db.sharedStepGroup.create({
     data: { projectId, title, stepsJson: JSON.stringify(steps) },
@@ -62,7 +65,6 @@ export async function updateSharedGroup(
   formData: FormData
 ) {
   const session = await requireSession();
-  if (session.role === "VIEWER") return { error: "Viewers don't have write access." };
 
   const id = String(formData.get("groupId") ?? "");
   const group = await db.sharedStepGroup.findFirst({
@@ -70,6 +72,9 @@ export async function updateSharedGroup(
     include: { project: { select: { slug: true } } },
   });
   if (!group) return { error: "Shared steps not found." };
+  // F-14: shared steps are case content.
+  if (!(await can(session.userId, group.projectId, "case.write")))
+    return { error: "You don't have permission to edit shared steps." };
 
   const title = String(formData.get("title") ?? "").trim().slice(0, 80);
   const steps = readSteps(formData);
@@ -96,7 +101,6 @@ export async function deleteSharedGroup(
   formData: FormData
 ) {
   const session = await requireSession();
-  if (session.role === "VIEWER") return { error: "Viewers don't have write access." };
 
   const id = String(formData.get("groupId") ?? "");
   const group = await db.sharedStepGroup.findFirst({
@@ -104,6 +108,9 @@ export async function deleteSharedGroup(
     include: { project: { select: { slug: true } } },
   });
   if (!group) return { error: "Shared steps not found." };
+  // F-14: shared steps are case content.
+  if (!(await can(session.userId, group.projectId, "case.write")))
+    return { error: "You don't have permission to edit shared steps." };
 
   const refs = await findReferencingCases(group.projectId, id);
   if (refs.length > 0) {

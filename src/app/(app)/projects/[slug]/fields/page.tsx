@@ -6,9 +6,12 @@ import { ProjectTabs } from "@/components/ProjectTabs";
 import { CustomFieldsManager } from "@/components/CustomFieldsManager";
 import { ConfigurationsManager } from "@/components/ConfigurationsManager";
 import { EnvironmentsManager } from "@/components/EnvironmentsManager";
+import { ResultStatusesManager } from "@/components/ResultStatusesManager";
 import { parseOptions } from "@/lib/custom-fields";
 import { loadConfigGroups } from "@/lib/plans";
 import { loadEnvironments } from "@/lib/environments";
+import { loadStatusDefs } from "@/lib/result-status-defs";
+import { loadPerms } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -34,10 +37,12 @@ export default async function FieldsPage({
   const configGroups = await loadConfigGroups(project.id);
   // F-19: environments managed alongside fields.
   const environments = await loadEnvironments(project.id);
+  // F-14: result-status definitions managed alongside fields.
+  const statusDefs = await loadStatusDefs(project.id);
 
-  const canManage =
-    session.role === "ADMIN" ||
-    ["OWNER", "ADMIN"].includes(project.members[0]?.role ?? "");
+  // F-14: central permission check (covers custom roles too).
+  const perms = await loadPerms(session.userId, project.id);
+  const canManage = perms.has("fields.manage");
 
   return (
     <div className="space-y-6">
@@ -81,6 +86,21 @@ export default async function FieldsPage({
           name: g.name,
           options: g.options.map((o) => ({ id: o.id, name: o.name })),
         }))}
+      />
+
+      {/* F-14: result-status definitions. */}
+      <div className="pt-2">
+        <h2 className="text-lg font-semibold">Result Statuses</h2>
+        <p className="text-sm text-slate-400">
+          The outcomes an executor can record. Built-in statuses keep their key
+          and kind; add your own (e.g. &quot;Known Issue&quot;) with a kind that
+          tells the reports how to count it.
+        </p>
+      </div>
+      <ResultStatusesManager
+        projectId={project.id}
+        canManage={canManage}
+        defs={statusDefs}
       />
 
       {/* F-19: environments a run can be tagged against. */}

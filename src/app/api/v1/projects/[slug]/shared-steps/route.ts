@@ -5,6 +5,7 @@ import {
   notFoundError,
   validationError,
   type FieldError,
+  requirePerm,
 } from "@/lib/api";
 import { logAudit } from "@/lib/audit";
 import {
@@ -68,6 +69,8 @@ export async function POST(
     select: { id: true },
   });
   if (!project) return notFoundError("Project not found");
+  const denied = await requirePerm(g.userId, project.id, "case.write"); // F-14
+  if (denied) return denied;
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object")

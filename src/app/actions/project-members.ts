@@ -10,6 +10,21 @@ export type ProjectMemberResult = { error?: string; ok?: string };
 
 const VALID_ROLES = ["OWNER", "ADMIN", "MEMBER", "VIEWER"] as const;
 
+// F-14: a role is valid when built-in OR a custom RoleDef of the manager's org.
+async function isValidRole(managerId: string, role: string): Promise<boolean> {
+  if (VALID_ROLES.includes(role as (typeof VALID_ROLES)[number])) return true;
+  const me = await db.user.findUnique({
+    where: { id: managerId },
+    select: { organizationId: true },
+  });
+  if (!me?.organizationId) return false;
+  const def = await db.roleDef.findUnique({
+    where: { organizationId_name: { organizationId: me.organizationId, name: role } },
+    select: { id: true },
+  });
+  return def !== null;
+}
+
 // Caller harus OWNER/ADMIN dari project yang ditarget. Mengembalikan {error}
 // ramah, bukan throw. Project juga di-resolve dari slug.
 async function manageContext(
@@ -44,7 +59,7 @@ export async function addProjectMember(
 
   const userId = String(formData.get("userId") ?? "");
   const role = String(formData.get("role") ?? "MEMBER");
-  if (!VALID_ROLES.includes(role as (typeof VALID_ROLES)[number]))
+  if (!(await isValidRole(ctx.session.userId, role)))
     return { error: "Invalid role." };
 
   const me = await db.user.findUnique({
@@ -89,7 +104,7 @@ export async function changeProjectMemberRole(
 
   const userId = String(formData.get("userId") ?? "");
   const role = String(formData.get("role") ?? "");
-  if (!VALID_ROLES.includes(role as (typeof VALID_ROLES)[number]))
+  if (!(await isValidRole(ctx.session.userId, role)))
     return { error: "Invalid role." };
 
   const member = await db.projectMember.findUnique({

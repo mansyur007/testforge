@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
-import { getProjectRole, canManageMembers } from "@/lib/projects";
 import { logAudit } from "@/lib/audit";
+import { can } from "@/lib/permissions";
 
 // F-19: environments — OWNER/ADMIN manage the list; anyone can select one at
 // run creation. Deleting an environment just clears the tag on old runs
@@ -16,9 +16,8 @@ async function requireEnvAdmin(
   projectId: string
 ): Promise<{ userId: string; slug: string } | { error: string }> {
   const session = await requireSession();
-  const role = await getProjectRole(session.userId, projectId);
-  if (!role) return { error: "Project not found." };
-  if (!canManageMembers(role))
+  // F-14: central permission check (covers custom roles too).
+  if (!(await can(session.userId, projectId, "fields.manage")))
     return { error: "Only project owners/admins can manage environments." };
   const project = await db.project.findUniqueOrThrow({
     where: { id: projectId },

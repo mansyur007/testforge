@@ -11,37 +11,15 @@ import { logAudit } from "@/lib/audit";
 import {
   CUSTOM_FIELD_TYPES,
   FIELD_KEY_RE,
-  parseOptions,
+  serializeFieldDef,
 } from "@/lib/custom-fields";
-import type { CustomFieldDef } from "@prisma/client";
+import { can } from "@/lib/permissions";
 
 // F-03 REST API: list & create custom field definitions.
 
-export function serializeFieldDef(d: CustomFieldDef) {
-  return {
-    id: d.id,
-    entity: d.entity,
-    key: d.key,
-    label: d.label,
-    type: d.type,
-    options: parseOptions(d),
-    required: d.required,
-    order: d.order,
-    active: d.active,
-  };
-}
-
 async function fieldAdmin(userId: string, projectId: string): Promise<boolean> {
-  const [user, membership] = await Promise.all([
-    db.user.findUnique({ where: { id: userId }, select: { role: true } }),
-    db.projectMember.findUnique({
-      where: { projectId_userId: { projectId, userId } },
-      select: { role: true },
-    }),
-  ]);
-  return (
-    user?.role === "ADMIN" || ["OWNER", "ADMIN"].includes(membership?.role ?? "")
-  );
+  // F-14: central permission check (covers custom roles too).
+  return can(userId, projectId, "fields.manage");
 }
 
 export async function GET(

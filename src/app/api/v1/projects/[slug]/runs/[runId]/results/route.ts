@@ -7,10 +7,12 @@ import {
   validationError,
   serializeResult,
   type FieldError,
+  requirePerm,
 } from "@/lib/api";
-import { RESULT_STATUSES } from "@/lib/constants";
 import { notify, notifyBaseUrl } from "@/lib/notifications";
 import { isMuted } from "@/lib/mute";
+import { loadStatusDefs } from "@/lib/result-status-defs";
+import { allowedStatusKeys, statusMeta } from "@/lib/result-statuses";
 
 async function findScopedRun(userId: string, slug: string, runId: string) {
   return db.testRun.findFirst({
@@ -53,6 +55,8 @@ export async function POST(
 
   const run = await findScopedRun(g.userId, params.slug, params.runId);
   if (!run) return notFoundError("Run not found");
+  const denied = await requirePerm(g.userId, run.projectId, "run.execute"); // F-14
+  if (denied) return denied;
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object")
@@ -80,11 +84,14 @@ export async function POST(
     }
   }
 
+  // F-14: statuses are project-defined (system + active custom keys).
+  const statusDefs = await loadStatusDefs(run.projectId);
+  const allowed = allowedStatusKeys(statusDefs);
   const status = String(body.status ?? "").toUpperCase();
-  if (!RESULT_STATUSES.includes(status as (typeof RESULT_STATUSES)[number]))
+  if (!allowed.has(status))
     errors.push({
       field: "status",
-      message: `must be one of: ${RESULT_STATUSES.join(", ")}`,
+      message: `must be one of: ${Array.from(allowed).join(", ")}`,
     });
 
   let elapsedSeconds: number | null = null;
@@ -126,7 +133,7 @@ export async function POST(
     entityId: run.id,
     detail: `${caseId} → ${status}`,
   });
-  if (status === "FAILED")
+  if (statusMeta(statusDefs).kindOf(status) === "FAIL") // F-14: kind, not key
     await notify(run.projectId, "result.failed", {
       title: `Test failed: ${caseTitle}`,
       url: `${notifyBaseUrl()}/projects/${params.slug}/runs/${run.id}`,

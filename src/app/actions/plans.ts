@@ -16,6 +16,7 @@ import {
   serializePlan,
   MAX_COMBINATIONS,
 } from "@/lib/plans";
+import { can } from "@/lib/permissions";
 
 // F-06: test plans. createPlan turns one case selection × a configuration
 // matrix into a plan plus one child run per combination. Standalone runs
@@ -26,9 +27,11 @@ export async function createPlan(
   formData: FormData
 ) {
   const session = await requireSession();
-  if (session.role === "VIEWER") return { error: "Viewers don't have write access." };
 
   const projectId = String(formData.get("projectId"));
+  // F-14: plans create & manage runs.
+  if (!(await can(session.userId, projectId, "run.manage")))
+    return { error: "You don't have permission to create plans." };
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
   const milestoneId = String(formData.get("milestoneId") ?? "") || null;
@@ -135,7 +138,6 @@ export async function createPlan(
 // runs keep their original completedAt.
 export async function completePlan(formData: FormData) {
   const session = await requireSession();
-  if (session.role === "VIEWER") return;
 
   const planId = String(formData.get("planId"));
   const plan = await db.testPlan.findFirst({
@@ -145,6 +147,7 @@ export async function completePlan(formData: FormData) {
     },
     include: { project: true, runs: { where: { status: "ACTIVE" } } },
   });
+  if (plan && !(await can(session.userId, plan.projectId, "run.manage"))) return; // F-14
   if (!plan) notFound();
   if (plan.status === "COMPLETED") return;
 

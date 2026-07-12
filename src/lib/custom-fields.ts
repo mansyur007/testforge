@@ -199,3 +199,19 @@ export function formatCustomValue(
       return String(value);
   }
 }
+
+// F-03/F-14: API shape for a field def (lives here — Next.js route files may
+// only export HTTP handlers).
+export function serializeFieldDef(d: CustomFieldDef) {
+  return {
+    id: d.id,
+    entity: d.entity,
+    key: d.key,
+    label: d.label,
+    type: d.type,
+    options: parseOptions(d),
+    required: d.required,
+    order: d.order,
+    active: d.active,
+  };
+}

@@ -6,6 +6,7 @@ import { requireSession } from "@/lib/auth";
 import { isProjectMember } from "@/lib/projects";
 import { logAudit } from "@/lib/audit";
 import { sanitizeCaseFilters } from "@/lib/saved-views";
+import { can } from "@/lib/permissions";
 
 // F-10 saved views. Personal views are allowed for every member incl. VIEWER
 // (a view is a UI preference, not test data); sharing needs write access.
@@ -21,10 +22,12 @@ export async function createSavedView(
   const isDefault = formData.get("isDefault") === "on";
 
   if (!name) return { error: "View name is required." };
-  if (shared && session.role === "VIEWER")
-    return { error: "Viewers can only save personal views." };
   if (!(await isProjectMember(session.userId, projectId)))
     return { error: "Project not found." };
+  // F-14: sharing a view with the team needs write standing; personal views
+  // stay open to every member (viewers included).
+  if (shared && !(await can(session.userId, projectId, "case.write")))
+    return { error: "You can only save personal views." };
 
   let filters: Record<string, string>;
   try {

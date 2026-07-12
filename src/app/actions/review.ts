@@ -8,6 +8,7 @@ import { recordRevision } from "@/lib/case-revisions";
 import { dispatchWebhook } from "@/lib/webhooks";
 import { notify, notifyBaseUrl } from "@/lib/notifications";
 import { caseDisplayId } from "@/lib/constants";
+import { can } from "@/lib/permissions";
 
 // F-15: case review workflow. A writer sends a DRAFT/ACTIVE case for review and
 // picks a reviewer (≠ themselves); the assigned reviewer approves (→ APPROVED)
@@ -30,13 +31,14 @@ function caseUrl(slug: string, caseId: string) {
 /** Author (any writer) sends a case for review and assigns a reviewer. */
 export async function requestReview(formData: FormData): Promise<ActionResult> {
   const session = await requireSession();
-  if (session.role === "VIEWER")
-    return { error: "Viewers don't have write access." };
 
   const caseId = String(formData.get("caseId"));
   const reviewerId = String(formData.get("reviewerId") ?? "");
   const c = await loadScopedCase(session.userId, caseId);
   if (!c) return { error: "Case not found." };
+  // F-14: requesting review is part of authoring cases.
+  if (!(await can(session.userId, c.project.id, "case.write")))
+    return { error: "You don't have permission to request reviews." };
   if (c.status === "IN_REVIEW")
     return { error: "This case is already in review." };
   if (!reviewerId) return { error: "Pick a reviewer." };

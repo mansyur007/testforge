@@ -8,6 +8,7 @@ import {
   validationError,
   serializeCase,
   type FieldError,
+  requirePerm,
 } from "@/lib/api";
 import {
   PRIORITIES,
@@ -62,6 +63,8 @@ export async function PATCH(
 
   const existing = await findScopedCase(g.userId, params.slug, params.caseId);
   if (!existing) return notFoundError("Case not found");
+  const denied = await requirePerm(g.userId, existing.projectId, "case.write"); // F-14
+  if (denied) return denied;
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object")
@@ -236,6 +239,8 @@ export async function DELETE(
 
   const existing = await findScopedCase(g.userId, params.slug, params.caseId);
   if (!existing) return notFoundError("Case not found");
+  const denied = await requirePerm(g.userId, existing.projectId, "case.write"); // F-14
+  if (denied) return denied;
 
   // Soft delete — hidden now, hard-purged later (see lib/cases-purge).
   const deleted = await db.testCase.update({

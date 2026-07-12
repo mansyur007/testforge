@@ -10,6 +10,7 @@ import { caseDisplayId } from "@/lib/constants";
 import { rateLimit, type RateResult } from "@/lib/rate-limit";
 import { expandSteps, type StepGroupLite } from "@/lib/steps";
 import { parseDatasets } from "@/lib/datasets";
+import { can, type Permission } from "@/lib/permissions";
 
 // ---------------------------------------------------------------------------
 // Uniform error envelope: every v1 error is { error: { code, message, details? } }
@@ -84,6 +85,19 @@ export async function guard(
     return forbidden("This API key is read-only");
 
   return { userId: key.userId };
+}
+
+// F-14: per-project permission check for v1 write routes, applied after the
+// route resolves its project (API keys act as their owning user, so the same
+// role/permission model governs both the UI and the API). Returns a 403
+// response to bubble up, or null when allowed.
+export async function requirePerm(
+  userId: string,
+  projectId: string,
+  permission: Permission
+): Promise<NextResponse | null> {
+  if (await can(userId, projectId, permission)) return null;
+  return forbidden(`Your role lacks the ${permission} permission`);
 }
 
 // ---------------------------------------------------------------------------
