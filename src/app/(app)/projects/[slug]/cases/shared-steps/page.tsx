@@ -6,6 +6,7 @@ import { memberScope } from "@/lib/projects";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { SharedStepsManager } from "@/components/SharedStepsManager";
 import { parseGroupSteps, findReferencingCases } from "@/lib/steps";
+import { can } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +48,7 @@ export default async function SharedStepsPage({
       </div>
       <SharedStepsManager
         projectId={project.id}
-        canWrite={session.role !== "VIEWER"}
+        canWrite={await can(session.userId, project.id, "case.write")} // F-14
         groups={groups.map((g, i) => ({
           id: g.id,
           title: g.title,

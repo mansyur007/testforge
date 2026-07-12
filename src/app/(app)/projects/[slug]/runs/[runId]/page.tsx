@@ -2,7 +2,9 @@ import { notFound } from "next/navigation";
 import { TFIcon } from "@/components/icons";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
-import { caseDisplayId, RESULT_COLORS, type TestStep } from "@/lib/constants";
+import { caseDisplayId, type TestStep } from "@/lib/constants";
+import { loadStatusDefs } from "@/lib/result-status-defs";
+import { statusMeta } from "@/lib/result-statuses";
 import { expandSteps, loadStepGroups } from "@/lib/steps";
 import { parseDatasets, substituteVars } from "@/lib/datasets";
 import { bucketStatus, isMuted } from "@/lib/mute";
@@ -13,6 +15,7 @@ import { ProjectTabs } from "@/components/ProjectTabs";
 import { RunExecutor } from "@/components/RunExecutor";
 import { CommentPanel } from "@/components/CommentPanel";
 import { completeRun, rerunFailed } from "@/app/actions/runs";
+import { loadPerms } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -79,6 +82,11 @@ export default async function RunDetailPage({
   });
 
   const total = run.results.length || 1;
+  // F-14: permission-derived access (covers custom roles).
+  const perms = await loadPerms(session.userId, run.projectId);
+  // F-14: the project's status defs drive colors, labels, and kind-based math.
+  const statusDefs = await loadStatusDefs(run.projectId);
+  const { colorOf, labelOf, kindOf } = statusMeta(statusDefs);
   // F-21: a muted case's results bucket as "MUTED" in the summary bar/legend,
   // excluded from pass-rate math, while the executor below still shows their
   // real status per-result.
@@ -87,8 +95,12 @@ export default async function RunDetailPage({
     const b = bucketStatus(r.status, isMuted(r.testCase.mutedAt));
     counts[b] = (counts[b] ?? 0) + 1;
   });
-  const failedish =
-    (counts.FAILED ?? 0) + (counts.BLOCKED ?? 0) + (counts.RETEST ?? 0);
+  // Legend/bar order: def order, then the MUTED bucket.
+  const legendKeys = [...statusDefs.map((d) => d.key), "MUTED"];
+  // F-14: failure-ish = FAIL/BLOCKED kinds + the system RETEST key.
+  const failedish = run.results.filter(
+    (r) => ["FAIL", "BLOCKED"].includes(kindOf(r.status)) || r.status === "RETEST"
+  ).length;
 
   // F-23: total estimate, actual elapsed, forecast-to-complete.
   const projectEstimates = await db.testCase.findMany({
@@ -164,23 +176,27 @@ export default async function RunDetailPage({
           {Object.entries(counts).map(([st, count]) => (
             <div
               key={st}
-              className={RESULT_COLORS[st]}
-              style={{ width: `${(count / total) * 100}%` }}
+              style={{
+                backgroundColor: colorOf(st),
+                width: `${(count / total) * 100}%`,
+              }}
             />
           ))}
         </div>
         <div className="mt-3 flex flex-wrap gap-4 text-sm">
-          {["PASSED", "FAILED", "BLOCKED", "SKIPPED", "RETEST", "IN_PROGRESS", "UNTESTED", "MUTED"].map(
-            (st) =>
-              counts[st] ? (
-                <span key={st} className="flex items-center gap-1.5">
-                  <span className={`inline-block h-2.5 w-2.5 rounded-full ${RESULT_COLORS[st]} ${st === "UNTESTED" ? "border border-gray-300" : ""}`} />
-                  {st === "MUTED" ? "Muted" : st} <b>{counts[st]}</b>
-                  <span className="text-slate-400">
-                    ({Math.round((counts[st] / total) * 100)}%)
-                  </span>
+          {legendKeys.map((st) =>
+            counts[st] ? (
+              <span key={st} className="flex items-center gap-1.5">
+                <span
+                  className={`inline-block h-2.5 w-2.5 rounded-full ${st === "UNTESTED" ? "border border-gray-300" : ""}`}
+                  style={{ backgroundColor: colorOf(st) }}
+                />
+                {labelOf(st)} <b>{counts[st]}</b>
+                <span className="text-slate-400">
+                  ({Math.round((counts[st] / total) * 100)}%)
                 </span>
-              ) : null
+              </span>
+            ) : null
           )}
         </div>
         {(estimates.totalEstimateSeconds > 0 ||
@@ -211,9 +227,10 @@ export default async function RunDetailPage({
       <RunExecutor
         runStatus={run.status}
         projectSlug={run.project.slug}
-        canWrite={session.role !== "VIEWER"}
+        canWrite={perms.has("run.execute")} // F-14
         maxUploadMb={maxUploadMb}
         hasIntegration={hasIntegration}
+        statusDefs={statusDefs}
         customDefs={resultDefs.map((d) => ({
           key: d.key,
           label: d.label,

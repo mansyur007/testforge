@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
-import { RESULT_COLORS } from "@/lib/constants";
+import { loadStatusDefsForProjects } from "@/lib/result-status-defs";
+import { statusMeta } from "@/lib/result-statuses";
 import { bucketStatus, isMuted, NON_EXECUTED_BUCKETS } from "@/lib/mute";
 
 export const dynamic = "force-dynamic";
@@ -39,8 +40,13 @@ export default async function DashboardPage() {
       }),
       // F-21: fetched raw (not groupBy) so a muted case's results can be
       // bucketed as "MUTED" in JS before counting toward the KPI below.
+      // F-14: projectId comes along so kind lookups use that project's defs.
       db.testRunResult.findMany({
-        select: { status: true, testCase: { select: { mutedAt: true } } },
+        select: {
+          status: true,
+          testCase: { select: { mutedAt: true } },
+          run: { select: { projectId: true } },
+        },
         where: { run: { project: mine } },
       }),
       db.auditLog.findMany({
@@ -51,24 +57,34 @@ export default async function DashboardPage() {
       }),
     ]);
 
+  // F-14: per-project status defs (colors for the run bars, kinds for the KPI).
+  const defsByProject = await loadStatusDefsForProjects([
+    ...Array.from(new Set(recentResults.map((r) => r.run.projectId))),
+    ...activeRuns.map((r) => r.projectId),
+  ]);
+  const metaOf = (projectId: string) =>
+    statusMeta(defsByProject.get(projectId) ?? []);
+
   // F-21: bucket a muted case's result as "MUTED" — excluded from the KPI.
-  const statusCounts: Record<string, number> = {};
+  // F-14: pass tally keys off each project's status KINDS, not the raw key.
+  let executed = 0;
+  let passedCount = 0;
+  let failedCount = 0;
   for (const r of recentResults) {
     const b = bucketStatus(r.status, isMuted(r.testCase?.mutedAt));
-    statusCounts[b] = (statusCounts[b] ?? 0) + 1;
+    if (NON_EXECUTED_BUCKETS.includes(b)) continue;
+    executed++;
+    const kind = metaOf(r.run.projectId).kindOf(r.status);
+    if (kind === "PASS") passedCount++;
+    else if (kind === "FAIL") failedCount++;
   }
-  const executed = Object.entries(statusCounts)
-    .filter(([st]) => !NON_EXECUTED_BUCKETS.includes(st))
-    .reduce((n, [, c]) => n + c, 0);
-  const passRate = executed
-    ? Math.round(((statusCounts.PASSED ?? 0) / executed) * 100)
-    : 0;
+  const passRate = executed ? Math.round((passedCount / executed) * 100) : 0;
 
   const stats = [
     { label: "Active Projects", value: projects.length },
     { label: "Total Test Cases", value: totalCases },
     { label: "Pass Rate", value: `${passRate}%` },
-    { label: "Failed", value: statusCounts.FAILED ?? 0 },
+    { label: "Failed", value: failedCount },
   ];
 
   return (
@@ -120,19 +136,29 @@ export default async function DashboardPage() {
                     </span>
                   </div>
                   <div className="mt-2 flex h-2 overflow-hidden rounded-full bg-gray-100">
-                    {["PASSED", "FAILED", "BLOCKED", "RETEST", "SKIPPED", "MUTED"].map(
-                      (st) => {
+                    {(() => {
+                      const defs = defsByProject.get(run.projectId) ?? [];
+                      const { colorOf } = metaOf(run.projectId);
+                      const keys = [
+                        ...defs
+                          .filter((d) => !["UNTESTED", "IN_PROGRESS"].includes(d.key))
+                          .map((d) => d.key),
+                        "MUTED",
+                      ];
+                      return keys.map((st) => {
                         const count = buckets.filter((b) => b === st).length;
                         if (!count) return null;
                         return (
                           <div
                             key={st}
-                            className={RESULT_COLORS[st]}
-                            style={{ width: `${(count / total) * 100}%` }}
+                            style={{
+                              backgroundColor: colorOf(st),
+                              width: `${(count / total) * 100}%`,
+                            }}
                           />
                         );
-                      }
-                    )}
+                      });
+                    })()}
                   </div>
                   <p className="mt-1 text-xs text-slate-500">
                     {done}/{run.results.length} executed

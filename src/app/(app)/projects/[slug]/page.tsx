@@ -12,6 +12,7 @@ import { CasesTable } from "@/components/CasesTable";
 import { SuiteTree } from "@/components/SuiteTree";
 import { SavedViewsMenu } from "@/components/SavedViewsMenu";
 import { sanitizeCaseFilters, viewHref } from "@/lib/saved-views";
+import { loadPerms } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -95,7 +96,9 @@ export default async function ProjectPage({
   });
   const reviewMine = searchParams.review === "mine";
 
-  const canWrite = session.role !== "VIEWER";
+  // F-14: permission-derived (covers custom roles).
+  const perms = await loadPerms(session.userId, project.id);
+  const canWrite = perms.has("case.write");
   const rootSuites = project.suites.filter((s) => !s.parentId);
   const childrenOf = (id: string) =>
     project.suites.filter((s) => s.parentId === id);
@@ -247,19 +250,21 @@ export default async function ProjectPage({
             >
               <span className="inline-flex items-center gap-1.5"><TFIcon name="upload" className="h-4 w-4" /> Import</span>
             </Link>
-            <Link
-              href={`/projects/${project.slug}/cases/new${searchParams.suite ? `?suite=${searchParams.suite}` : ""}`}
-              data-testid="case-new"
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-            >
-              + Test Case
-            </Link>
+            {canWrite && (
+              <Link
+                href={`/projects/${project.slug}/cases/new${searchParams.suite ? `?suite=${searchParams.suite}` : ""}`}
+                data-testid="case-new"
+                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+              >
+                + Test Case
+              </Link>
+            )}
           </div>
 
           <CasesTable
             projectSlug={project.slug}
             projectName={project.name}
-            canWrite={session.role !== "VIEWER"}
+            canWrite={canWrite}
             searchParams={searchParams}
             otherProjects={otherProjects.map((m) => m.project)}
             cases={cases.map((c) => ({

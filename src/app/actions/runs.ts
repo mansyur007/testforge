@@ -11,6 +11,9 @@ import { notify, notifyBaseUrl } from "@/lib/notifications";
 import { serializeRun } from "@/lib/api";
 import { buildResultSeeds } from "@/lib/datasets";
 import { loadCaseRevs } from "@/lib/case-revisions";
+import { loadStatusDefs } from "@/lib/result-status-defs";
+import { allowedStatusKeys, statusMeta } from "@/lib/result-statuses";
+import { can } from "@/lib/permissions";
 import {
   collectCustomFromForm,
   mergeCustomJson,
@@ -32,7 +35,6 @@ export async function createRun(
   formData: FormData
 ) {
   const session = await requireSession();
-  if (session.role === "VIEWER") return { error: "Viewers don't have write access." };
 
   const projectId = String(formData.get("projectId"));
   const name = String(formData.get("name") ?? "").trim();
@@ -45,6 +47,9 @@ export async function createRun(
   if (!caseIds.length) return { error: "Select at least one test case." };
   if (!(await isProjectMember(session.userId, projectId)))
     return { error: "Project not found." };
+  // F-14: permission, not role name — covers custom roles too.
+  if (!(await can(session.userId, projectId, "run.manage")))
+    return { error: "You don't have permission to create runs." };
   if (environmentId) {
     const env = await db.environment.findFirst({
       where: { id: environmentId, projectId },
@@ -106,6 +111,13 @@ export async function submitResult(formData: FormData) {
   });
   if (!owned) notFound();
 
+  // F-14: executing (recording a result) is its own permission.
+  if (!(await can(session.userId, owned.run.projectId, "run.execute"))) return;
+
+  // F-14: only statuses defined (and active) for this project are accepted.
+  const statusDefs = await loadStatusDefs(owned.run.projectId);
+  if (!allowedStatusKeys(statusDefs).has(status)) return;
+
   // F-03: validate RESULT custom fields; invalid values fail silently-safe
   // (result still recorded, custom left unchanged) — the executor is a
   // rapid-fire flow, blocking a P/F submit on a side field would be worse.
@@ -147,7 +159,8 @@ export async function submitResult(formData: FormData) {
     entityId: resultId,
     detail: status,
   });
-  if (status === "FAILED") {
+  // F-14: any FAIL-kind status (custom ones included) triggers the alert.
+  if (statusMeta(statusDefs).kindOf(status) === "FAIL") {
     const slug = result.run.project.slug;
     await notify(result.run.projectId, "result.failed", {
       title: `Test failed: ${result.testCase.title}`,
@@ -169,6 +182,12 @@ export async function completeRun(formData: FormData) {
   const session = await requireSession();
   const runId = String(formData.get("runId"));
   await assertRunAccess(session.userId, runId);
+  // F-14: closing a run is run management.
+  const target = await db.testRun.findUniqueOrThrow({
+    where: { id: runId },
+    select: { projectId: true },
+  });
+  if (!(await can(session.userId, target.projectId, "run.manage"))) return;
   const run = await db.testRun.update({
     where: { id: runId },
     data: { status: "COMPLETED", completedAt: new Date() },
@@ -186,14 +205,17 @@ export async function completeRun(formData: FormData) {
     where: { runId },
     _count: true,
   });
-  const count = (s: string) => counts.find((c) => c.status === s)?._count ?? 0;
-  const failed = count("FAILED");
+  // F-14: tally by kind so custom statuses land in the right bucket.
+  const { kindOf } = statusMeta(await loadStatusDefs(run.projectId));
+  const byKind = (kind: string) =>
+    counts.reduce((n, c) => (kindOf(c.status) === kind ? n + c._count : n), 0);
+  const failed = byKind("FAIL");
   await notify(run.projectId, "run.completed", {
     title: `Run completed: ${run.name}`,
     url: `${notifyBaseUrl()}/projects/${run.project.slug}/runs/${runId}`,
     tone: failed > 0 ? "bad" : "good",
     fields: [
-      { label: "Passed", value: String(count("PASSED")) },
+      { label: "Passed", value: String(byKind("PASS")) },
       { label: "Failed", value: String(failed) },
       {
         label: "Total",
@@ -209,14 +231,29 @@ export async function completeRun(formData: FormData) {
 export async function rerunFailed(formData: FormData) {
   const session = await requireSession();
   const runId = String(formData.get("runId"));
-  const run = await db.testRun.findFirst({
+  const scoped = await db.testRun.findFirst({
     where: {
       id: runId,
       project: { members: { some: { userId: session.userId } } },
     },
+    select: { projectId: true },
+  });
+  if (!scoped) notFound();
+  // F-14: creating the rerun is run management.
+  if (!(await can(session.userId, scoped.projectId, "run.manage"))) return;
+
+  // F-14: "failure-ish" = any FAIL/BLOCKED-kind status (custom ones included),
+  // plus the system RETEST key — the one key-based rule this flow keeps.
+  const defs = await loadStatusDefs(scoped.projectId);
+  const rerunKeys = defs
+    .filter((d) => ["FAIL", "BLOCKED"].includes(d.kind) || d.key === "RETEST")
+    .map((d) => d.key);
+
+  const run = await db.testRun.findFirst({
+    where: { id: runId },
     include: {
       project: true,
-      results: { where: { status: { in: ["FAILED", "BLOCKED", "RETEST"] } } },
+      results: { where: { status: { in: rerunKeys } } },
     },
   });
   if (!run) notFound();

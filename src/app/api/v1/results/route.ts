@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { guard, badRequest, notFoundError, validationError, serializeRun } from "@/lib/api";
+import { guard, badRequest, notFoundError, validationError, serializeRun, requirePerm } from "@/lib/api";
+import { db } from "@/lib/db";
 import {
   detectFormat,
   parseResults,
@@ -43,6 +44,17 @@ export async function POST(req: NextRequest) {
   }
 
   const source = sp.get("source")?.toUpperCase() ?? format.toUpperCase();
+
+  // F-14: an upload creates a run plus its results — run.manage. Resolve the
+  // project just for the check; ingestResults re-resolves for its own 404.
+  const uploadProject = await db.project.findFirst({
+    where: { slug, members: { some: { userId: g.userId } } },
+    select: { id: true },
+  });
+  if (uploadProject) {
+    const denied = await requirePerm(g.userId, uploadProject.id, "run.manage");
+    if (denied) return denied;
+  }
 
   const outcome = await ingestResults(normalized, {
     projectSlug: slug,

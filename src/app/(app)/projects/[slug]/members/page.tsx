@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
-import { memberScope, getProjectRole, canManageMembers } from "@/lib/projects";
+import { memberScope } from "@/lib/projects";
+import { loadPerms } from "@/lib/permissions";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { ProjectMembersManager } from "@/components/ProjectMembersManager";
 
@@ -19,8 +20,9 @@ export default async function ProjectMembersPage({
   });
   if (!project) notFound();
 
-  const myRole = await getProjectRole(session.userId, project.id);
-  const canManage = canManageMembers(myRole);
+  // F-14: central permission check (covers custom roles too).
+  const perms = await loadPerms(session.userId, project.id);
+  const canManage = perms.has("members.manage");
 
   const members = await db.projectMember.findMany({
     where: { projectId: project.id },
@@ -46,6 +48,17 @@ export default async function ProjectMembersPage({
         ).filter((u) => !memberIds.has(u.id))
       : [];
 
+  // F-14: custom role names are assignable alongside the built-ins.
+  const customRoles = me?.organizationId
+    ? (
+        await db.roleDef.findMany({
+          where: { organizationId: me.organizationId },
+          select: { name: true },
+          orderBy: { name: "asc" },
+        })
+      ).map((r) => r.name)
+    : [];
+
   return (
     <div className="space-y-6">
       <ProjectTabs slug={project.slug} name={project.name} active="members" />
@@ -61,6 +74,7 @@ export default async function ProjectMembersPage({
         }))}
         addable={addable}
         hasOrg={!!me?.organizationId}
+        customRoles={customRoles}
       />
     </div>
   );

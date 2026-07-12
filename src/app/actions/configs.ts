@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
-import { getProjectRole, canManageMembers } from "@/lib/projects";
 import { logAudit } from "@/lib/audit";
+import { can } from "@/lib/permissions";
 
 // F-06: configuration groups & options ("Browser" → Chrome/Firefox) used by
 // test plans as matrix axes. OWNER/ADMIN only — same gate as custom fields.
@@ -17,9 +17,8 @@ async function requireConfigAdmin(
   projectId: string
 ): Promise<{ userId: string; slug: string } | { error: string }> {
   const session = await requireSession();
-  const role = await getProjectRole(session.userId, projectId);
-  if (!role) return { error: "Project not found." };
-  if (!canManageMembers(role))
+  // F-14: central permission check (covers custom roles too).
+  if (!(await can(session.userId, projectId, "fields.manage")))
     return { error: "Only project owners/admins can manage configurations." };
   const project = await db.project.findUniqueOrThrow({
     where: { id: projectId },

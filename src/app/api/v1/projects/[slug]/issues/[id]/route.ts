@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
-import { guard, notFoundError } from "@/lib/api";
+import {guard, notFoundError, requirePerm } from "@/lib/api";
 import { displayIssueKey } from "@/lib/issue-providers";
 
 // F-07: unlink an issue from its entity. The issue itself is untouched upstream.
@@ -19,6 +19,8 @@ export async function DELETE(
     },
   });
   if (!link) return notFoundError("Issue link not found");
+  const denied = await requirePerm(g.userId, link.projectId, "run.execute"); // F-14
+  if (denied) return denied;
 
   await db.issueLink.delete({ where: { id: link.id } });
   await logAudit({

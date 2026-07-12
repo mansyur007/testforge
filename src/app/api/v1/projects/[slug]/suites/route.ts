@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
-import { guard, notFoundError, validationError } from "@/lib/api";
+import { guard, notFoundError, validationError,
+  requirePerm,
+} from "@/lib/api";
 
 // REST API v1: list & create suites / sub-suites.
 // A sub-suite is just a suite with `parentId` pointing at another suite in the
@@ -40,6 +42,8 @@ export async function POST(
     select: { id: true },
   });
   if (!project) return notFoundError("Project not found");
+  const denied = await requirePerm(g.userId, project.id, "case.write"); // F-14
+  if (denied) return denied;
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object")

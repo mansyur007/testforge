@@ -145,6 +145,10 @@ async function globalSetup() {
   });
   // Start each run with a clean comment thread so counts don't drift.
   await db.comment.deleteMany({ where: { projectId: eProject.id } });
+  // F-14 crash recovery: leftover custom statuses/roles from a previous run
+  // would make "create Known Issue / Executor" fail on the unique constraint.
+  await db.resultStatusDef.deleteMany({ where: { projectId: eProject.id } });
+  await db.roleDef.deleteMany({ where: { name: { startsWith: "Executor " } } });
 
   // F-03 crash recovery: a failed custom-fields spec can leave a REQUIRED
   // field active on the e2e project, which would break every later case

@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { TeamManager } from "@/components/TeamManager";
+import { RolesManager } from "@/components/RolesManager";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export default async function TeamPage() {
     );
   }
 
-  const [org, members, invitations] = await Promise.all([
+  const [org, members, invitations, roleDefs] = await Promise.all([
     db.organization.findUnique({ where: { id: me.organizationId } }),
     db.user.findMany({
       where: { organizationId: me.organizationId },
@@ -42,22 +43,44 @@ export default async function TeamPage() {
       select: { id: true, email: true, role: true, createdAt: true },
       orderBy: { createdAt: "desc" },
     }),
+    // F-14: custom role definitions.
+    db.roleDef.findMany({
+      where: { organizationId: me.organizationId },
+      orderBy: { name: "asc" },
+    }),
   ]);
 
   return (
-    <TeamManager
-      orgName={org?.name ?? "Your organization"}
-      isAdmin={me.role === "ADMIN"}
-      currentUserId={session.userId}
-      members={members.map((m) => ({
-        ...m,
-        emailVerified: !!m.emailVerifiedAt,
-        joinedAt: m.createdAt.toISOString(),
-      }))}
-      invitations={invitations.map((i) => ({
-        ...i,
-        invitedAt: i.createdAt.toISOString(),
-      }))}
-    />
+    <div className="space-y-8">
+      <TeamManager
+        orgName={org?.name ?? "Your organization"}
+        isAdmin={me.role === "ADMIN"}
+        currentUserId={session.userId}
+        members={members.map((m) => ({
+          ...m,
+          emailVerified: !!m.emailVerifiedAt,
+          joinedAt: m.createdAt.toISOString(),
+        }))}
+        invitations={invitations.map((i) => ({
+          ...i,
+          invitedAt: i.createdAt.toISOString(),
+        }))}
+      />
+      {/* F-14: custom roles (org admins only). */}
+      {me.role === "ADMIN" && (
+        <RolesManager
+          roles={roleDefs.map((r) => {
+            let permissions: string[] = [];
+            try {
+              const parsed = JSON.parse(r.permissionsJson);
+              if (Array.isArray(parsed)) permissions = parsed.map(String);
+            } catch {
+              permissions = [];
+            }
+            return { id: r.id, name: r.name, permissions };
+          })}
+        />
+      )}
+    </div>
   );
 }

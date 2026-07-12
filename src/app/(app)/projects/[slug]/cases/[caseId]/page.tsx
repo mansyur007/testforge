@@ -8,9 +8,10 @@ import {
   parseTags,
   PRIORITY_BADGES,
   STATUS_BADGES,
-  RESULT_BADGES,
   type TestStep,
 } from "@/lib/constants";
+import { loadStatusDefs } from "@/lib/result-status-defs";
+import { badgeStyle, statusMeta } from "@/lib/result-statuses";
 import { expandSteps, loadStepGroups } from "@/lib/steps";
 import { loadIssueLinks } from "@/lib/issues";
 import { serializeRevision } from "@/lib/case-revisions";
@@ -25,6 +26,7 @@ import { UnmuteButton } from "@/components/MuteControls";
 import { CommentPanel } from "@/components/CommentPanel";
 import { ReviewPanel } from "@/components/ReviewPanel";
 import { formatDuration } from "@/lib/duration";
+import { loadPerms } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +72,15 @@ export default async function CaseDetailPage({
   const visibleDefs = fieldDefs.filter(
     (d) => d.active || customValues[d.key] !== undefined
   );
+  // F-14: permission-derived write access (covers custom roles).
+  const perms = await loadPerms(session.userId, testCase.projectId);
+  const canWrite = perms.has("case.write");
+
+  // F-14: status colors for the recent-results badges.
+  const { colorOf: statusColorOf } = statusMeta(
+    await loadStatusDefs(testCase.projectId)
+  );
+
   const projectMembers = await db.projectMember.findMany({
     where: { projectId: testCase.projectId },
     include: { user: { select: { id: true, name: true } } },
@@ -255,7 +266,7 @@ export default async function CaseDetailPage({
         <CaseHistory
           revisions={revisions}
           currentRev={testCase.rev}
-          canWrite={session.role !== "VIEWER"}
+          canWrite={canWrite}
           suiteNames={suiteNames}
           memberNames={Object.fromEntries(memberNames)}
         />
@@ -336,7 +347,7 @@ export default async function CaseDetailPage({
               projectSlug={testCase.project.slug}
               entityType="CASE"
               entityId={testCase.id}
-              canWrite={session.role !== "VIEWER"}
+              canWrite={canWrite}
               maxMb={maxUploadMb}
               initial={attachments.map((a) => ({
                 id: a.id,
@@ -374,8 +385,11 @@ export default async function CaseDetailPage({
                   >
                     {r.run.name}
                   </Link>
-                  <span className={`ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${RESULT_BADGES[r.status]}`}>
-                    {r.status}
+                  <span
+                    className="ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
+                    style={badgeStyle(statusColorOf(r.status))}
+                  >
+                    {r.status.replace(/_/g, " ")}
                   </span>
                 </li>
               ))}
@@ -445,7 +459,7 @@ export default async function CaseDetailPage({
                   title: l.title,
                   status: l.status,
                 }))}
-                canWrite={session.role !== "VIEWER"}
+                canWrite={canWrite}
                 hasIntegration={hasIntegration}
               />
             </section>
@@ -481,7 +495,7 @@ export default async function CaseDetailPage({
             <ReviewPanel
               caseId={testCase.id}
               status={testCase.status}
-              canWrite={session.role !== "VIEWER"}
+              canWrite={canWrite}
               currentUserId={session.userId}
               reviewerId={testCase.reviewerId}
               reviewerName={

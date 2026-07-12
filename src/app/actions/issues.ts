@@ -12,6 +12,7 @@ import {
   providerFor,
   displayIssueKey,
 } from "@/lib/issue-providers";
+import { can } from "@/lib/permissions";
 
 // F-07: create an issue from a failed result, and link/unlink existing issues.
 // Every path here re-checks project membership; nothing returns `authEnc` or a
@@ -62,8 +63,6 @@ export async function createIssueFromResult(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (session.role === "VIEWER")
-    return { error: "Viewers don't have write access." };
 
   const resultId = String(formData.get("resultId"));
   const result = await db.testRunResult.findFirst({
@@ -74,6 +73,9 @@ export async function createIssueFromResult(
     include: { run: { select: { projectId: true, id: true } } },
   });
   if (!result) return { error: "Result not found." };
+  // F-14: filing/linking issues follows the executor permission.
+  if (!(await can(session.userId, result.run.projectId, "run.execute")))
+    return { error: "You don't have permission to file issues." };
 
   const resolved = await resolveIntegration(
     session.userId,
@@ -147,8 +149,6 @@ export async function linkIssue(
   formData: FormData
 ): Promise<ActionResult> {
   const session = await requireSession();
-  if (session.role === "VIEWER")
-    return { error: "Viewers don't have write access." };
 
   const entityType = String(formData.get("entityType"));
   const entityId = String(formData.get("entityId"));
@@ -177,6 +177,9 @@ export async function linkIssue(
           })
         )?.run.projectId;
   if (!projectId) return { error: "Entity not found." };
+  // F-14: filing/linking issues follows the executor permission.
+  if (!(await can(session.userId, projectId, "run.execute")))
+    return { error: "You don't have permission to link issues." };
 
   const resolved = await resolveIntegration(
     session.userId,

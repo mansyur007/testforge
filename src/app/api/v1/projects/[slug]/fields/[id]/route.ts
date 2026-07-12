@@ -8,7 +8,8 @@ import {
   type FieldError,
 } from "@/lib/api";
 import { logAudit } from "@/lib/audit";
-import { serializeFieldDef } from "../route";
+import { serializeFieldDef } from "@/lib/custom-fields";
+import { can } from "@/lib/permissions";
 
 // F-03: update a custom field definition. Key/type/entity are immutable
 // (stored values are keyed and typed by them) — label, options, required,
@@ -28,16 +29,9 @@ export async function PATCH(
   });
   if (!def) return notFoundError("Field not found");
 
-  const [user, membership] = await Promise.all([
-    db.user.findUnique({ where: { id: g.userId }, select: { role: true } }),
-    db.projectMember.findUnique({
-      where: { projectId_userId: { projectId: def.projectId, userId: g.userId } },
-      select: { role: true },
-    }),
-  ]);
-  const admin =
-    user?.role === "ADMIN" || ["OWNER", "ADMIN"].includes(membership?.role ?? "");
-  if (!admin) return forbidden("Only project admins can manage fields");
+  // F-14: central permission check (covers custom roles too).
+  if (!(await can(g.userId, def.projectId, "fields.manage")))
+    return forbidden("Only project admins can manage fields");
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object")

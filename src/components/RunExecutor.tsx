@@ -1,8 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { submitResult } from "@/app/actions/runs";
-import { RESULT_BADGES, PRIORITY_BADGES } from "@/lib/constants";
+import { PRIORITY_BADGES } from "@/lib/constants";
+import {
+  DEFAULT_STATUS_DEFS,
+  assignShortcuts,
+  badgeStyle,
+  statusMeta,
+  submittableDefs,
+  type StatusDefLite,
+} from "@/lib/result-statuses";
 
 // F-04: steps arrive pre-expanded from the server; fromShared tags the origin.
 type ExecutorStep = {
@@ -46,8 +54,23 @@ type ResultItem = {
   issueLinks: IssueLinkView[]; // F-07
 };
 
+// Icon per system key (the historical glyphs), falling back to the kind.
+const KEY_ICONS: Record<string, string> = {
+  PASSED: "✓",
+  FAILED: "✕",
+  BLOCKED: "⊘",
+  SKIPPED: "→",
+  RETEST: "↻",
+};
+const KIND_ICONS: Record<string, string> = {
+  PASS: "✓",
+  FAIL: "✕",
+  BLOCKED: "⊘",
+  NEUTRAL: "•",
+};
+
 // Eksekusi test run (PRD §4.3.3 + US-002):
-// inline submission, keyboard shortcut P/F/B/S, timer per case, partial run.
+// inline submission, dynamic keyboard shortcuts (F-14), timer per case, partial run.
 export function RunExecutor({
   results,
   runStatus,
@@ -57,6 +80,7 @@ export function RunExecutor({
   customDefs = [],
   members = [],
   hasIntegration = false,
+  statusDefs = DEFAULT_STATUS_DEFS,
 }: {
   results: ResultItem[];
   runStatus: string;
@@ -66,6 +90,7 @@ export function RunExecutor({
   customDefs?: CustomDefItem[];
   members?: MemberOption[];
   hasIntegration?: boolean; // F-07: an active issue tracker on this project
+  statusDefs?: StatusDefLite[]; // F-14: project's result statuses, ordered
 }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [comment, setComment] = useState("");
@@ -74,6 +99,17 @@ export function RunExecutor({
   const startedAt = useRef<number>(Date.now());
   const customRef = useRef<HTMLDivElement>(null);
   const active = results[activeIdx];
+
+  // F-14: submit buttons + keyboard map derive from the project's status defs.
+  const buttons = useMemo(() => submittableDefs(statusDefs), [statusDefs]);
+  const shortcuts = useMemo(() => assignShortcuts(buttons), [buttons]);
+  const meta = useMemo(() => statusMeta(statusDefs), [statusDefs]);
+  const shortcutOf = (key: string) => shortcuts.get(key);
+  const byLetter = useMemo(() => {
+    const m = new Map<string, string>();
+    shortcuts.forEach((letter, key) => m.set(letter, key));
+    return m;
+  }, [shortcuts]);
 
   useEffect(() => {
     startedAt.current = Date.now();
@@ -115,11 +151,8 @@ export function RunExecutor({
       const target = e.target as HTMLElement;
       if (["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return;
       const key = e.key.toLowerCase();
-      if (key === "p") submit("PASSED");
-      else if (key === "f") submit("FAILED");
-      else if (key === "b") submit("BLOCKED");
-      else if (key === "s") submit("SKIPPED");
-      else if (key === "r") submit("RETEST");
+      const statusKey = byLetter.get(key); // F-14: dynamic shortcut map
+      if (statusKey) submit(statusKey);
       else if (key === "j" || e.key === "ArrowDown")
         setActiveIdx((i) => Math.min(i + 1, results.length - 1));
       else if (key === "k" || e.key === "ArrowUp")
@@ -128,7 +161,7 @@ export function RunExecutor({
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeIdx, comment, defectUrl, results.length, runStatus]);
+  }, [activeIdx, comment, defectUrl, results.length, runStatus, byLetter]);
 
   if (!results.length)
     return (
@@ -179,8 +212,11 @@ export function RunExecutor({
                 rev {r.caseRev}
               </span>
             )}
-            <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${RESULT_BADGES[r.status]}`}>
-              {r.status}
+            <span
+              className="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
+              style={badgeStyle(meta.colorOf(r.status))}
+            >
+              {r.status.replace(/_/g, " ")}
             </span>
           </button>
         ))}
@@ -289,7 +325,7 @@ export function RunExecutor({
                 links={active.issueLinks}
                 canWrite={canWrite}
                 hasIntegration={hasIntegration}
-                canCreate={active.status === "FAILED"}
+                canCreate={meta.kindOf(active.status) === "FAIL"} // F-14: kind, not key
               />
             </div>
           )}
@@ -338,30 +374,38 @@ export function RunExecutor({
                 />
               </div>
             )}
+            {/* F-14: one button per active status def; shortcut = first letter
+                of the label, earlier order wins conflicts (shown in tooltip). */}
             <div className="mt-3 flex flex-wrap gap-2">
-              <button onClick={() => submit("PASSED")} disabled={isPending}
-                className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50">
-                ✓ Pass <kbd className="ml-1 rounded bg-green-700 px-1 text-xs">P</kbd>
-              </button>
-              <button onClick={() => submit("FAILED")} disabled={isPending}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50">
-                ✕ Fail <kbd className="ml-1 rounded bg-red-700 px-1 text-xs">F</kbd>
-              </button>
-              <button onClick={() => submit("BLOCKED")} disabled={isPending}
-                className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 disabled:opacity-50">
-                ⊘ Blocked <kbd className="ml-1 rounded bg-orange-600 px-1 text-xs">B</kbd>
-              </button>
-              <button onClick={() => submit("SKIPPED")} disabled={isPending}
-                className="rounded-lg bg-gray-400 px-4 py-2 text-sm font-medium text-white hover:bg-gray-500 disabled:opacity-50">
-                → Skip <kbd className="ml-1 rounded bg-gray-500 px-1 text-xs">S</kbd>
-              </button>
-              <button onClick={() => submit("RETEST")} disabled={isPending}
-                className="rounded-lg bg-purple-500 px-4 py-2 text-sm font-medium text-white hover:bg-purple-600 disabled:opacity-50">
-                ↻ Retest <kbd className="ml-1 rounded bg-purple-600 px-1 text-xs">R</kbd>
-              </button>
+              {buttons.map((d) => {
+                const letter = shortcutOf(d.key);
+                return (
+                  <button
+                    key={d.key}
+                    onClick={() => submit(d.key)}
+                    disabled={isPending}
+                    data-testid={`submit-status-${d.key}`}
+                    title={letter ? `Shortcut: ${letter.toUpperCase()}` : d.label}
+                    className="rounded-lg px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+                    style={{ backgroundColor: d.color }}
+                  >
+                    {KEY_ICONS[d.key] ?? KIND_ICONS[d.kind] ?? "•"} {d.label}
+                    {letter && (
+                      <kbd className="ml-1 rounded bg-black/20 px-1 text-xs">
+                        {letter.toUpperCase()}
+                      </kbd>
+                    )}
+                  </button>
+                );
+              })}
             </div>
             <p className="mt-3 text-xs text-slate-400">
-              ⌨️ Shortcuts: P/F/B/S/R to submit · J/K or ↑↓ to navigate · Timer runs automatically per case
+              ⌨️ Shortcuts:{" "}
+              {buttons
+                .filter((d) => shortcutOf(d.key))
+                .map((d) => shortcutOf(d.key)!.toUpperCase())
+                .join("/")}{" "}
+              to submit · J/K or ↑↓ to navigate · Timer runs automatically per case
             </p>
           </div>
         ) : (

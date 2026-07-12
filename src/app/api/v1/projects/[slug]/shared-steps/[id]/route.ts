@@ -6,6 +6,7 @@ import {
   notFoundError,
   validationError,
   type FieldError,
+  requirePerm,
 } from "@/lib/api";
 import { logAudit } from "@/lib/audit";
 import { caseDisplayId } from "@/lib/constants";
@@ -30,6 +31,8 @@ export async function PATCH(
 
   const group = await findScoped(g.userId, params.slug, params.id);
   if (!group) return notFoundError("Shared steps not found");
+  const denied = await requirePerm(g.userId, group.projectId, "case.write"); // F-14
+  if (denied) return denied;
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object")
@@ -83,6 +86,8 @@ export async function DELETE(
 
   const group = await findScoped(g.userId, params.slug, params.id);
   if (!group) return notFoundError("Shared steps not found");
+  const denied = await requirePerm(g.userId, group.projectId, "case.write"); // F-14
+  if (denied) return denied;
 
   const refs = await findReferencingCases(group.projectId, group.id);
   if (refs.length > 0)

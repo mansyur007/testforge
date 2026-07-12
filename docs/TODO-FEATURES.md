@@ -1195,22 +1195,41 @@ unless marked (large).
   `⚠ {{var}}`); reports count each row as a separate executed test.
 - CSV export: one row per dataset row with a `dataset` column. AC mirrors the above.
 
-### F-14 — Custom result statuses & custom roles `[ ]`
+### F-14 — Custom result statuses & custom roles `[x]`
 
-- `ResultStatusDef` per project: `{ key, label, color (hex), kind: "PASS"|"FAIL"|"NEUTRAL"|"BLOCKED", order, active }`.
-  Seed the current 7 as system rows (`system: true`, key immutable, label/color editable).
-  Everything that hardcodes `RESULT_STATUSES`/`RESULT_COLORS` (constants, executor keyboard
-  map, reports aggregation, CSV, serializers, JUnit mapping) reads defs instead; aggregate
-  logic keys off `kind`, never `key`. Keyboard shortcuts: first letter, conflicts resolved by
-  order (shown in tooltip).
-- Custom roles: `RoleDef` per organization `{ name, permissionsJson }` with permission keys
-  `case.write, run.execute, run.manage, project.admin, members.manage, integrations.manage, fields.manage`.
-  Built-in OWNER/ADMIN/MEMBER/VIEWER become presets. Central check helper
-  `src/lib/permissions.ts: can(userId, projectId, permission): Promise<boolean>` — replace all
-  scattered `role === "VIEWER"` checks with it (mechanical sweep, list of call sites in the PR).
-- AC: create status "Known Issue" (NEUTRAL, purple) → selectable in executor with a shortcut,
-  colored in charts, exported in CSV; create role "Executor" (run.execute only) → member with
-  it can execute runs but cannot edit cases (server-enforced).
+> **Status: DONE** (2026-07-12, branch `feat/custom-statuses-roles`, Fable 5). Implemented to
+> spec with these decisions/deviations:
+> - **Statuses**: `ResultStatusDef` per project; the 7 built-ins live as in-memory
+>   `DEFAULT_STATUS_DEFS` until the project's first edit **seeds** them as `system: true` rows
+>   (no writes on read paths). Key & kind immutable on system rows, label/color editable,
+>   system rows can't be deactivated (UNTESTED is the seeded default). Managed on the Fields
+>   page. Pure helpers in `lib/result-statuses.ts` (client-safe), DB loaders in
+>   `lib/result-status-defs.ts`.
+> - **Kind-based aggregation** everywhere (pass rate = kind PASS / executed; failure alerts,
+>   rerun-failed, run-completed tallies, flaky detection, plan matrix columns all key off
+>   kind). Three key-based rules remain, documented: UNTESTED/IN_PROGRESS are the not-executed
+>   bucket (there is no "pending" kind — a custom status is always a recorded outcome), and
+>   RETEST stays in the rerun-failed selection. Colors are hex now — bars/badges render inline
+>   styles (`badgeStyle` auto-contrasts light colors); `RESULT_COLORS/RESULT_BADGES` stay in
+>   constants only as legacy fallbacks.
+> - **Executor**: buttons = active defs minus UNTESTED/IN_PROGRESS; shortcut = first letter of
+>   the label, conflicts resolved by order (tooltip shows it). A status shortcut **shadows**
+>   the J/K list navigation on that letter (statuses win; arrows still navigate).
+> - **Roles**: `RoleDef` per organization, managed by org admins on Settings → Team; built-ins
+>   are fixed presets (OWNER/ADMIN = all, MEMBER = case.write+run.execute+run.manage,
+>   VIEWER = none). `ProjectMember.role` stores the custom role NAME; a deleted RoleDef
+>   degrades the member to read-only (deletion is blocked while assigned). `lib/permissions.ts
+>   can()/loadPerms()` resolves org ADMIN → all, org VIEWER → none, then preset/RoleDef.
+> - **Sweep**: every scattered `role === "VIEWER"` check in server actions replaced with
+>   can() at the point the project is known; v1 write routes gained `requirePerm()` (403 with
+>   the missing permission named). This **fixes a latent hole**: a project-VIEWER whose org
+>   role was MEMBER could previously call case-write server actions (only the org role was
+>   checked). Upload endpoint (F-11) = run.manage; legacy `/api/v1/junit` alias untouched.
+> - `serializeFieldDef` moved from the fields route to `lib/custom-fields.ts` — the export
+>   was invalid in a route file all along, masked by Next's incremental type-check cache.
+> - AC verified in e2e `custom-statuses-roles.spec.ts` (2): "Known Issue" NEUTRAL purple →
+>   executor button + K shortcut + legend + CSV; role "Executor" (run.execute) → submits
+>   results, blocked from case edits in the UI action AND the v1 API (403). Suite 50/50.
 
 ### F-15 — Case review workflow `[x]`
 

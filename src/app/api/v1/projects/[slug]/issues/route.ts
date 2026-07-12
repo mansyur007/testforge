@@ -7,6 +7,7 @@ import {
   validationError,
   badRequest,
   type FieldError,
+  requirePerm,
 } from "@/lib/api";
 import { serializeIssueLink } from "@/lib/issues";
 import {
@@ -75,6 +76,8 @@ export async function POST(
 
   const project = await findProject(g.userId, params.slug);
   if (!project) return notFoundError("Project not found");
+  const denied = await requirePerm(g.userId, project.id, "run.execute"); // F-14
+  if (denied) return denied;
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object")

@@ -11,7 +11,7 @@ import {
 type Member = { userId: string; name: string; email: string; role: string };
 type Addable = { id: string; name: string; email: string };
 
-const ROLE_OPTIONS = ["OWNER", "ADMIN", "MEMBER", "VIEWER"];
+const BUILT_IN_OPTIONS = ["OWNER", "ADMIN", "MEMBER", "VIEWER"];
 
 function RoleBadge({ role }: { role: string }) {
   const tone =
@@ -21,7 +21,9 @@ function RoleBadge({ role }: { role: string }) {
         ? "bg-indigo-100 text-indigo-700"
         : role === "VIEWER"
           ? "bg-slate-100 text-slate-600"
-          : "bg-sky-100 text-sky-700";
+          : role === "MEMBER"
+            ? "bg-sky-100 text-sky-700"
+            : "bg-teal-100 text-teal-700"; // F-14: custom role
   return (
     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${tone}`}>
       {role}
@@ -36,6 +38,7 @@ export function ProjectMembersManager({
   members,
   addable,
   hasOrg,
+  customRoles = [],
 }: {
   projectId: string;
   canManage: boolean;
@@ -43,7 +46,9 @@ export function ProjectMembersManager({
   members: Member[];
   addable: Addable[];
   hasOrg: boolean;
+  customRoles?: string[]; // F-14: org RoleDef names
 }) {
+  const ROLE_OPTIONS = [...BUILT_IN_OPTIONS, ...customRoles];
   const [pending, startTransition] = useTransition();
   const [msg, setMsg] = useState<ProjectMemberResult | null>(null);
   const [addUserId, setAddUserId] = useState("");

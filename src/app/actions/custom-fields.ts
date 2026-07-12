@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
 import { CUSTOM_FIELD_TYPES, FIELD_KEY_RE } from "@/lib/custom-fields";
+import { can } from "@/lib/permissions";
 
 // F-03 custom field definitions. Managing defs is a project-admin concern:
 // org ADMIN, or project OWNER/ADMIN. Keys and types are immutable after
@@ -12,16 +13,8 @@ import { CUSTOM_FIELD_TYPES, FIELD_KEY_RE } from "@/lib/custom-fields";
 // soft-disabled via `active`, never hard-deleted.
 
 async function assertFieldAdmin(userId: string, projectId: string) {
-  const [user, membership] = await Promise.all([
-    db.user.findUnique({ where: { id: userId }, select: { role: true } }),
-    db.projectMember.findUnique({
-      where: { projectId_userId: { projectId, userId } },
-      select: { role: true },
-    }),
-  ]);
-  if (!membership) return { error: "Project not found." };
-  const ok =
-    user?.role === "ADMIN" || ["OWNER", "ADMIN"].includes(membership.role);
+  // F-14: central permission check (covers custom roles too).
+  const ok = await can(userId, projectId, "fields.manage");
   return ok ? null : { error: "Only project admins can manage fields." };
 }
 

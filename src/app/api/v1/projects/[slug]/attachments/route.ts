@@ -4,9 +4,9 @@ import {
   guard,
   apiError,
   badRequest,
-  forbidden,
   notFoundError,
   serializeAttachment,
+  requirePerm,
 } from "@/lib/api";
 import {
   ATTACHMENT_ENTITY_TYPES,
@@ -59,13 +59,6 @@ export async function POST(
   const g = await guard(req, { write: true });
   if (g instanceof NextResponse) return g;
 
-  const user = await db.user.findUnique({
-    where: { id: g.userId },
-    select: { role: true },
-  });
-  if (!user || user.role === "VIEWER")
-    return forbidden("Viewers don't have write access");
-
   const project = await db.project.findFirst({
     where: { slug: params.slug, members: { some: { userId: g.userId } } },
   });
@@ -107,6 +100,13 @@ export async function POST(
           select: { id: true },
         });
   if (!owned) return notFoundError(`${entityType} not found in this project`);
+  // F-14: case evidence needs case.write; result evidence follows run.execute.
+  const denied = await requirePerm(
+    g.userId,
+    project.id,
+    entityType === "CASE" ? "case.write" : "run.execute"
+  );
+  if (denied) return denied;
 
   const attachment = await saveAttachment({
     projectId: project.id,

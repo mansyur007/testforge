@@ -11,6 +11,7 @@ import {
   validationError,
   serializeRun,
   type FieldError,
+  requirePerm,
 } from "@/lib/api";
 
 // REST API v1: list & create test runs. Until now runs were born only from a
@@ -72,6 +73,8 @@ export async function POST(
     select: { id: true },
   });
   if (!project) return notFoundError("Project not found");
+  const denied = await requirePerm(g.userId, project.id, "run.manage"); // F-14
+  if (denied) return denied;
 
   const body = await req.json().catch(() => null);
   if (!body || typeof body !== "object")
