@@ -71,6 +71,9 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 - **Mute / quarantine flaky tests** — quarantine a known-flaky case (reason
   required) from the Reports Flaky panel; its results still record but are
   excluded from pass-rate math everywhere, shown as a separate grey segment
+- **Importers** — bring cases in from TestRail (XML), Qase (JSON), or
+  TestLink (XML) in addition to CSV; suites are created by path with a
+  preview step (counts, sample rows, warnings) before anything is saved
 
 ## Running
 

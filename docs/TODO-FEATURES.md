@@ -1353,7 +1353,41 @@ Split into 4 sequential PRs:
 - AC: muting a failing automated case flips a red run to green pass-rate while still showing
   the muted failure in the run detail.
 
-### F-22 — Importers: TestRail, Qase, TestLink `[ ]`
+### F-22 — Importers: TestRail, Qase, TestLink `[x]`
+
+> **Status: DONE** (2026-07-12, branch `feat/importers`). Implemented close to spec, with these
+> deliberate deviations:
+> - **Exact source XML/JSON schemas are documented assumptions**, not verified against a live
+>   TestRail/Qase export — none was available to test against. Each parser file's header comment
+>   states the assumed shape explicitly; the parsers are permissive (e.g. TestRail priority
+>   accepts both a numeric id and a text label) precisely because the real-world schema can vary
+>   by tool version. Treat this as the honest starting point the spec's own framing calls for
+>   ("treat error messages as first-class UX") rather than a certified 1:1 format match.
+> - The spec's intermediate shape `{ suitePath, title, preconditions, steps[], priority, type,
+>   tags, custom{} }` omits `description`/`expectedResult` — added both (`ImportedCase` in
+>   `lib/importers/types.ts`), since every source tool carries content that maps to them and
+>   dropping it would make the importer lossy on data most users would expect preserved.
+> - `custom{}` has no column-mapping UI in this feature (that's F-30's "saved import mappings")
+>   — the committer best-effort matches a source field's label (case-insensitive) against the
+>   project's active CASE custom field defs; unmatched labels are dropped silently (no type
+>   validation either — an ill-fitting value just stores as a raw string).
+> - The committer resolves/creates every suite path **before** the chunked case-creation
+>   transactions (sequential, not inside `$transaction`) so sibling suites sharing a path never
+>   race into duplicates; only the per-chunk `TestCase.create` calls run inside `db.$transaction`.
+>   `recordRevision` (F-05, rev 1 "created") runs per case after its chunk commits — a real DB
+>   round-trip each, acceptable at this app's target scale but a known cost on very large imports.
+> - TestLink has no analog to our case `type` enum — every imported case defaults to
+>   `FUNCTIONAL` (spec's shape doesn't include `automationStatus`, so `execution_type` isn't
+>   mapped anywhere either).
+> - Suite nesting can go deeper than 2 levels (e.g. TestRail nested sections); the DB models it
+>   fine (recursive `parentId`), but the existing sidebar/CaseForm suite-tree UI only visually
+>   indents 2 levels — a pre-existing app limitation, not something this feature changes.
+> - Import tabs live on `projects/[slug]/import` behind `?tab=testrail|qase|testlink` (same
+>   server-rendered Link-tab pattern as the case detail Details|History tabs) — CSV stays the
+>   default at no query param, unchanged.
+> - e2e `e2e/importers.spec.ts`: one test per tool, each uploading its fixture from
+>   `e2e/fixtures/import/`, checking the preview's counts + warnings, committing, and confirming
+>   an imported case is findable via the API. Full suite 39/39 on a fresh DB.
 
 - New page `projects/[slug]/import` gains tabs: CSV (existing), TestRail XML, Qase JSON,
   TestLink XML.
