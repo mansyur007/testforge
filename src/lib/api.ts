@@ -127,6 +127,7 @@ export function serializeCase(
     linkedIssues: c.linkedIssues,
     custom: JSON.parse(c.customJson || "{}"),
     datasets: parseDatasets(c.datasetJson), // F-13
+    estimateSeconds: c.estimateSeconds, // F-23
     rev: c.rev,
     muted: c.mutedAt != null, // F-21
     mutedReason: c.mutedReason,

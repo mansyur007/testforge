@@ -342,6 +342,7 @@ model TestCase {
   linkedIssues     String? // URL bug tracker, dipisah koma
   customJson       String    @default("{}") // F-03: {key: value} per CustomFieldDef CASE
   datasetJson      String    @default("[]") // F-13: [{name, values: {var: value}}] — {{var}} in title/steps/preconditions/expectedResult
+  estimateSeconds  Int? // F-23: expected execution time; run/plan pages sum this into a total + forecast
   rev              Int       @default(1) // F-05: current revision number
   mutedAt          DateTime? // F-21: quarantined — excluded from pass-rate math everywhere
   mutedReason      String?

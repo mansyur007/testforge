@@ -69,6 +69,7 @@ export default async function EditCasePage({
           steps: JSON.parse(testCase.stepsJson || "[]"),
           custom: JSON.parse(testCase.customJson || "{}"),
           datasets: parseDatasets(testCase.datasetJson),
+          estimateSeconds: testCase.estimateSeconds,
         }}
         customDefs={customDefs.map((d) => ({
           key: d.key,

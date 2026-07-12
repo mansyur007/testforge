@@ -3,6 +3,7 @@ import Papa from "papaparse";
 import { db } from "@/lib/db";
 import { getSession, authenticateApiKey } from "@/lib/auth";
 import { caseDisplayId } from "@/lib/constants";
+import { formatDuration } from "@/lib/duration";
 
 export async function GET(req: NextRequest) {
   const session = (await getSession()) ?? (await authenticateApiKey(req));
@@ -37,6 +38,7 @@ export async function GET(req: NextRequest) {
       comment: r.comment ?? "",
       defect_url: r.defectUrl ?? "",
       elapsed_seconds: r.elapsedSeconds ?? "",
+      estimate: formatDuration(r.testCase.estimateSeconds), // F-23
       updated_at: r.updatedAt.toISOString(),
     }))
   );

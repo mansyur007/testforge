@@ -163,6 +163,15 @@ export async function POST(
     }
   }
 
+  // F-23: optional estimateSeconds, a positive integer or null.
+  let estimateSeconds: number | null = null;
+  if (body.estimateSeconds != null) {
+    const n = Number(body.estimateSeconds);
+    if (!Number.isFinite(n) || n < 0)
+      errors.push({ field: "estimateSeconds", message: "must be a non-negative number" });
+    else estimateSeconds = n;
+  }
+
   if (errors.length) return validationError(errors);
 
   const project = await db.project.update({
@@ -183,6 +192,7 @@ export async function POST(
       priority,
       type,
       tags: body.tags ?? "",
+      estimateSeconds,
       customJson,
       datasetJson,
     },

@@ -7,6 +7,8 @@ import { expandSteps, loadStepGroups } from "@/lib/steps";
 import { parseDatasets, substituteVars } from "@/lib/datasets";
 import { bucketStatus, isMuted } from "@/lib/mute";
 import { loadIssueLinks } from "@/lib/issues";
+import { computeRunEstimates, projectMedianEstimate } from "@/lib/estimates";
+import { formatDuration, formatRemaining } from "@/lib/duration";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { RunExecutor } from "@/components/RunExecutor";
 import { completeRun, rerunFailed } from "@/app/actions/runs";
@@ -87,6 +89,24 @@ export default async function RunDetailPage({
   const failedish =
     (counts.FAILED ?? 0) + (counts.BLOCKED ?? 0) + (counts.RETEST ?? 0);
 
+  // F-23: total estimate, actual elapsed, forecast-to-complete.
+  const projectEstimates = await db.testCase.findMany({
+    where: { projectId: run.projectId, deletedAt: null },
+    select: { estimateSeconds: true },
+  });
+  const projectDefault = projectMedianEstimate(
+    projectEstimates.map((c) => c.estimateSeconds)
+  );
+  const estimates = computeRunEstimates(
+    run.results.map((r) => ({
+      status: r.status,
+      elapsedSeconds: r.elapsedSeconds,
+      assigneeId: r.assigneeId,
+      estimateSeconds: r.testCase.estimateSeconds,
+    })),
+    projectDefault
+  );
+
   return (
     <div className="space-y-6">
       <ProjectTabs slug={run.project.slug} name={run.project.name} active="runs" />
@@ -162,6 +182,29 @@ export default async function RunDetailPage({
               ) : null
           )}
         </div>
+        {(estimates.totalEstimateSeconds > 0 ||
+          estimates.actualElapsedSeconds > 0) && (
+          <div
+            className="mt-3 flex flex-wrap gap-4 border-t border-slate-100 pt-3 text-sm text-slate-500"
+            data-testid="run-estimate-summary"
+          >
+            {estimates.totalEstimateSeconds > 0 && (
+              <span>
+                Estimate: <b>{formatDuration(estimates.totalEstimateSeconds)}</b>
+              </span>
+            )}
+            {estimates.actualElapsedSeconds > 0 && (
+              <span>
+                Elapsed: <b>{formatDuration(estimates.actualElapsedSeconds)}</b>
+              </span>
+            )}
+            {estimates.remainingCount > 0 && (
+              <span data-testid="run-forecast">
+                {formatRemaining(estimates.forecastSeconds)}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       <RunExecutor

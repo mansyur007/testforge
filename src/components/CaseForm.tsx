@@ -19,6 +19,7 @@ import {
   type TestStep,
 } from "@/lib/constants";
 import { extractVars, type Dataset } from "@/lib/datasets";
+import { formatDuration } from "@/lib/duration";
 
 // F-04: shared step groups offered by the "Insert shared steps" picker.
 export type SharedGroupOption = {
@@ -81,6 +82,7 @@ export function CaseForm({
     steps: TestStep[];
     custom?: Record<string, unknown>;
     datasets?: Dataset[];
+    estimateSeconds?: number | null;
   };
 }) {
   const isEdit = Boolean(initial);
@@ -229,6 +231,16 @@ export function CaseForm({
               name="tags"
               defaultValue={initial?.tags}
               placeholder="smoke, login, regression"
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Estimate</label>
+            <input
+              name="estimate"
+              defaultValue={formatDuration(initial?.estimateSeconds)}
+              placeholder={`e.g. "90", "1m 30s", "1:30"`}
+              data-testid="case-estimate-input"
               className={inputCls}
             />
           </div>

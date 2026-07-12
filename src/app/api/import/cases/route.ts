@@ -7,6 +7,7 @@ import { logAudit } from "@/lib/audit";
 import { PRIORITIES, CASE_TYPES } from "@/lib/constants";
 import { validateCustomValues } from "@/lib/custom-fields";
 import { recordRevision } from "@/lib/case-revisions";
+import { parseDuration } from "@/lib/duration";
 
 type CsvRow = Record<string, string>;
 
@@ -158,6 +159,9 @@ export async function POST(req: NextRequest) {
         priority: row.priority?.toUpperCase() || "MEDIUM",
         type: row.type?.toUpperCase() || "FUNCTIONAL",
         tags: row.tags?.trim() || "",
+        estimateSeconds: row.estimate?.trim()
+          ? parseDuration(row.estimate.trim())
+          : null,
         customJson,
       },
     });

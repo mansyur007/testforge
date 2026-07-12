@@ -5,6 +5,7 @@ import { getSession, authenticateApiKey } from "@/lib/auth";
 import { caseDisplayId, type TestStep } from "@/lib/constants";
 import { formatCustomValue, type CustomValue } from "@/lib/custom-fields";
 import { expandSteps, loadStepGroups } from "@/lib/steps";
+import { formatDuration } from "@/lib/duration";
 
 export async function GET(req: NextRequest) {
   const session = (await getSession()) ?? (await authenticateApiKey(req));
@@ -80,6 +81,7 @@ export async function GET(req: NextRequest) {
       status: c.status,
       automation_status: c.automationStatus,
       tags: c.tags,
+      estimate: formatDuration(c.estimateSeconds),
       ...customCols(c),
     }))
   );

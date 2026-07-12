@@ -1401,14 +1401,28 @@ Split into 4 sequential PRs:
 - Fixture files for each tool under `e2e/fixtures/import/` + e2e per tool. This feature is
   the **adoption funnel** — treat error messages as first-class UX.
 
-### F-23 — Estimates & forecast `[ ]`
+### F-23 — Estimates & forecast `[x]`
 
-- `TestCase.estimateSeconds Int?` (input UX accepts `"90"`, `"1m 30s"`, `"1:30"` — parser +
-  formatter in `src/lib/duration.ts` with unit tests).
-- Run page: total estimate, actual elapsed so far (sum `elapsedSeconds`), **forecast** =
-  remaining cases × (per-tester median actual of this run when ≥5 results, else estimate,
-  else project median 120 s default). Show "≈ 2h 15m remaining".
-- Milestone/plan roll-up = sum of child runs. CSV/API expose `estimateSeconds`.
+> **Status: DONE** (2026-07-12, branch `feat/estimates-forecast`). Implemented close to spec,
+> with these deviations:
+> - **No unit test framework exists in this repo** (Playwright e2e only, no vitest/jest) — the
+>   spec's "with unit tests" for `src/lib/duration.ts` is covered by e2e instead
+>   (`estimates-forecast.spec.ts` round-trips all 3 input formats — `"90"`, `"1m 30s"`,
+>   `"1:30"` — through the case form and asserts they parse to the same stored value).
+> - **Forecast is per-remaining-result, not a single multiplier**: for each still-`UNTESTED`
+>   result, the per-case duration is the assignee's median actual elapsed *in this run* when
+>   they already have ≥5 executed results with a recorded `elapsedSeconds`, else that case's own
+>   `estimateSeconds`, else the project-wide median of set estimates (120 s default when none
+>   are set). Summed across all remaining results — `src/lib/estimates.ts`.
+> - **Plan/milestone roll-up sums each child run's own totals** (each run's forecast uses its
+>   own run-scoped tester medians) rather than recomputing one forecast over the pooled results
+>   of every child run — matches "roll-up = sum of child runs" literally and keeps per-run tester
+>   signal meaningful.
+> - Invalid estimate text (unparseable) is rejected with a form error rather than silently
+>   dropped, consistent with the title-required pattern already on the case form.
+> - CSV: case export/import and run export gained an `estimate` column (human-formatted
+>   duration string, e.g. `"1m 30s"`); API v1 (`POST`/`PATCH` cases, batch create) takes/returns
+>   `estimateSeconds` as a plain integer. e2e `estimates-forecast.spec.ts` 3/3, full suite 42/42.
 
 ### F-24 — Bulk move/copy & drag reorder `[x]`
 
