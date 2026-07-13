@@ -41,6 +41,7 @@ model User {
   mutedCases     TestCase[]         @relation("CaseMutedBy")
   reviewingCases TestCase[]         @relation("CaseReviewer")
   comments       Comment[]          @relation("CommentAuthor")
+  dashboards     Dashboard[]        @relation("DashboardCreator")
 }
 
 model Project {
@@ -73,6 +74,37 @@ model Project {
   environments Environment[]
   comments     Comment[]
   resultStatusDefs ResultStatusDef[]
+  dashboards   Dashboard[]
+}
+
+// F-17: custom dashboards — a named grid of report widgets per project.
+model Dashboard {
+  id          String   @id @default(cuid())
+  projectId   String
+  name        String
+  createdById String
+  createdAt   DateTime @default(now())
+
+  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User              @relation("DashboardCreator", fields: [createdById], references: [id])
+  widgets   DashboardWidget[]
+}
+
+// One widget on a dashboard. `type` picks the server component; layout is a
+// cell rect on a 4-column CSS grid. configJson holds per-type settings
+// (currently only textNote's {"text": "..."}).
+model DashboardWidget {
+  id          String @id @default(cuid())
+  dashboardId String
+  type        String // passRateTrend | statusPie | coverageBar | flakyList | runVelocity | textNote
+  title       String?
+  configJson  String @default("{}")
+  x           Int    @default(0)
+  y           Int    @default(0)
+  w           Int    @default(2)
+  h           Int    @default(1)
+
+  dashboard Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
 }
 
 // Outbound webhooks: POST a signed JSON payload to `url` when a subscribed event

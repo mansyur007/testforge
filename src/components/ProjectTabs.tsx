@@ -12,6 +12,7 @@ export function ProjectTabs({
     | "runs"
     | "plans"
     | "reports"
+    | "dashboards"
     | "import"
     | "fields"
     | "api"
@@ -24,6 +25,11 @@ export function ProjectTabs({
     { key: "runs", label: "Test Runs", href: `/projects/${slug}/runs` },
     { key: "plans", label: "Plans", href: `/projects/${slug}/plans` },
     { key: "reports", label: "Reports", href: `/projects/${slug}/reports` },
+    {
+      key: "dashboards",
+      label: "Dashboards",
+      href: `/projects/${slug}/dashboards`,
+    },
     { key: "import", label: "Import", href: `/projects/${slug}/import` },
     { key: "fields", label: "Fields", href: `/projects/${slug}/fields` },
     { key: "api", label: "API", href: `/projects/${slug}/api` },
