@@ -21,6 +21,8 @@ model User {
   organizationId  String?
   emailVerifiedAt DateTime? // AU-001: wajib verifikasi sebelum login
   onboardedAt     DateTime? // AU-006: penanda wizard onboarding selesai
+  totpSecretEnc   String?   // F-20: crypto.ts-encrypted base32 TOTP secret; null = 2FA off
+  totpEnabledAt   DateTime? // F-20: set only after the user proves one valid code
   createdAt       DateTime  @default(now())
 
   organization Organization?       @relation(fields: [organizationId], references: [id])
@@ -45,6 +47,21 @@ model User {
   shareLinks     ShareLink[]        @relation("ShareLinkCreator")
   reportSchedules ReportSchedule[]  @relation("ReportScheduleCreator")
   requirements    Requirement[]     @relation("RequirementCreator")
+  recoveryCodes   TwoFactorRecoveryCode[]
+}
+
+// F-20: single-use TOTP recovery codes. codeHash is the sha256 hex of the raw
+// code, same recipe as ApiKey.keyHash — the raw code is shown once at enrollment
+// and never stored. usedAt marks a spent code (single-use).
+model TwoFactorRecoveryCode {
+  id        String    @id @default(cuid())
+  userId    String
+  codeHash  String    @unique
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
 }
 
 model Project {

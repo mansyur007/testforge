@@ -1410,7 +1410,35 @@ Split into 4 sequential PRs:
   flag-guarded by project setting `autoCreateEnvs`, default on).
 - Filter chip on runs list + reports (trend lines per environment when a filter is active).
 
-### F-20 — SSO (OIDC first), 2FA, SCIM (large) `[ ]`
+### F-20 — SSO (OIDC first), 2FA, SCIM (large) `[x]`
+
+> **Status: DONE** (2026-07-13, branch `feat/sso-2fa`, built by Opus 4.8 from the Fable
+> work order below). Implemented as specified, with these notes:
+> - **OIDC**: generic provider via `TF_OIDC_ISSUER` (discovery cached 1 h at module scope),
+>   PKCE S256 + single-use `state` + `nonce`, id_token verified against the IdP's JWKS with
+>   `jose` `createRemoteJWKSet` (no new auth dep), `email_verified` required unless
+>   `TF_OIDC_ALLOW_UNVERIFIED_EMAIL=1`, auto-provision gated on `TF_OIDC_AUTO_PROVISION`.
+>   Routes `src/app/api/auth/oidc/{route,callback/route}.ts`; social Google/GitHub login is
+>   untouched. **Deviation from the work order**: auto-provisioned/OIDC users get a random-hex
+>   `passwordHash` (the existing social-login convention `hasUsablePassword` already keys on)
+>   rather than `""` — same effect, matches repo precedent.
+> - **2FA (TOTP)**: dependency-free RFC 6238 in `src/lib/totp.ts` (verified against the RFC
+>   Appendix B vectors by `scripts/totp-selftest.mjs`, wired as `prebuild` so CI runs it before
+>   every build), `User.totpSecretEnc`/`totpEnabledAt` + `TwoFactorRecoveryCode`. Two-phase
+>   enroll, a pending `tf_2fa` JWT cookie so a correct password never mints a session on its
+>   own, 10 single-use sha256-hashed recovery codes, wrong codes drawing down the same lockout
+>   budget as wrong passwords. `qrcode` added for the enroll QR (rendered server-side).
+>   **Deviation**: `confirmTotpEnroll` deliberately does NOT `revalidatePath` — revalidating
+>   swaps the settings card to the "enabled" view and would hide the one-time recovery codes
+>   before the user copies them.
+> - **`TF_DISABLE_PASSWORD_LOGIN=1`**: rejected server-side in login/register/forgot/reset (not
+>   just hidden UI); `src/instrumentation.ts` warns at boot if set with no provider configured.
+> - **SAML/SCIM**: out of scope per the work order (README notes OIDC covers Google
+>   Workspace/Azure AD/Okta/Keycloak). No API-v1 surface added — 2FA/SSO are session concerns.
+> - e2e: `two-factor.spec.ts` (enroll → gated second step → recovery code single-use → disable,
+>   on a dedicated `twofa@` fixture user) and `oidc.spec.ts` (happy path + nonce-tamper +
+>   unverified-email rejection, against a local mock IdP with a `jose`-generated JWKS on a fixed
+>   port). Full suite 61/61 on a fresh DB.
 
 > **Full work order — written 2026-07-13 by Fable 5 as a security-design handoff.** §0.8 puts
 > security-critical *design* on Fable; the design below is final. **Opus 4.8 implements it

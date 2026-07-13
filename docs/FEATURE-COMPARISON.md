@@ -113,8 +113,8 @@ Legenda: ✅ ada · 🟡 sebagian/terbatas · ❌ tidak ada · ➖ tidak relevan
 | Custom role | ❌ | ✅ | ✅ | ✅ | ➖ |
 | Email verification + reset password | ✅ | ✅ | ✅ | 🟡 | ➖ |
 | OAuth login (Google/GitHub) | ✅ | 🟡 | ✅ | ❌ | ➖ |
-| SSO SAML/OIDC | ❌ | ✅ (Enterprise) | ✅ | ❌ | ✅ |
-| 2FA/TOTP | ❌ | ✅ | ✅ | ❌ | ✅ |
+| SSO SAML/OIDC | 🟡 (OIDC; SAML deferred) | ✅ (Enterprise) | ✅ | ❌ | ✅ |
+| 2FA/TOTP | ✅ | ✅ | ✅ | ❌ | ✅ |
 | SCIM provisioning | ❌ | 🟡 | ✅ | ❌ | ➖ |
 | Audit log + export | ✅ | ✅ (Enterprise) | ✅ | ❌ | ➖ |
 | API key scoped (READ/WRITE) + hash | ✅ | 🟡 | ✅ | ❌ | ➖ |
