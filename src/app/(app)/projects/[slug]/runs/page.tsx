@@ -10,6 +10,11 @@ import { loadStatusDefs } from "@/lib/result-status-defs";
 import { statusMeta } from "@/lib/result-statuses";
 import { bucketStatus, isMuted, NON_EXECUTED_BUCKETS } from "@/lib/mute";
 import { ProjectTabs } from "@/components/ProjectTabs";
+import {
+  CompareProvider,
+  CompareCheckbox,
+  CompareBar,
+} from "@/components/RunCompare";
 import { createMilestone } from "@/app/actions/projects";
 
 export const dynamic = "force-dynamic";
@@ -97,6 +102,9 @@ export default async function RunsPage({
         </div>
       )}
 
+      {/* F-17: check two runs -> Compare A -> B */}
+      <CompareProvider>
+      <CompareBar slug={project.slug} />
       <div className="space-y-3">
         {filteredRuns.map((run) => {
           const total = run.results.length || 1;
@@ -108,10 +116,13 @@ export default async function RunsPage({
             (b) => !NON_EXECUTED_BUCKETS.includes(b)
           ).length;
           return (
+            <div key={run.id} className="relative">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2">
+              <CompareCheckbox runId={run.id} />
+            </div>
             <Link
-              key={run.id}
               href={`/projects/${project.slug}/runs/${run.id}`}
-              className="block rounded-xl border border-slate-200 bg-white p-5 hover:border-indigo-300"
+              className="block rounded-xl border border-slate-200 bg-white p-5 pl-12 hover:border-indigo-300"
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -179,6 +190,7 @@ export default async function RunsPage({
                 })}
               </div>
             </Link>
+            </div>
           );
         })}
         {filteredRuns.length === 0 && (
@@ -189,6 +201,7 @@ export default async function RunsPage({
           </p>
         )}
       </div>
+      </CompareProvider>
 
       <section className="rounded-xl border border-slate-200 bg-white p-6">
         <h3 className="mb-3 flex items-center gap-2 font-semibold"><TFIcon name="target" className="h-5 w-5" /> Milestones</h3>

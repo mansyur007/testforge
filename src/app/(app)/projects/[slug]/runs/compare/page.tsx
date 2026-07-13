@@ -1,0 +1,285 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { db } from "@/lib/db";
+import { requireSession } from "@/lib/auth";
+import { memberScope } from "@/lib/projects";
+import { caseDisplayId } from "@/lib/constants";
+import { loadStatusDefs } from "@/lib/result-status-defs";
+import { statusMeta, badgeStyle } from "@/lib/result-statuses";
+import { isMuted } from "@/lib/mute";
+import { ProjectTabs } from "@/components/ProjectTabs";
+
+export const dynamic = "force-dynamic";
+
+// F-17: side-by-side comparison of two runs. Rows are keyed by
+// caseId + datasetName (F-13: a parameterized case has one row per dataset).
+// Delta semantics are kind-based (F-14): regression = PASS kind in A but
+// FAIL/BLOCKED kind in B; fixed = the reverse. Muted cases (F-21) are shown
+// but excluded from the regression/fixed tallies, consistent with pass-rate
+// math everywhere else.
+type Delta = "REGRESSION" | "FIXED" | "CHANGED" | "ONLY_A" | "ONLY_B" | "SAME";
+
+const DELTA_ORDER: Delta[] = [
+  "REGRESSION",
+  "FIXED",
+  "CHANGED",
+  "ONLY_A",
+  "ONLY_B",
+  "SAME",
+];
+
+const DELTA_META: Record<Delta, { arrow: string; label: string; cls: string }> = {
+  REGRESSION: { arrow: "↓", label: "Regressed", cls: "text-red-600" },
+  FIXED: { arrow: "↑", label: "Fixed", cls: "text-green-600" },
+  CHANGED: { arrow: "→", label: "Changed", cls: "text-amber-600" },
+  ONLY_A: { arrow: "−", label: "Only in A", cls: "text-slate-400" },
+  ONLY_B: { arrow: "+", label: "Only in B", cls: "text-slate-400" },
+  SAME: { arrow: "=", label: "Same", cls: "text-slate-300" },
+};
+
+function deltaOf(
+  sa: string | null,
+  sb: string | null,
+  kindOf: (key: string) => string
+): Delta {
+  if (sa == null) return "ONLY_B";
+  if (sb == null) return "ONLY_A";
+  if (sa === sb) return "SAME";
+  const failish = (k: string) => k === "FAIL" || k === "BLOCKED";
+  if (kindOf(sa) === "PASS" && failish(kindOf(sb))) return "REGRESSION";
+  if (failish(kindOf(sa)) && kindOf(sb) === "PASS") return "FIXED";
+  return "CHANGED";
+}
+
+export default async function RunComparePage({
+  params,
+  searchParams,
+}: {
+  params: { slug: string };
+  searchParams: { a?: string; b?: string };
+}) {
+  const session = await requireSession();
+  const project = await db.project.findFirst({
+    where: { slug: params.slug, ...memberScope(session.userId) },
+  });
+  if (!project) notFound();
+
+  const { a, b } = searchParams;
+  if (!a || !b || a === b) {
+    return (
+      <div className="space-y-6">
+        <ProjectTabs slug={project.slug} name={project.name} active="runs" />
+        <div className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">
+          Pick two different runs to compare — check &quot;Compare&quot; on two
+          runs in the{" "}
+          <Link
+            href={`/projects/${project.slug}/runs`}
+            className="text-indigo-600 hover:underline"
+          >
+            runs list
+          </Link>
+          .
+        </div>
+      </div>
+    );
+  }
+
+  const [runA, runB] = await Promise.all(
+    [a, b].map((id) =>
+      db.testRun.findFirst({
+        where: { id, projectId: project.id },
+        include: {
+          environment: true,
+          results: {
+            include: {
+              testCase: { select: { id: true, seq: true, title: true, mutedAt: true } },
+            },
+          },
+        },
+      })
+    )
+  );
+  if (!runA || !runB) notFound();
+
+  const statusDefs = await loadStatusDefs(project.id);
+  const { colorOf, labelOf, kindOf } = statusMeta(statusDefs);
+
+  // Union of caseId::datasetName keys across both runs.
+  type Row = {
+    key: string;
+    seq: number;
+    title: string;
+    datasetName: string | null;
+    muted: boolean;
+    statusA: string | null;
+    statusB: string | null;
+    delta: Delta;
+  };
+  const rows = new Map<string, Omit<Row, "delta">>();
+  const collect = (run: typeof runA, side: "statusA" | "statusB") => {
+    for (const r of run.results) {
+      const key = `${r.caseId}::${r.datasetName ?? ""}`;
+      const existing = rows.get(key) ?? {
+        key,
+        seq: r.testCase.seq,
+        title: r.testCase.title,
+        datasetName: r.datasetName,
+        muted: isMuted(r.testCase.mutedAt),
+        statusA: null,
+        statusB: null,
+      };
+      existing[side] = r.status;
+      rows.set(key, existing);
+    }
+  };
+  collect(runA, "statusA");
+  collect(runB, "statusB");
+
+  const table: Row[] = Array.from(rows.values())
+    .map((r) => ({ ...r, delta: deltaOf(r.statusA, r.statusB, kindOf) }))
+    .sort(
+      (x, y) =>
+        DELTA_ORDER.indexOf(x.delta) - DELTA_ORDER.indexOf(y.delta) ||
+        x.seq - y.seq ||
+        (x.datasetName ?? "").localeCompare(y.datasetName ?? "")
+    );
+
+  // Muted cases don't count toward regression/fixed — same exclusion rule as
+  // pass-rate math (F-21).
+  const counted = table.filter((r) => !r.muted);
+  const regressions = counted.filter((r) => r.delta === "REGRESSION").length;
+  const fixes = counted.filter((r) => r.delta === "FIXED").length;
+  const changed = counted.filter((r) => r.delta === "CHANGED").length;
+
+  const runHeader = (run: NonNullable<typeof runA>, tag: "A" | "B") => (
+    <div className="flex-1 rounded-xl border border-slate-200 bg-white p-4">
+      <p className="text-xs font-semibold uppercase text-slate-400">Run {tag}</p>
+      <Link
+        href={`/projects/${project.slug}/runs/${run.id}`}
+        className="font-medium text-indigo-600 hover:underline"
+      >
+        {run.name}
+      </Link>
+      <p className="mt-0.5 text-xs text-slate-400">
+        {run.createdAt.toLocaleDateString("en-US")}
+        {run.environment && <> · {run.environment.name}</>}
+        {" · "}
+        {run.results.length} result{run.results.length === 1 ? "" : "s"}
+      </p>
+    </div>
+  );
+
+  const badge = (status: string | null) =>
+    status == null ? (
+      <span className="text-xs text-slate-300">—</span>
+    ) : (
+      <span
+        className="rounded-full px-2 py-0.5 text-xs font-medium"
+        style={badgeStyle(colorOf(status))}
+      >
+        {labelOf(status)}
+      </span>
+    );
+
+  return (
+    <div className="space-y-6">
+      <ProjectTabs slug={project.slug} name={project.name} active="runs" />
+
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Run Comparison</h2>
+        <Link
+          href={`/projects/${project.slug}/runs`}
+          className="text-sm text-indigo-600 hover:underline"
+        >
+          ← Back to runs
+        </Link>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row">
+        {runHeader(runA, "A")}
+        {runHeader(runB, "B")}
+      </div>
+
+      {/* Summary of regressions & fixes */}
+      <div className="flex flex-wrap gap-3 text-sm">
+        <span
+          className={`rounded-lg px-3 py-1.5 font-medium ${
+            regressions > 0 ? "bg-red-100 text-red-700" : "bg-slate-100 text-slate-500"
+          }`}
+          data-testid="compare-regressions"
+        >
+          ↓ {regressions} regression{regressions === 1 ? "" : "s"}
+        </span>
+        <span
+          className={`rounded-lg px-3 py-1.5 font-medium ${
+            fixes > 0 ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"
+          }`}
+          data-testid="compare-fixes"
+        >
+          ↑ {fixes} fixed
+        </span>
+        <span className="rounded-lg bg-slate-100 px-3 py-1.5 font-medium text-slate-500" data-testid="compare-changed">
+          → {changed} changed
+        </span>
+      </div>
+
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-slate-200 text-left text-xs uppercase text-slate-400">
+              <th className="px-4 py-3">Case</th>
+              <th className="px-4 py-3">Status in A</th>
+              <th className="px-4 py-3 text-center">Δ</th>
+              <th className="px-4 py-3">Status in B</th>
+              <th className="px-4 py-3">Delta</th>
+            </tr>
+          </thead>
+          <tbody>
+            {table.map((r) => {
+              const meta = DELTA_META[r.delta];
+              return (
+                <tr
+                  key={r.key}
+                  className="border-b border-slate-100 last:border-0"
+                  data-testid={`compare-row-${caseDisplayId(project.slug, r.seq)}${r.datasetName ? `-${r.datasetName}` : ""}`}
+                >
+                  <td className="px-4 py-2.5">
+                    <span className="font-mono text-xs text-slate-400">
+                      {caseDisplayId(project.slug, r.seq)}
+                    </span>{" "}
+                    {r.title}
+                    {r.datasetName && (
+                      <span className="ml-1 rounded bg-indigo-50 px-1.5 py-0.5 text-xs text-indigo-700">
+                        {r.datasetName}
+                      </span>
+                    )}
+                    {r.muted && (
+                      <span className="ml-1 rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
+                        muted
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-2.5">{badge(r.statusA)}</td>
+                  <td className={`px-4 py-2.5 text-center text-base font-bold ${meta.cls}`}>
+                    {meta.arrow}
+                  </td>
+                  <td className="px-4 py-2.5">{badge(r.statusB)}</td>
+                  <td className={`px-4 py-2.5 text-xs font-medium ${meta.cls}`}>
+                    {meta.label}
+                  </td>
+                </tr>
+              );
+            })}
+            {table.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-4 py-10 text-center text-slate-400">
+                  Neither run has any results.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
