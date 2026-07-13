@@ -44,6 +44,7 @@ model User {
   dashboards     Dashboard[]        @relation("DashboardCreator")
   shareLinks     ShareLink[]        @relation("ShareLinkCreator")
   reportSchedules ReportSchedule[]  @relation("ReportScheduleCreator")
+  requirements    Requirement[]     @relation("RequirementCreator")
 }
 
 model Project {
@@ -78,6 +79,40 @@ model Project {
   resultStatusDefs ResultStatusDef[]
   dashboards   Dashboard[]
   reportSchedules ReportSchedule[]
+  requirements Requirement[]
+}
+
+// F-18: requirements & traceability. A requirement is COVERED when it has at
+// least one linked, non-deleted, non-deprecated case — derived, never stored
+// as truth (status column only distinguishes OPEN vs OBSOLETE; COVERED is
+// computed in lib/requirements.ts).
+model Requirement {
+  id            String   @id @default(cuid())
+  projectId     String
+  refId         String // "REQ-001" (auto) or an external key
+  title         String
+  descriptionMd String?
+  sourceUrl     String?
+  status        String   @default("OPEN") // OPEN | OBSOLETE (COVERED derived)
+  createdById   String
+  createdAt     DateTime @default(now())
+
+  project   Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User              @relation("RequirementCreator", fields: [createdById], references: [id])
+  cases     RequirementCase[]
+
+  @@unique([projectId, refId])
+}
+
+model RequirementCase {
+  requirementId String
+  caseId        String
+
+  requirement Requirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  testCase    TestCase    @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@id([requirementId, caseId])
+  @@index([caseId])
 }
 
 // F-17: custom dashboards — a named grid of report widgets per project.
@@ -459,6 +494,7 @@ model TestCase {
   reviewer  User?              @relation("CaseReviewer", fields: [reviewerId], references: [id])
   results   TestRunResult[]
   revisions TestCaseRevision[]
+  requirements RequirementCase[] // F-18
 
   @@unique([projectId, seq])
 }

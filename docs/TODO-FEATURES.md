@@ -1326,7 +1326,27 @@ Split into 4 sequential PRs:
 4. **Scheduled email reports**: `ReportSchedule { projectId, cron: "WEEKLY_MON"|"DAILY", recipientsJson, kind: "SUMMARY" }`
    sent by extending the existing cron route pattern; email = KPI table + top failures + link.
 
-### F-18 — Requirements & traceability matrix `[ ]`
+### F-18 — Requirements & traceability matrix `[x]`
+
+> **Status: DONE** (2026-07-13, branch `feat/requirements`). Implemented as specified, with
+> these notes:
+> - "COVERED" is **derived, never stored** (`lib/requirements.ts derivedStatus`): the status
+>   column only records the manual OPEN/OBSOLETE distinction, so coverage can't go stale when a
+>   case is deleted/deprecated later.
+> - Latest-run-status per case is kind-based (F-14 custom statuses): the newest result whose
+>   kind is PASS/FAIL/BLOCKED wins; NEUTRAL-kind results don't count as executed, so a case with
+>   only "Known Issue" outcomes still shows Untested.
+> - Matrix drill-down = requirement link on each row (per-requirement page lists the linked
+>   cases with their buckets); CSV export at `/api/export/requirements-matrix?project=<slug>`
+>   (session or API-key auth, same pattern as the other export routes).
+> - CSV import is a paste-textarea (header `refId,title,description,sourceUrl`, title required,
+>   blank refId auto-numbers `REQ-NNN`, duplicate refIds skipped silently).
+> - **Deferred**: the reverse link picker on the *case detail* page — linking is fully managed
+>   from the requirement detail page (both directions of the M:N), the case-detail affordance is
+>   an additive UI nicety.
+> - Editing gated on `case.write` (requirements are authored like cases); e2e
+>   `requirements.spec.ts` covers create → link → COVERED → PASSED result → matrix Pass bucket →
+>   CSV export & import. Full suite 55/55 on a fresh DB.
 
 - `Requirement { id, projectId, refId ("REQ-001" auto or external key), title, descriptionMd, sourceUrl?, status: "OPEN"|"COVERED"|"OBSOLETE", createdAt }` +
   M:N `RequirementCase { requirementId, caseId }`.
