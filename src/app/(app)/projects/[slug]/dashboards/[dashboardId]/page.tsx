@@ -7,6 +7,7 @@ import { loadReportData } from "@/lib/report-data";
 import { WIDGET_TYPES, GRID_COLS } from "@/lib/dashboards";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { WidgetBody, widgetTypeLabel } from "@/components/DashboardWidgets";
+import { ShareLinkPanel } from "@/components/ShareLinkPanel";
 import {
   addWidget,
   removeWidget,
@@ -116,6 +117,11 @@ export default async function DashboardDetailPage({
         <p className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">
           No widgets yet — add one below.
         </p>
+      )}
+
+      {/* F-17: public share links (run.manage only). */}
+      {canEdit && (
+        <ShareLinkPanel entityType="DASHBOARD" entityId={dashboard.id} />
       )}
 
       {canEdit && (

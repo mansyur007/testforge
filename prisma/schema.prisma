@@ -42,6 +42,7 @@ model User {
   reviewingCases TestCase[]         @relation("CaseReviewer")
   comments       Comment[]          @relation("CommentAuthor")
   dashboards     Dashboard[]        @relation("DashboardCreator")
+  shareLinks     ShareLink[]        @relation("ShareLinkCreator")
 }
 
 model Project {
@@ -105,6 +106,25 @@ model DashboardWidget {
   h           Int    @default(1)
 
   dashboard Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+}
+
+// F-17: public read-only share links. Polymorphic entityId (same pattern as
+// Attachment) — a deleted run/dashboard just makes the link render 404.
+// Token is 64 hex chars from crypto.randomBytes (unguessable); revocation is
+// a soft flag so the audit trail keeps the row.
+model ShareLink {
+  id          String    @id @default(cuid())
+  token       String    @unique
+  entityType  String // RUN | DASHBOARD
+  entityId    String
+  expiresAt   DateTime?
+  revokedAt   DateTime?
+  createdById String
+  createdAt   DateTime  @default(now())
+
+  createdBy User @relation("ShareLinkCreator", fields: [createdById], references: [id])
+
+  @@index([entityType, entityId])
 }
 
 // Outbound webhooks: POST a signed JSON payload to `url` when a subscribed event

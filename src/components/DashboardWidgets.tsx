@@ -105,27 +105,46 @@ function CoverageBarWidget({ data }: { data: ReportData }) {
   );
 }
 
-function FlakyListWidget({ data, slug }: { data: ReportData; slug: string }) {
+function FlakyListWidget({
+  data,
+  slug,
+  noLinks,
+}: {
+  data: ReportData;
+  slug: string;
+  noLinks?: boolean;
+}) {
   const flaky = flakyList(data);
   if (flaky.length === 0) return <Empty>No flaky tests detected. 🎉</Empty>;
   return (
     <ul className="space-y-1.5 text-sm">
-      {flaky.map((f) => (
-        <li key={f.testCase!.id} className="flex items-center justify-between gap-2">
-          <Link
-            href={`/projects/${slug}/cases/${f.testCase!.id}`}
-            className="min-w-0 truncate text-slate-700 hover:text-indigo-600"
-          >
+      {flaky.map((f) => {
+        const label = (
+          <>
             <span className="font-mono text-xs text-slate-400">
               {caseDisplayId(slug, f.testCase!.seq)}
             </span>{" "}
             {f.testCase!.title}
-          </Link>
+          </>
+        );
+        return (
+        <li key={f.testCase!.id} className="flex items-center justify-between gap-2">
+          {noLinks ? (
+            <span className="min-w-0 truncate text-slate-700">{label}</span>
+          ) : (
+            <Link
+              href={`/projects/${slug}/cases/${f.testCase!.id}`}
+              className="min-w-0 truncate text-slate-700 hover:text-indigo-600"
+            >
+              {label}
+            </Link>
+          )}
           <span className="shrink-0 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
             {f.flips} flip
           </span>
         </li>
-      ))}
+        );
+      })}
     </ul>
   );
 }
@@ -174,10 +193,13 @@ export function WidgetBody({
   widget,
   data,
   slug,
+  noLinks,
 }: {
   widget: WidgetRow;
   data: ReportData;
   slug: string;
+  // F-17: the public /share page renders widgets with no links into the app.
+  noLinks?: boolean;
 }) {
   switch (widget.type as WidgetType) {
     case "passRateTrend":
@@ -187,7 +209,7 @@ export function WidgetBody({
     case "coverageBar":
       return <CoverageBarWidget data={data} />;
     case "flakyList":
-      return <FlakyListWidget data={data} slug={slug} />;
+      return <FlakyListWidget data={data} slug={slug} noLinks={noLinks} />;
     case "runVelocity":
       return <RunVelocityWidget data={data} />;
     case "textNote":
