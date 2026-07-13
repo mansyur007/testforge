@@ -171,7 +171,7 @@ switch if it does not match.
 | 11 | F-11 Additional automation result formats | — | Mechanical: one parser per format, same matching pipeline | ✅ done |
 | 12 | F-24 Bulk move/copy & drag reorder | — | Mechanical; move-to-suite already existed, only copy+reorder were missing | ✅ done |
 | 13+ | P2 (F-12…F-23), then P3 | see each | L-01/L-02 are small — ship early for marketing | **Sonnet 5** for the mechanical ones (F-13 datasets, F-23 estimates); **Opus 4.8** where a new subsystem appears (F-16 comments, F-20 SSO) |
-| — | L-01…L-05 leapfrog, interleaved | see each | Designed to beat competitors, not match them | **Fable 5** — these are net-new product design, not ports of a known feature |
+| — | L-01…L-05 leapfrog, interleaved | see each | Designed to beat competitors, not match them | ~~Fable 5~~ → **Opus 4.8**: net-new design, but Fable wrote full work orders inline (2026-07-13, §7.5) — build from those |
 
 ---
 
@@ -1412,17 +1412,157 @@ Split into 4 sequential PRs:
 
 ### F-20 — SSO (OIDC first), 2FA, SCIM (large) `[ ]`
 
-1. **OIDC**: generic provider via env (`TF_OIDC_ISSUER`, `TF_OIDC_CLIENT_ID`,
-   `TF_OIDC_CLIENT_SECRET`) — discovery document, auth code + PKCE, `email` claim maps to the
-   user (auto-provision org member when `TF_OIDC_AUTO_PROVISION=1`); reuse the existing OAuth
-   callback structure in `src/app/api/auth/oauth/[provider]`. Admin can disable
-   password login (`TF_DISABLE_PASSWORD_LOGIN=1`).
-2. **2FA (TOTP)**: `User.totpSecretEnc`, `User.totpEnabledAt`, recovery codes (10, hashed like
-   API keys, single-use). Settings → Account: QR enroll (otpauth URI; render QR client-side —
-   dependency `qrcode` is acceptable), verify, disable (requires current code). Login flow gains
-   a second step when enabled; lockout counts wrong TOTP attempts like wrong passwords.
-3. **SAML/SCIM**: defer to a follow-up doc — out of scope here; note in README that OIDC covers
-   Google Workspace/Azure AD/Okta/Keycloak.
+> **Full work order — written 2026-07-13 by Fable 5 as a security-design handoff.** §0.8 puts
+> security-critical *design* on Fable; the design below is final. **Opus 4.8 implements it
+> without re-deciding any security property.** Where the spec says MUST, deviation is a bug
+> even if the code "works". SAML and SCIM are explicitly **out of scope** (README notes that
+> OIDC covers Google Workspace / Azure AD / Okta / Keycloak).
+
+#### 1. Threat model (what this feature must survive)
+
+| Threat | Countermeasure (built below) |
+|---|---|
+| Authorization-code interception / replay | PKCE S256 + single-use `state` + `nonce` claim check |
+| IdP response forgery | ID-token signature verified against the issuer's JWKS (`jose` `createRemoteJWKSet` — already a dependency, **no new auth libs**) |
+| Account takeover via unverified IdP email | require `email_verified === true` claim unless `TF_OIDC_ALLOW_UNVERIFIED_EMAIL=1` |
+| Session fixation across the 2FA step | password success does NOT create a session — a separate short-lived pending token does (§4) |
+| TOTP brute force | wrong codes feed the same in-memory lockout as wrong passwords (`recordFailure(email)` in `src/app/actions/auth.ts`) |
+| Recovery-code reuse | single-use rows, sha256-hashed like `ApiKey.keyHash` (`src/lib/auth.ts:verifyApiKey` pattern) |
+| Secret leakage | `totpSecretEnc` encrypted with `src/lib/crypto.ts` (F-07 AES-256-GCM); never serialized, never logged, never in audit detail |
+
+#### 2. Data model (add to `prisma/schema.prisma`)
+
+```prisma
+// F-20: on User —
+//   totpSecretEnc String?   // crypto.ts-encrypted base32 secret; null = 2FA off
+//   totpEnabledAt DateTime? // set only after the user proves one valid code
+
+model TwoFactorRecoveryCode {
+  id       String    @id @default(cuid())
+  userId   String
+  codeHash String    @unique // sha256 hex of the raw code, same recipe as ApiKey.keyHash
+  usedAt   DateTime?
+  createdAt DateTime @default(now())
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+}
+```
+
+No enum, no Json — §0.1 rules apply.
+
+#### 3. OIDC (generic provider, env-configured)
+
+**Files.** `src/app/api/auth/oidc/route.ts` (start) and
+`src/app/api/auth/oidc/callback/route.ts`. Copy the cookie-state mechanics of
+`src/app/api/auth/oauth/[provider]/route.ts` (`tf_oauth_state` pattern) — do not refactor
+that file; Google/GitHub social login keeps working unchanged.
+
+**Env** (all documented per §0.7; feature is fully dormant when `TF_OIDC_ISSUER` unset):
+
+| Var | Meaning |
+|---|---|
+| `TF_OIDC_ISSUER` | e.g. `https://login.example.com/realms/acme` — no trailing slash |
+| `TF_OIDC_CLIENT_ID` / `TF_OIDC_CLIENT_SECRET` | confidential client credentials |
+| `TF_OIDC_AUTO_PROVISION` | `1` → unknown verified email creates a User (role `TF_OIDC_DEFAULT_ROLE` ?? `MEMBER`) |
+| `TF_OIDC_BUTTON_LABEL` | login button text, default `"Single sign-on"` |
+| `TF_OIDC_ALLOW_UNVERIFIED_EMAIL` | `1` → skip the `email_verified` requirement (for IdPs that omit it; README warns) |
+| `TF_DISABLE_PASSWORD_LOGIN` | `1` → §5 |
+
+**Flow (MUSTs).**
+1. Start route: fetch `${TF_OIDC_ISSUER}/.well-known/openid-configuration` (in-process cache,
+   1 h TTL, module-scope `let`); generate `state` (16B hex), `nonce` (16B hex), PKCE
+   `code_verifier` (32B base64url) + S256 challenge. Store `{state, nonce, verifier}` JSON in
+   one httpOnly `tf_oidc` cookie (`sameSite: "lax"`, `secure` in prod, maxAge 600). Redirect to
+   `authorization_endpoint` with `response_type=code&scope=openid email profile`.
+2. Callback: reject unless query `state` equals cookie state (then **delete the cookie** —
+   single use). Exchange code at `token_endpoint` (client_secret_post + `code_verifier`),
+   10 s timeout.
+3. Validate `id_token` with `jose`: `jwtVerify(idToken, createRemoteJWKSet(new URL(jwks_uri)),
+   { issuer, audience: clientId })` — cache the JWKS set at module scope. Then check
+   `payload.nonce === cookie nonce`. Any failure → redirect `/login?error=…` with a generic
+   message (log the specific one server-side; never echo token contents to the browser).
+4. Map `payload.email` (lowercased) to a User. Unknown + auto-provision on → create with
+   `emailVerifiedAt: new Date()` (the IdP asserted it), `passwordHash: ""` (existing
+   `hasUsablePassword` treats `""` as unusable — same as social-login users). Unknown +
+   auto-provision off → `/login?error=` "No TestForge account for <email>. Ask an admin to
+   invite you."
+5. Existing user with 2FA enabled: OIDC **skips TOTP** (deliberate: the IdP owns MFA policy;
+   README states this). `createSession(user, false)`, audit `auth.login` with
+   `detail: "oidc"`, honor the same `next`/onboarding redirects as `login()`.
+
+**Login page.** When `TF_OIDC_ISSUER` is set, `/login` shows a full-width SSO button (link to
+`/api/auth/oidc`) above the password form, separated by the existing "or" divider used for
+social buttons.
+
+#### 4. 2FA (TOTP, RFC 6238 — no new crypto deps)
+
+**`src/lib/totp.ts`** (new, ~60 lines, node `crypto` only — no `otplib`):
+`generateSecret()` (20 random bytes → base32), `totp(secret, t = Date.now())` (HMAC-SHA1,
+30 s step, 6 digits), `verifyTotp(secret, code)` → accepts step ±1 (90 s grace);
+comparison via `crypto.timingSafeEqual` on the padded strings. `otpauthUri(email, secret)` →
+`otpauth://totp/TestForge:<email>?secret=…&issuer=TestForge`. Unit-tested against RFC 6238
+Appendix B vectors in `scripts/totp-selftest.mjs` (plain node script, run in CI before build).
+
+**Enrollment** (Settings → Account, new "Two-factor authentication" card,
+`src/components/TwoFactorSettings.tsx` + `src/app/actions/two-factor.ts`):
+1. `startTotpEnroll()` → generates secret, stores `totpSecretEnc` (encrypted) with
+   `totpEnabledAt` still NULL, returns the otpauth URI. Client renders QR locally
+   (dependency `qrcode` — approved) + the base32 as copyable text.
+2. `confirmTotpEnroll(code)` → `verifyTotp` against the decrypted pending secret; on success
+   sets `totpEnabledAt`, generates **10 recovery codes** (`crypto.randomBytes(5).toString("hex")`
+   grouped `xxxxx-xxxxx`), stores sha256 hashes, returns the raw codes **once** (UI: monospace
+   list + copy button + "you will not see these again"). Audit `auth.2fa_enable`.
+3. `disableTotp(code)` → requires a currently valid TOTP **or** recovery code; clears both
+   columns, deletes recovery rows. Audit `auth.2fa_disable`.
+
+**Login flow change** (in `login()`, `src/app/actions/auth.ts`): after password verifies and
+email is verified, if `totpEnabledAt` is set → do **NOT** `createSession`. Instead sign a
+pending JWT (same `jose` `SECRET`) `{ userId, rememberMe, purpose: "2fa" }`, 5 min expiry,
+set as httpOnly cookie `tf_2fa`, redirect `/login/2fa`. New page + action `verify2fa(code)`:
+reads `tf_2fa` (expired/absent → back to `/login`), checks `purpose === "2fa"`, then
+`verifyTotp`; on failure `recordFailure(email)` (same lockout budget as passwords) and count
+`isLockedOut` **before** verifying. A recovery code (matched by hash, `usedAt` NULL) also
+passes — mark it used, audit `auth.2fa_recovery_used`, and when ≤ 2 remain unused include a
+banner prompting regeneration. Success → delete `tf_2fa` cookie, `createSession`, audit
+`auth.login` detail `"password+totp"`.
+
+#### 5. `TF_DISABLE_PASSWORD_LOGIN=1` (MUSTs)
+
+Server-side rejects (not just hidden UI) in: `login`, `register`, `forgotPassword`,
+`resetPassword` — each returns `{ error: "Password login is disabled on this instance." }`.
+`/login` hides the password form and shows only SSO/social buttons. Boot-time console warning
+if set while `TF_OIDC_ISSUER` is missing (would lock everyone out — warn, don't crash;
+social OAuth may still be configured).
+
+#### 6. Serializer & API guarantees
+
+`totpSecretEnc`, recovery hashes, and the `tf_2fa` token never appear in any serializer, API
+response, page prop, or audit `detail` (grep-level check, same bar as F-07 AC 4). No API-v1
+surface is added — 2FA/SSO are session concerns; API keys are unaffected.
+
+#### 7. Acceptance criteria
+
+1. Keycloak dev realm: SSO button → IdP login → TestForge session; second login reuses the
+   user (no duplicate). Tampered `state` or `nonce` → generic login error, no session.
+2. `TF_OIDC_AUTO_PROVISION=0` + unknown email → error, no user row created.
+3. Enroll 2FA → logout → login: password alone yields no session cookie (`tf_session` absent
+   until the TOTP step passes); wrong code 5× triggers the same lockout message as wrong
+   passwords; a recovery code works exactly once.
+4. `TF_DISABLE_PASSWORD_LOGIN=1` → login action returns the disabled error even when POSTed
+   directly (curl), and register/forgot/reset likewise.
+5. `scripts/totp-selftest.mjs` passes the RFC 6238 vectors.
+6. Fresh `docker compose up` with none of the new env vars behaves exactly as today.
+
+#### 8. Test plan
+
+e2e `e2e/two-factor.spec.ts`: enroll (read the base32 from the UI, compute codes in-test with
+a tiny TOTP helper duplicated in the spec), verify login second step, recovery-code path,
+disable. OIDC is covered by a **local mock IdP** spun up inside the spec (same technique as
+`e2e/integrations.spec.ts`'s GitHub mock): a node HTTP server serving discovery, JWKS (key
+generated with `jose.generateKeyPair`), `authorization_endpoint` that immediately redirects
+back with a code, and a `token_endpoint` returning a signed id_token — asserts the happy path
+and the bad-nonce rejection. Reuses `TF_ALLOW_INSECURE_INTEGRATION_URL`-style env:
+`TF_OIDC_ISSUER=http://127.0.0.1:<port>` must be allowed when `NODE_ENV !== "production"`.
 
 ### F-21 — Mute / quarantine flaky tests `[x]`
 
@@ -1983,16 +2123,103 @@ embeddable in README/wiki like a CI badge.
 
 **TestRail/Qase make you script this; TestForge makes it one call.**
 
-- Project setting "Gate policy": `{ minPassRate: 95, maxNewFailures: 0, blockOnUntested: false, requiredTags: ["smoke"] }`.
-- `GET /api/v1/projects/[slug]/gate?run=<id|latest>` → `200 { pass: true, checks: [...] }` or
-  `200 { pass: false, checks: [{ name, expected, actual, pass }] }` (HTTP 200 both ways; the
-  `pass` field decides).
-- CLI (F-12): `testforge gate --project web --run latest --wait 600` → polls until the run
-  completes or timeout, prints a check table, **exit code 0/1** → drops straight into any CI
-  pipeline as a required step.
-- `maxNewFailures` = failures on cases that PASSED in the previous completed run of the same
-  source (regression detection, reuses F-17 comparison query).
-- AC: a GitHub Actions example in the docs page runs green/red correctly against seeded data.
+> **Full work order — written 2026-07-13 by Fable 5.** Semantics below are final; the tricky
+> part of this feature is not code volume but *definition precision* — every check is pinned
+> down here so CI verdicts are deterministic and disputes point at the doc, not the code.
+
+#### 1. Policy storage & UI
+
+Add `gatePolicyJson String?` to `Project` (null = no gate configured → endpoint returns 404
+`notFoundError("No gate policy configured")`). Shape (validated by
+`src/lib/gate.ts:parseGatePolicy`, unknown keys rejected):
+
+```ts
+type GatePolicy = {
+  minPassRate?: number;        // 0..100; check passes when passRate >= value
+  maxNewFailures?: number;     // >= 0
+  blockOnUntested?: boolean;   // true → any UNTESTED/IN_PROGRESS (non-muted) result fails the gate
+  requiredTags?: string[];     // every non-muted case carrying ANY of these tags must have PASS-kind status
+};
+```
+
+UI: "Quality gate" card on the project Fields/settings page (same page as F-06 configurations;
+OWNER/ADMIN, action `src/app/actions/gate.ts:saveGatePolicy`, audit `project.gate_update`).
+Four labeled inputs + an inline preview of the current latest-run verdict (server-rendered,
+reuses `evaluateGate`). Empty form ⇒ `gatePolicyJson = null`.
+
+#### 2. Semantics (`src/lib/gate.ts:evaluateGate(projectId, runId)` — single source of truth)
+
+All math is **kind-based** (F-14: `statusMeta(...).kind ∈ PASS|FAIL|BLOCKED|NEUTRAL`) and
+**mute-aware** (F-21: muted cases excluded everywhere, same as `lib/mute.ts` bucket rules):
+
+- `passRate` = PASS-kind / executed, where executed excludes `NON_EXECUTED_BUCKETS` and muted.
+  Zero executed results → passRate 0 (a gate on an empty run must fail loudly, not
+  divide-by-zero to green).
+- `newFailures` = count of rows (key = `caseId + datasetName`, F-13) whose kind is
+  FAIL/BLOCKED in the gated run **and** was PASS in the *baseline* run. Baseline = the most
+  recent **COMPLETED** run of the same project with the same `source`, `createdAt` earlier
+  than the gated run, excluding the gated run itself; no baseline → check passes vacuously
+  with `actual: 0` and `note: "no previous run"`. This is `deltaOf(...) === "REGRESSION"` from
+  `runs/compare/page.tsx` — extract that helper into `src/lib/run-compare.ts` and import it
+  in both places rather than duplicating (mechanical move, zero behavior change).
+- `requiredTags`: for each listed tag, every non-muted case in the run carrying that tag must
+  have PASS-kind. Failing detail lists up to 10 offending display ids. A tag matching zero
+  cases in the run **fails** (`expected: ">=1 case tagged smoke"`) — a typo'd tag must not
+  silently gate green.
+- Checks only run for keys present in the policy. Response:
+  `{ pass: boolean, run: { id, name, status, completedAt }, checks: [{ name, expected, actual, pass, note? }] }`.
+
+#### 3. Endpoint
+
+`GET /api/v1/projects/[slug]/gate?run=<id|latest>` — §0.3 pattern, `guard(req)` (read scope;
+gates are consumed by CI which should hold read keys). `run=latest` (default) = newest run of
+the project by `createdAt` **regardless of status** — the CLI's `--wait` handles incompleteness;
+an ACTIVE run evaluates against current results and the response's `run.status` says so.
+HTTP 200 whether passing or failing (the `pass` field decides; non-200 is reserved for real
+errors). Add to `src/lib/openapi.ts` + docs page. No webhook (CI polls; nothing mutates).
+
+#### 4. CLI (`packages/cli/bin/testforge.js` — extend, same zero-dep style)
+
+`testforge gate --project <slug> [--run <id|latest>] [--wait <seconds>] [--url] [--token]`
+1. `--wait N` (default 0): poll every 5 s until `run.status === "COMPLETED"` or N seconds
+   elapse; timeout → print `gate: timed out after Ns waiting for run to complete` → **exit 1**.
+2. Print an aligned table: `CHECK | EXPECTED | ACTUAL | RESULT` (`pass` → `OK`, else `FAIL`)
+   plus a final line `gate: PASS` / `gate: FAIL`. No color codes (CI logs).
+3. Exit 0 iff `pass === true`. Any HTTP/parse error → stderr + exit 1 (a broken gate must
+   block, not wave through).
+
+#### 5. Docs & example
+
+Help center (`src/content/help/`): extend the automation topic with a "CI quality gates"
+section containing this exact GitHub Actions step (verified against seed data in the e2e):
+
+```yaml
+- name: TestForge quality gate
+  run: npx testforge-cli gate --project web --run latest --wait 600
+  env:
+    TESTFORGE_URL: ${{ vars.TESTFORGE_URL }}
+    TESTFORGE_TOKEN: ${{ secrets.TESTFORGE_TOKEN }}
+```
+
+#### 6. Acceptance criteria
+
+1. Seeded project + policy `{minPassRate: 95}`: the seeded run (has failures) gates FAIL with
+   `actual` matching the reports page pass rate to one decimal; muting the failing case flips
+   the same call to PASS (F-21 consistency).
+2. `maxNewFailures: 0`: baseline run all-pass, new run with one regression → FAIL listing 1;
+   rerun with the regression fixed → PASS. First-ever run → vacuous PASS with the note.
+3. `requiredTags: ["smoke"]` with a failing smoke-tagged case → FAIL naming its display id;
+   a tag matching nothing → FAIL (typo guard).
+4. CLI exit codes 0/1 verified in the e2e via a subprocess call (same technique the F-12
+   reporter e2e uses — root `package.json` is commonjs, spawn with `node`).
+5. No policy configured → 404; policy saved by a MEMBER → server-side rejected.
+
+#### 7. Test plan
+
+e2e `e2e/gate.spec.ts`: seeds two runs via the results API (baseline + regressed), saves a
+policy as admin through the UI, asserts endpoint JSON for AC 1–3, then spawns the CLI for
+AC 4. `scripts/`-level unit coverage is unnecessary — `evaluateGate` is exercised through the
+endpoint.
 
 ### L-03 — Test cases as code (GitOps sync) `[ ]`
 
@@ -2022,6 +2249,70 @@ user's repo and TestForge — cases reviewed in PRs like code.
 - AC: round-trip pull→edit file→push→pull is idempotent; conflicting title edits exit 1 with
   a readable conflict report; new YAML case gets a TC id back into the file.
 
+> **Full work order — written 2026-07-13 by Fable 5.** The design risk here is sync-state
+> corruption; every decision below exists to make the failure mode "exit 1 with a report",
+> never "silently overwrote". Build the CLI merge logic exactly as specified.
+
+#### 1. Canonical YAML (documented in `docs/CASES-AS-CODE.md`, written as part of this feature)
+
+One case per file, path = `<dir>/<suite path slugified>/<display id>.yaml` (new cases:
+`<slug of title>.yaml` until the first push assigns an id, after which the CLI renames the
+file). Field order is FIXED (id, title, suite, priority, type, tags, preconditions, steps,
+expected) — pull always emits this order, multiline strings always as `|` block scalars,
+2-space indent, no flow collections except `tags`. Determinism is what makes PR diffs
+reviewable; it is an AC, not a nicety. Out of scope in v1 (documented): custom fields,
+datasets, shared-step references (a case using shared steps pulls **expanded** with a
+`# shared: <title>` comment and pushes back as inline — the doc warns editing those files
+breaks the link).
+
+#### 2. CLI commands (`packages/cli` — new dependency `yaml`, the only one; keep node ≥18)
+
+State file `.testforge.lock` (JSON, committed to the user's repo) = the **base** snapshot:
+`{ project, url, pulledAt, cases: { [displayId]: { hash: <sha256 of canonical YAML>, rev } } }`.
+
+- `testforge cases pull --project <slug> [--dir tests/]`: GET all cases (existing cursor
+  endpoint), write canonical files, rewrite lock. `--force-server` skips the dirty check;
+  otherwise refuse to overwrite files whose hash ≠ lock hash (local edits) — list them, exit 1.
+- `testforge cases status`: three-column report per case — `local` (file vs lock), `server`
+  (server rev vs lock rev), verdict (`clean | push | pull | CONFLICT | new-local | deleted-remote`).
+  Exit 0 always (it's informational).
+- `testforge cases push`: classic 3-way — for each case: local-only change → include in sync
+  batch; server-only → leave (report "will pull"); **both** → conflict (report field-level:
+  compare title/suite/priority/tags/steps separately; steps compare index-wise like
+  `CaseHistory.tsx`), exit 1 unless `--force-local` (push anyway) or `--force-server`
+  (re-pull those). New files (no id) always push; cases deleted on the server → report,
+  never auto-delete local. After a successful push, update the lock with returned revs and
+  write back assigned ids into the YAML files.
+
+#### 3. Server endpoint (the only new server surface)
+
+`POST /api/v1/projects/[slug]/cases/sync` — `guard(req, { write: true })`, §0.3. Body
+`{ upserts: [{ displayId?: string, baseRev?: number, fields: {...} }] }`, max 500 per call.
+Per item: no `displayId` → create (suite path auto-created like CSV import does);
+with `displayId` → update **only if** `baseRev === current rev` (optimistic concurrency —
+the server-side half of conflict safety), else that item returns
+`{ status: "conflict", rev }` without writing. Every write goes through the existing case
+create/update paths so F-05 revisions, audit (`case.sync`), and webhooks fire exactly as if
+edited in the UI. Response items: `{ displayId, id, rev, status: "created"|"updated"|"conflict"|"unchanged" }`
+("unchanged" when the payload equals current state — no revision spam from repeated pushes).
+Add to OpenAPI + docs.
+
+#### 4. Acceptance criteria (expands the brief's three)
+
+1. pull → push with no edits → server records **zero** new revisions ("unchanged" path).
+2. pull → edit title locally → push → pull is idempotent (second pull rewrites nothing).
+3. Title edited both locally and on the server → push exits 1 naming the case + field; then
+   `--force-local` wins, or `--force-server` restores; lock is consistent after either.
+4. New YAML case → push assigns `TC-<SLUG>-<n>`, file renamed, id written into the file.
+5. A batch with 1 conflicting + 4 clean items applies the 4 and reports the 1 (item-level
+   atomicity, not all-or-nothing — CI-friendly).
+
+#### 5. Test plan
+
+e2e `e2e/cases-as-code.spec.ts` drives the CLI as a subprocess (F-12 e2e technique) in a temp
+dir against the seeded project: pull → assert deterministic bytes (pull twice, diff empty) →
+AC 2, 3, 4 flows via API-injected server edits.
+
 ### L-04 — Real-time collaborative run execution `[ ]`
 
 **TestRail/Qase runs are single-player with refresh.** Make TestForge runs multiplayer.
@@ -2037,6 +2328,90 @@ user's repo and TestForge — cases reviewed in PRs like code.
 - AC: two browsers on one run see each other's avatars and statuses within 2 s; killing one
   browser removes its presence within 60 s; executor works unchanged when SSE fails (graceful
   degradation to current behavior).
+
+> **Full work order — written 2026-07-13 by Fable 5.** The architecture (SSE + in-process
+> pub/sub + soft claims + last-write-wins-with-undo) is final. The one invariant that must
+> survive implementation: **the executor must be byte-identical in behavior when the stream
+> is absent** — realtime is an overlay, never a dependency.
+
+#### 1. Event bus — `src/lib/run-events.ts`
+
+Module-scope `EventEmitter` stored on `globalThis.__tfRunEvents` (survives dev HMR; same trick
+as Prisma's client singleton in `src/lib/db.ts`), `setMaxListeners(0)`, channel key = runId.
+Exports `publishRunEvent(runId, evt)` / `subscribeRun(runId, fn) → unsubscribe`. Event union:
+
+```ts
+type RunEvent =
+  | { type: "result"; resultId: string; caseId: string; datasetName: string | null;
+      status: string; comment: string | null; elapsedSeconds: number | null;
+      by: { id: string; name: string }; at: string }
+  | { type: "presence"; users: { id: string; name: string; caseId: string | null; since: string }[] };
+```
+
+**Single-instance scope** is documented in a header comment: one Next.js process = one bus
+(the Docker deploy is exactly that). Multi-instance would need Redis pub/sub behind the same
+two exports — out of scope, noted for later.
+
+Presence state lives in the same module: `Map<runId, Map<userId, {name, caseId, lastSeen}>>`.
+A 30 s `setInterval` sweep drops entries with `lastSeen > 60 s` and publishes a fresh
+`presence` snapshot for affected runs (also lazily on each heartbeat).
+
+#### 2. HTTP surface (internal, not API-v1 — session auth only, like `/api/attachments`)
+
+| Route | Behavior |
+|---|---|
+| `GET /api/runs/[runId]/events` | SSE stream. `requireSession`-equivalent via `getSession()` (401 JSON if none) + project-membership check (404 for non-members, F-01 rule). `ReadableStream`, headers `text/event-stream`, `Cache-Control: no-store`, `X-Accel-Buffering: no`. On connect: send current presence snapshot. Every 20 s send a `: ping` comment (keeps proxies from idling out). `export const dynamic = "force-dynamic"`, node runtime. Unsubscribe + clear interval on `req.signal` abort |
+| `POST /api/runs/[runId]/presence` | Body `{ caseId: string \| null }`. Same auth. Upserts `{lastSeen: now}` and publishes a presence snapshot. Client heartbeats every 20 s + on case navigation; `navigator.sendBeacon` with `{ leave: true }` on `pagehide` deletes the entry immediately |
+
+**Publish point**: at the end of `submitResult` (`src/app/actions/runs.ts:97`) after the DB
+write + audit, `publishRunEvent(...)` with the writer's session identity. Fire-and-forget,
+same discipline as `dispatchWebhook` (§0.4). Also publish from the API results-upsert route
+and JUnit ingest (`by` = the API key's user) so automation uploads appear live too.
+
+#### 3. `RunExecutor.tsx` client behavior
+
+New hook `useRunChannel(runId)` encapsulating `EventSource` + heartbeat; the component renders
+identically when it reports `connected: false` (initial render, SSE error, or
+`typeof EventSource === "undefined"`). On error: close, retry with backoff 1 s → 2 s → 5 s →
+give up after 5 failures (silent — no banner; degradation must be invisible, per AC).
+
+- **Result events** (ignore own userId): patch the matching row's local state (status chip,
+  comment, elapsed), flash the row (`bg-amber-50` fade 1.5 s, gated behind
+  `prefers-reduced-motion` per §7.4.5).
+- **Presence**: avatar stack in the run header (initials circles, ≤5 + "+n", tooltip
+  "<name> — on <displayId>"); on the case list, a small initials dot on rows someone is
+  viewing. Opening a case someone else is on → amber chip "Ana is on this case" (soft claim —
+  informational, never blocking).
+- **Conflict (last-write-wins + undo)**: if a `result` event lands for the case I have **open
+  with a dirty form** (locally edited, unsubmitted) or one I submitted in the last 10 s, show
+  a toast: `Overwritten by Ana just now — [Undo]` (§7.4.6 copy tone). Undo = resubmit **my**
+  values via the normal `submitResult` action (which itself publishes — Ana then gets the
+  mirror toast; symmetric, converges because humans stop). Toast auto-dismisses in 8 s;
+  no queue — newest wins.
+
+#### 4. Non-goals (pinned so nobody builds them)
+
+No hard locks, no operational-transform/CRDT, no offline queue (that's F-36 D), no
+cross-run global presence, no persistence of presence (restart = empty map, clients
+repopulate on next heartbeat).
+
+#### 5. Acceptance criteria (expands the brief's)
+
+1. Two sessions, one run: A submits PASS → B's row updates + flashes within 2 s without
+   refresh; B's presence avatar shows in A within 20 s of B opening the run.
+2. Kill B's tab → B's avatar gone from A within 60 s (sweep) or instantly via beacon.
+3. `EventSource` blocked (e2e: route-abort the events URL) → executor submits/navigates
+   exactly as today; no console error spam (≤1 warn per retry, then silence after giving up).
+4. A and B open the same case; A submits FAIL while B's form is dirty → B sees the
+   overwrite toast; B's Undo restores B's status and A gets the mirror toast.
+5. Non-member GET of the events URL → 404. Automation upload to the run appears live (AC 1
+   path with the API as the writer).
+
+#### 6. Test plan
+
+e2e `e2e/realtime-run.spec.ts` with **two Playwright contexts** (two logged-in users, same
+run) covering AC 1–4; AC 5 via a raw `request` call. SSE in Playwright needs no special
+handling (it's just fetch); assert on DOM effects, not the wire format.
 
 ### L-05 — One-file portable backup & restore `[ ]`
 
@@ -2054,6 +2429,90 @@ user's repo and TestForge — cases reviewed in PRs like code.
   summary. **Never include decrypted secrets in the backup.**
 - AC: backup on instance A → restore on clean instance B → users can log in, cases/runs/
   attachments/badges all intact; restore on a non-empty instance is refused with a clear error.
+
+> **Full work order — written 2026-07-13 by Fable 5.** The design constraint that shapes
+> everything: a restore that half-succeeds is worse than one that refuses — every guard below
+> favors refusal. Dependency decision (final): `adm-zip` for both create and restore
+> (synchronous, in-memory; fine at this app's scale — attachment dedupe (F-01) keeps archives
+> small; a size guard makes the limit explicit rather than discovered via OOM).
+
+#### 1. Archive format (`.tfbackup` = zip)
+
+```
+manifest.json   { formatVersion: 1, appVersion, prismaSchemaHash, createdAt,
+                  rowCounts: { [model]: n }, uploadsBytes, secretProbe }
+db.json         { [modelName]: rows[] } — every model, raw column values, FK-preserving
+uploads/<storageKey...>   every file under TF_UPLOAD_DIR
+```
+
+- `prismaSchemaHash` = sha256 of `prisma/schema.prisma` at build/export time; restore refuses
+  on mismatch with "backup is from schema X, this instance runs Y — upgrade/downgrade first"
+  (v1 rule: exact match only; migration-aware restore is a later formatVersion).
+- `secretProbe` = `crypto.ts:encrypt("tfprobe")` — restore tries `decrypt`; success ⇒
+  `TF_SECRET` matches ⇒ `Integration.authEnc` rows import as-is; failure ⇒ import with
+  `active: false` and count them in the summary (`integrationsDeactivated: n`). Secrets are
+  never decrypted during backup; the archive holds only what the DB already holds.
+- Dates export as ISO strings; restore converts back via each model's Prisma schema (the
+  script embeds a static `DATE_FIELDS` map generated by reading the schema — keep it next to
+  `MODEL_ORDER` so schema PRs update both or fail the row-count self-check).
+
+#### 2. Export — `src/lib/backup.ts` + `GET /api/admin/backup`
+
+`buildBackup(): Promise<Buffer>` iterates `MODEL_ORDER` (FK-safe, the single constant both
+sides import): `Organization, RoleDef, User, VerificationToken, Invitation, TwoFactorRecoveryCode?…,
+Project, ProjectMember, Milestone, TestSuite, SharedStepGroup, ConfigGroup, ConfigOption,
+Environment, CustomFieldDef, ResultStatusDef, TestCase, TestCaseRevision, TestPlan, TestRun,
+TestRunResult, Comment, Attachment, SavedView, Dashboard, DashboardWidget, ShareLink,
+ReportSchedule, Requirement, RequirementCase, Webhook, NotificationChannel, Integration,
+IssueLink, ApiKey, AuditLog` (+ any model added later — a self-check compares
+`Object.keys(Prisma.ModelName)` against `MODEL_ORDER` and **throws** on drift, so a schema PR
+that forgets backup breaks CI, not a user's restore).
+
+Route: org-ADMIN session only, streams the buffer as
+`testforge-<org slug>-<YYYYMMDD-HHmm>.tfbackup`, audit `org.backup` (detail = total rows).
+UI: "Backup & restore" card in org settings — download button + "Restore" explainer linking
+`docs/SELF-HOSTED-MIGRATION.md` (both ways per the brief).
+
+#### 3. Restore — `scripts/restore.mjs <file> [--yes]` + first-run UI path
+
+Shared logic in `src/lib/backup.ts:restoreBackup(zip, opts)` so the script and the UI path
+cannot drift:
+
+1. **Guards (in order, all before any write):** manifest parses; `formatVersion <= 1`;
+   `prismaSchemaHash` matches; target DB is *fresh* (≤1 user AND 0 projects — the UI path;
+   the CLI additionally allows non-fresh only with `--force-wipe`, which runs
+   `prisma db push --force-reset` first and **requires interactive confirmation or `--yes`** —
+   consistent with the repo rule that force-reset needs explicit consent).
+2. Import inside one `db.$transaction` in `MODEL_ORDER` (SQLite dev + Postgres both honor it);
+   `createMany` per model in chunks of 500; cuids are globally unique so nothing is rewritten.
+3. Copy `uploads/` into `TF_UPLOAD_DIR` (reject any zip entry whose normalized path escapes
+   the root — same traversal rule as `storage.ts`).
+4. Print/return a summary: rows per model, files copied, `integrationsDeactivated`, elapsed.
+   Any thrown error ⇒ transaction rolls back ⇒ DB untouched (files may be partially copied —
+   the summary's final line says so explicitly on failure; files without rows are inert).
+
+**First-run UI restore** (the "fresh instance" path): the org-settings card shows an upload
+form only while the freshness predicate holds. Upload cap `TF_MAX_RESTORE_MB` (default 512,
+§0.7 rules). Audit `org.restore` on success.
+
+#### 4. Acceptance criteria (expands the brief's)
+
+1. Round trip A→B: login works (password hashes carried), attachments download byte-identical
+   (sha256 spot-check in the e2e), badge tokens (L-01) still serve, run/report numbers match.
+2. Non-empty target via UI → refused with the freshness error; CLI without `--force-wipe` →
+   same; with `--force-wipe --yes` → wipes then restores.
+3. Restore with a different `TF_SECRET` → completes; integrations imported `active: false`;
+   summary counts them; nothing else lost.
+4. Corrupted zip / truncated db.json / schema-hash mismatch → clean refusal, DB row counts
+   unchanged (assert before/after).
+5. Adding a Prisma model without updating `MODEL_ORDER` fails the self-check (unit script
+   `scripts/backup-selfcheck.mjs`, run in CI before build).
+
+#### 5. Test plan
+
+e2e `e2e/backup-restore.spec.ts`: seed → download backup via authed request → reset DB
+(existing force-reset consent env) → restore via `scripts/restore.mjs --yes` subprocess →
+assert AC 1 spot checks. AC 4 with a deliberately truncated copy of the same archive.
 
 ---
 
@@ -2126,6 +2585,15 @@ code already does — when in doubt, grep for the pattern and copy it.
 With F-35 and F-36 now specified to implementation depth and this appendix in place, the
 formerly-Fable backlog (F-35, F-36, L-01) is **executable by Opus 4.8** — the remaining
 Leapfrog items' visual surface is small (L-04's presence chips/toast follow §7.3–7.4 as-is).
+
+**Update 2026-07-13 (second handoff pass):** F-20, L-02, L-03, L-04, and L-05 now carry full
+Fable-written work orders inline in their sections — architecture, security design, and every
+judgment call are final. **The entire remaining backlog is now executable by Opus 4.8**
+(Sonnet 5 for the mechanical P3 rows per §2); no feature still requires Fable. Sequencing
+suggestion: F-20 and L-04 first (highest user value), L-02 + L-03 next (they share CLI
+plumbing), L-05 and the P3 briefs as capacity allows. P3 briefs (F-25…F-34) stay briefs by
+design — they follow established repo patterns and §0/§7 already encode everything
+non-obvious about them.
 
 ---
 
