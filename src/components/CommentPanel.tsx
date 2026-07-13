@@ -129,23 +129,33 @@ function Composer({
     null
   );
 
+  // Each query gets a sequence number; only the latest one may touch state.
+  // Bumping this on close cancels any in-flight query so a slow earlier
+  // response can't re-open the dropdown after a pick/close (which otherwise
+  // leaves the suggestions list covering the submit button).
+  const querySeq = useRef(0);
+
   const closeSuggest = () => {
+    querySeq.current++;
     setSuggests([]);
     setQueryRange(null);
   };
 
   const runQuery = useCallback(
     async (q: string) => {
+      const seq = ++querySeq.current;
       try {
         const res = await fetch(
           `/api/projects/${slug}/members?q=${encodeURIComponent(q)}`
         );
+        if (seq !== querySeq.current) return; // superseded / closed
         if (!res.ok) return setSuggests([]);
         const json = await res.json();
+        if (seq !== querySeq.current) return; // superseded after await
         setSuggests(json.data ?? []);
         setActive(0);
       } catch {
-        setSuggests([]);
+        if (seq === querySeq.current) setSuggests([]);
       }
     },
     [slug]
