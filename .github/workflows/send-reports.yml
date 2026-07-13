@@ -1,0 +1,24 @@
+name: Send scheduled reports
+
+# Daily trigger for F-17 scheduled email reports. Hits the app's guarded
+# /api/cron/send-reports endpoint, which emails a KPI summary to each report
+# schedule that is due today. The endpoint is idempotent per calendar day
+# (ReportSchedule.lastSentAt), and WEEKLY_MON schedules only fire on Mondays,
+# so a single daily call covers both cadences.
+#
+# Requires repo secret CRON_SECRET to match the CRON_SECRET in the app's .env on
+# the VPS (already shared with purge.yml / sync-issues.yml). Until both are set
+# the endpoint returns 503 and nothing is sent.
+on:
+  schedule:
+    - cron: '0 6 * * *' # 06:00 UTC daily (13:00 WIB); Mondays trigger WEEKLY_MON
+  workflow_dispatch:
+
+jobs:
+  send-reports:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call send-reports endpoint
+        run: |
+          curl -fsS -X GET https://testforge.emha.space/api/cron/send-reports \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
