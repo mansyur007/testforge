@@ -1133,7 +1133,29 @@ unless marked (large).
 - AC: one fixture file per format under `e2e/fixtures/results/` uploads successfully and
   produces a run with correctly mapped statuses; malformed file → 422 with row/parse error message.
 
-### F-12 — Official reporters + CLI (large) `[ ]`
+### F-12 — Official reporters + CLI (large) `[x]`
+
+> **Status: DONE** (2026-07-13, branch `feat/reporters-cli`). Implemented as specified, with
+> these notes:
+> - **No server changes**: the cases REST serializer already exposes `displayId`
+>   (`TC-<SLUG>-<n>`), so reporters resolve annotations → case ids client-side by paging
+>   `GET /api/v1/projects/:slug/cases`, then create a run (`source=<framework>`), stream results
+>   to the existing `POST …/runs/:runId/results`, and `PATCH …/runs/:runId` to complete.
+> - All JS packages are **plain ESM, zero runtime deps** (Node 18+ `fetch`); frameworks are
+>   *optional* peer deps so `npm ci` never pulls Playwright/Cypress into the reporter packages.
+>   `tsconfig` excludes `packages/` so the Next app's typecheck/build is untouched (verified).
+> - **Cypress** is a `setupNodeEvents` plugin (`before:run`/`after:spec`/`after:run`), **not** a
+>   Mocha reporter — Cypress re-instantiates Mocha reporters per spec, which breaks a single
+>   streamed run and async network posts; the plugin runs once per `cypress run` in Node.
+> - **pytest** plugin uses stdlib `urllib` only (no `requests` dep); registered via the
+>   `pytest11` entry point in `pyproject.toml`.
+> - The `testforge gate` subcommand is a stub that errors pointing at L-02 (CI quality gates,
+>   not yet built) — `upload` is the shipped command.
+> - Publishing to npm/PyPI is left as a manual step (not automated in CI), per spec.
+> - AC met: verified against a live local TestForge — the shared client (used by both JS
+>   reporters) creates a run, streams a `TC-E2E-001`-matched PASSED result, and completes it;
+>   the CLI matches a `TC-`-annotated JUnit into a run. e2e `reporters-cli.spec.ts` (both via
+>   subprocess, CI-safe); full suite 57/57 on a fresh DB.
 
 - Monorepo folder `packages/` (npm workspaces added to root `package.json`):
   `packages/cli` (`testforge-cli`), `packages/playwright-reporter`, `packages/cypress-reporter`,
