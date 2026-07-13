@@ -27,6 +27,10 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   automation coverage (§4.5)
 - **Basic auth & RBAC** — register/login JWT, brute force lockout (§8),
   audit log (§5.5)
+- **SSO & two-factor auth** — OpenID Connect single sign-on (any OIDC provider
+  via `TF_OIDC_ISSUER`; covers Google Workspace/Azure AD/Okta/Keycloak), plus
+  optional per-account TOTP 2FA with single-use recovery codes.
+  `TF_DISABLE_PASSWORD_LOGIN=1` makes an instance SSO/social-only.
 - **Attachments** — drag-drop/paste screenshots & files on test cases and run
   results (evidence), sha256-deduplicated storage in the `/data` volume,
   per-file limit via `TF_MAX_UPLOAD_MB` (default 10 MB)

@@ -36,6 +36,13 @@ services:
       # TF_ALLOW_ANY_WEBHOOK_HOST: "1" # only for proxied self-hosted targets
       # Issue trackers (F-07). Jira/GitHub/GitLab bases must be https unless:
       # TF_ALLOW_INSECURE_INTEGRATION_URL: "1" # internal http host on a trusted network
+      # SSO / 2FA (F-20). OIDC is dormant unless TF_OIDC_ISSUER is set; 2FA (TOTP)
+      # needs no env (per-account). TOTP secrets are encrypted with TF_SECRET.
+      # TF_OIDC_ISSUER: ${TF_OIDC_ISSUER:-}
+      # TF_OIDC_CLIENT_ID: ${TF_OIDC_CLIENT_ID:-}
+      # TF_OIDC_CLIENT_SECRET: ${TF_OIDC_CLIENT_SECRET:-}
+      # TF_OIDC_AUTO_PROVISION: "1"
+      # TF_DISABLE_PASSWORD_LOGIN: "1"    # SSO/social only (needs a provider!)
     volumes:
       - testforge_data:/data
     expose:

@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { requireSession, hasUsablePassword } from "@/lib/auth";
 import { ChangePasswordForm } from "@/components/ChangePasswordForm";
+import { TwoFactorSettings } from "@/components/TwoFactorSettings";
 
 export const dynamic = "force-dynamic";
 
@@ -14,9 +15,17 @@ export default async function AccountPage() {
       role: true,
       emailVerifiedAt: true,
       passwordHash: true,
+      totpEnabledAt: true,
     },
   });
   const hasPassword = hasUsablePassword(user.passwordHash);
+  const twoFactorOn = !!user.totpEnabledAt;
+  // Prompt a refresh when few unused recovery codes remain.
+  const unusedRecovery = twoFactorOn
+    ? await db.twoFactorRecoveryCode.count({
+        where: { userId: session.userId, usedAt: null },
+      })
+    : 0;
 
   return (
     <div className="max-w-2xl space-y-8">
@@ -69,6 +78,16 @@ export default async function AccountPage() {
           </p>
         </div>
         <ChangePasswordForm mode={hasPassword ? "change" : "set"} />
+      </section>
+
+      <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+        <div>
+          <h2 className="text-lg font-semibold">Two-factor authentication</h2>
+          <p className="text-sm text-slate-500">
+            Add a one-time code from an authenticator app as a second step at login.
+          </p>
+        </div>
+        <TwoFactorSettings enabled={twoFactorOn} lowRecovery={twoFactorOn && unusedRecovery <= 2} />
       </section>
     </div>
   );

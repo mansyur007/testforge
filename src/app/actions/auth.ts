@@ -8,7 +8,13 @@ import {
   hashPassword,
   verifyPassword,
   getSession,
+  createPending2fa,
+  readPending2fa,
+  clearPending2fa,
 } from "@/lib/auth";
+import { decrypt } from "@/lib/crypto";
+import { verifyTotp } from "@/lib/totp";
+import { sha256Hex, normalizeRecoveryCode } from "@/lib/two-factor";
 import {
   createToken,
   consumeToken,
@@ -28,6 +34,13 @@ function msgs() {
 const failedAttempts = new Map<string, { count: number; firstAt: number }>();
 const LOCKOUT_WINDOW_MS = 5 * 60 * 1000;
 const LOCKOUT_MAX = 5;
+
+// F-20: an operator can disable password auth entirely (SSO/social only). Every
+// password-touching action rejects server-side, not just in the hidden UI.
+const PASSWORD_LOGIN_DISABLED_MSG = "Password login is disabled on this instance.";
+function passwordLoginDisabled() {
+  return process.env.TF_DISABLE_PASSWORD_LOGIN === "1";
+}
 
 // Rate limiting login per email & per IP (PRD §12.6.2 / AU-009)
 function isLockedOut(key: string) {
@@ -88,6 +101,8 @@ export async function register(
     String(formData.get("orgSlug") ?? "").trim().toLowerCase() ||
     slugifyOrg(orgName);
   const agreed = formData.get("agreeTerms") === "on";
+
+  if (passwordLoginDisabled()) return { error: PASSWORD_LOGIN_DISABLED_MSG };
 
   // Validasi sesuai PRD §12.2.1
   const t = msgs();
@@ -174,6 +189,7 @@ export async function login(
   const next = String(formData.get("next") ?? "");
 
   const t = msgs();
+  if (passwordLoginDisabled()) return { error: PASSWORD_LOGIN_DISABLED_MSG };
   if (isLockedOut(email)) return { error: t.lockedOut };
 
   const user = await db.user.findUnique({ where: { email } });
@@ -189,6 +205,15 @@ export async function login(
     redirect(`/verify-email?email=${encodeURIComponent(email)}`);
   }
 
+  // F-20: when 2FA is on, a correct password does NOT create a session — it only
+  // mints the short-lived pending token and hands off to the second step. The
+  // lockout counter is intentionally left intact so wrong TOTP codes at
+  // /login/2fa keep drawing down the same budget as wrong passwords.
+  if (user.totpEnabledAt) {
+    await createPending2fa({ userId: user.id, rememberMe, next });
+    redirect("/login/2fa");
+  }
+
   failedAttempts.delete(email);
   await logAudit({ userId: user.id, action: "auth.login" });
   await createSession(user, rememberMe);
@@ -196,6 +221,63 @@ export async function login(
   // PRD §12.3 langkah 6–7: first login → onboarding wizard
   if (!user.onboardedAt) redirect("/onboarding");
   redirect(next && next.startsWith("/") ? next : "/dashboard");
+}
+
+// F-20: the second login step. Consumes the tf_2fa pending token, verifies a
+// TOTP code or a single-use recovery code, and only then creates the session.
+export async function verify2fa(
+  _prev: { error?: string } | undefined,
+  formData: FormData
+): Promise<{ error?: string }> {
+  const t = msgs();
+  const pending = await readPending2fa();
+  if (!pending)
+    redirect("/login?error=" + encodeURIComponent("Your sign-in expired. Please log in again."));
+
+  const code = String(formData.get("code") ?? "");
+  const user = await db.user.findUnique({ where: { id: pending!.userId } });
+  if (!user || !user.totpEnabledAt || !user.totpSecretEnc) {
+    clearPending2fa();
+    redirect("/login");
+  }
+
+  // Wrong codes draw down the same per-email lockout budget as wrong passwords.
+  if (isLockedOut(user!.email)) return { error: t.lockedOut };
+
+  const okTotp = verifyTotp(decrypt(user!.totpSecretEnc!), code);
+  let usedRecovery = false;
+  if (!okTotp) {
+    const rec = await db.twoFactorRecoveryCode.findFirst({
+      where: {
+        userId: user!.id,
+        codeHash: sha256Hex(normalizeRecoveryCode(code)),
+        usedAt: null,
+      },
+    });
+    if (rec) {
+      await db.twoFactorRecoveryCode.update({
+        where: { id: rec.id },
+        data: { usedAt: new Date() },
+      });
+      usedRecovery = true;
+    }
+  }
+
+  if (!okTotp && !usedRecovery) {
+    recordFailure(user!.email);
+    return { error: "That code is not valid. Try again, or use a recovery code." };
+  }
+
+  failedAttempts.delete(user!.email);
+  clearPending2fa();
+  await logAudit({
+    userId: user!.id,
+    action: usedRecovery ? "auth.2fa_recovery_used" : "auth.login",
+    detail: usedRecovery ? undefined : "password+totp",
+  });
+  await createSession(user!, pending!.rememberMe);
+  if (!user!.onboardedAt) redirect("/onboarding");
+  redirect(pending!.next && pending!.next.startsWith("/") ? pending!.next : "/dashboard");
 }
 
 export async function verifyEmailToken(rawToken: string) {
@@ -221,6 +303,7 @@ export async function forgotPassword(
   formData: FormData
 ) {
   const t = msgs();
+  if (passwordLoginDisabled()) return { error: PASSWORD_LOGIN_DISABLED_MSG };
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const user = await db.user.findUnique({ where: { email } });
   // jangan bocorkan keberadaan akun
@@ -247,6 +330,7 @@ export async function resetPassword(
   formData: FormData
 ) {
   const t = msgs();
+  if (passwordLoginDisabled()) return { error: PASSWORD_LOGIN_DISABLED_MSG };
   const token = String(formData.get("token") ?? "");
   const password = String(formData.get("password") ?? "");
   const confirmPassword = String(formData.get("confirmPassword") ?? "");

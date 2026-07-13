@@ -22,7 +22,15 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
   );
 }
 
-function FormInner({ lang }: { lang: Lang }) {
+function FormInner({
+  lang,
+  ssoLabel,
+  passwordDisabled,
+}: {
+  lang: Lang;
+  ssoLabel: string | null;
+  passwordDisabled: boolean;
+}) {
   const t = dict[lang].auth.login;
   const [state, formAction] = useFormState(login, undefined);
   const params = useSearchParams();
@@ -33,12 +41,33 @@ function FormInner({ lang }: { lang: Lang }) {
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+      {oauthError && (
+        <p className="mb-4 rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
+          {oauthError}
+        </p>
+      )}
+      {ssoLabel && (
+        <a
+          href="/api/auth/oidc"
+          data-testid="sso-login"
+          className="mb-3 flex w-full items-center justify-center gap-2 rounded-lg bg-slate-800 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-900"
+        >
+          {ssoLabel}
+        </a>
+      )}
       <OAuthButtons mode="login" lang={lang} />
-      <div className="my-5 flex items-center gap-3 text-xs text-slate-400">
-        <span className="h-px flex-1 bg-slate-200" />
-        {t.orEmail}
-        <span className="h-px flex-1 bg-slate-200" />
-      </div>
+      {!passwordDisabled && (
+        <div className="my-5 flex items-center gap-3 text-xs text-slate-400">
+          <span className="h-px flex-1 bg-slate-200" />
+          {t.orEmail}
+          <span className="h-px flex-1 bg-slate-200" />
+        </div>
+      )}
+      {passwordDisabled ? (
+        <p className="mt-5 text-center text-xs text-slate-400">
+          Password sign-in is disabled on this instance.
+        </p>
+      ) : (
       <form action={formAction} className="space-y-4">
         <input type="hidden" name="next" value={next} />
         {verified && (
@@ -51,9 +80,9 @@ function FormInner({ lang }: { lang: Lang }) {
             {t.reset}
           </p>
         )}
-        {(state?.error || oauthError) && (
+        {state?.error && (
           <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
-            {state?.error ?? oauthError}
+            {state.error}
           </p>
         )}
         <div>
@@ -104,14 +133,23 @@ function FormInner({ lang }: { lang: Lang }) {
           </Link>
         </p>
       </form>
+      )}
     </div>
   );
 }
 
-export function LoginForm({ lang }: { lang: Lang }) {
+export function LoginForm({
+  lang,
+  ssoLabel,
+  passwordDisabled,
+}: {
+  lang: Lang;
+  ssoLabel: string | null;
+  passwordDisabled: boolean;
+}) {
   return (
     <Suspense>
-      <FormInner lang={lang} />
+      <FormInner lang={lang} ssoLabel={ssoLabel} passwordDisabled={passwordDisabled} />
     </Suspense>
   );
 }

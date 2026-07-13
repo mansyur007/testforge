@@ -24,8 +24,11 @@ export default defineConfig({
     // lets the issue-sync spec drive the guarded cron endpoint.
     // Provider calls happen server-side, so page.route() cannot intercept them —
     // the mock must be a real HTTP server the app can reach.
+    // F-20: point the app at the local mock IdP (e2e/fixtures/mock-oidc.ts) on a
+    // fixed port so oidcConfig() is populated at dev-server boot. The mock binds
+    // 9797 inside the OIDC spec.
     command:
-      "TF_ALLOW_ANY_WEBHOOK_HOST=1 TF_ALLOW_INSECURE_INTEGRATION_URL=1 CRON_SECRET=e2e-cron-secret npm run dev -- -p 3456",
+      "TF_ALLOW_ANY_WEBHOOK_HOST=1 TF_ALLOW_INSECURE_INTEGRATION_URL=1 CRON_SECRET=e2e-cron-secret TF_OIDC_ISSUER=http://127.0.0.1:9797 TF_OIDC_CLIENT_ID=testforge-e2e TF_OIDC_CLIENT_SECRET=e2e-oidc-secret TF_OIDC_AUTO_PROVISION=1 npm run dev -- -p 3456",
     port: 3456,
     reuseExistingServer: true,
     timeout: 120_000,

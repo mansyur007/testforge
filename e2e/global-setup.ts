@@ -20,6 +20,11 @@ export const E2E = {
   reviewerEmail: "reviewer@testforge.local",
   reviewerPassword: "E2eDemo123",
   reviewerName: "E2E Reviewer",
+  // F-20: a dedicated account for the 2FA flow so enabling/disabling TOTP never
+  // interferes with the shared admin the rest of the suite logs in as.
+  twoFactorEmail: "twofa@testforge.local",
+  twoFactorPassword: "E2eDemo123",
+  twoFactorName: "E2E TwoFactor",
 };
 
 // Seed a deterministic fixture into the LOCAL dev.db before the suite runs:
@@ -143,6 +148,29 @@ async function globalSetup() {
     update: { role: "MEMBER" },
     create: { projectId: eProject.id, userId: reviewer.id, role: "MEMBER" },
   });
+  // F-20: dedicated 2FA account, reset to a clean (no-TOTP) state every run so a
+  // prior run's enrollment can't leave it stuck at the second login step.
+  const twoFactor = await db.user.upsert({
+    where: { email: E2E.twoFactorEmail },
+    update: {
+      passwordHash,
+      emailVerifiedAt: new Date(),
+      onboardedAt: new Date(),
+      totpSecretEnc: null,
+      totpEnabledAt: null,
+    },
+    create: {
+      name: E2E.twoFactorName,
+      email: E2E.twoFactorEmail,
+      passwordHash,
+      role: "ADMIN",
+      emailVerifiedAt: new Date(),
+      onboardedAt: new Date(),
+      organizationId: org.id,
+    },
+  });
+  await db.twoFactorRecoveryCode.deleteMany({ where: { userId: twoFactor.id } });
+
   // Start each run with a clean comment thread so counts don't drift.
   await db.comment.deleteMany({ where: { projectId: eProject.id } });
   // F-14 crash recovery: leftover custom statuses/roles from a previous run

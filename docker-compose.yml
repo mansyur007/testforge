@@ -17,6 +17,17 @@ services:
       # TF_ALLOW_ANY_WEBHOOK_HOST: "1"  # self-hosters with proxies only
       # Issue trackers (F-07). CRON_SECRET also guards /api/cron/sync-issues.
       # TF_ALLOW_INSECURE_INTEGRATION_URL: "1"  # internal http Jira/GitLab only
+      # SSO / 2FA (F-20). All optional; the whole OIDC feature is dormant unless
+      # TF_OIDC_ISSUER is set. 2FA (TOTP) needs no env — users enable it per
+      # account. TOTP secrets are encrypted with TF_SECRET (above).
+      # TF_OIDC_ISSUER: "https://login.example.com/realms/acme"
+      # TF_OIDC_CLIENT_ID: "${TF_OIDC_CLIENT_ID:-}"
+      # TF_OIDC_CLIENT_SECRET: "${TF_OIDC_CLIENT_SECRET:-}"
+      # TF_OIDC_AUTO_PROVISION: "1"        # unknown verified email → new member
+      # TF_OIDC_DEFAULT_ROLE: "MEMBER"     # role for auto-provisioned users
+      # TF_OIDC_BUTTON_LABEL: "Single sign-on"
+      # TF_OIDC_ALLOW_UNVERIFIED_EMAIL: "1" # only if your IdP omits email_verified
+      # TF_DISABLE_PASSWORD_LOGIN: "1"     # SSO/social only (needs a provider!)
     volumes:
       - testforge-data:/data
     restart: unless-stopped

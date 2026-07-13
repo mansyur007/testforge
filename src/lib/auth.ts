@@ -61,6 +61,49 @@ export function clearSession() {
   cookies().delete(COOKIE);
 }
 
+// F-20: the short-lived pending token that bridges the two login steps when 2FA
+// is enabled. Password success sets this — NOT a real session — so an attacker
+// who only knows the password never receives a `tf_session` cookie.
+const PENDING_2FA_COOKIE = "tf_2fa";
+
+export type Pending2fa = {
+  userId: string;
+  rememberMe: boolean;
+  next: string;
+  purpose: "2fa";
+};
+
+export async function createPending2fa(data: Omit<Pending2fa, "purpose">) {
+  const token = await new SignJWT({ ...data, purpose: "2fa" })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("5m")
+    .sign(SECRET);
+  cookies().set(PENDING_2FA_COOKIE, token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 300,
+    path: "/",
+  });
+}
+
+export async function readPending2fa(): Promise<Pending2fa | null> {
+  const token = cookies().get(PENDING_2FA_COOKIE)?.value;
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, SECRET);
+    if (payload.purpose !== "2fa") return null;
+    return payload as unknown as Pending2fa;
+  } catch {
+    return null;
+  }
+}
+
+export function clearPending2fa() {
+  cookies().delete(PENDING_2FA_COOKIE);
+}
+
 export async function getSession(): Promise<Session | null> {
   const token = cookies().get(COOKIE)?.value;
   if (!token) return null;
