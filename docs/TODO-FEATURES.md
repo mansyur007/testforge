@@ -1566,7 +1566,8 @@ Split into 4 sequential PRs:
 
 ## 5. P3 features
 
-Scoped briefs — expand into full work orders when picked up.
+Scoped briefs — expand into full work orders when picked up. **Exception:** F-35 and F-36
+are already full work orders (Fable 5 design handoff, 2026-07-13 — see also appendix §7).
 
 ### F-25 — Exploratory / session-based testing `[ ]`
 `Session { projectId, charter, timeboxMinutes, status, startedAt, endedAt, testerId }` +
@@ -1621,14 +1622,316 @@ Self-hosted-only login backend via env (`TF_LDAP_URL`, bind DN, user filter); ma
 members. Parity with TestLink/Kiwi for enterprises that lack OIDC.
 
 ### F-35 — Print & PDF-friendly case/run views `[ ]`
-`@media print` stylesheets + "Print view" toggle rendering a clean document (cover block,
-TOC, cases with expanded steps) — auditors love paper. PDF via browser print; no server-side
-PDF dependency.
+
+> **Full work order — written 2026-07-13 by Fable 5 as a design handoff.** Fable was the
+> assigned model for this feature; this spec encodes every design decision at implementation
+> depth so **Opus 4.8 (or any model) can build it without further design judgment**. Where a
+> choice was aesthetic, the choice is already made below — do not re-litigate, just build.
+> Read §7 (Fable design handoff appendix) first for the token vocabulary used here.
+
+**One-liner:** dedicated print routes render a clean paginated document (cover block, TOC,
+cases with expanded steps / run results); PDF comes from the browser's own print dialog — **no
+server-side PDF dependency, ever** (no puppeteer, no chromium in the Docker image).
+
+**Why dedicated routes, not `@media print` on existing pages** (decision, final): the app
+shell (`src/app/(app)/layout.tsx`) is a fixed `w-60` dark sidebar + interactive tables with
+truncation, virtualized-ish lists, and hover-revealed controls. Hiding all of that with print
+CSS is a losing whack-a-mole; auditors also want a *document*, not a screenshot of an app.
+So: a separate route group with its own minimal layout, sharing the same server loaders.
+
+#### 1. Routes & files
+
+| File | Purpose |
+|---|---|
+| `src/app/print/layout.tsx` | Minimal layout: white page, no sidebar, imports `print.css`, renders `<PrintToolbar/>` |
+| `src/app/print/print.css` | All print-specific CSS (see §4) — plain CSS import, not a Tailwind layer |
+| `src/app/print/projects/[slug]/cases/page.tsx` | Case catalog document (whole project or one suite / saved-view filter) |
+| `src/app/print/projects/[slug]/runs/[runId]/page.tsx` | Run report document |
+| `src/components/PrintToolbar.tsx` | Client comp: floating "Print / Save as PDF" button (`window.print()`), hidden by `@media print` |
+| `src/components/icons.tsx` | Add a `print` glyph to the existing TFIcon set (printer outline, same 24-box, `tf-ac`/`tf-acf` classes) |
+
+- **Auth**: these are NOT public. Each page opens with `requireSession()` + the same
+  project-membership check the `(app)` pages use (`memberScope`). Print pages must never be
+  reachable logged-out — the public surface stays `/share/[token]` (F-17) only.
+- **Query params** for the cases document: `?suite=<id>` (that subtree only) and
+  `?view=<savedViewId>` (apply an F-10 saved view's filter). Both optional; default = every
+  ACTIVE case in the project, suite-tree order.
+- **Entry points** (all `target="_blank" rel="noopener"`, icon `print`, label "Print view"):
+  1. Cases page toolbar (next to the CSV export button).
+  2. Case detail page header — links to the cases document with `?case=<id>` → renders a
+     one-case document (same template, cover block collapses to a slim header).
+  3. Run detail page header (next to Share, F-17).
+
+#### 2. Document anatomy (cases catalog)
+
+Top-to-bottom, exactly:
+
+1. **Cover block** (first page, `break-after: page`): TestForge logo mark (the existing
+   `Logo` component, dark-on-white variant), then in `--font-display`:
+   document title (`<project name> — Test Case Catalog`), subtitle line in slate-500
+   (`<n> cases · <m> suites · generated <YYYY-MM-DD HH:mm> · by <user name>`), and — when a
+   `suite`/`view` filter is active — a bordered "Scope" box listing the human-readable filter
+   (suite path, or the saved view's name + its filter chips as plain text). No decoration
+   beyond a single `2px solid #1b1a22` rule under the title. Auditors file these; the cover
+   must carry provenance.
+2. **TOC**: flat list of suites in tree order, `<a href="#suite-<id>">` anchors, dotted
+   leaders NOT required (CSS leaders are unreliable across print engines — plain list,
+   suite path in sans, case count right-aligned via flex). Chrome/Firefox print preserves
+   in-document links in the PDF, so the TOC is clickable in the exported file for free.
+3. **Body**: per suite, an `<h2 id="suite-<id>">` with the full suite path
+   (`Parent / Child`), then each case as a `<section class="tf-print-case">`:
+   - Header row: `displayId` in `--font-mono` slate-500 + title in semibold + right-aligned
+     priority as **outlined text chip** (see §4 badge rule).
+   - Meta line (only fields that are non-empty): type, status (F-15 workflow status),
+     tags, assignee, estimate (F-23), linked requirements (F-18 refIds).
+   - Preconditions (rendered Markdown), steps table — **steps arrive pre-expanded via F-04
+     exactly like `RunExecutor` gets them** (reuse the same expansion loader; shared-step
+     origin shown as a small `⛓ <title>` prefix in slate-500), 3 columns
+     `# | Action | Expected`, then Expected result, then custom fields (F-03) as a
+     `dt/dd` grid.
+   - Attachments: listed by filename + size only (no inline images except image attachments
+     under 1 MB, rendered `max-height: 60mm` — a paper doc with 40 full-res screenshots
+     is a printer DoS).
+4. **Footer** on every page via `@page` margin — see §4; plus a final line
+   `Generated by TestForge — <absolute URL of the live page>` so paper always points back
+   to the living system.
+
+#### 3. Document anatomy (run report)
+
+Same skeleton, with:
+
+1. Cover: `<project> — Run report: <run name>`, subtitle
+   `<status> · started <date> · <environment (F-19)> · <plan/config if any (F-06)>`.
+2. **Summary block** (this replaces the TOC): a plain table of status → count → percent,
+   ordered by the project's status defs (F-14), each status name prefixed by its glyph
+   (`✓ ✕ ⊘ → ↻ •` — the same `KEY_ICONS`/`KIND_ICONS` map as `RunExecutor.tsx`), pass rate
+   line computed **excluding muted cases (F-21)** exactly like the dashboard does, and a
+   horizontal 100%-stacked bar: one flex row of divs, each status's `badgeStyle` color,
+   `print-color-adjust: exact`, 6 mm tall, 1 px `#1b1a22` outer border so it still reads
+   as segments when printed grayscale.
+3. Body: results grouped by suite; each result = case header row (displayId, title, dataset
+   name chip (F-13) if any, muted chip (F-21) if muted) + status chip + elapsed + assignee +
+   comment (Markdown) + defect links (F-07 issue keys + built-in defectUrl). Steps are
+   **collapsed by default in the run report** (one line: "n steps — see case catalog");
+   `?steps=1` expands them using the §2 case template. A run report's job is outcomes;
+   the catalog's job is procedure.
+4. Regression annotation: when the run has a previous completed run of the same source,
+   annotate each FAILED-kind result that passed previously with `↓ regression` in the meta
+   line (reuses the F-17 comparison query — it already exists, `RunCompare` imports it).
+
+#### 4. Print CSS — exact rules (`src/app/print/print.css`)
+
+The design intent: **ink on paper, brand carried by typography and structure, not color.**
+Screen preview of the print route should look like the paper output (white page, centered
+`max-width: 180mm` column, `box-shadow` page illusion is NOT wanted — keep it plain).
+
+```css
+/* Page geometry */
+@page { size: A4; margin: 18mm 16mm 20mm; }
+/* Chrome ignores @page margin-box content (page numbers) — accepted limitation.
+   Do NOT try position:fixed running footers: they overlap content unpredictably
+   across engines. The per-section footer line from §2.4 is the provenance. */
+
+/* Typography: print is the one surface where the app's text-sm 14px idiom is wrong.
+   Body 10.5pt/1.45 IBM Plex Sans; h1 20pt, h2 13pt, h3 11pt in Space Grotesk
+   (same var(--font-display) — next/font variables are on <body>, they work here);
+   displayId / meta labels 8.5pt var(--font-mono) uppercase +0.04em. All text #1b1a22
+   (ink token) on white; secondary text #475569 (slate-600) — nothing lighter than
+   slate-600 on paper (slate-400 disappears on office printers). */
+
+/* Fragmentation */
+.tf-print-case { break-inside: avoid; }          /* a case never splits… */
+.tf-print-case.tf-long { break-inside: auto; }   /* …unless taller than ~1 page: the
+     server marks tf-long when steps.length > 12 — an unsplittable 2-page block causes
+     a full blank page, which is worse than a split. */
+h2 { break-after: avoid; }                        /* no orphaned suite headings */
+section, tr { orphans: 3; widows: 3; }
+.tf-print-cover { break-after: page; }
+
+/* Color flattening — print.css overrides for shared components */
+.tf-markdown pre { background: #f8fafc !important; color: #1b1a22 !important;
+                   border: 1px solid #cbd5e1; }   /* the screen pre is slate-900-dark —
+                                                     never ship a black slab to a printer */
+.tf-markdown a { color: inherit; text-decoration: underline; } /* blue ink lies on paper */
+.tf-markdown a[href^="http"]::after { content: " (" attr(href) ")";
+                   font-size: 8pt; color: #475569; }  /* URLs must survive paper */
+img { max-width: 100%; max-height: 60mm; }
+
+/* Badge rule (priority/status/type chips): on paper a colored pill prints as mud.
+   Every chip becomes: 1px solid currentColor outline, transparent bg, its glyph + label,
+   font 8.5pt mono uppercase. Color is kept (print-color-adjust: exact) as a hint for
+   color printers but the glyph+outline carries the meaning in grayscale. */
+```
+
+`PrintToolbar` (floating bottom-right, `position: fixed`, accent `#4f46e5` filled button,
+`@media print { display: none }`): label "Print / Save as PDF", plus a "Close" text link.
+Before calling `window.print()` set `document.title` to
+`<project-slug> — <doc name> — TestForge` — that string becomes the default PDF filename in
+every browser; it's the cheapest professional touch in this whole feature.
+
+#### 5. Implementation order & AC
+
+1. Icon + layout + toolbar + print.css skeleton.
+2. Cases document (reuse the cases page server query + F-04 expansion loader — extract to
+   `src/lib/case-doc.ts` if the page has it inline; do not duplicate the query).
+3. Run document (reuse run detail loaders + F-17 comparison query).
+4. Entry-point buttons on the three pages.
+5. e2e `print-views.spec.ts` (Playwright): use `page.emulateMedia({ media: "print" })`.
+
+**AC:**
+- [ ] `/print/projects/<slug>/cases` logged-out → redirect to login; non-member → 404.
+- [ ] Catalog shows every ACTIVE case with steps **expanded** (a case using shared steps
+      (F-04) prints the real steps, with the ⛓ origin marker).
+- [ ] `?suite=` and `?view=` filter correctly and the Scope box states the filter.
+- [ ] Run report totals match the run page (muted excluded from pass rate), stacked bar
+      segments sum to 100%, `?steps=1` expands procedures.
+- [ ] Under `emulateMedia print`: toolbar hidden, cover is its own page
+      (`break-after` computed), `.tf-markdown pre` computes a light background.
+- [ ] `document.title` is the document name when the toolbar is used.
+- [ ] Docker note: everything here is routes + a CSS import → bundles into `.next`;
+      **no `public/` needed, no Dockerfile change** (contrast with F-36, which needs one).
 
 ### F-36 — Mobile execution PWA `[ ]`
-Manifest + service worker; the run executor gets a mobile layout (big status buttons, swipe
-next/prev). Offline queue for result saves (retry on reconnect, last-write-wins with a visible
-conflict toast). Kills the "walking around with a tablet in a lab" pain no competitor solves well.
+
+> **Full work order — written 2026-07-13 by Fable 5 as a design handoff** (same contract as
+> F-35's note: design decisions are final, build them as written; read §7 first).
+> The user story: a tester walks a lab floor with a phone/tablet, executes a run, loses
+> Wi‑Fi between rooms, keeps recording, and nothing is lost. Kills the pain no competitor
+> solves well. Four independent parts — **build and PR them in this order** (A and B are
+> shippable alone; C depends on nothing but is riskier; D is pure UI):
+
+#### Part A — Installability (manifest + icons + viewport)
+
+- `src/app/manifest.ts` (Next Metadata route, bundles into `.next` — no static file):
+  `{ name: "TestForge", short_name: "TestForge", start_url: "/dashboard",
+  display: "standalone", background_color: "#f8fafc" /* slate-50, the app bg */,
+  theme_color: "#0f172a" /* slate-900 — matches the sidebar, so the status bar melts
+  into the shell */, icons: [192, 512, plus 512 "maskable"] }`.
+- Icons: derive from `src/app/icon.svg` (the existing mark). Maskable variant = mark at 60%
+  size centered on a `#4f46e5` accent-filled square (safe-zone rule: nothing meaningful
+  outside the central 80% circle). Export PNGs into `public/icons/`.
+- **⚠️ THE DOCKER GOTCHA (this repo's #1 trap, already bit F-37):** the repo currently has
+  **no `public/` directory at all**, and the `Dockerfile` runtime stage copies only
+  `.next/`, `node_modules/`, `prisma/`. Any file placed in `public/` (icons here, `sw.js`
+  in Part B) will 404 in every production deploy **unless you add**
+  `COPY --from=builder /app/public ./public` to the runtime stage. Do this in the same
+  commit that creates `public/`. `.dockerignore` is fine as-is (it doesn't exclude it).
+- Root layout: add the `viewport` export (`src/app/layout.tsx` has none today):
+  `export const viewport: Viewport = { width: "device-width", initialScale: 1,
+  viewportFit: "cover", themeColor: "#0f172a" }`.
+- AC: `GET /manifest.webmanifest` 200 in the production Docker image; Lighthouse PWA
+  "installable" passes; Add-to-Home-Screen opens standalone at /dashboard.
+
+#### Part B — Service worker (hand-rolled, ~80 lines, no workbox/next-pwa dependency)
+
+- `public/sw.js`. Strategy — deliberately minimal, an SW bug can brick every client until
+  its cache version rotates, so the SW does only three things:
+  1. `install`: precache exactly one URL, `/offline` (a new static page: logo, "You're
+     offline", "Anything you recorded is queued and will sync automatically" — reassurance
+     copy matters here, see Part C) then `skipWaiting()`.
+  2. `fetch`, navigation requests (`request.mode === "navigate"`): network-first,
+     `catch` → serve cached `/offline`.
+  3. `fetch`, `/_next/static/` (content-hashed, immutable): cache-first.
+  **Everything else — every `/api/` and server-action POST — passes through untouched.**
+  Never cache API responses; a stale run list is worse than an offline page.
+- Version string const at top (`const V = "tf-sw-1"`); `activate` deletes caches with other
+  prefixes. Bump V on any SW change.
+- Registration: `src/components/PwaRegistrar.tsx` (client, renders null), mounted once in
+  `src/app/(app)/layout.tsx`; `if (process.env.NODE_ENV === "production" &&
+  "serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js")`. **Never
+  register in dev** — a dev-cached SW poisons localhost for every other project.
+- AC: prod build → DevTools offline → navigating anywhere renders `/offline`; static assets
+  served from cache; API requests visible in network tab (not from SW cache).
+
+#### Part C — Offline result queue
+
+**The core constraint that shapes everything:** result submission today is the server action
+`submitResult` (`src/app/actions/runs.ts:97`). Server-action POSTs are keyed by build-scoped
+encrypted action IDs — they **cannot be queued and replayed** across a deploy, and failed
+action calls don't serialize cleanly into IndexedDB. So the offline path needs a plain JSON
+endpoint, and to avoid two drifting validation paths:
+
+1. **Extract** the body of `submitResult` (membership check → `run.execute` permission
+   (F-14) → status validated against `loadStatusDefs` (F-14) → F-03 custom-field handling →
+   write) into `src/lib/save-result.ts` `saveResult(userId, resultId, input)`. The server
+   action becomes a thin FormData adapter around it. **One validation path, two transports.**
+2. New route `POST /api/runs/results/[resultId]` (session-cookie auth via the same
+   `requireSession`; same-origin `fetch` sends cookies by default, nothing special needed).
+   Body: `{ status, comment?, defectUrl?, elapsedSeconds?, clientId, recordedAt }` where
+   `clientId` = UUID minted at enqueue time (idempotency: the route upserts a processed-ids
+   check so a double-flush can't double-append F-05-style history), `recordedAt` = ISO time
+   the tester actually pressed the button (not flush time — audit truth).
+   Response: `{ ok: true, conflict: null | { theirStatus, theirName, theirAt } }` —
+   conflict is populated when the stored result's `updatedAt > recordedAt` and the last
+   writer isn't me: **last-write-wins is kept** (my flush overwrites) but the loser is
+   *reported*, never silent.
+3. Client queue `src/lib/offline-queue.ts` — raw IndexedDB, no dependency (~60 lines):
+   DB `tf-offline` v1, store `pending` keyed by `clientId`, records
+   `{ clientId, resultId, payload, recordedAt, tries }`.
+   API: `enqueue(item)`, `flush()` (in `recordedAt` order, sequential — order matters when
+   the same case is re-recorded), `count()`, `subscribe(cb)` for badge updates.
+   `flush()` triggers: window `online` event, `visibilitychange → visible`, executor mount,
+   and after every successful direct submit. Per-item: on HTTP 4xx → drop + error toast
+   (it will never succeed); on network error → keep, retry next flush (no timer backoff
+   needed — the triggers above are the backoff).
+4. `RunExecutor.tsx` submit path becomes: `fetch` the JSON route with a 6-second
+   `AbortController` timeout → on success, exactly today's behavior; on abort/network-error →
+   `enqueue()` + **optimistic UI**: the row shows the chosen status immediately plus an
+   amber chip `⟳ queued` (`data-testid="queued-chip"`); a persistent header pill
+   `n queued — will sync when online` (amber-100/amber-800, the app's standard warning
+   recipe) while `count() > 0`, flipping to a brief green `All changes synced` on drain.
+5. Conflict toast: no toast primitive exists in the repo yet — add
+   `src/components/Toast.tsx` (bottom-center, slide-up 200 ms ease-out, auto-dismiss 6 s,
+   `role="status" aria-live="polite"`, max 3 stacked). Conflict copy, exactly:
+   `Overwrote <theirName>'s "<theirStatus>" from <relative time> on <displayId>` — names the
+   loser, states the winner, no undo in v1 (the F-05-style result history keeps the
+   overwritten value recoverable; an undo button is a v2 nicety).
+- AC: DevTools offline → record 3 results → 3 queued chips + header pill; back online →
+  auto-flush in order, chips clear, pill turns green then disappears; double-flush (two tabs)
+  doesn't duplicate history (clientId idempotency); a conflicting write from another user
+  surfaces the toast with their name; 403 (permission revoked mid-queue) drops the item with
+  an error toast instead of retrying forever.
+
+#### Part D — Mobile executor layout (`RunExecutor.tsx`, breakpoint `md` = 768px)
+
+Today's executor is a two-pane desktop layout (case list rail + detail card). On `<md`:
+
+- **Single-card flow**: the list pane disappears; one case fills the viewport. Sticky top
+  bar (slate-900, white text — continues the shell): back link, `12 / 40` position in
+  `--font-mono`, and a 3 mm progress strip underneath (flex row, per-status
+  `badgeStyle` colors, same recipe as F-35's stacked bar). Tapping the `12 / 40` opens the
+  full case list as a bottom sheet (80vh, scrollable, same rows as the desktop rail) for
+  random access — walking testers mostly go next-next-next, the sheet is the escape hatch.
+- **Status buttons = the thumb zone.** Fixed bottom bar, safe-area-inset padding
+  (`env(safe-area-inset-bottom)`, needs Part A's `viewport-fit: cover`): a 2-column grid of
+  the project's submittable statuses (F-14 `submittableDefs`, same order as desktop), each
+  button `min-height: 52px`, `rounded-xl`, glyph + label, **filled** with its
+  `badgeStyle` background at full opacity (the desktop chips are pastel; sunlight on a lab
+  floor needs contrast — text white or ink per WCAG against each status color, compute once
+  in `lib/result-statuses.ts` as `onColorOf(key)`). Tap = submit + auto-advance to the next
+  un-executed case (the desktop behavior after keyboard submit) with a 150 ms slide.
+- **Swipe** left/right = next/prev case. Raw `touchstart/move/end` on the card (no gesture
+  dep): commit when `|dx| > 56px && |dy| < 32px && duration < 600ms`, live-follow the finger
+  with `translateX` capped ±80 px, spring back otherwise; disable entirely under
+  `prefers-reduced-motion` (buttons `‹ ›` in the top bar are the always-present fallback,
+  also the desktop affordance). Swipe **never submits** — movement and mutation stay on
+  separate gestures, misfires are unrecoverable trust-killers.
+- Comment / attachments / custom fields / issue links collapse behind one `Details`
+  disclosure under the steps (closed by default — the 90% path is read-steps → tap-status).
+  Keyboard shortcuts (F-14) stay desktop-only (`window.matchMedia("(min-width: 768px)")`).
+- Steps render at `text-base` (16px) on `<md` — the desktop `text-sm` is too small at
+  arm's length. Preconditions keep their amber box. Everything else inherits.
+- AC: at 375×812 (iPhone-ish viewport in Playwright): no horizontal scroll; status buttons
+  ≥ 52 px tall and fully visible above the home indicator; swipe advances (dispatch
+  `Touch` events per the bulk-reorder spec's precedent — Playwright can't native-swipe);
+  bottom sheet opens/scrolls/jumps to a case; desktop ≥768px is **pixel-identical to
+  today** (zero regression — run the existing `runs.spec.ts` unchanged).
+
+**e2e:** `pwa-mobile.spec.ts` — Parts A+C+D assertions above; use
+`context.setOffline(true/false)` + `page.dispatchEvent(window, "online")` for the queue;
+skip SW registration testing in dev (Part B's AC is a manual prod-image check, note it in
+the PR description). Reminder from the repo's e2e conventions: reporters run via subprocess
+(root `type: commonjs`), Prisma force-reset needs the consent env.
 
 ### F-37 — In-app user docs / help center `[x]`
 
@@ -1660,6 +1963,19 @@ embeddable in README/wiki like a CI badge.
   `Cache-Control: public, max-age=300`, no auth (token IS the auth; revocable), no project
   data beyond the number.
 - Also `GET /badge/<token>.json` (shields.io `endpoint` schema) for custom styling.
+- **Exact SVG design (Fable handoff, 2026-07-13 — build as written):** flat shields.io
+  idiom so it sits naturally beside CI badges. Height 20; two cells; label cell
+  `#555`, value cell `#4c1` (≥90) / `#dfb317` (70–89.99) / `#e05d44` (<70); text
+  `Verdana,Geneva,DejaVu Sans,sans-serif` 11px, white, with the classic 1px
+  `fill-opacity=".3"` dark copy offset +1px down for the embossed look; whole shield
+  `rx="3"` clip; the shields gloss `<linearGradient>` (`#bbb` .1 → 0 .1) overlaid.
+  Width math without measuring fonts: `cellWidth = 6 * text.length + 10 + (13 if the label
+  carries the mark)`. Label cell leads with the TestForge mark as a 13×13 path (white,
+  from `src/app/icon.svg` geometry) — that mark is what distinguishes it in a README badge
+  row. Value text: `98.2%` (one decimal, trailing `%`) for passrate/automation, plain int
+  for cases. Unknown/no-completed-run state: value cell `#9f9f9f`, text `no runs`.
+  Template literal in `src/app/badge/[token]/route.ts`, zero deps; ~40 lines including the
+  color ramp.
 - AC: badge renders in a GitHub README; revoking the token → 404; number matches the latest
   completed run's pass rate (muted tests excluded per F-21).
 
@@ -1738,6 +2054,78 @@ user's repo and TestForge — cases reviewed in PRs like code.
   summary. **Never include decrypted secrets in the backup.**
 - AC: backup on instance A → restore on clean instance B → users can log in, cases/runs/
   attachments/badges all intact; restore on a non-empty instance is refused with a clear error.
+
+---
+
+## 7. Appendix — Fable design handoff (written 2026-07-13)
+
+Fable 5 was the assigned model for the presentation-heavy work (F-35, F-36, L-01 visuals,
+and Leapfrog polish). This appendix freezes the design system's *working vocabulary* so any
+model can produce UI that is indistinguishable from the existing app. It documents what the
+code already does — when in doubt, grep for the pattern and copy it.
+
+### 7.1 Tokens (source of truth: `tailwind.config.ts` + `src/app/globals.css`)
+
+| Token | Value | Use |
+|---|---|---|
+| `ink` | `#1b1a22` | Print body text, high-contrast text on light |
+| `accent` | `#4f46e5` (indigo-600-ish) | THE brand color: primary buttons, links, icon strokes |
+| `accent.tint` | `#f3f2fd` | Accent-washed backgrounds |
+| accent-soft | `rgba(79,70,229,.14)` | Icon fills (`.tf-acf`), mention chips |
+| App background | `slate-50` | `<body>` |
+| Card | `bg-white rounded-xl border border-slate-200 p-6` | Every content card, verbatim |
+| Shell | `bg-slate-900 text-slate-300`, `w-60` fixed sidebar | Also PWA `theme_color` |
+| Warning recipe | `bg-amber-50/-100` + `text-amber-800/900` | Preconditions box, stale-rev + queued chips |
+
+### 7.2 Typography (loaded in `src/app/layout.tsx` via next/font CSS variables)
+
+- **Space Grotesk** = `--font-display` / `font-display`: h1–h3 only (globals.css applies it
+  globally to headings with `letter-spacing: -0.01em`). Never for body.
+- **IBM Plex Sans** = `--font-sans`: everything else. The app's default density is
+  **`text-sm` (14px) slate** — body copy, tables, forms. `text-base` is the exception
+  (mobile executor steps, marketing).
+- **IBM Plex Mono** = `--font-mono`: display IDs (`TC-WEB-001`), counters (`12 / 40`),
+  code, tiny uppercase meta labels.
+- Print scale is its own thing — see F-35 §4 (10.5pt body, nothing lighter than slate-600).
+
+### 7.3 Component idioms (grep-and-copy patterns)
+
+- **Chips/badges**: `rounded-full px-2 py-0.5 text-xs font-medium` + a pastel bg/text pair
+  (`bg-amber-100 text-amber-800`, `bg-indigo-100 text-indigo-700`) or dynamic
+  `style={badgeStyle(...)}` from `src/lib/result-statuses.ts` (F-14 — **always** use this
+  for result statuses, never hardcode status colors).
+- **Status glyphs**: `KEY_ICONS`/`KIND_ICONS` in `RunExecutor.tsx` (`✓ ✕ ⊘ → ↻ •`). Reuse
+  the map; on any grayscale or high-glare surface the glyph carries meaning, color is a bonus.
+- **Icons**: `TFIcon` in `src/components/icons.tsx` — 24-box outline SVGs; accent parts
+  class `tf-ac` (stroke) / `tf-acf` (soft fill); variants `tf-current` (inherits color, for
+  the dark sidebar) and `tf-onaccent`. New icons follow this anatomy — no icon libraries.
+- **Markdown**: render through `src/components/Markdown.tsx` → styled by the `.tf-markdown`
+  block in globals.css. New surfaces restyle via a scoped override (like F-35's print.css),
+  never by editing the base block.
+- **Testability**: interactive/statesful elements get `data-testid` kebab-case names
+  (`queued-chip`, `dataset-chip`) — the e2e suite depends on them.
+
+### 7.4 Design judgment rules (the taste, encoded)
+
+1. **Dense, quiet, functional.** No gradients, no shadows heavier than the browser default,
+   no decorative illustration inside the app. The brand lives in the two typefaces, the one
+   accent, and the icon system.
+2. **One accent.** If a design wants a second brand color, it's wrong. Semantic colors
+   (status, warning) come from the F-14 defs and the amber recipe only.
+3. **State must be legible without color** (glyph, outline, label) — for print, sunlight,
+   grayscale, and color-blind users alike.
+4. **Touch**: ≥ 44 px targets, 52 px for primary actions; destructive/mutating actions are
+   taps, never gestures (F-36 D's swipe-never-submits rule generalizes).
+5. **Motion**: 150–200 ms ease-out, translate/opacity only, always gated behind
+   `prefers-reduced-motion`.
+6. **Copy tone**: short, concrete, names the actor ("Overwrote Ana's …"), reassures during
+   uncertainty ("queued — will sync when online"). No exclamation marks in the app.
+
+### 7.5 Handoff status
+
+With F-35 and F-36 now specified to implementation depth and this appendix in place, the
+formerly-Fable backlog (F-35, F-36, L-01) is **executable by Opus 4.8** — the remaining
+Leapfrog items' visual surface is small (L-04's presence chips/toast follow §7.3–7.4 as-is).
 
 ---
 
