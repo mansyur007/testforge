@@ -1287,7 +1287,28 @@ unless marked (large).
 > - e2e `comments.spec.ts` 3/3 (lifecycle+XSS-inert, mention chip + notification deep link,
 >   VIEWER can comment); full suite 45/45.
 
-### F-17 — Dashboards, run comparison, PDF & scheduled reports, public share links (large) `[ ]`
+### F-17 — Dashboards, run comparison, PDF & scheduled reports, public share links (large) `[x]`
+
+> **Status: DONE** (2026-07-13, four stacked PRs: `feat/run-comparison` #73 →
+> `feat/dashboard-builder` #74 → `feat/share-links` #75 →
+> `feat/scheduled-reports` #76). Implemented as specified, with these notes:
+> - **Run comparison**: rows keyed by caseId + datasetName (F-13-aware); delta
+>   semantics are kind-based (F-14) — regression = PASS kind → FAIL/BLOCKED
+>   kind, fixed = the reverse; muted cases (F-21) listed but excluded from the
+>   regression/fixed tallies. First checked run on the runs list = baseline A.
+> - **Dashboards**: widget metric functions live in `lib/report-data.ts`,
+>   mirroring the Reports page math; editing gated on `run.manage`, viewing
+>   open to all members. Arrow-button repositioning as allowed for v1.
+> - **Share links**: token is `crypto.randomBytes(32).toString("hex")`
+>   (64 chars) instead of adding a cuid2 dependency. DASHBOARD entityType is
+>   fully wired too (panel on dashboard detail, read-only widget grid on
+>   /share with a `noLinks` flag). Revoke is a soft flag (row kept for audit).
+> - **Scheduled reports**: `lastSentAt` makes the cron route idempotent per
+>   calendar day (safe to poll hourly); WEEKLY_MON fires only on Mondays;
+>   window = 1d (DAILY) / 7d (WEEKLY_MON); managed on the Notifications page
+>   (project.admin). PDF export (title only mentions it; no split item) was
+>   not built — the public share link covers the "hand a report to a
+>   stakeholder" need without a headless-browser dependency.
 
 Split into 4 sequential PRs:
 1. **Run comparison**: page `runs/compare?a=<id>&b=<id>` — table of cases × (status in A,
