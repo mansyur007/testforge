@@ -43,6 +43,7 @@ model User {
   comments       Comment[]          @relation("CommentAuthor")
   dashboards     Dashboard[]        @relation("DashboardCreator")
   shareLinks     ShareLink[]        @relation("ShareLinkCreator")
+  reportSchedules ReportSchedule[]  @relation("ReportScheduleCreator")
 }
 
 model Project {
@@ -76,6 +77,7 @@ model Project {
   comments     Comment[]
   resultStatusDefs ResultStatusDef[]
   dashboards   Dashboard[]
+  reportSchedules ReportSchedule[]
 }
 
 // F-17: custom dashboards — a named grid of report widgets per project.
@@ -125,6 +127,24 @@ model ShareLink {
   createdBy User @relation("ShareLinkCreator", fields: [createdById], references: [id])
 
   @@index([entityType, entityId])
+}
+
+// F-17: scheduled email report summaries, sent by /api/cron/send-reports
+// (same shared-secret pattern as the other cron routes). lastSentAt is the
+// dedup guard — the cron route may be polled hourly but a schedule fires at
+// most once per calendar day.
+model ReportSchedule {
+  id             String    @id @default(cuid())
+  projectId      String
+  cron           String // WEEKLY_MON | DAILY
+  recipientsJson String    @default("[]") // ["qa-lead@acme.com", ...]
+  kind           String    @default("SUMMARY")
+  lastSentAt     DateTime?
+  createdById    String
+  createdAt      DateTime  @default(now())
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User    @relation("ReportScheduleCreator", fields: [createdById], references: [id])
 }
 
 // Outbound webhooks: POST a signed JSON payload to `url` when a subscribed event
