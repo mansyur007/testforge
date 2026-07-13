@@ -14,6 +14,7 @@ import { formatDuration, formatRemaining } from "@/lib/duration";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { RunExecutor } from "@/components/RunExecutor";
 import { CommentPanel } from "@/components/CommentPanel";
+import { ShareLinkPanel } from "@/components/ShareLinkPanel";
 import { completeRun, rerunFailed } from "@/app/actions/runs";
 import { loadPerms } from "@/lib/permissions";
 
@@ -304,6 +305,11 @@ export default async function RunDetailPage({
           };
         })}
       />
+
+      {/* F-17: public share links (run.manage only). */}
+      {perms.has("run.manage") && (
+        <ShareLinkPanel entityType="RUN" entityId={run.id} />
+      )}
 
       {/* F-16: run-level discussion thread. */}
       <div className="rounded-xl border border-slate-200 bg-white p-5">

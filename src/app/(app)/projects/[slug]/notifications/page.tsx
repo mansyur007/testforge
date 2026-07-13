@@ -9,6 +9,11 @@ import {
   NotificationChannelsManager,
   type ChannelView,
 } from "@/components/NotificationChannelsManager";
+import { SCHEDULE_CRONS, parseRecipients } from "@/lib/report-schedules";
+import {
+  createReportSchedule,
+  deleteReportSchedule,
+} from "@/app/actions/report-schedules";
 
 export const dynamic = "force-dynamic";
 
@@ -59,6 +64,14 @@ export default async function NotificationsPage({
       }))
     : [];
 
+  // F-17: scheduled email report summaries (admin-only, like channels).
+  const schedules = isAdmin
+    ? await db.reportSchedule.findMany({
+        where: { projectId: project.id },
+        orderBy: { createdAt: "desc" },
+      })
+    : [];
+
   return (
     <div className="space-y-6">
       <ProjectTabs
@@ -85,6 +98,85 @@ export default async function NotificationsPage({
         <p className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">
           Only project owners and admins can manage notification channels.
         </p>
+      )}
+
+      {/* F-17: scheduled email report summaries. */}
+      {isAdmin && (
+        <section className="rounded-xl border border-slate-200 bg-white p-6">
+          <h3 className="mb-1 font-semibold">Scheduled email reports</h3>
+          <p className="mb-4 text-xs text-slate-400">
+            A KPI summary (pass rate, executions, top failures) emailed on a
+            schedule. Requires the <code>/api/cron/send-reports</code> job.
+          </p>
+          <ul className="mb-4 space-y-2 text-sm">
+            {schedules.map((s) => {
+              const recipients = parseRecipients(s.recipientsJson);
+              return (
+                <li
+                  key={s.id}
+                  className="flex flex-wrap items-center gap-2"
+                  data-testid={`report-schedule-row-${s.id}`}
+                >
+                  <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
+                    {SCHEDULE_CRONS.find((c) => c.key === s.cron)?.label ?? s.cron}
+                  </span>
+                  <span className="text-slate-600">
+                    {recipients.length === 1
+                      ? recipients[0]
+                      : `${recipients[0]} +${recipients.length - 1}`}
+                  </span>
+                  <span className="text-xs text-slate-400">
+                    {s.lastSentAt
+                      ? `last sent ${s.lastSentAt.toLocaleDateString("en-US")}`
+                      : "never sent"}
+                  </span>
+                  <form action={deleteReportSchedule} className="inline">
+                    <input type="hidden" name="scheduleId" value={s.id} />
+                    <button
+                      className="rounded border border-red-200 px-2 py-0.5 text-xs text-red-600 hover:bg-red-50"
+                      data-testid={`report-schedule-delete-${s.id}`}
+                    >
+                      Delete
+                    </button>
+                  </form>
+                </li>
+              );
+            })}
+            {schedules.length === 0 && (
+              <li className="text-xs text-slate-400">No schedules yet.</li>
+            )}
+          </ul>
+          <form
+            action={createReportSchedule}
+            className="flex flex-wrap items-center gap-2"
+          >
+            <input type="hidden" name="projectId" value={project.id} />
+            <select
+              name="cron"
+              className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
+              data-testid="report-schedule-cron-select"
+            >
+              {SCHEDULE_CRONS.map((c) => (
+                <option key={c.key} value={c.key}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+            <input
+              name="recipients"
+              required
+              placeholder="Recipients, comma-separated emails"
+              data-testid="report-schedule-recipients-input"
+              className="min-w-64 flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none"
+            />
+            <button
+              className="rounded-lg bg-slate-800 px-3 py-1.5 text-sm text-white hover:bg-slate-700"
+              data-testid="report-schedule-create-button"
+            >
+              + Schedule
+            </button>
+          </form>
+        </section>
       )}
     </div>
   );
