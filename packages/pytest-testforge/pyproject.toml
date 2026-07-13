@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pytest-testforge"
+version = "0.1.0"
+description = "pytest plugin that streams results to TestForge test case management"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+keywords = ["pytest", "testforge", "test-management", "reporter"]
+authors = [{ name = "TestForge" }]
+classifiers = [
+  "Framework :: Pytest",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+]
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=7.0"]
+
+[project.urls]
+Homepage = "https://github.com/mansyur007/test-forge"
+
+# Register the plugin with pytest's plugin system.
+[project.entry-points.pytest11]
+testforge = "testforge_pytest.plugin"
+
+[tool.setuptools]
+packages = ["testforge_pytest"]

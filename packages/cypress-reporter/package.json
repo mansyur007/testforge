@@ -1,0 +1,39 @@
+{
+  "name": "testforge-cypress-reporter",
+  "version": "0.1.0",
+  "description": "Cypress plugin that streams results to TestForge test case management",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "lib",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "cypress",
+    "cypress-plugin",
+    "testforge",
+    "test-management",
+    "reporter"
+  ],
+  "peerDependencies": {
+    "cypress": ">=12.0.0"
+  },
+  "peerDependenciesMeta": {
+    "cypress": {
+      "optional": true
+    }
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mansyur007/test-forge",
+    "directory": "packages/cypress-reporter"
+  }
+}
