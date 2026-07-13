@@ -130,6 +130,20 @@ curl -X POST "http://localhost:3000/api/v1/results?project=web&name=CI%20Run" \
 # &format=trx etc. to be explicit. POST /api/v1/junit still works unchanged.
 ```
 
+### Official reporters & CLI (`packages/`)
+
+npm workspaces + a Python package under `packages/`:
+
+- **`testforge-cli`** — `testforge upload <file> --project <slug>` (wraps the
+  results API; env `TESTFORGE_URL` / `TESTFORGE_TOKEN`).
+- **`testforge-playwright-reporter`** / **`testforge-cypress-reporter`** —
+  stream a live run as tests finish (create → per-test result → complete),
+  matching `TC-<SLUG>-<n>` in the test title.
+- **`pytest-testforge`** — the same, as a pytest plugin.
+
+Each package has a README with copy-paste setup and is publishable to
+npm/PyPI (publishing is a manual step).
+
 ## Structure
 
 - `src/app/(app)/` — application pages (dashboard, projects, runs, reports, settings)

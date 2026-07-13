@@ -2,6 +2,11 @@
   "name": "testforge",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "packages/cli",
+    "packages/playwright-reporter",
+    "packages/cypress-reporter"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",

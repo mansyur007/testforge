@@ -1,0 +1,30 @@
+{
+  "name": "testforge-cli",
+  "version": "0.1.0",
+  "description": "Command-line uploader for TestForge — a free, open-source test case management platform",
+  "type": "module",
+  "bin": {
+    "testforge": "./bin/testforge.js"
+  },
+  "files": [
+    "bin",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "testforge",
+    "testing",
+    "test-management",
+    "junit",
+    "ci",
+    "cli"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mansyur007/test-forge",
+    "directory": "packages/cli"
+  }
+}
