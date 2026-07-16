@@ -4,6 +4,7 @@ import { dispatchWebhook } from "@/lib/webhooks";
 import { notify, notifyBaseUrl } from "@/lib/notifications";
 import { serializeRun } from "@/lib/api";
 import { resolveOrCreateEnvironment } from "@/lib/environments";
+import { publishRunEvent } from "@/lib/run-events";
 import type { NormalizedResults } from "@/lib/result-parsers";
 
 export type IngestOptions = {
@@ -150,6 +151,26 @@ export async function ingestResults(
     failed: run.results.filter((r) => r.status === "FAILED").length,
     skipped: run.results.filter((r) => r.status === "SKIPPED").length,
   };
+
+  // L-04: publish each ingested result — a freshly created run rarely has a
+  // page open on it yet, but a re-upload into a shared run name flow can.
+  const writer = await db.user.findUnique({
+    where: { id: opts.userId },
+    select: { name: true },
+  });
+  const at = new Date().toISOString();
+  for (const r of run.results)
+    publishRunEvent(run.id, {
+      type: "result",
+      resultId: r.id,
+      caseId: r.caseId,
+      datasetName: r.datasetName,
+      status: r.status,
+      comment: r.comment,
+      elapsedSeconds: r.elapsedSeconds,
+      by: { id: opts.userId, name: writer?.name ?? "Automation" },
+      at,
+    });
 
   // Born completed, so only run.completed fires (a separate run.created for
   // the same instant would just be noise).

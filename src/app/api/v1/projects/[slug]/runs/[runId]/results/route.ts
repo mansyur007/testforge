@@ -11,6 +11,7 @@ import {
 } from "@/lib/api";
 import { notify, notifyBaseUrl } from "@/lib/notifications";
 import { isMuted } from "@/lib/mute";
+import { publishRunEvent } from "@/lib/run-events";
 import { loadStatusDefs } from "@/lib/result-status-defs";
 import { allowedStatusKeys, statusMeta } from "@/lib/result-statuses";
 
@@ -132,6 +133,23 @@ export async function POST(
     entityType: "run",
     entityId: run.id,
     detail: `${caseId} → ${status}`,
+  });
+  // L-04: automation streaming into an open run page appears live too;
+  // `by` is the API key's user.
+  const writer = await db.user.findUnique({
+    where: { id: g.userId },
+    select: { id: true, name: true },
+  });
+  publishRunEvent(run.id, {
+    type: "result",
+    resultId: result.id,
+    caseId: result.caseId,
+    datasetName: result.datasetName,
+    status: result.status,
+    comment: result.comment,
+    elapsedSeconds: result.elapsedSeconds,
+    by: { id: g.userId, name: writer?.name ?? "Automation" },
+    at: new Date().toISOString(),
   });
   if (statusMeta(statusDefs).kindOf(status) === "FAIL") // F-14: kind, not key
     await notify(run.projectId, "result.failed", {

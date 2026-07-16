@@ -28,6 +28,10 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 - **Live quality badge** — public shields.io-style SVG (`/badge/<token>.svg`)
   showing the latest pass rate / automation coverage / case count, embeddable
   in a README; opt-in per project, revocable token (L-01)
+- **Real-time collaborative run execution** — presence avatars, live result
+  updates over SSE, soft claims ("Ana is on this case") and last-write-wins
+  conflict toasts with Undo; degrades gracefully when the stream is blocked
+  (L-04, single-instance scope)
 - **Basic auth & RBAC** — register/login JWT, brute force lockout (§8),
   audit log (§5.5)
 - **SSO & two-factor auth** — OpenID Connect single sign-on (any OIDC provider

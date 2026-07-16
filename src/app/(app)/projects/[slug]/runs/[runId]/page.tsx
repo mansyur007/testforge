@@ -226,6 +226,8 @@ export default async function RunDetailPage({
       </div>
 
       <RunExecutor
+        runId={run.id} // L-04
+        currentUser={{ id: session.userId, name: session.name }} // L-04
         runStatus={run.status}
         projectSlug={run.project.slug}
         canWrite={perms.has("run.execute")} // F-14
@@ -270,6 +272,7 @@ export default async function RunDetailPage({
             : expanded;
           return {
           id: r.id,
+          caseId: r.caseId, // L-04
           status: r.status,
           comment: r.comment ?? "",
           defectUrl: r.defectUrl ?? "",

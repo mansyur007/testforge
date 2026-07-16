@@ -2341,7 +2341,7 @@ e2e `e2e/cases-as-code.spec.ts` drives the CLI as a subprocess (F-12 e2e techniq
 dir against the seeded project: pull → assert deterministic bytes (pull twice, diff empty) →
 AC 2, 3, 4 flows via API-injected server edits.
 
-### L-04 — Real-time collaborative run execution `[ ]`
+### L-04 — Real-time collaborative run execution `[x]`
 
 **TestRail/Qase runs are single-player with refresh.** Make TestForge runs multiplayer.
 
