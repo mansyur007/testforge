@@ -397,6 +397,9 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
 - [x] *(Selesai 2026-07-16)* **Live quality badge** — SVG shields.io-style publik per project
       (`/badge/<token>.svg`, pass rate / automation / jumlah case), token revocable; tidak ada
       kompetitor yang punya ini. Lihat L-01.
+- [x] *(Selesai 2026-07-16)* **Real-time collaborative run execution** — run TestRail/Qase
+      single-player dengan refresh; TestForge multiplayer: presence avatar, hasil live via SSE,
+      soft claim, konflik last-write-wins + Undo. Lihat L-04.
 
 ### Catatan implementasi
 

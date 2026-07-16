@@ -14,6 +14,7 @@ import { loadCaseRevs } from "@/lib/case-revisions";
 import { loadStatusDefs } from "@/lib/result-status-defs";
 import { allowedStatusKeys, statusMeta } from "@/lib/result-statuses";
 import { can } from "@/lib/permissions";
+import { publishRunEvent } from "@/lib/run-events";
 import {
   collectCustomFromForm,
   mergeCustomJson,
@@ -158,6 +159,19 @@ export async function submitResult(formData: FormData) {
     entityType: "result",
     entityId: resultId,
     detail: status,
+  });
+  // L-04: tell everyone else on this run page. Fire-and-forget, same
+  // discipline as dispatchWebhook (§0.4).
+  publishRunEvent(result.runId, {
+    type: "result",
+    resultId: result.id,
+    caseId: result.caseId,
+    datasetName: result.datasetName,
+    status: result.status,
+    comment: result.comment,
+    elapsedSeconds: result.elapsedSeconds,
+    by: { id: session.userId, name: session.name },
+    at: new Date().toISOString(),
   });
   // F-14: any FAIL-kind status (custom ones included) triggers the alert.
   if (statusMeta(statusDefs).kindOf(status) === "FAIL") {

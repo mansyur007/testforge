@@ -31,9 +31,12 @@ import {
 } from "@/components/CustomFieldInputs";
 import { IssuePanel, type IssueLinkView } from "@/components/IssuePanel";
 import { CommentPanel } from "@/components/CommentPanel";
+import { Toast } from "@/components/Toast";
+import { useRunChannel, type ResultEvent } from "@/components/useRunChannel";
 
 type ResultItem = {
   id: string;
+  caseId: string; // L-04: presence + live result events key on the case
   status: string;
   comment: string;
   defectUrl: string;
@@ -73,20 +76,24 @@ const KIND_ICONS: Record<string, string> = {
 // inline submission, dynamic keyboard shortcuts (F-14), timer per case, partial run.
 export function RunExecutor({
   results,
+  runId,
   runStatus,
   projectSlug,
   canWrite,
   maxUploadMb,
+  currentUser,
   customDefs = [],
   members = [],
   hasIntegration = false,
   statusDefs = DEFAULT_STATUS_DEFS,
 }: {
   results: ResultItem[];
+  runId: string; // L-04
   runStatus: string;
   projectSlug: string;
   canWrite: boolean;
   maxUploadMb: number;
+  currentUser: { id: string; name: string }; // L-04: filter own events/presence
   customDefs?: CustomDefItem[];
   members?: MemberOption[];
   hasIntegration?: boolean; // F-07: an active issue tracker on this project
@@ -99,6 +106,110 @@ export function RunExecutor({
   const startedAt = useRef<number>(Date.now());
   const customRef = useRef<HTMLDivElement>(null);
   const active = results[activeIdx];
+
+  // ── L-04 realtime overlay ────────────────────────────────────────────────
+  // Server props stay the source of truth; `live` patches rows with other
+  // users' results as they stream in. Everything below is an overlay: with
+  // the stream absent the executor behaves exactly as before.
+  type LivePatch = {
+    status: string;
+    comment: string;
+    elapsedSeconds: number | null;
+    assigneeName: string;
+  };
+  const [live, setLive] = useState<Record<string, LivePatch>>({});
+  const [flash, setFlash] = useState<Record<string, boolean>>({});
+  const [toast, setToast] = useState<{
+    message: string;
+    undo?: () => void;
+  } | null>(null);
+  const lastSubmitted = useRef(new Map<string, number>());
+  const view = (r: ResultItem): ResultItem => {
+    const patch = live[r.id];
+    return patch ? { ...r, ...patch } : r;
+  };
+
+  const handleRemote = (evt: ResultEvent) => {
+    const row = results.find((r) => r.id === evt.resultId);
+    if (!row) return;
+    const isActiveRow = row.id === active?.id;
+    // Snapshot MY values before applying theirs — that's what Undo restores.
+    const before = view(row);
+    const mine = {
+      status: before.status,
+      comment: isActiveRow ? comment : before.comment ?? "",
+      defectUrl: isActiveRow ? defectUrl : before.defectUrl ?? "",
+      elapsedSeconds: before.elapsedSeconds,
+    };
+    setLive((prev) => ({
+      ...prev,
+      [evt.resultId]: {
+        status: evt.status,
+        comment: evt.comment ?? "",
+        elapsedSeconds: evt.elapsedSeconds,
+        assigneeName: evt.by.name,
+      },
+    }));
+    setFlash((prev) => ({ ...prev, [evt.resultId]: true }));
+    setTimeout(
+      () => setFlash((prev) => ({ ...prev, [evt.resultId]: false })),
+      1500
+    );
+    // Conflict = they overwrote a case I'm mid-edit on, or one I submitted
+    // in the last 10 s. Last-write-wins; Undo resubmits my values (which
+    // publishes — the other side then gets the mirror toast; symmetric,
+    // converges because humans stop).
+    const dirty =
+      isActiveRow &&
+      (comment !== (row.comment ?? "") || defectUrl !== (row.defectUrl ?? ""));
+    const recent = Date.now() - (lastSubmitted.current.get(row.id) ?? 0) < 10_000;
+    if (dirty || recent)
+      setToast({
+        message: `Overwritten by ${evt.by.name} just now`,
+        undo: () => resubmit(row.id, mine),
+      });
+  };
+
+  const { connected, presence, reportCase } = useRunChannel(runId, {
+    selfId: currentUser.id,
+    enabled: runStatus === "ACTIVE",
+    onResult: handleRemote,
+  });
+  const others = presence.filter((u) => u.id !== currentUser.id);
+  const othersOnCase = (caseId: string) =>
+    others.filter((u) => u.caseId === caseId);
+
+  const resubmit = (
+    resultId: string,
+    vals: {
+      status: string;
+      comment: string;
+      defectUrl: string;
+      elapsedSeconds: number | null;
+    }
+  ) => {
+    setToast(null);
+    const fd = new FormData();
+    fd.set("resultId", resultId);
+    fd.set("status", vals.status);
+    fd.set("comment", vals.comment);
+    fd.set("defectUrl", vals.defectUrl);
+    fd.set("elapsedSeconds", vals.elapsedSeconds != null ? String(vals.elapsedSeconds) : "");
+    lastSubmitted.current.set(resultId, Date.now());
+    setLive((prev) => ({
+      ...prev,
+      [resultId]: {
+        status: vals.status,
+        comment: vals.comment,
+        elapsedSeconds: vals.elapsedSeconds,
+        assigneeName: currentUser.name,
+      },
+    }));
+    startTransition(async () => {
+      await submitResult(fd);
+    });
+  };
+  // ────────────────────────────────────────────────────────────────────────
 
   // F-14: submit buttons + keyboard map derive from the project's status defs.
   const buttons = useMemo(() => submittableDefs(statusDefs), [statusDefs]);
@@ -117,6 +228,11 @@ export function RunExecutor({
     setDefectUrl(results[activeIdx]?.defectUrl ?? "");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeIdx]);
+
+  // L-04: presence follows the case I'm looking at.
+  useEffect(() => {
+    reportCase(active?.caseId ?? null);
+  }, [active?.caseId, reportCase]);
 
   const submit = (status: string) => {
     if (!active || runStatus !== "ACTIVE") return;
@@ -139,6 +255,19 @@ export function RunExecutor({
           fd.append(el.name, el.value);
         }
       });
+    // L-04: mark the conflict window and overwrite any remote overlay on this
+    // row with my values — otherwise a stale live patch would keep shadowing
+    // the refreshed server props after my own submit.
+    lastSubmitted.current.set(active.id, Date.now());
+    setLive((prev) => ({
+      ...prev,
+      [active.id]: {
+        status,
+        comment,
+        elapsedSeconds: elapsed,
+        assigneeName: currentUser.name,
+      },
+    }));
     startTransition(async () => {
       await submitResult(fd);
       // lanjut ke case berikutnya yang belum dieksekusi
@@ -171,7 +300,44 @@ export function RunExecutor({
     );
 
   return (
-    <div className="flex gap-6">
+    <div>
+      {/* L-04: who else is on this run right now (connected sessions only). */}
+      {connected && others.length > 0 && (
+        <div
+          className="mb-3 flex items-center justify-end gap-1"
+          data-testid="presence-bar"
+        >
+          <span className="mr-1 text-xs text-slate-400">Also here:</span>
+          {others.slice(0, 5).map((u) => (
+            <span
+              key={u.id}
+              data-testid="presence-avatar"
+              title={`${u.name}${
+                u.caseId
+                  ? ` — on ${
+                      results.find((r) => r.caseId === u.caseId)?.displayId ?? "a case"
+                    }`
+                  : ""
+              }`}
+              className="grid h-6 w-6 place-items-center rounded-full bg-indigo-600 text-[10px] font-bold text-white ring-2 ring-white"
+            >
+              {u.name
+                .split(/\s+/)
+                .map((w) => w[0])
+                .slice(0, 2)
+                .join("")
+                .toUpperCase()}
+            </span>
+          ))}
+          {others.length > 5 && (
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-slate-300 text-[10px] font-bold text-slate-700 ring-2 ring-white">
+              +{others.length - 5}
+            </span>
+          )}
+        </div>
+      )}
+
+      <div className="flex gap-6">
       {/* Case list */}
       <div className="w-2/5 shrink-0 space-y-1 overflow-y-auto rounded-xl border border-slate-200 bg-white p-3"
         style={{ maxHeight: "calc(100vh - 280px)" }}>
@@ -179,12 +345,26 @@ export function RunExecutor({
           <button
             key={r.id}
             onClick={() => setActiveIdx(i)}
-            className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm ${
-              i === activeIdx ? "bg-indigo-50 ring-1 ring-indigo-300" : "hover:bg-slate-50"
+            className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm motion-safe:transition-colors motion-safe:duration-1000 ${
+              flash[r.id]
+                ? "bg-amber-50"
+                : i === activeIdx
+                  ? "bg-indigo-50 ring-1 ring-indigo-300"
+                  : "hover:bg-slate-50"
             }`}
           >
             <span className="font-mono text-xs text-slate-400">{r.displayId}</span>
             <span className="flex-1 truncate">{r.title}</span>
+            {othersOnCase(r.caseId).map((u) => (
+              <span
+                key={u.id}
+                data-testid="presence-dot"
+                title={`${u.name} is viewing this case`}
+                className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-indigo-600 text-[8px] font-bold text-white"
+              >
+                {u.name[0]?.toUpperCase()}
+              </span>
+            ))}
             {r.muted && (
               <span
                 className="shrink-0 rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600"
@@ -214,9 +394,9 @@ export function RunExecutor({
             )}
             <span
               className="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
-              style={badgeStyle(meta.colorOf(r.status))}
+              style={badgeStyle(meta.colorOf(view(r).status))}
             >
-              {r.status.replace(/_/g, " ")}
+              {view(r).status.replace(/_/g, " ")}
             </span>
           </button>
         ))}
@@ -250,6 +430,16 @@ export function RunExecutor({
             </span>
           </div>
           <h3 className="mt-1 text-lg font-bold">{active.title}</h3>
+          {/* L-04: soft claim — informational, never blocking. */}
+          {othersOnCase(active.caseId).map((u) => (
+            <span
+              key={u.id}
+              data-testid="soft-claim-chip"
+              className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
+            >
+              {u.name} is on this case
+            </span>
+          ))}
           {active.preconditions && (
             <div className="mt-3 rounded-lg bg-amber-50 p-3 text-sm">
               <span className="font-medium text-amber-800">Preconditions:</span>
@@ -289,10 +479,12 @@ export function RunExecutor({
               <Markdown className="text-green-900">{active.expectedResult}</Markdown>
             </div>
           )}
-          {active.assigneeName && (
+          {view(active).assigneeName && (
             <p className="mt-3 text-xs text-slate-400">
-              Last executed by {active.assigneeName}
-              {active.elapsedSeconds != null && <> · {active.elapsedSeconds}s</>}
+              Last executed by {view(active).assigneeName}
+              {view(active).elapsedSeconds != null && (
+                <> · {view(active).elapsedSeconds}s</>
+              )}
             </p>
           )}
 
@@ -414,6 +606,17 @@ export function RunExecutor({
           </p>
         )}
       </div>
+      </div>
+
+      {/* L-04: last-write-wins conflict toast. Newest wins, no queue. */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          actionLabel={toast.undo ? "Undo" : undefined}
+          onAction={toast.undo}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
