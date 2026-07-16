@@ -35,6 +35,7 @@ const USAGE = `testforge ${VERSION}
 
 Usage:
   testforge upload <file> --project <slug> [options]
+  testforge gate --project <slug> [--run <id|latest>] [--wait <seconds>]
 
 Options:
   --project <slug>   TestForge project slug (required)
@@ -42,14 +43,17 @@ Options:
   --format <fmt>     junit|trx|nunit3|xunit2|cucumber|mocha (default: auto-detect)
   --env <name>       Environment tag; auto-created if it doesn't exist
   --origin <text>    Free-text origin label (e.g. "CI · GitHub Actions")
+  --run <id|latest>  Run to gate (default: latest)
+  --wait <seconds>   Poll until the run completes, up to N seconds (default: 0)
   --url <url>        TestForge base URL   (or env TESTFORGE_URL)
-  --token <token>    WRITE-scoped API key (or env TESTFORGE_TOKEN)
+  --token <token>    API key (or env TESTFORGE_TOKEN; gate needs read scope)
   -h, --help         Show this help
   -v, --version      Print version
 
 Examples:
   TESTFORGE_URL=https://testforge.example.com TESTFORGE_TOKEN=tf_xxx \\
     testforge upload results/junit.xml --project web --name "CI #42"
+  testforge gate --project web --run latest --wait 600
 `;
 
 function fail(msg) {
@@ -115,6 +119,71 @@ async function cmdUpload(positional, flags) {
   );
 }
 
+// L-02: fetch the gate verdict, optionally waiting for the run to complete,
+// and exit 0 iff it passes. Any HTTP/parse error exits 1 — a broken gate
+// must block, not wave through. No color codes (CI logs).
+async function cmdGate(flags) {
+  const url = (flags.url || process.env.TESTFORGE_URL || "").replace(/\/$/, "");
+  const token = flags.token || process.env.TESTFORGE_TOKEN || "";
+  if (!url) fail("no TestForge URL. Pass --url or set TESTFORGE_URL.");
+  if (!token) fail("no API token. Pass --token or set TESTFORGE_TOKEN.");
+  const project = flags.project;
+  if (!project) fail("--project <slug> is required.");
+  const run = String(flags.run || "latest");
+  const waitSeconds = Number(flags.wait || 0);
+
+  const endpoint = `${url}/api/v1/projects/${project}/gate?run=${encodeURIComponent(run)}`;
+  const fetchVerdict = async () => {
+    let res;
+    try {
+      res = await fetch(endpoint, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (e) {
+      fail(`request failed: ${e.message}`);
+    }
+    const payload = await res.json().catch(() => null);
+    if (!res.ok || !payload) {
+      const detail =
+        payload?.error?.message || payload?.error || `HTTP ${res.status}`;
+      fail(`gate check failed: ${detail}`);
+    }
+    return payload;
+  };
+
+  let verdict = await fetchVerdict();
+  const deadline = Date.now() + waitSeconds * 1000;
+  while (verdict.run.status !== "COMPLETED" && Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 5000));
+    verdict = await fetchVerdict();
+  }
+  if (waitSeconds > 0 && verdict.run.status !== "COMPLETED") {
+    process.stdout.write(
+      `gate: timed out after ${waitSeconds}s waiting for run to complete\n`
+    );
+    process.exit(1);
+  }
+
+  const rows = [
+    ["CHECK", "EXPECTED", "ACTUAL", "RESULT"],
+    ...verdict.checks.map((c) => [
+      c.name,
+      c.expected,
+      c.actual,
+      c.pass ? "OK" : "FAIL",
+    ]),
+  ];
+  const widths = rows[0].map((_, i) =>
+    Math.max(...rows.map((r) => String(r[i]).length))
+  );
+  for (const r of rows)
+    process.stdout.write(
+      r.map((cell, i) => String(cell).padEnd(widths[i])).join("  ") + "\n"
+    );
+  process.stdout.write(`gate: ${verdict.pass ? "PASS" : "FAIL"}\n`);
+  process.exit(verdict.pass ? 0 : 1);
+}
+
 async function main() {
   const { positional, flags } = parseArgs(process.argv.slice(2));
   if (flags.version || flags.v) return process.stdout.write(`${VERSION}\n`);
@@ -123,8 +192,7 @@ async function main() {
     return process.stdout.write(USAGE);
 
   if (cmd === "upload") return cmdUpload(positional, flags);
-  if (cmd === "gate")
-    fail("`gate` requires CI quality gates (L-02), not yet released.");
+  if (cmd === "gate") return cmdGate(flags);
   fail(`unknown command "${cmd}". See \`testforge --help\`.`);
 }
 

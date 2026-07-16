@@ -400,6 +400,9 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
 - [x] *(Selesai 2026-07-16)* **Real-time collaborative run execution** — run TestRail/Qase
       single-player dengan refresh; TestForge multiplayer: presence avatar, hasil live via SSE,
       soft claim, konflik last-write-wins + Undo. Lihat L-04.
+- [x] *(Selesai 2026-07-16)* **CI quality gates** — TestRail/Qase mengharuskan scripting;
+      TestForge satu call: policy per project (pass rate, new failures, untested, required
+      tags) + `testforge-cli gate` dengan exit code. Lihat L-02.
 
 ### Catatan implementasi
 

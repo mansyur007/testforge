@@ -27,7 +27,11 @@ test(`TC-${TC}-27 Help nav link opens the index, a topic renders markdown`, asyn
     page.getByRole("heading", { name: "Automation & CI upload" })
   ).toBeVisible();
   await expect(page.getByRole("heading", { name: "Legacy endpoint" })).toBeVisible();
-  await expect(page.locator("pre code")).toBeVisible();
+  // L-02 added a second code block (the quality-gate CI step) to this topic.
+  await expect(page.locator("pre code").first()).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "CI quality gates" })
+  ).toBeVisible();
 
   await page.getByRole("link", { name: "Back to app" }).click();
   await page.waitForURL("**/dashboard");

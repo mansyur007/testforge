@@ -72,6 +72,7 @@ model Project {
   status      String   @default("ACTIVE") // ACTIVE | ARCHIVED
   caseCounter Int      @default(0) // untuk auto-generate TC-[SLUG]-[NUMBER]
   autoCreateEnvs Boolean @default(true) // F-19: auto-create an Environment from &env= on automation upload
+  gatePolicyJson String? // L-02: CI quality gate policy (null = no gate → endpoint 404)
   createdById String
   createdAt   DateTime @default(now())
 
