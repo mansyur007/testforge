@@ -97,6 +97,7 @@ model Project {
   dashboards   Dashboard[]
   reportSchedules ReportSchedule[]
   requirements Requirement[]
+  badgeToken   BadgeToken?
 }
 
 // F-18: requirements & traceability. A requirement is COVERED when it has at
@@ -179,6 +180,20 @@ model ShareLink {
   createdBy User @relation("ShareLinkCreator", fields: [createdById], references: [id])
 
   @@index([entityType, entityId])
+}
+
+// L-01: public quality badge. One row per project; the token IS the auth for
+// /badge/<token>.svg (no session, no project data beyond the number). Revoke
+// is a soft flag; re-enabling rotates `token` in place, so a revoked URL can
+// never come back to life.
+model BadgeToken {
+  id        String    @id @default(cuid())
+  projectId String    @unique
+  token     String    @unique
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 // F-17: scheduled email report summaries, sent by /api/cron/send-reports

@@ -105,6 +105,12 @@ async function globalSetup() {
     await db.testCase.deleteMany({ where: { project: { slug: E2E.targetProjectSlug } } });
   }
 
+  // L-01: a previous run leaves an active/revoked badge token behind; the
+  // badge spec starts from the "Enable badge" state, so wipe it.
+  await db.badgeToken.deleteMany({
+    where: { project: { slug: E2E.projectSlug } },
+  });
+
   // F-16: a VIEWER teammate on the e2e project — @mention target + proof a
   // VIEWER can comment. Idempotent membership so reruns don't duplicate.
   const teammate = await db.user.upsert({

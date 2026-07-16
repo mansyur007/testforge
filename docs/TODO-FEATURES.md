@@ -2120,7 +2120,7 @@ the PR description). Reminder from the repo's e2e conventions: reporters run via
 
 These make TestForge **better than** TestRail/Qase/TestLink — not just equal. All are small-to-medium and highly marketable.
 
-### L-01 — Live quality badge (shields.io-style SVG) `[ ]`
+### L-01 — Live quality badge (shields.io-style SVG) `[x]`
 
 **No competitor has this.** A public, cacheable SVG badge showing a project's latest pass rate —
 embeddable in README/wiki like a CI badge.

@@ -332,6 +332,29 @@ async function main() {
     },
   });
 
+  // L-01: a COMPLETED run so the demo badge has a pass rate, plus an active
+  // badge token with a fixed value so the README embed URL works out of the box.
+  await db.testRun.create({
+    data: {
+      projectId: project.id,
+      name: "Regression Sprint 0",
+      status: "COMPLETED",
+      completedAt: new Date(),
+      createdById: admin.id,
+      results: {
+        create: [
+          { caseId: created[0].id, status: "PASSED", elapsedSeconds: 38, caseRev: 1 },
+          { caseId: created[1].id, status: "PASSED", elapsedSeconds: 25, caseRev: 1 },
+          { caseId: created[2].id, status: "PASSED", elapsedSeconds: 51, caseRev: 1 },
+          { caseId: created[3].id, status: "FAILED", comment: "Timeout di halaman profil", caseRev: 1 },
+        ],
+      },
+    },
+  });
+  await db.badgeToken.create({
+    data: { projectId: project.id, token: "demo-badge-token" },
+  });
+
   console.log("Seed selesai: admin@testforge.local / admin12345");
 }
 
