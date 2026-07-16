@@ -8,6 +8,7 @@ import { ProjectTabs } from "@/components/ProjectTabs";
 import { CodeBlock } from "@/components/CodeBlock";
 import { WebhookManager } from "@/components/WebhookManager";
 import { WEBHOOK_EVENTS } from "@/lib/webhooks";
+import { enableBadge, revokeBadge } from "@/app/actions/badge";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +37,14 @@ export default async function ApiPage({
     orderBy: { createdAt: "desc" },
     select: { id: true, url: true, events: true, secret: true, active: true },
   });
+
+  // L-01: active = row exists and not revoked (revoke keeps the row; re-enable
+  // rotates the token in place).
+  const badgeToken = await db.badgeToken.findUnique({
+    where: { projectId: project.id },
+    select: { token: true, revokedAt: true },
+  });
+  const badgeActive = badgeToken != null && badgeToken.revokedAt == null;
 
   const slug = project.slug;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
@@ -160,6 +169,62 @@ export default async function ApiPage({
                 availableEvents={WEBHOOK_EVENTS}
               />
             </div>
+          </section>
+
+          <section className="rounded-xl border border-slate-200 bg-white p-6">
+            <h3 className="flex items-center gap-2 font-semibold">
+              <TFIcon name="trend" className="h-5 w-5" /> Quality badge
+            </h3>
+            <p className="mt-1 text-sm text-slate-500">
+              A public shields.io-style SVG showing this project&apos;s latest
+              pass rate — embed it in a README or wiki. The URL token is the
+              only auth; revoke it anytime.
+            </p>
+            {badgeActive ? (
+              <div className="mt-4 space-y-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/badge/${badgeToken.token}.svg`}
+                  alt="Quality badge preview"
+                  data-testid="badge-preview"
+                  data-token={badgeToken.token}
+                  className="h-5"
+                />
+                <CodeBlock
+                  code={`![pass rate](${baseUrl}/badge/${badgeToken.token}.svg)`}
+                />
+                <p className="text-xs text-slate-400">
+                  Variants:{" "}
+                  <code className="rounded bg-slate-100 px-1">?metric=automation</code>{" "}
+                  (automation coverage),{" "}
+                  <code className="rounded bg-slate-100 px-1">?metric=cases</code>{" "}
+                  (case count),{" "}
+                  <code className="rounded bg-slate-100 px-1">&amp;label=…</code>{" "}
+                  (custom label);{" "}
+                  <code className="rounded bg-slate-100 px-1">.json</code> serves
+                  the shields.io endpoint schema.
+                </p>
+                <form action={revokeBadge}>
+                  <input type="hidden" name="projectId" value={project.id} />
+                  <button
+                    data-testid="badge-revoke-button"
+                    className="rounded-lg border border-rose-200 px-4 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50"
+                  >
+                    Revoke badge
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <form action={enableBadge} className="mt-4">
+                <input type="hidden" name="projectId" value={project.id} />
+                <button
+                  data-testid="badge-enable-button"
+                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                >
+                  Enable badge
+                </button>
+              </form>
+            )}
           </section>
         </div>
 

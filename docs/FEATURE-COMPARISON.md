@@ -394,6 +394,9 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
       device fisik.
 - [x] *(Selesai 2026-07-11)* **Docs/help center in-app** — `/docs/help`, panduan cara pakai per
       area fitur untuk end user (terpisah dari `/docs/api` yang untuk developer). Lihat F-37.
+- [x] *(Selesai 2026-07-16)* **Live quality badge** — SVG shields.io-style publik per project
+      (`/badge/<token>.svg`, pass rate / automation / jumlah case), token revocable; tidak ada
+      kompetitor yang punya ini. Lihat L-01.
 
 ### Catatan implementasi
 

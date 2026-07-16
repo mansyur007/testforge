@@ -25,6 +25,9 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 - **Import/Export CSV** — with preview & validation before import (US-004)
 - **Reports** — pass rate trend, flaky test detection, bug correlation,
   automation coverage (§4.5)
+- **Live quality badge** — public shields.io-style SVG (`/badge/<token>.svg`)
+  showing the latest pass rate / automation coverage / case count, embeddable
+  in a README; opt-in per project, revocable token (L-01)
 - **Basic auth & RBAC** — register/login JWT, brute force lockout (§8),
   audit log (§5.5)
 - **SSO & two-factor auth** — OpenID Connect single sign-on (any OIDC provider
