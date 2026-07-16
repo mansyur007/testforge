@@ -39,6 +39,28 @@ automatically flips to **Automated** in its automation-status field.
 \`POST /api/v1/junit\` still works — it's the original JUnit-only endpoint,
 kept as a permanent alias. New integrations should prefer \`/api/v1/results\`.
 
+## CI quality gates
+
+Configure a gate under **Fields → Quality Gate** (minimum pass rate, max new
+failures vs the previous run, block-on-untested, required tags), then make CI
+ask for the verdict with one call. The check exits non-zero when the gate
+fails, so the pipeline stops:
+
+\`\`\`yaml
+- name: TestForge quality gate
+  run: npx testforge-cli gate --project web --run latest --wait 600
+  env:
+    TESTFORGE_URL: \${{ vars.TESTFORGE_URL }}
+    TESTFORGE_TOKEN: \${{ secrets.TESTFORGE_TOKEN }}
+\`\`\`
+
+\`--wait 600\` polls until the run completes (up to 10 minutes) before
+judging it. The same verdict is available raw at
+\`GET /api/v1/projects/<slug>/gate?run=latest\` — a read-scoped API key is
+enough. "New failures" means a case that passed in the previous completed run
+of the same source and fails now — the same definition the run-compare page
+uses, with muted cases excluded.
+
 Full request/response schema: [API reference](/docs/api).
 `,
 };

@@ -32,6 +32,10 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   updates over SSE, soft claims ("Ana is on this case") and last-write-wins
   conflict toasts with Undo; degrades gracefully when the stream is blocked
   (L-04, single-instance scope)
+- **CI quality gates** — per-project policy (min pass rate, max new failures
+  vs the previous run, block-on-untested, required tags); CI asks
+  `testforge-cli gate --wait 600` or `GET /api/v1/projects/<slug>/gate` and
+  gets a deterministic, mute-aware verdict with exit code (L-02)
 - **Basic auth & RBAC** — register/login JWT, brute force lockout (§8),
   audit log (§5.5)
 - **SSO & two-factor auth** — OpenID Connect single sign-on (any OIDC provider

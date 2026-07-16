@@ -7,17 +7,17 @@ import { caseDisplayId } from "@/lib/constants";
 import { loadStatusDefs } from "@/lib/result-status-defs";
 import { statusMeta, badgeStyle } from "@/lib/result-statuses";
 import { isMuted } from "@/lib/mute";
+import { deltaOf, type Delta } from "@/lib/run-compare";
 import { ProjectTabs } from "@/components/ProjectTabs";
 
 export const dynamic = "force-dynamic";
 
 // F-17: side-by-side comparison of two runs. Rows are keyed by
 // caseId + datasetName (F-13: a parameterized case has one row per dataset).
-// Delta semantics are kind-based (F-14): regression = PASS kind in A but
-// FAIL/BLOCKED kind in B; fixed = the reverse. Muted cases (F-21) are shown
-// but excluded from the regression/fixed tallies, consistent with pass-rate
-// math everywhere else.
-type Delta = "REGRESSION" | "FIXED" | "CHANGED" | "ONLY_A" | "ONLY_B" | "SAME";
+// Delta semantics live in src/lib/run-compare.ts (L-02 shares them with the
+// quality-gate evaluator). Muted cases (F-21) are shown but excluded from
+// the regression/fixed tallies, consistent with pass-rate math everywhere
+// else.
 
 const DELTA_ORDER: Delta[] = [
   "REGRESSION",
@@ -36,20 +36,6 @@ const DELTA_META: Record<Delta, { arrow: string; label: string; cls: string }> =
   ONLY_B: { arrow: "+", label: "Only in B", cls: "text-slate-400" },
   SAME: { arrow: "=", label: "Same", cls: "text-slate-300" },
 };
-
-function deltaOf(
-  sa: string | null,
-  sb: string | null,
-  kindOf: (key: string) => string
-): Delta {
-  if (sa == null) return "ONLY_B";
-  if (sb == null) return "ONLY_A";
-  if (sa === sb) return "SAME";
-  const failish = (k: string) => k === "FAIL" || k === "BLOCKED";
-  if (kindOf(sa) === "PASS" && failish(kindOf(sb))) return "REGRESSION";
-  if (failish(kindOf(sa)) && kindOf(sb) === "PASS") return "FIXED";
-  return "CHANGED";
-}
 
 export default async function RunComparePage({
   params,

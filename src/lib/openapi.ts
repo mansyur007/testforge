@@ -688,6 +688,63 @@ export function openApiSpec() {
           },
         },
       },
+      "/projects/{slug}/gate": {
+        parameters: [slugParam],
+        get: {
+          tags: ["Runs"],
+          summary: "Evaluate the project's CI quality gate against a run",
+          description:
+            "L-02: returns 200 whether the gate passes or fails — the `pass` field decides; non-200 is reserved for real errors. Math is kind-based and mute-aware, identical to the reports page.",
+          parameters: [
+            {
+              name: "run",
+              in: "query",
+              required: false,
+              schema: { type: "string", default: "latest" },
+              description:
+                "Run id, or `latest` (newest by creation time regardless of status).",
+            },
+          ],
+          responses: {
+            "200": {
+              description: "Gate verdict.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      pass: { type: "boolean" },
+                      run: {
+                        type: "object",
+                        properties: {
+                          id: { type: "string" },
+                          name: { type: "string" },
+                          status: { type: "string" },
+                          completedAt: { type: ["string", "null"] },
+                        },
+                      },
+                      checks: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            name: { type: "string" },
+                            expected: { type: "string" },
+                            actual: { type: "string" },
+                            pass: { type: "boolean" },
+                            note: { type: "string" },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            "404": err("No gate policy configured, or run/project not found."),
+          },
+        },
+      },
       "/projects/{slug}/runs/{runId}/results": {
         parameters: [
           slugParam,

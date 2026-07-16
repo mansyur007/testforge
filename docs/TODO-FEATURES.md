@@ -2147,7 +2147,7 @@ embeddable in README/wiki like a CI badge.
 - AC: badge renders in a GitHub README; revoking the token → 404; number matches the latest
   completed run's pass rate (muted tests excluded per F-21).
 
-### L-02 — CI quality gates `[ ]`
+### L-02 — CI quality gates `[x]`
 
 **TestRail/Qase make you script this; TestForge makes it one call.**
 
