@@ -2441,7 +2441,42 @@ e2e `e2e/realtime-run.spec.ts` with **two Playwright contexts** (two logged-in u
 run) covering AC 1–4; AC 5 via a raw `request` call. SSE in Playwright needs no special
 handling (it's just fetch); assert on DOM effects, not the wire format.
 
-### L-05 — One-file portable backup & restore `[ ]`
+### L-05 — One-file portable backup & restore `[x]`
+
+> **Status: DONE** (2026-07-16, branch `feat/backup-restore`). Built from the Fable work order
+> below. Five deviations, each in service of the work order's own goals — recorded here so the
+> next reader doesn't think they were oversights:
+>
+> 1. **The engine is plain ESM** (`src/lib/backup-core.mjs`), not `backup.ts` alone. The work
+>    order requires the CLI and the UI path to share `restoreBackup` — but a restore runs on a
+>    *fresh production instance*, where there is no TS loader and no devDependencies, so a
+>    `.mjs` core is the only shape that actually runs there. `backup.ts` is a typed wrapper over
+>    it; `src/lib/crypto.ts` was likewise split into `crypto-core.mjs` + a re-export so the CLI
+>    shares one implementation of the payload format (no call sites changed).
+> 2. **`DATE_FIELDS` is derived from the Prisma DMMF**, not a hand-kept static map. Same goal
+>    (ISO strings → `Date`), but a new DateTime column can never be missed. `MODEL_ORDER` stays
+>    hand-written — FK order is semantic and genuinely cannot be derived — and is defended by
+>    `scripts/backup-selfcheck.mjs` (AC 5), which runs in `prebuild`.
+> 3. **`prismaSchemaHash` hashes the DMMF datamodel**, not the bytes of `prisma/schema.prisma`.
+>    This schema is heavily commented; hashing the file would refuse every older backup after a
+>    comment reflow ("backup is from schema X" — a lie). It also survives images that don't ship
+>    the `.prisma` file. Structural changes still refuse, which is the actual requirement.
+> 4. **`--force-wipe` erases via `deleteMany` in reverse `MODEL_ORDER` inside the import
+>    transaction**, rather than shelling out to `prisma db push --force-reset` (decided with the
+>    repo owner, 2026-07-16). The force-reset is not atomic with the import — a failure after it
+>    leaves the instance both wiped and un-restored, the exact half-succeeded state this feature
+>    exists to prevent. It also rebuilds the schema, which is redundant given guard 3. As a
+>    transaction, a failed import rolls the old data back.
+> 5. **The e2e restores into a separate "instance B" sqlite file**, instead of force-resetting
+>    `dev.db` mid-suite as the test plan sketched. The whole suite shares one `dev.db` and one
+>    dev server, so wiping it would destroy every other spec's fixtures. Instance B *is* the
+>    work order's "clean instance B", and it lets AC 2's `--force-wipe` path be tested for real.
+>
+> **Known limitation (deliberate, matches the work order):** only `Integration` rows are
+> deactivated on a `TF_SECRET` mismatch. `NotificationChannel.configJson` (F-08) is also
+> encrypted, so SLACK/DISCORD/TEAMS channels restored under a different secret will fail at
+> send time rather than being flagged. AC 3 says "nothing else lost", so widening the blast
+> radius was left as a follow-up rather than changing the summary contract unilaterally.
 
 **Self-hosting killer feature; nobody else has one-click full portability.**
 

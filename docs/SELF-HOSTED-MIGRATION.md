@@ -9,6 +9,78 @@ infrastructure you control.
 > organizations, users, projects, suites, cases, runs & results, milestones,
 > API keys, webhooks, and the audit log. There is no data left behind.
 
+## Which method should I use?
+
+| | [One-file backup](#portable-one-file-backup-tfbackup) (`.tfbackup`) | [Volume / DB copy](#1-back-up-the-source-instance) |
+| --- | --- | --- |
+| How | **Settings → Backup & restore** in the app | `docker` + `tar` on the host |
+| Needs shell access | No, for the backup | Yes |
+| Carries attachments | Yes | Yes |
+| SQLite → PostgreSQL | Yes — it re-imports row by row | No, engine-specific |
+| Requires the same schema version | Yes (it refuses otherwise) | Yes |
+
+**Use the one-file backup** unless you specifically want a byte-for-byte volume
+snapshot. Both are complete; they differ in mechanism, not coverage.
+
+---
+
+## Portable one-file backup (`.tfbackup`)
+
+A `.tfbackup` is a zip holding `db.json` (every table, FK-preserving, `cuid`s
+intact), every uploaded file, and a `manifest.json` describing what is inside.
+
+### Create one
+
+**Settings → Backup & restore → Download backup** (organization admins only).
+The download is the whole instance, so treat the file as a secret — see the
+warning above.
+
+### Restore it
+
+Onto a **fresh instance** (at most one user, no projects) — the same card offers
+an upload form, or from a shell:
+
+```bash
+# On the NEW instance, with DATABASE_URL / TF_UPLOAD_DIR / TF_SECRET set
+# the same way the app runs.
+node scripts/restore.mjs testforge-acme-20260716-1432.tfbackup
+```
+
+To replace an instance that **already has data**, erase it first — the script
+asks for confirmation before it does:
+
+```bash
+node scripts/restore.mjs backup.tfbackup --force-wipe        # prompts
+node scripts/restore.mjs backup.tfbackup --force-wipe --yes  # no prompt (CI)
+```
+
+The wipe and the import run in **one transaction**: if the import fails, the
+rollback puts the old data back rather than leaving you with neither.
+
+### What it refuses, and why
+
+A restore that half-succeeds is worse than one that refuses, so every guard runs
+before the first write:
+
+| Situation | Result |
+| --- | --- |
+| The instance already has data | Refused — use `--force-wipe` |
+| The backup came from a different schema version | Refused — run the matching TestForge version first |
+| The zip or `db.json` is corrupt/truncated | Refused, database untouched |
+| A `formatVersion` newer than this instance knows | Refused — upgrade first |
+
+### `TF_SECRET` and stored credentials
+
+Integration credentials (F-07) are encrypted with `TF_SECRET`. The backup stores
+them **still encrypted** — nothing is ever decrypted into the archive.
+
+- **Same `TF_SECRET`** on the new instance → integrations keep working.
+- **Different `TF_SECRET`** → their credentials cannot be read, so integrations
+  are imported **inactive** and the restore summary counts them. Nothing else is
+  affected; re-enter the credentials to re-enable each one.
+
+Reuse `TF_SECRET` (alongside `AUTH_SECRET`) to avoid this entirely.
+
 ---
 
 ## Why a database copy is a complete export
@@ -177,11 +249,18 @@ Rotate old archives to taste, and store at least one copy off the server.
 
 ---
 
-## Roadmap: portable JSON export/import
+## Portable backups on a schedule
 
-The database-copy method above is engine-specific (SQLite ↔ SQLite). A future
-enhancement is an **admin-only full JSON export/import** that serializes every
-table (preserving `cuid` IDs) and re-imports in dependency order. That would be
-database-agnostic (e.g. SQLite → PostgreSQL) and expose the whole flow through
-the UI. Until then, the volume/DB copy is the supported way to move an entire
-instance, and it is complete.
+The volume copy above is engine-specific (SQLite ↔ SQLite). For an
+engine-agnostic archive — including SQLite → PostgreSQL — take a
+[`.tfbackup`](#portable-one-file-backup-tfbackup) instead. It is a plain
+authenticated GET, so a cron entry can pull one off-box:
+
+```bash
+# nightly, using an organization admin's session cookie
+0 2 * * * curl -fsS --cookie "tf_session=$TF_SESSION" \
+  https://testforge.example.com/api/admin/backup \
+  -o /srv/backups/testforge-$(date +\%F).tfbackup
+```
+
+Keep at least one copy off the server, and rotate old archives to taste.
