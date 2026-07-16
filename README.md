@@ -36,6 +36,11 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   vs the previous run, block-on-untested, required tags); CI asks
   `testforge-cli gate --wait 600` or `GET /api/v1/projects/<slug>/gate` and
   gets a deterministic, mute-aware verdict with exit code (L-02)
+- **Test cases as code (GitOps)** — `testforge-cli cases pull|status|push`
+  syncs a `tests/` folder of canonical YAML with the server, so cases get
+  reviewed in PRs like code; 3-way merge against a committed
+  `.testforge.lock`, conflicts exit 1 with a report instead of overwriting
+  (L-03 — see [docs/CASES-AS-CODE.md](docs/CASES-AS-CODE.md))
 - **Basic auth & RBAC** — register/login JWT, brute force lockout (§8),
   audit log (§5.5)
 - **SSO & two-factor auth** — OpenID Connect single sign-on (any OIDC provider

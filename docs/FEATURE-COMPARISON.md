@@ -403,6 +403,10 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
 - [x] *(Selesai 2026-07-16)* **CI quality gates** — TestRail/Qase mengharuskan scripting;
       TestForge satu call: policy per project (pass rate, new failures, untested, required
       tags) + `testforge-cli gate` dengan exit code. Lihat L-02.
+- [x] *(Selesai 2026-07-16)* **Test cases as code (GitOps sync)** — unik, tak ada kompetitor
+      TCM yang punya: folder YAML `tests/` di repo user disinkronkan dua arah
+      (`cases pull|status|push`), 3-way merge via `.testforge.lock`, konflik exit 1 dengan
+      laporan per-field (tak pernah diam-diam overwrite). Lihat L-03 & `docs/CASES-AS-CODE.md`.
 
 ### Catatan implementasi
 

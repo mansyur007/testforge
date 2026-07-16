@@ -36,6 +36,7 @@ const USAGE = `testforge ${VERSION}
 Usage:
   testforge upload <file> --project <slug> [options]
   testforge gate --project <slug> [--run <id|latest>] [--wait <seconds>]
+  testforge cases pull|status|push --project <slug> [--dir tests/]
 
 Options:
   --project <slug>   TestForge project slug (required)
@@ -45,6 +46,9 @@ Options:
   --origin <text>    Free-text origin label (e.g. "CI · GitHub Actions")
   --run <id|latest>  Run to gate (default: latest)
   --wait <seconds>   Poll until the run completes, up to N seconds (default: 0)
+  --dir <path>       Case-file directory for \`cases\` (default: tests/)
+  --force-local      cases push: your files win a conflict
+  --force-server     cases pull/push: the server wins (discards local edits)
   --url <url>        TestForge base URL   (or env TESTFORGE_URL)
   --token <token>    API key (or env TESTFORGE_TOKEN; gate needs read scope)
   -h, --help         Show this help
@@ -54,6 +58,7 @@ Examples:
   TESTFORGE_URL=https://testforge.example.com TESTFORGE_TOKEN=tf_xxx \\
     testforge upload results/junit.xml --project web --name "CI #42"
   testforge gate --project web --run latest --wait 600
+  testforge cases pull --project web && testforge cases status --project web
 `;
 
 function fail(msg) {
@@ -193,6 +198,12 @@ async function main() {
 
   if (cmd === "upload") return cmdUpload(positional, flags);
   if (cmd === "gate") return cmdGate(flags);
+  // L-03: lazy import — `cases` is the only command needing the `yaml` dep,
+  // so upload/gate keep working even if it somehow failed to install.
+  if (cmd === "cases") {
+    const { cmdCases } = await import("./cases.js");
+    return cmdCases(positional, flags);
+  }
   fail(`unknown command "${cmd}". See \`testforge --help\`.`);
 }
 

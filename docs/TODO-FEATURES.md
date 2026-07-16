@@ -2249,7 +2249,7 @@ policy as admin through the UI, asserts endpoint JSON for AC 1–3, then spawns 
 AC 4. `scripts/`-level unit coverage is unnecessary — `evaluateGate` is exercised through the
 endpoint.
 
-### L-03 — Test cases as code (GitOps sync) `[ ]`
+### L-03 — Test cases as code (GitOps sync) `[x]`
 
 **Unique among all TCM tools.** Two-way sync between a `tests/` folder of YAML files in the
 user's repo and TestForge — cases reviewed in PRs like code.

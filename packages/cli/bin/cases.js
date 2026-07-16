@@ -8,7 +8,7 @@
 // which is what makes PR diffs reviewable. Determinism is an AC.
 
 import { createHash } from "node:crypto";
-import { mkdir, readFile, readdir, rename, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import YAML from "yaml";
 
@@ -67,14 +67,16 @@ async function api(cfg, method, apiPath, body) {
 function scalar(value, indent) {
   const s = String(value);
   if (s.includes("\n")) {
+    // `|` keeps the trailing newline, `|-` strips it — pick whichever parses
+    // back to EXACTLY the input, so pull→push round-trips are no-ops.
+    const keep = s.endsWith("\n");
+    const lines = (keep ? s.slice(0, -1) : s).split("\n");
+    // A leading space (or a blank first line) would need an explicit block
+    // indentation indicator; quoting is simpler and still deterministic.
+    if (/^\s/.test(lines[0] ?? "")) return JSON.stringify(s);
     const pad = " ".repeat(indent + 2);
-    const body = s
-      .split("\n")
-      .map((line) => (line ? pad + line : ""))
-      .join("\n");
-    // `|` keeps a trailing newline, `|-` strips it — pick whichever parses
-    // back to exactly the input, so pull→push round-trips are no-ops.
-    return (s.endsWith("\n") ? "|" : "|-") + "\n" + (s.endsWith("\n") ? body.slice(0, -pad.length - 1) : body);
+    const body = lines.map((line) => (line ? pad + line : "")).join("\n");
+    return (keep ? "|" : "|-") + "\n" + body;
   }
   // Plain when YAML allows it; JSON double-quoting (valid YAML) otherwise.
   if (s === "" || /^[\s#&*?|>%@`"'{[\]},-]|[:#]\s|\s$|^(true|false|null|yes|no|on|off|~)$|^[\d.+-]/i.test(s))
@@ -126,7 +128,10 @@ function filePathFor(dir, suitePath, name) {
 
 async function readLock(dir) {
   try {
-    return JSON.parse(await readFile(path.join(dir, LOCK_FILE), "utf8"));
+    const parsed = JSON.parse(await readFile(path.join(dir, LOCK_FILE), "utf8"));
+    // Normalize so `lock.cases` is always writable — a hand-edited or
+    // truncated lock must not crash the merge.
+    return { ...parsed, cases: parsed?.cases ?? {} };
   } catch {
     return { cases: {} };
   }
@@ -269,14 +274,16 @@ async function gatherState(cfg) {
 }
 
 function classify(displayId, { lock, server, local }) {
-  const base = lock.cases?.[displayId];
+  const base = lock.cases[displayId];
   const loc = local.get(displayId);
   const srv = server.get(displayId);
-  const localChanged = loc ? loc.hash !== base?.hash : base ? true : false;
-  const serverChanged = srv ? srv.rev !== base?.rev : true;
-  if (!srv) return base ? "deleted-remote" : "new-local"; // id in file but unknown server-side
+  if (!srv) return base ? "deleted-remote" : "new-local"; // id in a file the server doesn't know
   if (!loc) return base ? "deleted-local" : "pull";
-  if (!base) return localChanged || serverChanged ? "CONFLICT" : "clean"; // no base: only equal-by-luck is safe
+  // An id with no lock entry (hand-written, or the lock never committed)
+  // has no base to merge against — refuse to guess which side is newer.
+  if (!base) return "CONFLICT";
+  const localChanged = loc.hash !== base.hash;
+  const serverChanged = srv.rev !== base.rev;
   if (localChanged && serverChanged) return "CONFLICT";
   if (localChanged) return "push";
   if (serverChanged) return "pull";
@@ -285,7 +292,7 @@ function classify(displayId, { lock, server, local }) {
 
 const allIds = ({ lock, server, local }) =>
   [...new Set([
-    ...Object.keys(lock.cases ?? {}),
+    ...Object.keys(lock.cases),
     ...server.keys(),
     ...local.keys(),
   ])].sort();
@@ -298,7 +305,7 @@ async function pull(cfg, flags) {
   if (!flags["force-server"]) {
     const dirty = [...server.keys()].filter((id) => {
       const loc = local.get(id);
-      return loc && loc.hash !== lock.cases?.[id]?.hash;
+      return loc && loc.hash !== lock.cases[id]?.hash;
     });
     if (dirty.length) {
       process.stderr.write(
@@ -335,7 +342,7 @@ async function status(cfg) {
   const state = await gatherState(cfg);
   const rows = [["CASE", "LOCAL", "SERVER", "VERDICT"]];
   for (const id of allIds(state)) {
-    const base = state.lock.cases?.[id];
+    const base = state.lock.cases[id];
     const loc = state.local.get(id);
     const srv = state.server.get(id);
     rows.push([
@@ -371,7 +378,7 @@ async function push(cfg, flags) {
         // --force-local deliberately bases on the server's current rev so the
         // push wins; a normal push bases on the lock and lets the server
         // detect races.
-        baseRev: flags["force-local"] && verdict === "CONFLICT" ? srv.rev : lock.cases?.[id]?.rev ?? srv.rev,
+        baseRev: flags["force-local"] && verdict === "CONFLICT" ? srv.rev : lock.cases[id]?.rev ?? srv.rev,
         fields: toFields(loc.parsed),
       });
       sources.push(loc);
@@ -410,16 +417,16 @@ async function push(cfg, flags) {
   }
 
   if (!upserts.length) {
-    await writeLock(cfg.dir, cfg, lock.cases ?? {});
+    await writeLock(cfg.dir, cfg, lock.cases);
     process.stdout.write("push: nothing to push\n");
     return;
   }
 
   const res = await api(cfg, "POST", `/projects/${cfg.project}/cases/sync`, { upserts });
   let failed = 0;
+  const applied = [];
   for (let i = 0; i < res.data.length; i++) {
     const item = res.data[i];
-    const src = sources[i];
     if (item.status === "conflict" || item.status === "invalid") {
       failed++;
       process.stderr.write(
@@ -427,18 +434,31 @@ async function push(cfg, flags) {
       );
       continue;
     }
-    // created/updated/unchanged: canonicalize the local file, write back the
-    // assigned id (renaming <slug>.yaml → <displayId>.yaml on first push),
-    // and advance the lock to the server's new rev.
-    const canonical = emitCase({ ...src.parsed, id: item.displayId });
-    const target = filePathFor(cfg.dir, src.parsed.suite, item.displayId);
-    await mkdir(path.dirname(target), { recursive: true });
-    await writeFile(src.file, canonical);
-    if (path.resolve(src.file) !== path.resolve(target)) await rename(src.file, target);
-    lock.cases[item.displayId] = { hash: sha256(canonical), rev: item.rev };
+    applied.push({ item, src: sources[i] });
     process.stdout.write(`push: ${item.displayId} ${item.status}\n`);
   }
-  await writeLock(cfg.dir, cfg, lock.cases ?? {});
+
+  // The server is authoritative once it has written: it may have applied
+  // defaults the file omitted (priority/type) or normalized a suite path, so
+  // re-fetch and persist ITS canonical bytes. Writing the local bytes instead
+  // would leave the lock hash disagreeing with what the next `pull` emits —
+  // i.e. a pull straight after a push would rewrite files (breaks AC 2).
+  if (applied.length) {
+    const fresh = await fetchServer(cfg);
+    for (const { item, src } of applied) {
+      const srv = fresh.get(item.displayId);
+      if (!srv) continue;
+      const canonical = emitCase(srv);
+      const target = filePathFor(cfg.dir, srv.suite, item.displayId);
+      await mkdir(path.dirname(target), { recursive: true });
+      await writeFile(target, canonical);
+      // First push of a new case assigns its id: <slug>.yaml → <displayId>.yaml.
+      if (path.resolve(src.file) !== path.resolve(target))
+        await rm(src.file, { force: true });
+      lock.cases[item.displayId] = { hash: sha256(canonical), rev: srv.rev };
+    }
+  }
+  await writeLock(cfg.dir, cfg, lock.cases);
   if (failed) {
     process.stderr.write(`push: ${failed} item(s) failed — see above\n`);
     process.exit(1);
