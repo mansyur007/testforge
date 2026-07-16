@@ -58,10 +58,12 @@ function ProductMockup() {
         </span>
       </div>
       <div className="p-4">
+        {/* Bar mengisi saat load: satu-satunya gerak "menjelaskan" di halaman —
+            memperagakan hasil test yang menggulung jadi pass rate. */}
         <div className="mb-3 flex h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-          <div className="w-3/5 bg-green-500" />
-          <div className="w-1/5 bg-red-500" />
-          <div className="w-1/5 bg-purple-500" />
+          <div className="tf-bar-grow w-3/5 bg-green-500" />
+          <div className="tf-bar-grow w-1/5 bg-red-500" style={{ animationDelay: "80ms" }} />
+          <div className="tf-bar-grow w-1/5 bg-purple-500" style={{ animationDelay: "160ms" }} />
         </div>
         <div className="space-y-1.5">
           {rows.map((r) => (
@@ -103,6 +105,14 @@ const integrationNames = [
   "GitHub", "GitLab", "Jira", "Slack", "Jenkins", "Robot Framework",
 ];
 
+// Motion untuk CTA (§7.4: 150–200 ms ease-out, motion-safe). Tailwind's bare
+// `transition` covers colour AND transform, so hover and press ride one curve.
+// §7.4 says "translate/opacity only"; `scale` is used here because it is
+// GPU-composited exactly like translate — the rule exists to keep motion off
+// layout-triggering properties (cf. the amber flash in RunExecutor.tsx).
+const CTA_MOTION =
+  "motion-safe:transition motion-safe:duration-150 motion-safe:ease-out active:scale-[0.98]";
+
 export default async function HomePage() {
   const lang = resolveLang(cookies().get(LANG_COOKIE)?.value);
   const t = dict[lang].landing;
@@ -125,7 +135,7 @@ export default async function HomePage() {
             {session ? (
               <Link
                 href="/dashboard"
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                className={`rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 ${CTA_MOTION}`}
               >
                 {t.nav.dashboard}
               </Link>
@@ -139,7 +149,7 @@ export default async function HomePage() {
                 </Link>
                 <Link
                   href="/signup"
-                  className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 sm:px-4"
+                  className={`rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 sm:px-4 ${CTA_MOTION}`}
                 >
                   {t.nav.cta}
                 </Link>
@@ -165,13 +175,13 @@ export default async function HomePage() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 href="/signup"
-                className="rounded-lg bg-indigo-600 px-6 py-3 text-center font-medium text-white hover:bg-indigo-700"
+                className={`rounded-lg bg-indigo-600 px-6 py-3 text-center font-medium text-white hover:bg-indigo-700 ${CTA_MOTION}`}
               >
                 {t.hero.ctaPrimary}
               </Link>
               <Link
                 href="/docs/self-hosting"
-                className="rounded-lg border border-slate-300 px-6 py-3 text-center font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900"
+                className={`rounded-lg border border-slate-300 px-6 py-3 text-center font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900 ${CTA_MOTION}`}
               >
                 {t.hero.ctaSecondary}
               </Link>
@@ -267,7 +277,7 @@ export default async function HomePage() {
           <div className="mt-8 text-center">
             <Link
               href="/signup"
-              className="rounded-lg bg-indigo-600 px-6 py-3 font-medium text-white hover:bg-indigo-700"
+              className={`rounded-lg bg-indigo-600 px-6 py-3 font-medium text-white hover:bg-indigo-700 ${CTA_MOTION}`}
             >
               {t.comparison.cta}
             </Link>
@@ -289,7 +299,7 @@ export default async function HomePage() {
         <div className="mt-8 text-center">
           <Link
             href="/login"
-            className="rounded-lg border border-indigo-300 px-6 py-3 font-medium text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-950"
+            className={`rounded-lg border border-indigo-300 px-6 py-3 font-medium text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-950 ${CTA_MOTION}`}
           >
             {t.demo.cta}
           </Link>
@@ -350,7 +360,7 @@ export default async function HomePage() {
             href={`https://github.com/${GITHUB_REPO}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-6 inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 font-medium text-slate-900 hover:bg-slate-100"
+            className={`mt-6 inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 font-medium text-slate-900 hover:bg-slate-100 ${CTA_MOTION}`}
           >
             <TFIcon name="stars" className="h-5 w-5" />
             {t.openSource.cta}
@@ -367,7 +377,7 @@ export default async function HomePage() {
           </p>
           <Link
             href="/signup"
-            className="mt-6 inline-block rounded-lg bg-indigo-600 px-8 py-3 font-medium text-white hover:bg-indigo-700"
+            className={`mt-6 inline-block rounded-lg bg-indigo-600 px-8 py-3 font-medium text-white hover:bg-indigo-700 ${CTA_MOTION}`}
           >
             {t.pricing.cta}
           </Link>
@@ -375,7 +385,7 @@ export default async function HomePage() {
       </section>
 
       {/* 11. FAQ */}
-      <section id="faq" className="mx-auto max-w-3xl scroll-mt-20 px-4 py-16">
+      <section id="faq" className="tf-faq mx-auto max-w-3xl scroll-mt-20 px-4 py-16">
         <SectionTitle kicker={t.faq.kicker} title={t.faq.title} />
         <div className="space-y-3">
           {t.faq.items.map((f) => (
@@ -385,7 +395,9 @@ export default async function HomePage() {
             >
               <summary className="cursor-pointer list-none font-medium">
                 {f.q}
-                <span className="float-right text-slate-400 group-open:rotate-45">＋</span>
+                <span className="float-right text-slate-400 group-open:rotate-45 motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-out">
+                  ＋
+                </span>
               </summary>
               <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">{f.a}</p>
             </details>
