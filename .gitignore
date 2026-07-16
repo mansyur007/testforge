@@ -54,3 +54,10 @@ skills-lock.json
 
 # F-01 attachment uploads (local dev; Docker uses the /data volume)
 /data/
+
+# graphify: local bookkeeping only (keep GRAPH_REPORT.md, graph.html, graph.json)
+graphify-out/.DS_Store
+graphify-out/.graphify_*
+graphify-out/cache/
+graphify-out/cost.json
+graphify-out/manifest.json
