@@ -13,6 +13,48 @@ html {
   }
 }
 
+/* Landing-page motion (§7.4: 150–200 ms ease-out, transform/opacity, selalu di
+   balik prefers-reduced-motion). Di-scope ke home page — bukan aturan `details`
+   global — supaya surface app yang nanti pakai <details> tak ikut mewarisi gerak
+   marketing ini. Semuanya progressive enhancement: browser tanpa dukungan tetap
+   dapat perilaku hari ini, tanpa JS, jadi page tetap server component. */
+@media (prefers-reduced-motion: no-preference) {
+  /* FAQ: isi <details> membuka dari 0 ke tinggi natural. Butuh interpolate-size
+     karena `auto` bukan nilai yang bisa dianimasikan tanpa itu — dan harus
+     dideklarasikan di <details> sendiri: diverifikasi di Chromium, menaruhnya di
+     section pembungkus TIDAK sampai ke ::details-content dan transisinya diam
+     tanpa error. Sengaja bukan :root (resep umum) supaya animasi keyword-size
+     tidak bocor ke seluruh app. */
+  .tf-faq details {
+    interpolate-size: allow-keywords;
+  }
+
+  .tf-faq details::details-content {
+    block-size: 0;
+    overflow: hidden;
+    transition:
+      block-size 200ms ease-out,
+      content-visibility 200ms ease-out allow-discrete;
+  }
+
+  .tf-faq details[open]::details-content {
+    block-size: auto;
+  }
+
+  /* Hero: segmen bar tumbuh dari tepi kirinya, bergiliran (stagger via
+     animation-delay inline di page.tsx). */
+  .tf-bar-grow {
+    transform-origin: left;
+    animation: tf-bar-grow 400ms ease-out both;
+  }
+
+  @keyframes tf-bar-grow {
+    from {
+      transform: scaleX(0);
+    }
+  }
+}
+
 /* Tipografi design system: heading memakai Space Grotesk */
 @layer base {
   h1,
