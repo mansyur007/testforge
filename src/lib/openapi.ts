@@ -146,6 +146,103 @@ export function openApiSpec() {
           },
         },
       },
+      "/projects/{slug}/cases/sync": {
+        post: {
+          tags: ["Cases"],
+          summary: "GitOps batch upsert for `testforge cases push` (max 500)",
+          description:
+            "L-03: upserts keyed by display id with optimistic concurrency — an item writes only if its baseRev matches the case's current rev, else it returns status \"conflict\" untouched. Identical payloads return \"unchanged\" (no new revision). Item-level atomicity: clean items apply even when others conflict. See docs/CASES-AS-CODE.md.",
+          parameters: [slugParam],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["upserts"],
+                  properties: {
+                    upserts: {
+                      type: "array",
+                      maxItems: 500,
+                      items: {
+                        type: "object",
+                        properties: {
+                          displayId: {
+                            type: "string",
+                            description: "Omit to create a new case.",
+                          },
+                          baseRev: {
+                            type: "integer",
+                            description:
+                              "Required for updates: the rev this edit is based on.",
+                          },
+                          fields: {
+                            type: "object",
+                            properties: {
+                              title: { type: "string" },
+                              suite: {
+                                type: "string",
+                                description: "Path like \"Auth/Login\"; auto-created.",
+                              },
+                              priority: { type: "string" },
+                              type: { type: "string" },
+                              tags: { type: "array", items: { type: "string" } },
+                              preconditions: { type: "string" },
+                              steps: {
+                                type: "array",
+                                items: {
+                                  type: "object",
+                                  properties: {
+                                    action: { type: "string" },
+                                    expected: { type: "string" },
+                                  },
+                                },
+                              },
+                              expected: { type: "string" },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "200": {
+              description: "Per-item results.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      data: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            displayId: { type: "string" },
+                            id: { type: ["string", "null"] },
+                            rev: { type: ["integer", "null"] },
+                            status: {
+                              type: "string",
+                              enum: ["created", "updated", "conflict", "unchanged", "invalid"],
+                            },
+                            error: { type: "string" },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            "403": err("API key is read-only."),
+            "422": err("Malformed body."),
+          },
+        },
+      },
       "/projects/{slug}/cases/{caseId}": {
         parameters: [
           slugParam,
