@@ -39,6 +39,7 @@ export function openApiSpec() {
       { name: "Issues" },
       { name: "Plans" },
       { name: "Sessions" },
+      { name: "Defects" },
     ],
     paths: {
       "/projects/{slug}/cases": {
@@ -1420,6 +1421,202 @@ export function openApiSpec() {
           },
         },
       },
+      "/projects/{slug}/defects": {
+        get: {
+          tags: ["Defects"],
+          summary: "List defects (F-26)",
+          parameters: [
+            slugParam,
+            { name: "status", in: "query", schema: { type: "string", enum: ["OPEN", "CONFIRMED", "FIXED", "WONT_FIX", "CLOSED"] } },
+            { name: "cursor", in: "query", schema: { type: "string" } },
+            { name: "limit", in: "query", schema: { type: "integer", default: 50, maximum: 200 } },
+          ],
+          responses: {
+            "200": {
+              description: "OK.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      items: { type: "array", items: { $ref: "#/components/schemas/Defect" } },
+                      nextCursor: { type: ["string", "null"] },
+                    },
+                  },
+                },
+              },
+            },
+            "404": err("Project not found."),
+          },
+        },
+        post: {
+          tags: ["Defects"],
+          summary: "Report a defect",
+          parameters: [slugParam],
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["title"],
+                  properties: {
+                    title: { type: "string" },
+                    severity: { type: "string", enum: ["CRITICAL", "HIGH", "MEDIUM", "LOW"], default: "MEDIUM" },
+                    bodyMd: { type: ["string", "null"] },
+                    assigneeId: { type: ["string", "null"] },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "201": {
+              description: "Created.",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/Defect" } } },
+            },
+            "403": err("API key is read-only, or lacks case.write."),
+            "404": err("Project not found."),
+            "422": err("Validation failed."),
+          },
+        },
+      },
+      "/projects/{slug}/defects/{id}": {
+        get: {
+          tags: ["Defects"],
+          summary: "Get a defect",
+          parameters: [
+            slugParam,
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "OK.",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/Defect" } } },
+            },
+            "404": err("Defect not found."),
+          },
+        },
+        patch: {
+          tags: ["Defects"],
+          summary: "Update a defect (title, severity, status, bodyMd, assignee)",
+          parameters: [
+            slugParam,
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+          ],
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    title: { type: "string" },
+                    severity: { type: "string", enum: ["CRITICAL", "HIGH", "MEDIUM", "LOW"] },
+                    status: { type: "string", enum: ["OPEN", "CONFIRMED", "FIXED", "WONT_FIX", "CLOSED"] },
+                    bodyMd: { type: ["string", "null"] },
+                    assigneeId: { type: ["string", "null"] },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "200": {
+              description: "OK.",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/Defect" } } },
+            },
+            "403": err("API key is read-only, or lacks case.write."),
+            "404": err("Defect not found."),
+            "422": err("Validation failed."),
+          },
+        },
+        delete: {
+          tags: ["Defects"],
+          summary: "Delete a defect",
+          parameters: [
+            slugParam,
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "204": { description: "Deleted." },
+            "403": err("API key is read-only, or lacks case.write."),
+            "404": err("Defect not found."),
+          },
+        },
+      },
+      "/projects/{slug}/defects/{id}/links": {
+        get: {
+          tags: ["Defects"],
+          summary: "List a defect's links",
+          parameters: [
+            slugParam,
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "OK.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      items: { type: "array", items: { $ref: "#/components/schemas/DefectLink" } },
+                    },
+                  },
+                },
+              },
+            },
+            "404": err("Defect not found."),
+          },
+        },
+        post: {
+          tags: ["Defects"],
+          summary: "Link a defect to a case or run result",
+          parameters: [
+            slugParam,
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+          ],
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["entityType", "entityId"],
+                  properties: {
+                    entityType: { type: "string", enum: ["CASE", "RESULT"] },
+                    entityId: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "201": {
+              description: "Created (idempotent — re-linking the same pair returns the existing link).",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/DefectLink" } } },
+            },
+            "400": err("Entity not found in this project."),
+            "403": err("API key is read-only, or lacks run.execute."),
+            "404": err("Defect not found."),
+            "422": err("Validation failed."),
+          },
+        },
+      },
+      "/projects/{slug}/defects/{id}/links/{linkId}": {
+        delete: {
+          tags: ["Defects"],
+          summary: "Unlink a defect",
+          parameters: [
+            slugParam,
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+            { name: "linkId", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "204": { description: "Deleted." },
+            "403": err("API key is read-only, or lacks run.execute."),
+            "404": err("Link not found."),
+          },
+        },
+      },
     },
     components: {
       securitySchemes: {
@@ -1656,6 +1853,33 @@ export function openApiSpec() {
               type: ["string", "null"],
               description: "The created case id, or the filed issue key.",
             },
+            createdAt: { type: "string", format: "date-time" },
+          },
+        },
+        Defect: {
+          type: "object",
+          description: "F-26: a built-in defect (complements, not replaces, the F-07 external tracker link).",
+          properties: {
+            id: { type: "string" },
+            displayId: { type: "string", example: "DF-WEB-001" },
+            seq: { type: "integer" },
+            title: { type: "string" },
+            severity: { type: "string", enum: ["CRITICAL", "HIGH", "MEDIUM", "LOW"] },
+            status: { type: "string", enum: ["OPEN", "CONFIRMED", "FIXED", "WONT_FIX", "CLOSED"] },
+            bodyMd: { type: ["string", "null"] },
+            assigneeId: { type: ["string", "null"] },
+            createdById: { type: "string" },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" },
+          },
+        },
+        DefectLink: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            defectId: { type: "string" },
+            entityType: { type: "string", enum: ["CASE", "RESULT"] },
+            entityId: { type: "string" },
             createdAt: { type: "string", format: "date-time" },
           },
         },

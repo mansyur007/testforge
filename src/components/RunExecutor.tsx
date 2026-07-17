@@ -30,6 +30,11 @@ import {
   type MemberOption,
 } from "@/components/CustomFieldInputs";
 import { IssuePanel, type IssueLinkView } from "@/components/IssuePanel";
+import {
+  DefectPanel,
+  type DefectLinkView,
+  type ProjectDefectOption,
+} from "@/components/DefectPanel";
 import { CommentPanel } from "@/components/CommentPanel";
 import { Toast } from "@/components/Toast";
 import { useRunChannel, type ResultEvent } from "@/components/useRunChannel";
@@ -55,6 +60,7 @@ type ResultItem = {
   attachments: AttachmentItem[];
   custom: Record<string, unknown>;
   issueLinks: IssueLinkView[]; // F-07
+  defectLinks: DefectLinkView[]; // F-26
 };
 
 // Icon per system key (the historical glyphs), falling back to the kind.
@@ -85,6 +91,7 @@ export function RunExecutor({
   customDefs = [],
   members = [],
   hasIntegration = false,
+  projectDefects = [],
   statusDefs = DEFAULT_STATUS_DEFS,
 }: {
   results: ResultItem[];
@@ -97,6 +104,7 @@ export function RunExecutor({
   customDefs?: CustomDefItem[];
   members?: MemberOption[];
   hasIntegration?: boolean; // F-07: an active issue tracker on this project
+  projectDefects?: ProjectDefectOption[]; // F-26: open defects for the "link existing" picker
   statusDefs?: StatusDefLite[]; // F-14: project's result statuses, ordered
 }) {
   const [activeIdx, setActiveIdx] = useState(0);
@@ -521,6 +529,22 @@ export function RunExecutor({
               />
             </div>
           )}
+
+          {/* F-26: built-in defects — always available (no external config). */}
+          <div className="mt-4 border-t border-slate-100 pt-4">
+            <p className="mb-2 text-xs font-semibold uppercase text-slate-400">
+              Defects
+            </p>
+            <DefectPanel
+              key={active.id}
+              projectSlug={projectSlug}
+              entityType="RESULT"
+              entityId={active.id}
+              links={active.defectLinks}
+              canWrite={canWrite}
+              projectDefects={projectDefects}
+            />
+          </div>
 
           {/* F-16: per-result discussion — remounts per case via key. */}
           <div className="mt-4 border-t border-slate-100 pt-4">

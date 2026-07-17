@@ -49,6 +49,8 @@ model User {
   requirements    Requirement[]     @relation("RequirementCreator")
   recoveryCodes   TwoFactorRecoveryCode[]
   sessions        Session[]         @relation("SessionTester")
+  assignedDefects Defect[]          @relation("DefectAssignee")
+  createdDefects  Defect[]          @relation("DefectCreator")
 }
 
 // F-20: single-use TOTP recovery codes. codeHash is the sha256 hex of the raw
@@ -72,6 +74,7 @@ model Project {
   description String?
   status      String   @default("ACTIVE") // ACTIVE | ARCHIVED
   caseCounter Int      @default(0) // untuk auto-generate TC-[SLUG]-[NUMBER]
+  defectCounter Int    @default(0) // F-26: auto-generate DF-[SLUG]-[NUMBER]
   autoCreateEnvs Boolean @default(true) // F-19: auto-create an Environment from &env= on automation upload
   gatePolicyJson String? // L-02: CI quality gate policy (null = no gate → endpoint 404)
   createdById String
@@ -101,6 +104,46 @@ model Project {
   requirements Requirement[]
   badgeToken   BadgeToken?
   sessions     Session[]
+  defects      Defect[]
+}
+
+// F-26: built-in defect tracker for teams without an external issue tracker
+// (complements, not replaces, the F-07 Jira/GitHub/GitLab integration).
+// `seq` is a per-project counter (Project.defectCounter), display DF-[SLUG]-[N].
+model Defect {
+  id          String   @id @default(cuid())
+  projectId   String
+  seq         Int
+  title       String
+  severity    String   @default("MEDIUM") // CRITICAL | HIGH | MEDIUM | LOW
+  status      String   @default("OPEN")   // OPEN | CONFIRMED | FIXED | WONT_FIX | CLOSED
+  bodyMd      String?
+  assigneeId  String?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project   Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee  User?        @relation("DefectAssignee", fields: [assigneeId], references: [id])
+  createdBy User         @relation("DefectCreator", fields: [createdById], references: [id])
+  links     DefectLink[]
+
+  @@unique([projectId, seq])
+}
+
+// Polymorphic link from a defect to the case/result it was found on (same
+// pattern as Attachment/IssueLink) — a defect may be linked from many results.
+model DefectLink {
+  id         String   @id @default(cuid())
+  defectId   String
+  entityType String // CASE | RESULT
+  entityId   String
+  createdAt  DateTime @default(now())
+
+  defect Defect @relation(fields: [defectId], references: [id], onDelete: Cascade)
+
+  @@unique([defectId, entityType, entityId])
+  @@index([entityType, entityId])
 }
 
 // F-25: exploratory / session-based testing. A tester runs a timeboxed
