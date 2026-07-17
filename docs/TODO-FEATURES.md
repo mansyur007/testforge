@@ -1784,7 +1784,19 @@ status). For teams without any external tracker (Qase parity).
 > (F-05 revision restore, F-24 copy-to-project) were fixed to preserve the `{gherkin}` shape
 > instead of silently flattening it into a lossy single inline step.
 
-### F-28 — Suite baselines `[ ]`
+### F-28 — Suite baselines `[x]`
+
+> **Status: DONE** (2026-07-17, branch `feat/baselines`, Sonnet 5). `SuiteBaseline` +
+> `BaselineEntry` (pin: `caseId` + `caseRev` + a denormalized `suitePath` so the tree survives
+> a later suite rename/move/delete). No content is duplicated — `caseRev` points at the
+> existing F-05 `TestCaseRevision`, which already holds the full snapshot; "compare baseline vs
+> current" reuses `diffSnapshots()` from `lib/case-revisions.ts` unchanged. A run "from
+> baseline" (`TestRun.baselineId`) pins every result's `caseRev` to what the baseline captured
+> (`buildResultSeeds` gained an optional rev-override map) — and, critically, the run detail
+> page renders the PINNED revision's content (title/steps/preconditions/expectedResult), not
+> the case's current content, or pinning would be cosmetic only. `NewRunForm` gained a "From
+> baseline" picker that auto-selects the baseline's cases.
+
 Snapshot an entire suite tree + case revisions (F-05) as a named baseline; runs can be created
 "from baseline" pinning `caseRev`s; compare baseline vs current. TestRail Enterprise feature —
 in OSS it's a headline.

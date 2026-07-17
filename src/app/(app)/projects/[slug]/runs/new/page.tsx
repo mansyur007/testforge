@@ -31,6 +31,12 @@ export default async function NewRunPage({
 
   // F-19: only active environments are offered at run creation.
   const environments = (await loadEnvironments(project.id)).filter((e) => e.active);
+  // F-28: baselines offered as an alternative case-selection source.
+  const baselines = await db.suiteBaseline.findMany({
+    where: { projectId: project.id },
+    include: { entries: { select: { caseId: true } } },
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <div className="space-y-6">
@@ -40,6 +46,11 @@ export default async function NewRunPage({
         projectId={project.id}
         milestones={project.milestones.map((m) => ({ id: m.id, name: m.name }))}
         environments={environments.map((e) => ({ id: e.id, name: e.name }))}
+        baselines={baselines.map((b) => ({
+          id: b.id,
+          name: b.name,
+          caseIds: b.entries.map((e) => e.caseId),
+        }))}
         cases={project.cases.map((c) => ({
           id: c.id,
           displayId: caseDisplayId(project.slug, c.seq),

@@ -25,19 +25,25 @@ export function NewRunForm({
   projectId,
   milestones,
   environments = [],
+  baselines = [],
   cases,
 }: {
   projectId: string;
   milestones: { id: string; name: string }[];
   environments?: { id: string; name: string }[];
+  baselines?: { id: string; name: string; caseIds: string[] }[];
   cases: SelectableCase[];
 }) {
   const [state, formAction] = useFormState(createRun, undefined);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  // F-28: picking a baseline selects exactly its cases and pins caseRev to
+  // what it captured (see createRun) instead of each case's current rev.
+  const [baselineId, setBaselineId] = useState("");
 
   return (
     <form action={formAction} className="space-y-5">
       <input type="hidden" name="projectId" value={projectId} />
+      <input type="hidden" name="baselineId" value={baselineId} />
       {Array.from(selected).map((id) => (
         <input key={id} type="hidden" name="caseIds" value={id} />
       ))}
@@ -91,6 +97,31 @@ export function NewRunForm({
                 {environments.map((e) => (
                   <option key={e.id} value={e.id}>
                     {e.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          {baselines.length > 0 && (
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">
+                From baseline
+              </label>
+              <select
+                value={baselineId}
+                data-testid="run-baseline-select"
+                onChange={(e) => {
+                  const id = e.target.value;
+                  setBaselineId(id);
+                  const baseline = baselines.find((b) => b.id === id);
+                  setSelected(baseline ? new Set(baseline.caseIds) : new Set());
+                }}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              >
+                <option value="">(none — current content)</option>
+                {baselines.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name} ({b.caseIds.length})
                   </option>
                 ))}
               </select>

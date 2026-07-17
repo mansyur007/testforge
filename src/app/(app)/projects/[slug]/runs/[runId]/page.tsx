@@ -10,6 +10,7 @@ import { parseDatasets, substituteVars } from "@/lib/datasets";
 import { bucketStatus, isMuted } from "@/lib/mute";
 import { loadIssueLinks } from "@/lib/issues";
 import { loadDefectLinks, defectDisplayId } from "@/lib/defects";
+import type { CaseSnapshot } from "@/lib/case-revisions";
 import { computeRunEstimates, projectMedianEstimate } from "@/lib/estimates";
 import { formatDuration, formatRemaining } from "@/lib/duration";
 import { ProjectTabs } from "@/components/ProjectTabs";
@@ -36,6 +37,7 @@ export default async function RunDetailPage({
       project: true,
       milestone: true,
       environment: true,
+      baseline: { select: { id: true, name: true } }, // F-28
       results: {
         include: { testCase: true, assignee: true },
         orderBy: { testCase: { seq: "asc" } },
@@ -43,6 +45,22 @@ export default async function RunDetailPage({
     },
   });
   if (!run || run.project.slug !== params.slug) notFound();
+
+  // F-28: a run "from baseline" tests the case content the baseline pinned,
+  // not whatever the case looks like today — load that snapshot per result.
+  const snapshotByResult = new Map<string, CaseSnapshot>();
+  if (run.baseline) {
+    const revisions = await db.testCaseRevision.findMany({
+      where: {
+        OR: run.results.map((r) => ({ caseId: r.caseId, rev: r.caseRev ?? undefined })),
+      },
+    });
+    const byKey = new Map(revisions.map((rv) => [`${rv.caseId}:${rv.rev}`, rv]));
+    for (const r of run.results) {
+      const rv = r.caseRev != null ? byKey.get(`${r.caseId}:${r.caseRev}`) : undefined;
+      if (rv) snapshotByResult.set(r.id, JSON.parse(rv.snapshotJson) as CaseSnapshot);
+    }
+  }
 
   // F-01: evidence attachments per result, grouped for the executor panel.
   const resultAttachments = await db.attachment.findMany({
@@ -156,6 +174,19 @@ export default async function RunDetailPage({
                 </span>
               </>
             )}
+            {run.baseline && (
+              <>
+                {" "}
+                ·{" "}
+                <span
+                  className="rounded bg-purple-50 px-1.5 py-0.5 text-xs text-purple-700"
+                  data-testid="run-detail-baseline-badge"
+                  title="Cases render the content pinned by this baseline, not their current content."
+                >
+                  📌 Baseline: {run.baseline.name}
+                </span>
+              </>
+            )}
           </p>
         </div>
         <div className="flex shrink-0 gap-2">
@@ -261,26 +292,30 @@ export default async function RunDetailPage({
         }))}
         members={members.map((m) => m.user)}
         results={run.results.map((r) => {
+          // F-28: a baseline run renders the PINNED snapshot's content, not
+          // the case's current content — that's the whole point of pinning.
+          const snapshot = snapshotByResult.get(r.id);
+          const expanded = snapshot
+            ? snapshot.steps
+            : expandSteps(JSON.parse(r.testCase.stepsJson || "[]") as TestStep[], stepGroups);
+          const baseTitle = snapshot?.title ?? r.testCase.title;
+          const basePreconditions = snapshot ? snapshot.preconditions : r.testCase.preconditions;
+          const baseExpectedResult = snapshot ? snapshot.expectedResult : r.testCase.expectedResult;
+
           // F-13: substitute {{var}} -> this result's dataset row values;
           // cases without datasets (datasetName null) render unchanged.
-          const expanded = expandSteps(
-            JSON.parse(r.testCase.stepsJson || "[]") as TestStep[],
-            stepGroups
-          );
           const datasetValues = r.datasetName
             ? parseDatasets(r.testCase.datasetJson).find(
                 (d) => d.name === r.datasetName
               )?.values ?? {}
             : null;
-          const title = datasetValues
-            ? substituteVars(r.testCase.title, datasetValues)
-            : r.testCase.title;
+          const title = datasetValues ? substituteVars(baseTitle, datasetValues) : baseTitle;
           const preconditions = datasetValues
-            ? substituteVars(r.testCase.preconditions, datasetValues)
-            : r.testCase.preconditions ?? "";
+            ? substituteVars(basePreconditions, datasetValues)
+            : basePreconditions ?? "";
           const expectedResult = datasetValues
-            ? substituteVars(r.testCase.expectedResult, datasetValues)
-            : r.testCase.expectedResult ?? "";
+            ? substituteVars(baseExpectedResult, datasetValues)
+            : baseExpectedResult ?? "";
           const steps = datasetValues
             ? expanded.map((s) => ({
                 ...s,

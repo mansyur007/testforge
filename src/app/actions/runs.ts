@@ -42,6 +42,7 @@ export async function createRun(
   const description = String(formData.get("description") ?? "").trim();
   const milestoneId = String(formData.get("milestoneId") ?? "") || null;
   const environmentId = String(formData.get("environmentId") ?? "") || null; // F-19
+  const baselineId = String(formData.get("baselineId") ?? "") || null; // F-28
   const caseIds = formData.getAll("caseIds").map(String);
 
   if (!name) return { error: "Test run name is required." };
@@ -59,11 +60,22 @@ export async function createRun(
     if (!env) return { error: "Environment not found in this project." };
   }
 
+  // F-28: pin caseRev to what the baseline captured, not the current rev.
+  let revOverride: Map<string, number> | undefined;
+  if (baselineId) {
+    const baseline = await db.suiteBaseline.findFirst({
+      where: { id: baselineId, projectId },
+      include: { entries: { where: { caseId: { in: caseIds } } } },
+    });
+    if (!baseline) return { error: "Baseline not found in this project." };
+    revOverride = new Map(baseline.entries.map((e) => [e.caseId, e.caseRev]));
+  }
+
   const project = await db.project.findUniqueOrThrow({ where: { id: projectId } });
 
   // F-05: remember which revision of each case this run executes.
   // F-13: cases with dataset rows seed one result per row instead of one.
-  const seeds = await buildResultSeeds(caseIds);
+  const seeds = await buildResultSeeds(caseIds, revOverride);
   const run = await db.testRun.create({
     data: {
       projectId,
@@ -71,6 +83,7 @@ export async function createRun(
       description: description || null,
       milestoneId,
       environmentId,
+      baselineId,
       createdById: session.userId,
       results: { create: seeds },
     },

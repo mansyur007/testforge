@@ -51,6 +51,7 @@ model User {
   sessions        Session[]         @relation("SessionTester")
   assignedDefects Defect[]          @relation("DefectAssignee")
   createdDefects  Defect[]          @relation("DefectCreator")
+  createdBaselines SuiteBaseline[]  @relation("BaselineCreator")
 }
 
 // F-20: single-use TOTP recovery codes. codeHash is the sha256 hex of the raw
@@ -105,6 +106,7 @@ model Project {
   badgeToken   BadgeToken?
   sessions     Session[]
   defects      Defect[]
+  baselines    SuiteBaseline[]
 }
 
 // F-26: built-in defect tracker for teams without an external issue tracker
@@ -611,6 +613,7 @@ model TestCase {
   results   TestRunResult[]
   revisions TestCaseRevision[]
   requirements RequirementCase[] // F-18
+  baselineEntries BaselineEntry[] // F-28
 
   @@unique([projectId, seq])
 }
@@ -630,6 +633,7 @@ model TestRun {
   // This denormalization is deliberate.
   configJson    String?
   environmentId String? // F-19: which Environment this ran against; null = unset
+  baselineId    String? // F-28: pins every result's caseRev to the baseline, not the case's current rev
   createdById   String
   createdAt     DateTime  @default(now())
   completedAt   DateTime?
@@ -638,8 +642,47 @@ model TestRun {
   milestone   Milestone?      @relation(fields: [milestoneId], references: [id])
   plan        TestPlan?       @relation(fields: [planId], references: [id])
   environment Environment?    @relation(fields: [environmentId], references: [id], onDelete: SetNull)
+  baseline    SuiteBaseline?  @relation(fields: [baselineId], references: [id], onDelete: SetNull)
   createdBy   User            @relation("RunCreator", fields: [createdById], references: [id])
   results     TestRunResult[]
+}
+
+// F-28: a named snapshot of a suite tree + the case revisions (F-05) each
+// case was at when captured — "compare baseline vs current" and "run from
+// baseline" (pins TestRunResult.caseRev to the entry's rev instead of the
+// case's current rev). No content is duplicated here: caseRev points at the
+// existing TestCaseRevision, which already holds the full snapshot.
+model SuiteBaseline {
+  id          String   @id @default(cuid())
+  projectId   String
+  name        String
+  suiteId     String? // scope this baseline was created from; null = whole project
+  createdById String
+  createdAt   DateTime @default(now())
+
+  project   Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User            @relation("BaselineCreator", fields: [createdById], references: [id])
+  entries   BaselineEntry[]
+  runs      TestRun[]
+
+  @@unique([projectId, name])
+}
+
+// One pinned case per baseline. suitePath is denormalized ("Auth > Login",
+// "" = project root) at snapshot time so the tree survives a later suite
+// rename/move/delete — comparing it to the case's current suite path is how
+// "moved" is detected in the compare view.
+model BaselineEntry {
+  id         String @id @default(cuid())
+  baselineId String
+  caseId     String
+  caseRev    Int
+  suitePath  String
+
+  baseline SuiteBaseline @relation(fields: [baselineId], references: [id], onDelete: Cascade)
+  testCase TestCase      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@unique([baselineId, caseId])
 }
 
 // F-19: named environments a run can be tagged against (Staging, Prod, …).

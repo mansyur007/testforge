@@ -40,6 +40,7 @@ export function openApiSpec() {
       { name: "Plans" },
       { name: "Sessions" },
       { name: "Defects" },
+      { name: "Baselines" },
     ],
     paths: {
       "/projects/{slug}/cases": {
@@ -1617,6 +1618,137 @@ export function openApiSpec() {
           },
         },
       },
+      "/projects/{slug}/baselines": {
+        get: {
+          tags: ["Baselines"],
+          summary: "List suite baselines (F-28)",
+          parameters: [
+            slugParam,
+            { name: "cursor", in: "query", schema: { type: "string" } },
+            { name: "limit", in: "query", schema: { type: "integer", default: 50, maximum: 200 } },
+          ],
+          responses: {
+            "200": {
+              description: "OK.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      items: { type: "array", items: { $ref: "#/components/schemas/SuiteBaseline" } },
+                      nextCursor: { type: ["string", "null"] },
+                    },
+                  },
+                },
+              },
+            },
+            "404": err("Project not found."),
+          },
+        },
+        post: {
+          tags: ["Baselines"],
+          summary: "Create a baseline",
+          description:
+            "Snapshots every live case's current revision (and its suite path) under `suiteId` (or the whole project when omitted) into a named, immutable baseline.",
+          parameters: [slugParam],
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["name"],
+                  properties: {
+                    name: { type: "string", example: "Release 2.3" },
+                    suiteId: { type: ["string", "null"] },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "201": {
+              description: "Created.",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/SuiteBaseline" } } },
+            },
+            "403": err("API key is read-only, or lacks case.write."),
+            "404": err("Project not found."),
+            "422": err("Validation failed (e.g. duplicate name, or no cases in scope)."),
+          },
+        },
+      },
+      "/projects/{slug}/baselines/{id}": {
+        get: {
+          tags: ["Baselines"],
+          summary: "Get a baseline with its pinned entries",
+          parameters: [
+            slugParam,
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "OK.",
+              content: {
+                "application/json": {
+                  schema: {
+                    allOf: [
+                      { $ref: "#/components/schemas/SuiteBaseline" },
+                      {
+                        type: "object",
+                        properties: {
+                          entries: { type: "array", items: { $ref: "#/components/schemas/BaselineEntry" } },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            "404": err("Baseline not found."),
+          },
+        },
+        delete: {
+          tags: ["Baselines"],
+          summary: "Delete a baseline",
+          description: "Runs already created from this baseline are unaffected (their results keep their pinned caseRev).",
+          parameters: [
+            slugParam,
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "204": { description: "Deleted." },
+            "403": err("API key is read-only, or lacks case.write."),
+            "404": err("Baseline not found."),
+          },
+        },
+      },
+      "/projects/{slug}/baselines/{id}/compare": {
+        get: {
+          tags: ["Baselines"],
+          summary: "Compare a baseline to the current state of its cases",
+          description:
+            "For every pinned case: UNCHANGED, CHANGED (with the F-05 changed-field list), MOVED (suite path differs), or DELETED (case no longer exists).",
+          parameters: [
+            slugParam,
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "OK.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      items: { type: "array", items: { $ref: "#/components/schemas/BaselineComparisonRow" } },
+                    },
+                  },
+                },
+              },
+            },
+            "404": err("Baseline not found."),
+          },
+        },
+      },
     },
     components: {
       securitySchemes: {
@@ -1881,6 +2013,40 @@ export function openApiSpec() {
             entityType: { type: "string", enum: ["CASE", "RESULT"] },
             entityId: { type: "string" },
             createdAt: { type: "string", format: "date-time" },
+          },
+        },
+        SuiteBaseline: {
+          type: "object",
+          description: "F-28: a named snapshot of a suite tree + case revisions (F-05).",
+          properties: {
+            id: { type: "string" },
+            name: { type: "string" },
+            suiteId: { type: ["string", "null"], description: "Scope this baseline was created from; null = whole project." },
+            createdById: { type: "string" },
+            createdAt: { type: "string", format: "date-time" },
+            entryCount: { type: "integer" },
+          },
+        },
+        BaselineEntry: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            caseId: { type: "string" },
+            caseRev: { type: "integer" },
+            suitePath: { type: "string", example: "Auth > Login" },
+          },
+        },
+        BaselineComparisonRow: {
+          type: "object",
+          properties: {
+            caseId: { type: "string" },
+            title: { type: "string" },
+            pinnedRev: { type: "integer" },
+            currentRev: { type: ["integer", "null"], description: "null = case no longer exists." },
+            suitePathThen: { type: "string" },
+            suitePathNow: { type: ["string", "null"] },
+            status: { type: "string", enum: ["UNCHANGED", "CHANGED", "DELETED", "MOVED"] },
+            changedFields: { type: "array", items: { type: "string" } },
           },
         },
         Result: {
