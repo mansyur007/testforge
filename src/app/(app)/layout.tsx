@@ -6,6 +6,7 @@ import { Logo, TFIcon } from "@/components/icons";
 import { LogoutButton } from "@/components/LogoutButton";
 import { SidebarProjects } from "@/components/SidebarProjects";
 import { CommandPalette } from "@/components/CommandPalette";
+import { loadMyWorkCounts } from "@/lib/my-work";
 
 export default async function AppLayout({
   children,
@@ -22,8 +23,13 @@ export default async function AppLayout({
     orderBy: { createdAt: "desc" },
   });
 
+  // F-31: cross-project count for the "My Work" badge.
+  const myWorkCounts = await loadMyWorkCounts(session.userId);
+  const myWorkTotal = myWorkCounts.results + myWorkCounts.cases + myWorkCounts.reviews;
+
   const nav = [
     { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
+    { href: "/my-work", label: "My Work", icon: "checklist", badge: myWorkTotal },
     { href: "/projects", label: "Projects", icon: "nav-projects" },
     { href: "/settings/team", label: "Team", icon: "nav-team" },
     { href: "/settings/api-keys", label: "API Keys", icon: "nav-keys" },
@@ -53,6 +59,14 @@ export default async function AppLayout({
               >
                 <TFIcon name={item.icon} current className="h-[19px] w-[19px]" />
                 {item.label}
+                {"badge" in item && item.badge! > 0 && (
+                  <span
+                    data-testid="my-work-nav-badge"
+                    className="ml-auto rounded-full bg-indigo-600 px-1.5 py-0.5 text-xs font-medium text-white"
+                  >
+                    {item.badge}
+                  </span>
+                )}
               </Link>
               {item.href === "/projects" && (
                 <SidebarProjects projects={projects} />

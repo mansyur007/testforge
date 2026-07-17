@@ -129,6 +129,9 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   history) alongside the existing CSV/`.feature` exports, all from one
   Export menu; CSV import remembers a per-project column mapping so a CSV
   with different header names only needs mapping once (F-30)
+- **My Work** — `/my-work`, a cross-project queue of everything assigned to
+  you: results waiting for you in active runs, cases you own, and case
+  reviews requested from you; a sidebar badge shows the total (F-31)
 
 ## Running
 

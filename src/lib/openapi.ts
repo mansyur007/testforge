@@ -42,6 +42,7 @@ export function openApiSpec() {
       { name: "Defects" },
       { name: "Baselines" },
       { name: "Import" },
+      { name: "My Work" },
     ],
     paths: {
       "/projects/{slug}/cases": {
@@ -1820,6 +1821,73 @@ export function openApiSpec() {
             "204": { description: "Deleted." },
             "403": err("API key is read-only, or lacks case.write."),
             "404": err("Project not found."),
+          },
+        },
+      },
+      "/my-work": {
+        get: {
+          tags: ["My Work"],
+          summary: "Cross-project work assigned to the caller (F-31)",
+          description:
+            "Not project-scoped — API keys are already user-scoped (ApiKey.userId). Results assigned in ACTIVE runs, cases assigned, and case reviews (F-15) requested from the caller, across every project they belong to.",
+          responses: {
+            "200": {
+              description: "OK.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      results: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            id: { type: "string" },
+                            runId: { type: "string" },
+                            runName: { type: "string" },
+                            projectSlug: { type: "string" },
+                            caseDisplayId: { type: "string" },
+                            caseTitle: { type: "string" },
+                            status: { type: "string" },
+                            updatedAt: { type: "string", format: "date-time" },
+                          },
+                        },
+                      },
+                      cases: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            id: { type: "string" },
+                            projectSlug: { type: "string" },
+                            displayId: { type: "string" },
+                            title: { type: "string" },
+                            priority: { type: "string" },
+                            status: { type: "string" },
+                            updatedAt: { type: "string", format: "date-time" },
+                          },
+                        },
+                      },
+                      reviews: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            id: { type: "string" },
+                            projectSlug: { type: "string" },
+                            displayId: { type: "string" },
+                            title: { type: "string" },
+                            updatedAt: { type: "string", format: "date-time" },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            "401": err("Missing or invalid credentials."),
           },
         },
       },
