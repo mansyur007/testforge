@@ -1,5 +1,6 @@
 import type {
   Attachment,
+  CaseDependency,
   Defect,
   DefectLink,
   Session,
@@ -243,6 +244,16 @@ export function serializeBaselineEntry(e: BaselineEntry) {
     caseId: e.caseId,
     caseRev: e.caseRev,
     suitePath: e.suitePath,
+  };
+}
+
+// F-32: case dependencies — `case` requires `dependsOn` to pass first.
+export function serializeCaseDependency(d: CaseDependency) {
+  return {
+    id: d.id,
+    caseId: d.caseId,
+    dependsOnCaseId: d.dependsOnCaseId,
+    createdAt: d.createdAt.toISOString(),
   };
 }
 

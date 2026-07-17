@@ -43,6 +43,7 @@ export function openApiSpec() {
       { name: "Baselines" },
       { name: "Import" },
       { name: "My Work" },
+      { name: "Case Dependencies" },
     ],
     paths: {
       "/projects/{slug}/cases": {
@@ -1891,6 +1892,86 @@ export function openApiSpec() {
           },
         },
       },
+      "/projects/{slug}/cases/{caseId}/dependencies": {
+        get: {
+          tags: ["Case Dependencies"],
+          summary: "List a case's prerequisites and dependents (F-32)",
+          parameters: [
+            slugParam,
+            { name: "caseId", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "OK.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      prerequisites: {
+                        type: "array",
+                        description: "Cases this case depends on.",
+                        items: { $ref: "#/components/schemas/CaseDependency" },
+                      },
+                      dependents: {
+                        type: "array",
+                        description: "Cases that depend on this one.",
+                        items: { $ref: "#/components/schemas/CaseDependency" },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            "404": err("Case not found."),
+          },
+        },
+        post: {
+          tags: ["Case Dependencies"],
+          summary: "Add a prerequisite",
+          description: "Rejects a self-dependency and anything that would create a cycle.",
+          parameters: [
+            slugParam,
+            { name: "caseId", in: "path", required: true, schema: { type: "string" } },
+          ],
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["dependsOnCaseId"],
+                  properties: { dependsOnCaseId: { type: "string" } },
+                },
+              },
+            },
+          },
+          responses: {
+            "201": {
+              description: "Created (idempotent).",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/CaseDependency" } } },
+            },
+            "400": err("Self-dependency, unknown case, or would create a cycle."),
+            "403": err("API key is read-only, or lacks case.write."),
+            "404": err("Case not found."),
+          },
+        },
+      },
+      "/projects/{slug}/cases/{caseId}/dependencies/{linkId}": {
+        delete: {
+          tags: ["Case Dependencies"],
+          summary: "Remove a dependency",
+          parameters: [
+            slugParam,
+            { name: "caseId", in: "path", required: true, schema: { type: "string" } },
+            { name: "linkId", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "204": { description: "Deleted." },
+            "403": err("API key is read-only, or lacks case.write."),
+            "404": err("Dependency not found."),
+          },
+        },
+      },
     },
     components: {
       securitySchemes: {
@@ -2189,6 +2270,16 @@ export function openApiSpec() {
             suitePathNow: { type: ["string", "null"] },
             status: { type: "string", enum: ["UNCHANGED", "CHANGED", "DELETED", "MOVED"] },
             changedFields: { type: "array", items: { type: "string" } },
+          },
+        },
+        CaseDependency: {
+          type: "object",
+          description: "F-32: `caseId` requires `dependsOnCaseId` to pass first.",
+          properties: {
+            id: { type: "string" },
+            caseId: { type: "string" },
+            dependsOnCaseId: { type: "string" },
+            createdAt: { type: "string", format: "date-time" },
           },
         },
         Result: {
