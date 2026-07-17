@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { TFIcon } from "@/components/icons";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { caseDisplayId, type TestStep } from "@/lib/constants";
@@ -17,6 +16,7 @@ import { ProjectTabs } from "@/components/ProjectTabs";
 import { RunExecutor } from "@/components/RunExecutor";
 import { CommentPanel } from "@/components/CommentPanel";
 import { ShareLinkPanel } from "@/components/ShareLinkPanel";
+import { ExportMenu } from "@/components/ExportMenu";
 import { completeRun, rerunFailed } from "@/app/actions/runs";
 import { loadPerms } from "@/lib/permissions";
 
@@ -190,12 +190,13 @@ export default async function RunDetailPage({
           </p>
         </div>
         <div className="flex shrink-0 gap-2">
-          <a
-            href={`/api/export/run?id=${run.id}`}
-            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100"
-          >
-            <span className="inline-flex items-center gap-1.5"><TFIcon name="download" className="h-4 w-4" /> Export CSV</span>
-          </a>
+          <ExportMenu
+            items={[
+              { label: "CSV", href: `/api/export/run?id=${run.id}`, testid: "export-csv-link" },
+              { label: "XLSX", href: `/api/export/run-xlsx?id=${run.id}`, testid: "export-xlsx-link" },
+              { label: "JSON", href: `/api/export/run-json?id=${run.id}`, testid: "export-json-link" },
+            ]}
+          />
           {failedish > 0 && (
             <form action={rerunFailed}>
               <input type="hidden" name="runId" value={run.id} />

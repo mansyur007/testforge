@@ -1809,7 +1809,22 @@ detector (embeddings optional — v1 may use title trigram similarity locally, n
 All AI actions are opt-in per click, never automatic; degrade cleanly when no key configured.
 Default model when the org uses Anthropic: `claude-sonnet-5`.
 
-### F-30 — XLSX & JSON export, saved import mappings `[ ]`
+### F-30 — XLSX & JSON export, saved import mappings `[x]`
+
+> **Status: DONE** (2026-07-17, branch `feat/export-xlsx-json`, Sonnet 5). Export: `cases-xlsx`/
+> `run-xlsx` reuse the exact same row-building logic as the existing CSV routes, just piped
+> through a small `buildXlsx()` helper (`lib/xlsx.ts`, new dep `exceljs`); `cases-json`/`run-json`
+> reuse `serializeCase`/`serializeRun`/`serializeResult` from `lib/api.ts` unchanged — "full
+> fidelity" fell out for free since those serializers already existed. `?revisions=true` on the
+> cases JSON export attaches each case's F-05 history via `serializeRevision`. The 4 new export
+> routes plus the existing CSV/`.feature` ones are now behind one `ExportMenu` dropdown instead
+> of a row of separate buttons. Column mapping: `ImportColumnMapping` (one row per project,
+> upsert-only) + `applyColumnMapping()` rewrites a parsed CSV row's arbitrary headers onto the
+> fixed target fields *before* the existing validation/creation logic runs — an empty mapping is
+> a no-op, so CSVs that already use the expected headers are unaffected. `CsvImporter` gained a
+> "Column mapping" panel (shown once headers are detected) that loads the project's saved
+> mapping on mount and can persist a new one on commit.
+
 Export cases/runs as `.xlsx` (dependency `exceljs`) and `.json` (full fidelity incl. custom
 fields, revisions optional flag); CSV import column-mapping step persists mapping per project.
 

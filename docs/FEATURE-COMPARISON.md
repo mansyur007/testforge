@@ -382,7 +382,8 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
       paralel (konsep TestRail). Lihat F-28.
 - [ ] **AI assist** — generate draft test case dari deskripsi fitur/PRD, saran step, dedup
       case mirip (jawaban terhadap Qase AIDEN); opsional dan bisa dimatikan di self-hosted.
-- [ ] **Export XLSX & JSON** (selain CSV), template import dengan mapping kolom tersimpan.
+- [x] *(Selesai 2026-07-17)* **Export XLSX & JSON** (selain CSV), template import dengan
+      mapping kolom tersimpan. Lihat F-30.
 - [ ] **Todos / antrian kerja personal** — halaman "assigned to me" lintas project
       (hasil run + case yang di-assign) seperti TestRail Todos.
 - [ ] **Case dependencies** — tandai case yang bergantung case lain; run mengurutkan dan

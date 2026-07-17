@@ -8,6 +8,7 @@ import { PRIORITIES, CASE_TYPES } from "@/lib/constants";
 import { validateCustomValues } from "@/lib/custom-fields";
 import { recordRevision } from "@/lib/case-revisions";
 import { parseDuration } from "@/lib/duration";
+import { applyColumnMapping, saveColumnMapping, type ColumnMapping } from "@/lib/import-mapping";
 
 type CsvRow = Record<string, string>;
 
@@ -99,6 +100,20 @@ export async function POST(req: NextRequest) {
   if (!parsed.data.length)
     return NextResponse.json({ error: "CSV is empty or invalid" }, { status: 400 });
 
+  // F-30: an arbitrary-header CSV maps onto the fixed target fields; an
+  // empty/absent mapping behaves exactly as before (each target reads its
+  // own name directly).
+  let mapping: ColumnMapping = {};
+  const mappingParam = req.nextUrl.searchParams.get("mapping");
+  if (mappingParam) {
+    try {
+      mapping = JSON.parse(mappingParam) as ColumnMapping;
+    } catch {
+      return NextResponse.json({ error: "Invalid mapping JSON" }, { status: 400 });
+    }
+  }
+  const mappedRows = parsed.data.map((row) => applyColumnMapping(row, mapping));
+
   const defs = await db.customFieldDef.findMany({
     where: { projectId: project.id, entity: "CASE", active: true },
     orderBy: { order: "asc" },
@@ -112,7 +127,7 @@ export async function POST(req: NextRequest) {
     ).map((m) => m.userId)
   );
 
-  const rows = parsed.data.map((row) => {
+  const rows = mappedRows.map((row) => {
     const { error, customJson } = validateRow(row, defs, memberIds);
     return {
       title: row.title ?? "",
@@ -125,8 +140,13 @@ export async function POST(req: NextRequest) {
 
   if (dryRun) {
     return NextResponse.json({
+      headers: parsed.meta.fields ?? [],
       rows: rows.map(({ title, valid, error }) => ({ title, valid, error })),
     });
+  }
+
+  if (req.nextUrl.searchParams.get("saveMapping") === "true") {
+    await saveColumnMapping(project.id, mapping);
   }
 
   const validRows = rows.filter((r) => r.valid);

@@ -41,6 +41,7 @@ export function openApiSpec() {
       { name: "Sessions" },
       { name: "Defects" },
       { name: "Baselines" },
+      { name: "Import" },
     ],
     paths: {
       "/projects/{slug}/cases": {
@@ -1746,6 +1747,79 @@ export function openApiSpec() {
               },
             },
             "404": err("Baseline not found."),
+          },
+        },
+      },
+      "/projects/{slug}/import-mapping": {
+        get: {
+          tags: ["Import"],
+          summary: "Get the project's saved CSV import column mapping (F-30)",
+          parameters: [slugParam],
+          responses: {
+            "200": {
+              description: "OK. `mapping` is `{}` when nothing has been saved yet.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      mapping: { type: "object", additionalProperties: { type: "string" } },
+                    },
+                  },
+                },
+              },
+            },
+            "404": err("Project not found."),
+          },
+        },
+        put: {
+          tags: ["Import"],
+          summary: "Save the CSV import column mapping",
+          description:
+            "One mapping per project (upsert). Keys are target fields (title, description, steps, ..., cf_<key>); values are the CSV header each maps from.",
+          parameters: [slugParam],
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["mapping"],
+                  properties: {
+                    mapping: {
+                      type: "object",
+                      additionalProperties: { type: "string" },
+                      example: { title: "Test Case Title", steps: "Test Steps" },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "200": {
+              description: "OK.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: { mapping: { type: "object", additionalProperties: { type: "string" } } },
+                  },
+                },
+              },
+            },
+            "403": err("API key is read-only, or lacks case.write."),
+            "404": err("Project not found."),
+            "422": err("Validation failed."),
+          },
+        },
+        delete: {
+          tags: ["Import"],
+          summary: "Clear the saved column mapping",
+          parameters: [slugParam],
+          responses: {
+            "204": { description: "Deleted." },
+            "403": err("API key is read-only, or lacks case.write."),
+            "404": err("Project not found."),
           },
         },
       },

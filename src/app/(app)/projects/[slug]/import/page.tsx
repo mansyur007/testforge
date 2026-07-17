@@ -92,6 +92,12 @@ export default async function ImportPage({
                 name: s.name,
                 parentId: s.parentId,
               }))}
+              customFieldDefs={(
+                await db.customFieldDef.findMany({
+                  where: { projectId: project.id, entity: "CASE", active: true },
+                  orderBy: { order: "asc" },
+                })
+              ).map((d) => ({ key: d.key, label: d.label }))}
             />
           )}
           {tab === "testrail" && (

@@ -11,6 +11,7 @@ import { NewSuiteForm } from "@/components/NewSuiteForm";
 import { CasesTable } from "@/components/CasesTable";
 import { SuiteTree } from "@/components/SuiteTree";
 import { SavedViewsMenu } from "@/components/SavedViewsMenu";
+import { ExportMenu } from "@/components/ExportMenu";
 import { sanitizeCaseFilters, viewHref } from "@/lib/saved-views";
 import { loadPerms } from "@/lib/permissions";
 
@@ -238,20 +239,18 @@ export default async function ProjectPage({
                 </span>
               )}
             </Link>
-            <a
-              href={`/api/export/cases?project=${project.slug}`}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
-            >
-              <span className="inline-flex items-center gap-1.5"><TFIcon name="download" className="h-4 w-4" /> Export CSV</span>
-            </a>
-            <a
-              href={`/api/export/gherkin?project=${project.slug}`}
-              data-testid="export-gherkin-link"
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
-              title="Export every Gherkin-format case as a .feature file"
-            >
-              <span className="inline-flex items-center gap-1.5"><TFIcon name="download" className="h-4 w-4" /> Export .feature</span>
-            </a>
+            <ExportMenu
+              items={[
+                { label: "CSV", href: `/api/export/cases?project=${project.slug}`, testid: "export-csv-link" },
+                { label: "XLSX", href: `/api/export/cases-xlsx?project=${project.slug}`, testid: "export-xlsx-link" },
+                { label: "JSON", href: `/api/export/cases-json?project=${project.slug}`, testid: "export-json-link" },
+                {
+                  label: "Gherkin (.feature)",
+                  href: `/api/export/gherkin?project=${project.slug}`,
+                  testid: "export-gherkin-link",
+                },
+              ]}
+            />
             <Link
               href={`/projects/${project.slug}/import`}
               className="rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
