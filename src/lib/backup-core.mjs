@@ -58,6 +58,7 @@ export const MODEL_ORDER = [
   "Defect",
   "DefectLink",
   "SavedView",
+  "ImportColumnMapping",
   "Dashboard",
   "DashboardWidget",
   "ShareLink",

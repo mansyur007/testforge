@@ -107,6 +107,19 @@ model Project {
   sessions     Session[]
   defects      Defect[]
   baselines    SuiteBaseline[]
+  importMapping ImportColumnMapping?
+}
+
+// F-30: the CSV case-import column mapping a project settled on, so repeat
+// imports from the same export tool don't need re-mapping every time. One
+// row per project (upsert-only, never multiple named mappings).
+model ImportColumnMapping {
+  id         String   @id @default(cuid())
+  projectId  String   @unique
+  mappingJson String  @default("{}") // {targetField: sourceCsvHeader}
+  updatedAt  DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 // F-26: built-in defect tracker for teams without an external issue tracker

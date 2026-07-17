@@ -124,6 +124,11 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   work; "compare to current" flags what changed, moved, or was deleted; a
   run created "from baseline" pins and renders each case's pinned content,
   not today's edits (F-28)
+- **XLSX & JSON export** — export cases/runs as `.xlsx` or full-fidelity
+  `.json` (custom fields, steps, datasets; optional per-case revision
+  history) alongside the existing CSV/`.feature` exports, all from one
+  Export menu; CSV import remembers a per-project column mapping so a CSV
+  with different header names only needs mapping once (F-30)
 
 ## Running
 
