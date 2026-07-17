@@ -30,6 +30,15 @@ async function openMenu(page: Page) {
   }).toPass({ timeout: 15000 });
 }
 
+// The cases table paginates client-side at 25 rows by default (resets on
+// every navigation). The e2e project accumulates cases from every other spec
+// that runs before this one, so an unfiltered view can easily exceed one page
+// by the time this spec runs — widen it before asserting a fixture row is
+// visible on the unfiltered list (same fix as bulk-copy-reorder.spec.ts).
+async function showAllRows(page: Page) {
+  await page.selectOption('[data-testid="cases-page-size"]', "100");
+}
+
 test(`TC-${TC}-10 Save a view and re-apply it`, async ({ page }) => {
   // Unique per run — the local e2e DB persists, duplicate names would trip
   // Playwright's strict mode on re-runs.
@@ -47,6 +56,7 @@ test(`TC-${TC}-10 Save a view and re-apply it`, async ({ page }) => {
 
   // Leave the filter, then bring it back through the view.
   await page.goto(`/projects/${E2E.projectSlug}?v=all`);
+  await showAllRows(page);
   await expect(page.getByRole("link", { name: LOW_CASE })).toBeVisible();
 
   await openMenu(page);
@@ -85,6 +95,7 @@ test(`TC-${TC}-11 Default view auto-applies and All cases clears it`, async ({
   await openMenu(page);
   await page.click('[data-testid="saved-view-all"]');
   await page.waitForURL("**v=all**");
+  await showAllRows(page);
   await expect(page.getByRole("link", { name: LOW_CASE })).toBeVisible();
 
   // Cleanup: unstar so later param-less visits stay unredirected. There is
@@ -95,5 +106,6 @@ test(`TC-${TC}-11 Default view auto-applies and All cases clears it`, async ({
   await page.getByTitle("Unset default").click();
   await expect(page.getByTitle("Unset default")).toHaveCount(0);
   await page.goto(`/projects/${E2E.projectSlug}`);
+  await showAllRows(page);
   await expect(page.getByRole("link", { name: LOW_CASE })).toBeVisible();
 });
