@@ -384,8 +384,8 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
       case mirip (jawaban terhadap Qase AIDEN); opsional dan bisa dimatikan di self-hosted.
 - [x] *(Selesai 2026-07-17)* **Export XLSX & JSON** (selain CSV), template import dengan
       mapping kolom tersimpan. Lihat F-30.
-- [ ] **Todos / antrian kerja personal** — halaman "assigned to me" lintas project
-      (hasil run + case yang di-assign) seperti TestRail Todos.
+- [x] *(Selesai 2026-07-17)* **Todos / antrian kerja personal** — halaman "assigned to me" lintas
+      project (hasil run + case yang di-assign, + review diminta) seperti TestRail Todos. Lihat F-31.
 - [ ] **Case dependencies** — tandai case yang bergantung case lain; run mengurutkan dan
       auto-BLOCK dependen saat prasyarat gagal.
 - [ ] **Public API v2** — cakupan penuh (milestones, members, webhooks, custom fields,

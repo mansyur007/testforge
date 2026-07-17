@@ -1828,7 +1828,18 @@ Default model when the org uses Anthropic: `claude-sonnet-5`.
 Export cases/runs as `.xlsx` (dependency `exceljs`) and `.json` (full fidelity incl. custom
 fields, revisions optional flag); CSV import column-mapping step persists mapping per project.
 
-### F-31 — "My work" page `[ ]`
+### F-31 — "My work" page `[x]`
+
+> **Status: DONE** (2026-07-17, branch `feat/my-work`, Sonnet 5). No schema change — pure
+> cross-project read aggregation (`lib/my-work.ts`), every query scoped the same way the
+> dashboard already scopes its stats (`{members: {some: {userId}}}`). Sidebar badge (`layout.tsx`)
+> reuses the cheap `loadMyWorkCounts` query (counts only, no included relations) so it doesn't
+> pull the full lists on every page load. `GET /api/v1/my-work` lives at the API root rather than
+> under `/projects/{slug}` — it's inherently cross-project, and an API key is already user-scoped
+> (`ApiKey.userId`), so no project param is needed. "Reviews requested from me" reuses F-15's
+> existing `reviewerId`+`status=IN_REVIEW` query (same as the per-project "Needs my review" chip,
+> just without the project filter).
+
 `/my-work`: cross-project list of (a) results assigned to me in active runs, (b) cases assigned
 to me, (c) reviews requested from me (F-15) — each with deep links and counts in the sidebar.
 
