@@ -42,6 +42,7 @@ const TABS = [
   ["testrail", "TestRail XML"],
   ["qase", "Qase JSON"],
   ["testlink", "TestLink XML"],
+  ["gherkin", "Gherkin (.feature)"],
 ] as const;
 
 export default async function ImportPage({
@@ -134,6 +135,24 @@ export default async function ImportPage({
                 <>
                   Upload a TestLink test-suite XML export. Nested <code className="rounded bg-slate-100 px-1">&lt;testsuite&gt;</code>{" "}
                   elements become nested suites.
+                </>
+              }
+            />
+          )}
+          {tab === "gherkin" && (
+            <ToolImporter
+              projectSlug={project.slug}
+              tool="gherkin"
+              label="Gherkin"
+              accept=".feature"
+              contentType="text/plain"
+              help={
+                <>
+                  Upload a <code className="rounded bg-slate-100 px-1">.feature</code> file. Each{" "}
+                  <code className="rounded bg-slate-100 px-1">Scenario:</code> becomes one case (the
+                  whole Given/When/Then block is kept as-is); tags become the case&apos;s tags, and
+                  the Feature name becomes its suite. <code className="rounded bg-slate-100 px-1">Background:</code>{" "}
+                  steps are not imported (no per-case home for them yet).
                 </>
               }
             />

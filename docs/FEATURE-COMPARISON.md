@@ -59,7 +59,7 @@ Legenda: ✅ ada · 🟡 sebagian/terbatas · ❌ tidak ada · ➖ tidak relevan
 | **Shared steps (langkah reusable)** | ✅ | ✅ | ✅ | ❌ | ➖ |
 | **Versioning / riwayat perubahan case** | ✅ | ✅ | ✅ | ✅ | ➖ |
 | **Parameterisasi / dataset** | ✅ | ✅ | ✅ | ❌ | ➖ |
-| **Template case (teks/BDD/exploratory)** | ❌ | ✅ | 🟡 | ❌ | ➖ |
+| **Template case (teks/BDD/exploratory)** | ✅ (BDD + exploratory session) | ✅ | 🟡 | ❌ | ➖ |
 | Rich text / markdown + inline image | ✅ (GFM) | ✅ | ✅ | 🟡 | ➖ |
 | Review/approval workflow untuk case | ❌ | 🟡 | ✅ | ❌ | ➖ |
 | **Perencanaan & eksekusi** |
@@ -376,8 +376,8 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
       Test IO/Testmo). Lihat F-25.
 - [x] *(Selesai 2026-07-17)* **Defect entity bawaan** — daftar defect internal untuk tim tanpa
       issue tracker (seperti Qase), tetap bisa dilink ke tracker eksternal. Lihat F-26.
-- [ ] **BDD/Gherkin** — template case Gherkin, import/export `.feature`, sinkron dengan
-      hasil Cucumber JSON.
+- [x] *(Selesai 2026-07-17)* **BDD/Gherkin** — template case Gherkin, import/export `.feature`,
+      sinkron dengan hasil Cucumber JSON. Lihat F-27.
 - [ ] **Baselines** — snapshot suite untuk mendukung beberapa versi rilis paralel
       (konsep TestRail).
 - [ ] **AI assist** — generate draft test case dari deskripsi fitur/PRD, saran step, dedup

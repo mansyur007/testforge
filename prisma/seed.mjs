@@ -138,6 +138,23 @@ async function main() {
         { name: "Viewer", values: { email: "viewer@demo.test", password: "Viewer123!", role: "Viewer" } },
       ],
     },
+    {
+      // F-27: a Gherkin-format case — one raw scenario body, not steps.
+      suiteId: loginSection.id,
+      title: "Password reset via email link",
+      priority: "MEDIUM",
+      type: "FUNCTIONAL",
+      automationStatus: "NOT_AUTOMATED",
+      tags: "login,gherkin",
+      steps: [
+        {
+          gherkin:
+            "Given the user is on the login page\n" +
+            'When they click "Forgot password?" and submit their email\n' +
+            "Then a password reset link is sent to that email",
+        },
+      ],
+    },
   ];
 
   let seq = 0;

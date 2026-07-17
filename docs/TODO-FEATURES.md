@@ -1765,10 +1765,24 @@ Test IO/Testmo; almost no OSS tool has this.
 linkable from results (complements, not replaces, F-07). Defects list + board (columns by
 status). For teams without any external tracker (Qase parity).
 
-### F-27 — BDD / Gherkin `[ ]`
-Case template `GHERKIN`: raw feature text stored in `stepsJson` as `[{gherkin: "..."}]`, syntax
-highlight, import/export `.feature` files (one scenario = one case, tags → tags), Cucumber JSON
-results (F-11) match by scenario name.
+### F-27 — BDD / Gherkin `[x]`
+
+> **Status: DONE** (2026-07-17, branch `feat/gherkin`, Sonnet 5). No schema change — a Gherkin
+> case is detected purely by its `stepsJson` shape (`isGherkinCaseSteps` in `lib/steps.ts`),
+> exactly `[{gherkin: "<scenario body>"}]`, never mixed with inline steps or shared-step refs.
+> `expandSteps()` short-circuits it into a safe single-step passthrough (`action` = the raw
+> text, plus a `gherkin` marker) so every existing consumer that only knows inline steps keeps
+> working without modification; the case detail page and `CaseForm`'s format toggle special-case
+> the marker to render `GherkinBlock` (hand-rolled line-based syntax highlighter, no new
+> dependency) instead of a steps table. Import reuses the existing F-22 tool-importer pipeline
+> unchanged (`ImportedCase.steps` widened to accept the Gherkin shape, `lib/importers/gherkin.ts`
+> registered as a 4th `PARSERS` entry) — one scenario = one case, Feature name = suite, tags →
+> tags; `Background:` steps are intentionally NOT merged into each scenario (no per-case home for
+> them in this model). Export: `GET /api/export/gherkin?project=` groups by suite into one
+> `.feature` file. Cucumber JSON matching needed no code change — F-11's existing exact-title
+> matcher already works since a Gherkin case's title is the scenario name. Two round-trip paths
+> (F-05 revision restore, F-24 copy-to-project) were fixed to preserve the `{gherkin}` shape
+> instead of silently flattening it into a lossy single inline step.
 
 ### F-28 — Suite baselines `[ ]`
 Snapshot an entire suite tree + case revisions (F-05) as a named baseline; runs can be created

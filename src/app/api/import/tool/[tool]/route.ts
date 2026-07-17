@@ -4,15 +4,18 @@ import { getSession } from "@/lib/auth";
 import { parseTestRailXml } from "@/lib/importers/testrail";
 import { parseQaseJson } from "@/lib/importers/qase";
 import { parseTestLinkXml } from "@/lib/importers/testlink";
+import { parseFeatureFile } from "@/lib/importers/gherkin";
 import { commitImport } from "@/lib/importers/commit";
 import { ImportParseError, type ParsedImport } from "@/lib/importers/types";
 
 // F-22: TestRail XML / Qase JSON / TestLink XML importers, mirroring the CSV
-// importer's dry-run-then-commit flow (see /api/import/cases).
+// importer's dry-run-then-commit flow (see /api/import/cases). F-27 adds
+// Gherkin .feature files to the same pipeline.
 const PARSERS: Record<string, (body: string) => ParsedImport> = {
   testrail: parseTestRailXml,
   qase: parseQaseJson,
   testlink: parseTestLinkXml,
+  gherkin: parseFeatureFile,
 };
 
 const SAMPLE_SIZE = 20;

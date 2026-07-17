@@ -114,6 +114,11 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   severity, status board OPEN→CONFIRMED→FIXED/WON'T FIX→CLOSED) for teams
   without Jira/GitHub/GitLab; link or report one straight from a failed run
   result, no external tracker required (F-26)
+- **BDD / Gherkin** — a case's whole scenario can be authored as one
+  Given/When/Then block instead of steps, with syntax-highlighted display;
+  import/export `.feature` files (one `Scenario:` per case, tags → tags,
+  Feature name → suite), and Cucumber JSON results match by scenario name
+  like any other case (F-27)
 
 ## Running
 

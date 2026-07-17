@@ -30,7 +30,7 @@ export function ToolImporter({
   help,
 }: {
   projectSlug: string;
-  tool: "testrail" | "qase" | "testlink";
+  tool: "testrail" | "qase" | "testlink" | "gherkin";
   label: string;
   accept: string;
   contentType: string;
