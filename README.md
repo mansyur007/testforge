@@ -132,6 +132,10 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 - **My Work** — `/my-work`, a cross-project queue of everything assigned to
   you: results waiting for you in active runs, cases you own, and case
   reviews requested from you; a sidebar badge shows the total (F-31)
+- **Case dependencies** — mark a case as requiring another to pass first
+  (cycles rejected); in a run, a dependent whose prerequisite just failed
+  gets a one-click "Accept — mark BLOCKED" suggestion — never applied
+  automatically (F-32)
 
 ## Running
 

@@ -257,6 +257,12 @@ async function main() {
     },
   });
 
+  // F-32: demo dependency — the lockout case only makes sense once basic
+  // login works, so it requires the valid-login case to pass first.
+  await db.caseDependency.create({
+    data: { caseId: created[2].id, dependsOnCaseId: created[0].id },
+  });
+
   const milestone = await db.milestone.create({
     data: { projectId: project.id, name: "Release v1.0" },
   });

@@ -627,8 +627,26 @@ model TestCase {
   revisions TestCaseRevision[]
   requirements RequirementCase[] // F-18
   baselineEntries BaselineEntry[] // F-28
+  dependencies CaseDependency[] @relation("DependentCase") // F-32: cases THIS case depends on
+  dependents   CaseDependency[] @relation("PrerequisiteCase") // F-32: cases that depend on THIS one
 
   @@unique([projectId, seq])
+}
+
+// F-32: `case` requires `dependsOn` to pass first. Cycle-checked at write
+// time (DFS from dependsOn's own prerequisites, rejecting if it reaches
+// `case` — see lib/case-dependencies.ts) since there's no cheap DB
+// constraint for "no cycles in this edge set".
+model CaseDependency {
+  id              String   @id @default(cuid())
+  caseId          String
+  dependsOnCaseId String
+  createdAt       DateTime @default(now())
+
+  case      TestCase @relation("DependentCase", fields: [caseId], references: [id], onDelete: Cascade)
+  dependsOn TestCase @relation("PrerequisiteCase", fields: [dependsOnCaseId], references: [id], onDelete: Cascade)
+
+  @@unique([caseId, dependsOnCaseId])
 }
 
 model TestRun {

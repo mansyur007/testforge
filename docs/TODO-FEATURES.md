@@ -1843,7 +1843,19 @@ fields, revisions optional flag); CSV import column-mapping step persists mappin
 `/my-work`: cross-project list of (a) results assigned to me in active runs, (b) cases assigned
 to me, (c) reviews requested from me (F-15) — each with deep links and counts in the sidebar.
 
-### F-32 — Case dependencies `[ ]`
+### F-32 — Case dependencies `[x]`
+
+> **Status: DONE** (2026-07-17, branch `feat/case-dependencies`, Sonnet 5). `CaseDependency`
+> (`caseId` requires `dependsOnCaseId` to pass first). Cycle rejection is a plain DFS from
+> `dependsOnCaseId` over what it transitively depends on, looking for `caseId` — no cheap DB
+> constraint covers this, so it's an application-level check on every write (`wouldCreateCycle`
+> in `lib/case-dependencies.ts`), surfaced as a real form error, never a silent no-op. In a run,
+> `computeBlockedSuggestions` (kind-based, F-14-aware) flags a dependent whose prerequisite is
+> FAILED/BLOCKED *in that same run*; the run executor shows a suggestion banner with a single
+> "Accept — mark BLOCKED" button that submits through the exact same path as every other status
+> button — nothing is ever applied automatically. Case detail page gained a "Dependencies"
+> section (prerequisites + read-only "Required by" list).
+
 `CaseDependency { caseId, dependsOnCaseId }` (no cycles — reject via DFS check). In a run,
 when a prerequisite's result is FAILED/BLOCKED, dependents auto-suggest BLOCKED (one-click
 accept, never silent).

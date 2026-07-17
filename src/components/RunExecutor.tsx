@@ -61,6 +61,7 @@ type ResultItem = {
   custom: Record<string, unknown>;
   issueLinks: IssueLinkView[]; // F-07
   defectLinks: DefectLinkView[]; // F-26
+  blockedSuggestion: { prereqDisplayId: string; prereqTitle: string } | null; // F-32
 };
 
 // Icon per system key (the historical glyphs), falling back to the kind.
@@ -588,6 +589,28 @@ export function RunExecutor({
                   values={active.custom}
                   members={members}
                 />
+              </div>
+            )}
+            {/* F-32: a prerequisite failed/blocked in this run — suggest, never
+                apply automatically. Accepting is just the normal BLOCKED submit. */}
+            {active.blockedSuggestion && (
+              <div
+                className="mt-3 flex items-center justify-between gap-3 rounded-lg bg-orange-50 px-3 py-2 text-sm text-orange-800"
+                data-testid="blocked-suggestion"
+              >
+                <span>
+                  Prerequisite <b>{active.blockedSuggestion.prereqDisplayId}</b>{" "}
+                  {active.blockedSuggestion.prereqTitle} is failed/blocked in this run.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => submit("BLOCKED")}
+                  disabled={isPending}
+                  data-testid="blocked-suggestion-accept"
+                  className="shrink-0 rounded-lg border border-orange-300 bg-white px-2.5 py-1 text-xs font-medium text-orange-700 hover:bg-orange-100 disabled:opacity-50"
+                >
+                  Accept — mark BLOCKED
+                </button>
               </div>
             )}
             {/* F-14: one button per active status def; shortcut = first letter

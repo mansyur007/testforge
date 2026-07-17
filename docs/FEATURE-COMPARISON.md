@@ -386,8 +386,8 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
       mapping kolom tersimpan. Lihat F-30.
 - [x] *(Selesai 2026-07-17)* **Todos / antrian kerja personal** — halaman "assigned to me" lintas
       project (hasil run + case yang di-assign, + review diminta) seperti TestRail Todos. Lihat F-31.
-- [ ] **Case dependencies** — tandai case yang bergantung case lain; run mengurutkan dan
-      auto-BLOCK dependen saat prasyarat gagal.
+- [x] *(Selesai 2026-07-17)* **Case dependencies** — tandai case yang bergantung case lain; run
+      menyarankan (bukan otomatis) BLOCK dependen saat prasyarat gagal. Lihat F-32.
 - [ ] **Public API v2** — cakupan penuh (milestones, members, webhooks, custom fields,
       attachments), token per-project, rate limit per key.
 - [ ] **LDAP/Active Directory** untuk self-hosted enterprise (paritas fitur TestLink/Kiwi).

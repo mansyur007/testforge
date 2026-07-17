@@ -45,6 +45,7 @@ export const MODEL_ORDER = [
   "CustomFieldDef",
   "ResultStatusDef",
   "TestCase",
+  "CaseDependency",
   "TestCaseRevision",
   "SuiteBaseline",
   "BaselineEntry",

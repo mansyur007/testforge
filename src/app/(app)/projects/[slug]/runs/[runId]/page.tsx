@@ -9,6 +9,7 @@ import { parseDatasets, substituteVars } from "@/lib/datasets";
 import { bucketStatus, isMuted } from "@/lib/mute";
 import { loadIssueLinks } from "@/lib/issues";
 import { loadDefectLinks, defectDisplayId } from "@/lib/defects";
+import { computeBlockedSuggestions } from "@/lib/case-dependencies";
 import type { CaseSnapshot } from "@/lib/case-revisions";
 import { computeRunEstimates, projectMedianEstimate } from "@/lib/estimates";
 import { formatDuration, formatRemaining } from "@/lib/duration";
@@ -102,6 +103,10 @@ export default async function RunDetailPage({
     select: { id: true, seq: true, title: true },
     orderBy: { seq: "desc" },
   });
+
+  // F-32: a dependent whose prerequisite is FAILED/BLOCKED in this run gets
+  // a one-click BLOCKED suggestion — never applied automatically.
+  const blockedSuggestions = await computeBlockedSuggestions(run.projectId, run.id);
 
   // F-03: RESULT custom fields rendered in the executor's submit panel.
   const resultDefs = await db.customFieldDef.findMany({
@@ -366,6 +371,12 @@ export default async function RunDetailPage({
             title: l.defect.title,
             status: l.defect.status,
           })),
+          blockedSuggestion: (() => {
+            const s = blockedSuggestions.get(r.id);
+            return s
+              ? { prereqDisplayId: caseDisplayId(run.project.slug, s.prereqSeq), prereqTitle: s.prereqTitle }
+              : null;
+          })(),
           };
         })}
       />

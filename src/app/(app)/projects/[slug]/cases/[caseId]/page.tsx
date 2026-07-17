@@ -15,6 +15,8 @@ import { badgeStyle, statusMeta } from "@/lib/result-statuses";
 import { expandSteps, isGherkinCaseSteps, loadStepGroups } from "@/lib/steps";
 import { GherkinBlock } from "@/components/GherkinBlock";
 import { loadIssueLinks } from "@/lib/issues";
+import { loadPrerequisites, loadDependents } from "@/lib/case-dependencies";
+import { CaseDependencies } from "@/components/CaseDependencies";
 import { serializeRevision } from "@/lib/case-revisions";
 import { cloneCase } from "@/app/actions/cases";
 import { ProjectTabs } from "@/components/ProjectTabs";
@@ -150,6 +152,21 @@ export default async function CaseDetailPage({
     (await db.integration.count({
       where: { projectId: testCase.projectId, active: true },
     })) > 0;
+
+  // F-32: prerequisites/dependents + candidates for the "add prerequisite"
+  // picker (live cases in the project, minus self and existing prerequisites).
+  const [prerequisites, dependents] = await Promise.all([
+    loadPrerequisites(testCase.id),
+    loadDependents(testCase.id),
+  ]);
+  const excludeIds = new Set([testCase.id, ...prerequisites.map((p) => p.case.id)]);
+  const dependencyCandidates = (
+    await db.testCase.findMany({
+      where: { projectId: testCase.projectId, deletedAt: null, id: { notIn: Array.from(excludeIds) } },
+      select: { id: true, seq: true, title: true },
+      orderBy: { seq: "asc" },
+    })
+  ).map((c) => ({ id: c.id, displayId: caseDisplayId(testCase.project.slug, c.seq), title: c.title }));
 
   // F-04: shared references render expanded, tagged with their group title.
   const rawSteps: TestStep[] = JSON.parse(testCase.stepsJson || "[]");
@@ -444,6 +461,34 @@ export default async function CaseDetailPage({
               </div>
             </section>
           )}
+
+          <section className="rounded-xl border border-slate-200 bg-white p-6" data-testid="case-dependencies-panel">
+            <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
+              Dependencies
+            </h3>
+            <CaseDependencies
+              projectSlug={testCase.project.slug}
+              caseId={testCase.id}
+              prerequisites={prerequisites.map((p) => ({
+                linkId: p.linkId,
+                case: {
+                  id: p.case.id,
+                  displayId: caseDisplayId(testCase.project.slug, p.case.seq),
+                  title: p.case.title,
+                },
+              }))}
+              dependents={dependents.map((d) => ({
+                linkId: d.linkId,
+                case: {
+                  id: d.case.id,
+                  displayId: caseDisplayId(testCase.project.slug, d.case.seq),
+                  title: d.case.title,
+                },
+              }))}
+              candidates={dependencyCandidates}
+              canWrite={canWrite}
+            />
+          </section>
 
           {/* F-07: tracker-backed issue links. Only rendered once a tracker is
               connected (or links already exist) — otherwise the plain-URL
