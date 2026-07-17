@@ -1737,7 +1737,14 @@ and the bad-nonce rejection. Reuses `TF_ALLOW_INSECURE_INTEGRATION_URL`-style en
 Scoped briefs — expand into full work orders when picked up. **Exception:** F-35 and F-36
 are already full work orders (Fable 5 design handoff, 2026-07-13 — see also appendix §7).
 
-### F-25 — Exploratory / session-based testing `[ ]`
+### F-25 — Exploratory / session-based testing `[x]`
+
+> **Status: DONE** (2026-07-17, branch `feat/exploratory-sessions`, Sonnet 5). Session is
+> single-player (only the tester who started it may add notes / end it / convert its notes,
+> mirroring run execution); any project member may read it. Convert-to-issue only renders when
+> an active F-07 integration exists (mirrors IssuePanel's "stay out of the way" rule) — no
+> silent failure, the button just doesn't appear.
+
 `Session { projectId, charter, timeboxMinutes, status, startedAt, endedAt, testerId }` +
 `SessionNote { sessionId, at, kind: NOTE|BUG|QUESTION|IDEA, bodyMd }`. Live session page with a
 running timer, quick-add note hotkeys (N/B/Q/I), attachments per note (F-01), end-of-session

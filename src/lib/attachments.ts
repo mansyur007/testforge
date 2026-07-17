@@ -14,7 +14,12 @@ export const INLINE_IMAGE_MIMES = [
   "image/webp",
 ];
 
-export const ATTACHMENT_ENTITY_TYPES = ["CASE", "RESULT", "COMMENT"] as const;
+export const ATTACHMENT_ENTITY_TYPES = [
+  "CASE",
+  "RESULT",
+  "COMMENT",
+  "SESSION_NOTE",
+] as const;
 
 export function maxUploadBytes(): number {
   const mb = parseInt(process.env.TF_MAX_UPLOAD_MB ?? "10", 10);

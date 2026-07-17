@@ -38,6 +38,7 @@ export function openApiSpec() {
       { name: "Custom Fields" },
       { name: "Issues" },
       { name: "Plans" },
+      { name: "Sessions" },
     ],
     paths: {
       "/projects/{slug}/cases": {
@@ -1254,6 +1255,171 @@ export function openApiSpec() {
           },
         },
       },
+      "/projects/{slug}/sessions": {
+        get: {
+          tags: ["Sessions"],
+          summary: "List exploratory sessions (F-25)",
+          parameters: [
+            slugParam,
+            { name: "status", in: "query", schema: { type: "string", enum: ["ACTIVE", "ENDED"] } },
+            { name: "cursor", in: "query", schema: { type: "string" } },
+            { name: "limit", in: "query", schema: { type: "integer", default: 50, maximum: 200 } },
+          ],
+          responses: {
+            "200": {
+              description: "OK.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      items: { type: "array", items: { $ref: "#/components/schemas/Session" } },
+                      nextCursor: { type: ["string", "null"] },
+                    },
+                  },
+                },
+              },
+            },
+            "404": err("Project not found."),
+          },
+        },
+        post: {
+          tags: ["Sessions"],
+          summary: "Start a session",
+          parameters: [slugParam],
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["charter"],
+                  properties: {
+                    charter: { type: "string", example: "Explore checkout on mobile Safari" },
+                    timeboxMinutes: { type: "integer", default: 30, minimum: 5, maximum: 240 },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "201": {
+              description: "Created.",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/Session" } } },
+            },
+            "403": err("API key is read-only, or lacks run.execute."),
+            "404": err("Project not found."),
+            "422": err("Validation failed."),
+          },
+        },
+      },
+      "/projects/{slug}/sessions/{id}": {
+        get: {
+          tags: ["Sessions"],
+          summary: "Get a session with its notes",
+          parameters: [
+            slugParam,
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "OK.",
+              content: {
+                "application/json": {
+                  schema: {
+                    allOf: [
+                      { $ref: "#/components/schemas/Session" },
+                      {
+                        type: "object",
+                        properties: {
+                          notes: { type: "array", items: { $ref: "#/components/schemas/SessionNote" } },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            "404": err("Session not found."),
+          },
+        },
+      },
+      "/projects/{slug}/sessions/{id}/notes": {
+        get: {
+          tags: ["Sessions"],
+          summary: "List a session's notes",
+          parameters: [
+            slugParam,
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "OK.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      items: { type: "array", items: { $ref: "#/components/schemas/SessionNote" } },
+                    },
+                  },
+                },
+              },
+            },
+            "404": err("Session not found."),
+          },
+        },
+        post: {
+          tags: ["Sessions"],
+          summary: "Add a note (NOTE / BUG / QUESTION / IDEA)",
+          description:
+            "Only the tester who started the session may add notes, and only while it is ACTIVE.",
+          parameters: [
+            slugParam,
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+          ],
+          requestBody: {
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["kind", "bodyMd"],
+                  properties: {
+                    kind: { type: "string", enum: ["NOTE", "BUG", "QUESTION", "IDEA"] },
+                    bodyMd: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "201": {
+              description: "Created.",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/SessionNote" } } },
+            },
+            "403": err("Not the session's tester, or the session already ended."),
+            "404": err("Session not found."),
+            "422": err("Validation failed."),
+          },
+        },
+      },
+      "/projects/{slug}/sessions/{id}/end": {
+        post: {
+          tags: ["Sessions"],
+          summary: "End a session",
+          parameters: [
+            slugParam,
+            { name: "id", in: "path", required: true, schema: { type: "string" } },
+          ],
+          responses: {
+            "200": {
+              description: "OK.",
+              content: { "application/json": { schema: { $ref: "#/components/schemas/Session" } } },
+            },
+            "403": err("Not the session's tester, or it already ended."),
+            "404": err("Session not found."),
+          },
+        },
+      },
     },
     components: {
       securitySchemes: {
@@ -1458,6 +1624,39 @@ export function openApiSpec() {
             url: { type: ["string", "null"] },
             order: { type: "integer" },
             active: { type: "boolean" },
+          },
+        },
+        Session: {
+          type: "object",
+          description: "F-25: a timeboxed exploratory testing session.",
+          properties: {
+            id: { type: "string" },
+            charter: { type: "string" },
+            timeboxMinutes: { type: "integer" },
+            status: { type: "string", enum: ["ACTIVE", "ENDED"] },
+            testerId: { type: "string" },
+            startedAt: { type: "string", format: "date-time" },
+            endedAt: { type: ["string", "null"], format: "date-time" },
+          },
+        },
+        SessionNote: {
+          type: "object",
+          description: "F-25: a timestamped note dropped during a session.",
+          properties: {
+            id: { type: "string" },
+            sessionId: { type: "string" },
+            kind: { type: "string", enum: ["NOTE", "BUG", "QUESTION", "IDEA"] },
+            bodyMd: { type: "string" },
+            convertedType: {
+              type: ["string", "null"],
+              enum: ["CASE", "ISSUE", null],
+              description: "Set once an IDEA note becomes a draft case or a BUG note is filed as an issue.",
+            },
+            convertedId: {
+              type: ["string", "null"],
+              description: "The created case id, or the filed issue key.",
+            },
+            createdAt: { type: "string", format: "date-time" },
           },
         },
         Result: {

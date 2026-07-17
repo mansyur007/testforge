@@ -355,6 +355,30 @@ async function main() {
     data: { projectId: project.id, token: "demo-badge-token" },
   });
 
+  // F-25: an ended exploratory session with one note of each kind, so the
+  // Sessions tab shows a populated summary out of the box.
+  await db.session.create({
+    data: {
+      projectId: project.id,
+      charter: "Explore checkout on mobile Safari",
+      timeboxMinutes: 30,
+      status: "ENDED",
+      testerId: admin.id,
+      endedAt: new Date(),
+      notes: {
+        create: [
+          { kind: "NOTE", bodyMd: "Checkout loads fine on iPhone 14 / Safari 17." },
+          {
+            kind: "BUG",
+            bodyMd: "Promo code field overlaps the Apply button below 375px width.",
+          },
+          { kind: "QUESTION", bodyMd: "Is guest checkout supposed to skip address validation?" },
+          { kind: "IDEA", bodyMd: "Add a case for applying two promo codes in the same order." },
+        ],
+      },
+    },
+  });
+
   console.log("Seed selesai: admin@testforge.local / admin12345");
 }
 

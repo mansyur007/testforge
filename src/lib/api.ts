@@ -1,5 +1,7 @@
 import type {
   Attachment,
+  Session,
+  SessionNote,
   TestCase,
   TestRun,
   TestRunResult,
@@ -188,6 +190,31 @@ export function serializeAttachment(a: Attachment) {
     uploaderId: a.uploaderId,
     url: `/api/attachments/${a.id}`,
     createdAt: a.createdAt.toISOString(),
+  };
+}
+
+// F-25: exploratory testing sessions & their timestamped notes.
+export function serializeSession(s: Session) {
+  return {
+    id: s.id,
+    charter: s.charter,
+    timeboxMinutes: s.timeboxMinutes,
+    status: s.status,
+    testerId: s.testerId,
+    startedAt: s.startedAt.toISOString(),
+    endedAt: s.endedAt ? s.endedAt.toISOString() : null,
+  };
+}
+
+export function serializeSessionNote(n: SessionNote) {
+  return {
+    id: n.id,
+    sessionId: n.sessionId,
+    kind: n.kind,
+    bodyMd: n.bodyMd,
+    convertedType: n.convertedType,
+    convertedId: n.convertedId,
+    createdAt: n.createdAt.toISOString(),
   };
 }
 

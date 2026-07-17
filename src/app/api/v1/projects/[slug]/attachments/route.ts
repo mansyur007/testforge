@@ -77,7 +77,7 @@ export async function POST(
 
   if (!(file instanceof File)) return badRequest("Missing `file` field");
   if (!(ATTACHMENT_ENTITY_TYPES as readonly string[]).includes(entityType))
-    return badRequest("entityType must be CASE or RESULT");
+    return badRequest("entityType must be CASE, RESULT, or SESSION_NOTE");
   if (!entityId) return badRequest("Missing `entityId` field");
 
   const limit = maxUploadBytes();
@@ -95,12 +95,17 @@ export async function POST(
           where: { id: entityId, projectId: project.id, deletedAt: null },
           select: { id: true },
         })
+      : entityType === "SESSION_NOTE"
+      ? await db.sessionNote.findFirst({
+          where: { id: entityId, session: { projectId: project.id } },
+          select: { id: true },
+        })
       : await db.testRunResult.findFirst({
           where: { id: entityId, run: { projectId: project.id } },
           select: { id: true },
         });
   if (!owned) return notFoundError(`${entityType} not found in this project`);
-  // F-14: case evidence needs case.write; result evidence follows run.execute.
+  // F-14: case evidence needs case.write; result/session evidence follows run.execute.
   const denied = await requirePerm(
     g.userId,
     project.id,

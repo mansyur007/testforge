@@ -22,7 +22,7 @@ type ActionResult = { error?: string; ok?: boolean; url?: string };
 
 /** The project's active integration for `provider`, or the only one if the
  * caller didn't name a provider. Also enforces tenant access. */
-async function resolveIntegration(userId: string, projectId: string, provider?: string) {
+export async function resolveIntegration(userId: string, projectId: string, provider?: string) {
   const member = await db.project.findFirst({
     where: { id: projectId, members: { some: { userId } } },
     select: { id: true, slug: true },

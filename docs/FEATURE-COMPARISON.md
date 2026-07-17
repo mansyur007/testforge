@@ -371,8 +371,9 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
 
 ### P3 — Nice-to-have / segmen khusus
 
-- [ ] **Exploratory / session-based testing** — entity Session (charter, timebox, catatan
-      bertimestamp, attachment) yang menghasilkan bug/case baru (pelajaran Test IO/Testmo).
+- [x] *(Selesai 2026-07-17)* **Exploratory / session-based testing** — entity Session (charter,
+      timebox, catatan bertimestamp, attachment) yang menghasilkan bug/case baru (pelajaran
+      Test IO/Testmo). Lihat F-25.
 - [ ] **Defect entity bawaan** — daftar defect internal untuk tim tanpa issue tracker
       (seperti Qase), tetap bisa dilink ke tracker eksternal.
 - [ ] **BDD/Gherkin** — template case Gherkin, import/export `.feature`, sinkron dengan

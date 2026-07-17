@@ -14,6 +14,7 @@ export function ProjectTabs({
     | "reports"
     | "dashboards"
     | "requirements"
+    | "sessions"
     | "import"
     | "fields"
     | "api"
@@ -35,6 +36,11 @@ export function ProjectTabs({
       key: "requirements",
       label: "Requirements",
       href: `/projects/${slug}/requirements`,
+    },
+    {
+      key: "sessions",
+      label: "Sessions",
+      href: `/projects/${slug}/sessions`,
     },
     { key: "import", label: "Import", href: `/projects/${slug}/import` },
     { key: "fields", label: "Fields", href: `/projects/${slug}/fields` },

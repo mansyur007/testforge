@@ -29,7 +29,7 @@ export function AttachmentUploader({
   initial,
 }: {
   projectSlug: string;
-  entityType: "CASE" | "RESULT";
+  entityType: "CASE" | "RESULT" | "SESSION_NOTE";
   entityId: string;
   canWrite: boolean;
   maxMb: number;

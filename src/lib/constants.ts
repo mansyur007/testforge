@@ -94,6 +94,22 @@ export function caseDisplayId(projectSlug: string, seq: number) {
   return `TC-${projectSlug.toUpperCase()}-${String(seq).padStart(3, "0")}`;
 }
 
+// F-25: exploratory session note kinds, with their quick-add hotkey letter.
+export const SESSION_NOTE_KINDS = ["NOTE", "BUG", "QUESTION", "IDEA"] as const;
+export type SessionNoteKind = (typeof SESSION_NOTE_KINDS)[number];
+export const SESSION_NOTE_HOTKEYS: Record<string, SessionNoteKind> = {
+  n: "NOTE",
+  b: "BUG",
+  q: "QUESTION",
+  i: "IDEA",
+};
+export const SESSION_NOTE_BADGES: Record<SessionNoteKind, string> = {
+  NOTE: "bg-slate-100 text-slate-600",
+  BUG: "bg-red-100 text-red-800",
+  QUESTION: "bg-amber-100 text-amber-800",
+  IDEA: "bg-indigo-100 text-indigo-700",
+};
+
 export function parseTags(tags: string): string[] {
   return tags
     .split(",")
