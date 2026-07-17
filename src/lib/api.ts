@@ -4,6 +4,8 @@ import type {
   DefectLink,
   Session,
   SessionNote,
+  SuiteBaseline,
+  BaselineEntry,
   TestCase,
   TestRun,
   TestRunResult,
@@ -220,6 +222,27 @@ export function serializeDefectLink(l: DefectLink) {
     entityType: l.entityType,
     entityId: l.entityId,
     createdAt: l.createdAt.toISOString(),
+  };
+}
+
+// F-28: suite baselines — named snapshots of a suite tree + case revisions.
+export function serializeBaseline(b: SuiteBaseline, entryCount?: number) {
+  return {
+    id: b.id,
+    name: b.name,
+    suiteId: b.suiteId,
+    createdById: b.createdById,
+    createdAt: b.createdAt.toISOString(),
+    ...(entryCount !== undefined ? { entryCount } : {}),
+  };
+}
+
+export function serializeBaselineEntry(e: BaselineEntry) {
+  return {
+    id: e.id,
+    caseId: e.caseId,
+    caseRev: e.caseRev,
+    suitePath: e.suitePath,
   };
 }
 

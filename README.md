@@ -119,6 +119,11 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   import/export `.feature` files (one `Scenario:` per case, tags → tags,
   Feature name → suite), and Cucumber JSON results match by scenario name
   like any other case (F-27)
+- **Suite baselines** — snapshot a suite tree (case content + F-05 revision)
+  as a named baseline to test an older release in parallel with current
+  work; "compare to current" flags what changed, moved, or was deleted; a
+  run created "from baseline" pins and renders each case's pinned content,
+  not today's edits (F-28)
 
 ## Running
 

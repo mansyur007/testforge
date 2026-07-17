@@ -378,8 +378,8 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
       issue tracker (seperti Qase), tetap bisa dilink ke tracker eksternal. Lihat F-26.
 - [x] *(Selesai 2026-07-17)* **BDD/Gherkin** — template case Gherkin, import/export `.feature`,
       sinkron dengan hasil Cucumber JSON. Lihat F-27.
-- [ ] **Baselines** — snapshot suite untuk mendukung beberapa versi rilis paralel
-      (konsep TestRail).
+- [x] *(Selesai 2026-07-17)* **Baselines** — snapshot suite untuk mendukung beberapa versi rilis
+      paralel (konsep TestRail). Lihat F-28.
 - [ ] **AI assist** — generate draft test case dari deskripsi fitur/PRD, saran step, dedup
       case mirip (jawaban terhadap Qase AIDEN); opsional dan bisa dimatikan di self-hosted.
 - [ ] **Export XLSX & JSON** (selain CSV), template import dengan mapping kolom tersimpan.

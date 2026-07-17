@@ -16,6 +16,7 @@ export function ProjectTabs({
     | "requirements"
     | "sessions"
     | "defects"
+    | "baselines"
     | "import"
     | "fields"
     | "api"
@@ -47,6 +48,11 @@ export function ProjectTabs({
       key: "defects",
       label: "Defects",
       href: `/projects/${slug}/defects`,
+    },
+    {
+      key: "baselines",
+      label: "Baselines",
+      href: `/projects/${slug}/baselines`,
     },
     { key: "import", label: "Import", href: `/projects/${slug}/import` },
     { key: "fields", label: "Fields", href: `/projects/${slug}/fields` },

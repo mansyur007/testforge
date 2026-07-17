@@ -240,6 +240,23 @@ async function main() {
     },
   });
 
+  // F-28: a demo baseline pinned at rev 1 — since `edited` above moved on to
+  // rev 2, "Compare to current" shows it CHANGED (title, priority) out of the box.
+  await db.suiteBaseline.create({
+    data: {
+      projectId: project.id,
+      name: "Release v1.0 baseline",
+      suiteId: authSuite.id,
+      createdById: admin.id,
+      entries: {
+        create: [
+          { caseId: created[0].id, caseRev: 1, suitePath: "Authentication > Login" },
+          { caseId: created[1].id, caseRev: 1, suitePath: "Authentication > Login" },
+        ],
+      },
+    },
+  });
+
   const milestone = await db.milestone.create({
     data: { projectId: project.id, name: "Release v1.0" },
   });

@@ -46,6 +46,8 @@ export const MODEL_ORDER = [
   "ResultStatusDef",
   "TestCase",
   "TestCaseRevision",
+  "SuiteBaseline",
+  "BaselineEntry",
   "TestPlan",
   "TestRun",
   "TestRunResult",

@@ -48,7 +48,10 @@ export function substituteVars(
  * (F-05). A case with no datasets behaves exactly as before (datasetName null).
  */
 export async function buildResultSeeds(
-  caseIds: string[]
+  caseIds: string[],
+  // F-28: a run "from baseline" pins each result's caseRev to the baseline's
+  // captured revision instead of the case's current rev.
+  revOverride?: Map<string, number>
 ): Promise<{ caseId: string; caseRev?: number; datasetName?: string }[]> {
   if (!caseIds.length) return [];
   const cases = await db.testCase.findMany({
@@ -60,12 +63,13 @@ export async function buildResultSeeds(
   for (const caseId of caseIds) {
     const c = byId.get(caseId);
     if (!c) continue;
+    const rev = revOverride?.get(caseId) ?? c.rev;
     const datasets = parseDatasets(c.datasetJson);
     if (datasets.length === 0) {
-      seeds.push({ caseId, caseRev: c.rev });
+      seeds.push({ caseId, caseRev: rev });
     } else {
       for (const d of datasets) {
-        seeds.push({ caseId, caseRev: c.rev, datasetName: d.name });
+        seeds.push({ caseId, caseRev: rev, datasetName: d.name });
       }
     }
   }
