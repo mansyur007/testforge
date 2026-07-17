@@ -12,7 +12,8 @@ import {
 } from "@/lib/constants";
 import { loadStatusDefs } from "@/lib/result-status-defs";
 import { badgeStyle, statusMeta } from "@/lib/result-statuses";
-import { expandSteps, loadStepGroups } from "@/lib/steps";
+import { expandSteps, isGherkinCaseSteps, loadStepGroups } from "@/lib/steps";
+import { GherkinBlock } from "@/components/GherkinBlock";
 import { loadIssueLinks } from "@/lib/issues";
 import { serializeRevision } from "@/lib/case-revisions";
 import { cloneCase } from "@/app/actions/cases";
@@ -152,6 +153,7 @@ export default async function CaseDetailPage({
 
   // F-04: shared references render expanded, tagged with their group title.
   const rawSteps: TestStep[] = JSON.parse(testCase.stepsJson || "[]");
+  const isGherkin = isGherkinCaseSteps(rawSteps); // F-27
   const steps = expandSteps(rawSteps, await loadStepGroups(testCase.projectId));
   const displayId = caseDisplayId(testCase.project.slug, testCase.seq);
   // Back link returns to the cases list, scoped to this case's suite if it has one.
@@ -293,42 +295,48 @@ export default async function CaseDetailPage({
           )}
           <section className="rounded-xl border border-slate-200 bg-white p-6">
             <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
-              Steps to Reproduce
+              {isGherkin ? "Scenario (Gherkin)" : "Steps to Reproduce"}
             </h3>
-            {steps.length === 0 && (
-              <p className="text-sm text-slate-400">No steps yet.</p>
+            {isGherkin ? (
+              <GherkinBlock text={rawSteps[0].gherkin} />
+            ) : (
+              <>
+                {steps.length === 0 && (
+                  <p className="text-sm text-slate-400">No steps yet.</p>
+                )}
+                <ol className="space-y-3">
+                  {steps.map((step, i) => (
+                    <li key={i} className="flex gap-3 text-sm">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">
+                        {i + 1}
+                      </span>
+                      <div className="grid flex-1 gap-2 md:grid-cols-2">
+                        <div className="min-w-0">
+                          {step.fromShared && (
+                            <span
+                              className="mr-1.5 rounded bg-indigo-50 px-1.5 py-0.5 align-middle text-[10px] font-medium text-indigo-600"
+                              title={`From shared steps: ${step.fromShared.title}`}
+                              data-testid="shared-step-badge"
+                            >
+                              ⛓ {step.fromShared.title}
+                            </span>
+                          )}
+                          <Markdown>{step.action}</Markdown>
+                        </div>
+                        <div className="flex gap-1 text-slate-500">
+                          {step.expected && (
+                            <>
+                              <span>↳</span>
+                              <Markdown className="text-slate-500">{step.expected}</Markdown>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </>
             )}
-            <ol className="space-y-3">
-              {steps.map((step, i) => (
-                <li key={i} className="flex gap-3 text-sm">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">
-                    {i + 1}
-                  </span>
-                  <div className="grid flex-1 gap-2 md:grid-cols-2">
-                    <div className="min-w-0">
-                      {step.fromShared && (
-                        <span
-                          className="mr-1.5 rounded bg-indigo-50 px-1.5 py-0.5 align-middle text-[10px] font-medium text-indigo-600"
-                          title={`From shared steps: ${step.fromShared.title}`}
-                          data-testid="shared-step-badge"
-                        >
-                          ⛓ {step.fromShared.title}
-                        </span>
-                      )}
-                      <Markdown>{step.action}</Markdown>
-                    </div>
-                    <div className="flex gap-1 text-slate-500">
-                      {step.expected && (
-                        <>
-                          <span>↳</span>
-                          <Markdown className="text-slate-500">{step.expected}</Markdown>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ol>
             {testCase.expectedResult && (
               <div className="mt-4 rounded-lg bg-green-50 p-3 text-sm">
                 <span className="font-medium text-green-800">Expected Result:</span>

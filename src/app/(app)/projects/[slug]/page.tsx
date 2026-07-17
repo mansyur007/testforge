@@ -244,6 +244,14 @@ export default async function ProjectPage({
             >
               <span className="inline-flex items-center gap-1.5"><TFIcon name="download" className="h-4 w-4" /> Export CSV</span>
             </a>
+            <a
+              href={`/api/export/gherkin?project=${project.slug}`}
+              data-testid="export-gherkin-link"
+              className="rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
+              title="Export every Gherkin-format case as a .feature file"
+            >
+              <span className="inline-flex items-center gap-1.5"><TFIcon name="download" className="h-4 w-4" /> Export .feature</span>
+            </a>
             <Link
               href={`/projects/${project.slug}/import`}
               className="rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"

@@ -18,8 +18,10 @@ import {
   type InlineStep,
   type TestStep,
 } from "@/lib/constants";
+import { isGherkinCaseSteps } from "@/lib/steps";
 import { extractVars, type Dataset } from "@/lib/datasets";
 import { formatDuration } from "@/lib/duration";
+import { GherkinBlock } from "@/components/GherkinBlock";
 
 // F-04: shared step groups offered by the "Insert shared steps" picker.
 export type SharedGroupOption = {
@@ -91,15 +93,28 @@ export function CaseForm({
     undefined
   );
   const [steps, setSteps] = useState<TestStep[]>(
-    initial?.steps?.length ? initial.steps : [{ action: "", expected: "" }]
+    initial?.steps?.length && !isGherkinCaseSteps(initial.steps)
+      ? initial.steps
+      : [{ action: "", expected: "" }]
+  );
+  // F-27: a Gherkin case's whole scenario is one textarea, not the dynamic
+  // step-row editor — format is derived from the case's stored steps once.
+  const [format, setFormat] = useState<"STEPS" | "GHERKIN">(
+    isGherkinCaseSteps(initial?.steps) ? "GHERKIN" : "STEPS"
+  );
+  const [gherkinText, setGherkinText] = useState(
+    isGherkinCaseSteps(initial?.steps) ? initial.steps[0].gherkin : ""
   );
   // F-13: parameters/datasets — {{var}} tokens in step text become columns;
   // "extraVars" lets a user add a column for a var used elsewhere (e.g. title).
   const [datasets, setDatasets] = useState<Dataset[]>(initial?.datasets ?? []);
   const [extraVars, setExtraVars] = useState<string[]>([]);
-  const discoveredVars = steps
-    .filter((s): s is InlineStep => !isSharedRef(s))
-    .flatMap((s) => extractVars(s.action, s.expected));
+  const discoveredVars =
+    format === "GHERKIN"
+      ? extractVars(gherkinText, "")
+      : steps
+          .filter((s): s is InlineStep => !isSharedRef(s))
+          .flatMap((s) => extractVars(s.action, s.expected));
   const vars = Array.from(new Set([...discoveredVars, ...extraVars]));
 
   const setStep = (i: number, key: keyof InlineStep, value: string) => {
@@ -136,9 +151,11 @@ export function CaseForm({
       <input
         type="hidden"
         name="stepsJson"
-        value={JSON.stringify(
-          steps.filter((s) => isSharedRef(s) || s.action.trim())
-        )}
+        value={
+          format === "GHERKIN"
+            ? JSON.stringify([{ gherkin: gherkinText }])
+            : JSON.stringify(steps.filter((s) => isSharedRef(s) || s.action.trim()))
+        }
       />
       <input
         type="hidden"
@@ -298,9 +315,51 @@ export function CaseForm({
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-6">
-        <h3 className="mb-4 font-semibold">
-          Steps to Reproduce <span className="text-red-500">*</span>
-        </h3>
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="font-semibold">
+            Steps to Reproduce <span className="text-red-500">*</span>
+          </h3>
+          {/* F-27: Gherkin cases store one raw scenario body instead of rows. */}
+          <div className="flex rounded-lg border border-slate-300 p-0.5 text-xs">
+            <button
+              type="button"
+              data-testid="case-format-steps"
+              onClick={() => setFormat("STEPS")}
+              className={`rounded px-2.5 py-1 font-medium ${format === "STEPS" ? "bg-indigo-600 text-white" : "text-slate-500 hover:bg-slate-100"}`}
+            >
+              Steps
+            </button>
+            <button
+              type="button"
+              data-testid="case-format-gherkin"
+              onClick={() => setFormat("GHERKIN")}
+              className={`rounded px-2.5 py-1 font-medium ${format === "GHERKIN" ? "bg-indigo-600 text-white" : "text-slate-500 hover:bg-slate-100"}`}
+            >
+              Gherkin (BDD)
+            </button>
+          </div>
+        </div>
+        {format === "GHERKIN" ? (
+          <div className="grid gap-3 md:grid-cols-2">
+            <textarea
+              rows={12}
+              value={gherkinText}
+              onChange={(e) => setGherkinText(e.target.value)}
+              placeholder={"Feature: ...\n\n  Scenario: ...\n    Given ...\n    When ...\n    Then ..."}
+              data-testid="case-gherkin-input"
+              className={`${inputCls} font-mono text-xs`}
+            />
+            <div>
+              <p className="mb-1 text-xs font-medium text-slate-500">Preview</p>
+              {gherkinText.trim() ? (
+                <GherkinBlock text={gherkinText} />
+              ) : (
+                <p className="text-xs text-slate-400">Nothing to preview yet.</p>
+              )}
+            </div>
+          </div>
+        ) : (
+        <>
         <div className="space-y-3">
           {steps.map((step, i) =>
             isSharedRef(step) ? (
@@ -400,6 +459,8 @@ export function CaseForm({
             </select>
           )}
         </div>
+        </>
+        )}
         <div className="mt-4">
           <label className={labelCls}>Overall Expected Result (Markdown supported)</label>
           <MarkdownEditor

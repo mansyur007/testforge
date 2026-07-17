@@ -4,6 +4,9 @@
 export { toArray } from "@/lib/result-parsers/types";
 
 export type ImportedStep = { action: string; expected: string };
+// F-27: a Gherkin case stores its whole scenario body as one raw-text step,
+// same shape TestCase.stepsJson uses ([{gherkin: "..."}]) — see lib/gherkin.ts.
+export type ImportedGherkinStep = { gherkin: string };
 
 export type ImportedCase = {
   suitePath: string[]; // e.g. ["Auth", "Login"] — [] = project root
@@ -11,7 +14,7 @@ export type ImportedCase = {
   description?: string;
   preconditions?: string;
   expectedResult?: string;
-  steps: ImportedStep[];
+  steps: ImportedStep[] | ImportedGherkinStep[];
   priority: string; // already mapped to a PRIORITIES value
   type: string; // already mapped to a CASE_TYPES value
   tags: string; // comma-separated

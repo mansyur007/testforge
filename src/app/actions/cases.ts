@@ -10,7 +10,7 @@ import { recordRevision, type CaseSnapshot } from "@/lib/case-revisions";
 import { dispatchWebhook } from "@/lib/webhooks";
 import { notify, notifyBaseUrl } from "@/lib/notifications";
 import { serializeCase } from "@/lib/api";
-import { expandSteps, loadStepGroups } from "@/lib/steps";
+import { expandSteps, isGherkinCaseSteps, loadStepGroups } from "@/lib/steps";
 import { saveAttachment } from "@/lib/attachments";
 import { getStorage } from "@/lib/storage";
 import type { TestStep } from "@/lib/constants";
@@ -445,8 +445,12 @@ export async function restoreRevision(
       title: snapshot.title,
       description: snapshot.description,
       preconditions: snapshot.preconditions,
+      // F-27: a Gherkin snapshot's single step carries `gherkin` — restore it
+      // as the raw scenario, not a flattened inline step.
       stepsJson: JSON.stringify(
-        snapshot.steps.map((s) => ({ action: s.action, expected: s.expected }))
+        isGherkinCaseSteps(snapshot.steps)
+          ? [{ gherkin: snapshot.steps[0].gherkin }]
+          : snapshot.steps.map((s) => ({ action: s.action, expected: s.expected }))
       ),
       expectedResult: snapshot.expectedResult,
       priority: snapshot.priority,
@@ -618,9 +622,12 @@ export async function copyCasesToProject(
   let copiedCount = 0;
 
   for (const original of originals) {
-    const flattened = expandSteps(JSON.parse(original.stepsJson || "[]"), groups).map(
-      (s) => ({ action: s.action, expected: s.expected })
-    );
+    const expanded = expandSteps(JSON.parse(original.stepsJson || "[]"), groups);
+    // F-27: preserve a Gherkin case's raw scenario instead of flattening it
+    // into a single inline step (which would silently strip its format).
+    const flattened = isGherkinCaseSteps(expanded)
+      ? [{ gherkin: expanded[0].gherkin }]
+      : expanded.map((s) => ({ action: s.action, expected: s.expected }));
 
     const targetProject = await db.project.update({
       where: { id: targetProjectId },
