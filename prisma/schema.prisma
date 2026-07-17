@@ -48,6 +48,7 @@ model User {
   reportSchedules ReportSchedule[]  @relation("ReportScheduleCreator")
   requirements    Requirement[]     @relation("RequirementCreator")
   recoveryCodes   TwoFactorRecoveryCode[]
+  sessions        Session[]         @relation("SessionTester")
 }
 
 // F-20: single-use TOTP recovery codes. codeHash is the sha256 hex of the raw
@@ -99,6 +100,45 @@ model Project {
   reportSchedules ReportSchedule[]
   requirements Requirement[]
   badgeToken   BadgeToken?
+  sessions     Session[]
+}
+
+// F-25: exploratory / session-based testing. A tester runs a timeboxed
+// session against a charter and drops timestamped notes as they go; BUG and
+// IDEA notes can later convert into a filed issue (F-07) or a draft case.
+// Only the tester may add notes / end their own session (single-player,
+// like a run executor); everyone in the project can read it.
+model Session {
+  id             String    @id @default(cuid())
+  projectId      String
+  charter        String
+  timeboxMinutes Int       @default(30)
+  status         String    @default("ACTIVE") // ACTIVE | ENDED
+  testerId       String
+  startedAt      DateTime  @default(now())
+  endedAt        DateTime?
+
+  project Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tester  User          @relation("SessionTester", fields: [testerId], references: [id])
+  notes   SessionNote[]
+
+  @@index([projectId, status])
+}
+
+// kind: NOTE | BUG | QUESTION | IDEA. convertedType/convertedId record what a
+// BUG ("ISSUE") or IDEA ("CASE") note turned into; null = not converted yet.
+model SessionNote {
+  id            String   @id @default(cuid())
+  sessionId     String
+  kind          String
+  bodyMd        String
+  convertedType String?
+  convertedId   String?
+  createdAt     DateTime @default(now())
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
 }
 
 // F-18: requirements & traceability. A requirement is COVERED when it has at
@@ -236,7 +276,7 @@ model Attachment {
   id         String   @id @default(cuid())
   projectId  String
   uploaderId String
-  entityType String   // "CASE" | "RESULT" (extensible: COMMENT, SESSION, ...)
+  entityType String   // "CASE" | "RESULT" | "SESSION_NOTE" (extensible: COMMENT, ...)
   entityId   String
   filename   String   // original name, sanitized
   mimeType   String

@@ -106,6 +106,10 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 - **Scheduled reports** — email a KPI summary (pass rate, executions, top
   failures, link to the full report) daily or weekly to a list of recipients;
   managed under Notifications, sent by the `/api/cron/send-reports` job
+- **Exploratory / session-based testing** — run a timeboxed session against a
+  charter with a live timer and quick-add notes (`N`/`B`/`Q`/`I` hotkeys for
+  Note/Bug/Question/Idea, attachments per note); convert an Idea into a draft
+  case or file a Bug straight to your connected issue tracker (F-25)
 
 ## Running
 

@@ -51,6 +51,8 @@ export const MODEL_ORDER = [
   "TestRunResult",
   "Comment",
   "Attachment",
+  "Session",
+  "SessionNote",
   "SavedView",
   "Dashboard",
   "DashboardWidget",
