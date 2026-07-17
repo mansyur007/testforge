@@ -53,6 +53,8 @@ export const MODEL_ORDER = [
   "Attachment",
   "Session",
   "SessionNote",
+  "Defect",
+  "DefectLink",
   "SavedView",
   "Dashboard",
   "DashboardWidget",

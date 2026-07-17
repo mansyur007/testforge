@@ -379,6 +379,30 @@ async function main() {
     },
   });
 
+  // F-26: a couple of demo defects so the board isn't empty out of the box.
+  await db.project.update({ where: { id: project.id }, data: { defectCounter: { increment: 2 } } });
+  await db.defect.create({
+    data: {
+      projectId: project.id,
+      seq: 1,
+      title: "Lockout tidak aktif setelah 5 percobaan login gagal",
+      severity: "HIGH",
+      status: "CONFIRMED",
+      bodyMd: "Reproduksi: login gagal 5x berturut-turut, akun tetap tidak terkunci.",
+      createdById: admin.id,
+    },
+  });
+  await db.defect.create({
+    data: {
+      projectId: project.id,
+      seq: 2,
+      title: "Timeout di halaman profil saat koneksi lambat",
+      severity: "MEDIUM",
+      status: "OPEN",
+      createdById: admin.id,
+    },
+  });
+
   console.log("Seed selesai: admin@testforge.local / admin12345");
 }
 

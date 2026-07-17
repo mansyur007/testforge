@@ -22,6 +22,8 @@ export const WEBHOOK_EVENTS = [
   "case.approved",
   "case.changes_requested",
   "session.completed",
+  "defect.created",
+  "defect.status_changed",
 ] as const;
 export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number];
 

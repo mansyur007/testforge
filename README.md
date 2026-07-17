@@ -110,6 +110,10 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   charter with a live timer and quick-add notes (`N`/`B`/`Q`/`I` hotkeys for
   Note/Bug/Question/Idea, attachments per note); convert an Idea into a draft
   case or file a Bug straight to your connected issue tracker (F-25)
+- **Built-in defects** — a lightweight internal defect tracker (`DF-<SLUG>-<n>`,
+  severity, status board OPEN→CONFIRMED→FIXED/WON'T FIX→CLOSED) for teams
+  without Jira/GitHub/GitLab; link or report one straight from a failed run
+  result, no external tracker required (F-26)
 
 ## Running
 

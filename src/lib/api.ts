@@ -1,11 +1,14 @@
 import type {
   Attachment,
+  Defect,
+  DefectLink,
   Session,
   SessionNote,
   TestCase,
   TestRun,
   TestRunResult,
 } from "@prisma/client";
+import { defectDisplayId } from "@/lib/defects";
 import { NextResponse, type NextRequest } from "next/server";
 import { getSession, verifyApiKey } from "@/lib/auth";
 import { caseDisplayId } from "@/lib/constants";
@@ -190,6 +193,33 @@ export function serializeAttachment(a: Attachment) {
     uploaderId: a.uploaderId,
     url: `/api/attachments/${a.id}`,
     createdAt: a.createdAt.toISOString(),
+  };
+}
+
+// F-26: built-in defects & their links to cases/results.
+export function serializeDefect(slug: string, d: Defect) {
+  return {
+    id: d.id,
+    displayId: defectDisplayId(slug, d.seq),
+    seq: d.seq,
+    title: d.title,
+    severity: d.severity,
+    status: d.status,
+    bodyMd: d.bodyMd,
+    assigneeId: d.assigneeId,
+    createdById: d.createdById,
+    createdAt: d.createdAt.toISOString(),
+    updatedAt: d.updatedAt.toISOString(),
+  };
+}
+
+export function serializeDefectLink(l: DefectLink) {
+  return {
+    id: l.id,
+    defectId: l.defectId,
+    entityType: l.entityType,
+    entityId: l.entityId,
+    createdAt: l.createdAt.toISOString(),
   };
 }
 

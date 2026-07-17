@@ -9,6 +9,7 @@ import { expandSteps, loadStepGroups } from "@/lib/steps";
 import { parseDatasets, substituteVars } from "@/lib/datasets";
 import { bucketStatus, isMuted } from "@/lib/mute";
 import { loadIssueLinks } from "@/lib/issues";
+import { loadDefectLinks, defectDisplayId } from "@/lib/defects";
 import { computeRunEstimates, projectMedianEstimate } from "@/lib/estimates";
 import { formatDuration, formatRemaining } from "@/lib/duration";
 import { ProjectTabs } from "@/components/ProjectTabs";
@@ -71,6 +72,18 @@ export default async function RunDetailPage({
     (await db.integration.count({
       where: { projectId: run.projectId, active: true },
     })) > 0;
+
+  // F-26: built-in defects linked to each result, plus the project's open
+  // defects for the "link existing" picker.
+  const defectLinks = await loadDefectLinks(
+    "RESULT",
+    run.results.map((r) => r.id)
+  );
+  const projectDefects = await db.defect.findMany({
+    where: { projectId: run.projectId, status: { notIn: ["CLOSED", "WONT_FIX"] } },
+    select: { id: true, seq: true, title: true },
+    orderBy: { seq: "desc" },
+  });
 
   // F-03: RESULT custom fields rendered in the executor's submit panel.
   const resultDefs = await db.customFieldDef.findMany({
@@ -233,6 +246,11 @@ export default async function RunDetailPage({
         canWrite={perms.has("run.execute")} // F-14
         maxUploadMb={maxUploadMb}
         hasIntegration={hasIntegration}
+        projectDefects={projectDefects.map((d) => ({
+          id: d.id,
+          displayId: defectDisplayId(run.project.slug, d.seq),
+          title: d.title,
+        }))}
         statusDefs={statusDefs}
         customDefs={resultDefs.map((d) => ({
           key: d.key,
@@ -304,6 +322,13 @@ export default async function RunDetailPage({
             issueUrl: l.issueUrl,
             title: l.title,
             status: l.status,
+          })),
+          defectLinks: (defectLinks.get(r.id) ?? []).map((l) => ({
+            id: l.id,
+            defectId: l.defectId,
+            displayId: defectDisplayId(run.project.slug, l.defect.seq),
+            title: l.defect.title,
+            status: l.defect.status,
           })),
           };
         })}

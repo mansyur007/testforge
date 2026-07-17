@@ -1751,7 +1751,16 @@ running timer, quick-add note hotkeys (N/B/Q/I), attachments per note (F-01), en
 summary that can convert BUG notes → issues (F-07) and IDEA notes → draft cases. Lesson from
 Test IO/Testmo; almost no OSS tool has this.
 
-### F-26 — Built-in defects `[ ]`
+### F-26 — Built-in defects `[x]`
+
+> **Status: DONE** (2026-07-17, branch `feat/defects`, Sonnet 5). Board (columns by
+> `DEFECT_STATUSES`) is the primary view; each card has an inline status `<select>` (client
+> component `DefectStatusSelect`, same `useTransition`-server-action pattern as `CasesTable`'s
+> inline priority dropdown — no drag-and-drop). Linking from results: `DefectPanel` mounted in
+> `RunExecutor` next to `IssuePanel`, always visible (no external config gate, unlike F-07) with
+> "Link existing" + "Report new" inline forms. `DefectLink` is polymorphic (CASE | RESULT) so
+> case-level linking is schema-ready even though only the result path is wired in this pass.
+
 `Defect { projectId, seq (DF-<SLUG>-<n>), title, severity, status: OPEN|CONFIRMED|FIXED|WONT_FIX|CLOSED, bodyMd, assigneeId }`,
 linkable from results (complements, not replaces, F-07). Defects list + board (columns by
 status). For teams without any external tracker (Qase parity).

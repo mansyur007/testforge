@@ -73,11 +73,11 @@ Legenda: ✅ ada · 🟡 sebagian/terbatas · ❌ tidak ada · ➖ tidak relevan
 | **Environments per run** | ✅ | 🟡 | ✅ | ❌ | ➖ |
 | **Custom result status** | ❌ (hardcoded) | ✅ | ✅ | ✅ | ➖ |
 | Estimasi waktu & forecast | ❌ | ✅ | 🟡 | ❌ | ➖ |
-| Exploratory / session-based testing | ❌ | 🟡 (template) | 🟡 | ❌ | ✅ (inti produk) |
+| Exploratory / session-based testing | ✅ | 🟡 (template) | 🟡 | ❌ | ✅ (inti produk) |
 | **Requirement & traceability** |
 | Requirement management + coverage matrix | ❌ | 🟡 (via referensi) | 🟡 (via Jira) | ✅ (paling kuat) | ➖ |
 | Link case ↔ issue tracker dua arah | 🟡 (URL string) | ✅ | ✅ | ✅ | ✅ |
-| Defect entity bawaan | ❌ | ❌ | ✅ | ❌ | ✅ |
+| Defect entity bawaan | ✅ | ❌ | ✅ | ❌ | ✅ |
 | **Otomasi** |
 | Upload JUnit XML via API | ✅ | 🟡 (via API custom) | ✅ | 🟡 (XML-RPC) | ➖ |
 | Auto-match hasil ↔ case (anotasi ID) | ✅ | 🟡 | ✅ | 🟡 | ➖ |
@@ -374,8 +374,8 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
 - [x] *(Selesai 2026-07-17)* **Exploratory / session-based testing** — entity Session (charter,
       timebox, catatan bertimestamp, attachment) yang menghasilkan bug/case baru (pelajaran
       Test IO/Testmo). Lihat F-25.
-- [ ] **Defect entity bawaan** — daftar defect internal untuk tim tanpa issue tracker
-      (seperti Qase), tetap bisa dilink ke tracker eksternal.
+- [x] *(Selesai 2026-07-17)* **Defect entity bawaan** — daftar defect internal untuk tim tanpa
+      issue tracker (seperti Qase), tetap bisa dilink ke tracker eksternal. Lihat F-26.
 - [ ] **BDD/Gherkin** — template case Gherkin, import/export `.feature`, sinkron dengan
       hasil Cucumber JSON.
 - [ ] **Baselines** — snapshot suite untuk mendukung beberapa versi rilis paralel
