@@ -108,6 +108,7 @@ model Project {
   defects      Defect[]
   baselines    SuiteBaseline[]
   importMapping ImportColumnMapping?
+  apiKeys      ApiKey[] // F-33: keys scoped to this project only
 }
 
 // F-30: the CSV case-import column mapping a project settled on, so repeat
@@ -803,7 +804,20 @@ model ApiKey {
   createdAt  DateTime  @default(now())
   lastUsedAt DateTime?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // F-33: project-scoped tokens. Null = org-wide (legacy v1 behaviour, key acts
+  // across every project its owner belongs to). Set = the key may only touch
+  // this one project; v2 rejects any other slug with 403 even if the owning
+  // user is a member there.
+  projectId String?
+
+  // F-33: per-key rate limit (requests/minute). Null = fall back to the global
+  // API_RATE_LIMIT default, so existing keys keep their current budget.
+  rateLimitPerMin Int?
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
 }
 
 // PRD §12.2: organization/workspace dengan slug unik.
