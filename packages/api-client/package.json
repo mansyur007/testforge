@@ -1,0 +1,38 @@
+{
+  "name": "@testforge/api-client",
+  "version": "0.1.0",
+  "description": "Typed client for the TestForge REST API v2, generated from its OpenAPI document",
+  "type": "module",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    }
+  },
+  "files": [
+    "src",
+    "generated",
+    "README.md"
+  ],
+  "scripts": {
+    "generate": "node scripts/generate.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "testforge",
+    "test-management",
+    "api-client",
+    "openapi",
+    "rest"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mansyur007/test-forge",
+    "directory": "packages/api-client"
+  }
+}
