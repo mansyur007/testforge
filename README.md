@@ -147,6 +147,12 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   executor layout on phones. Record results with no signal: they queue in
   IndexedDB and sync automatically when you're back online, with a
   last-write-wins conflict notice so nothing is silently lost (F-36)
+- **AI assist (bring your own key)** — point an org at any Anthropic-compatible
+  endpoint (key stored encrypted) to draft test cases from a pasted
+  requirement, suggest edge-case steps on a case, and flag near-duplicate
+  cases (the duplicate detector is a local title match and needs no key). Every
+  AI action is opt-in per click and the features stay hidden until a key is
+  configured (F-29)
 
 ## Running
 

@@ -14,6 +14,8 @@ import { SavedViewsMenu } from "@/components/SavedViewsMenu";
 import { ExportMenu } from "@/components/ExportMenu";
 import { sanitizeCaseFilters, viewHref } from "@/lib/saved-views";
 import { loadPerms } from "@/lib/permissions";
+import { aiConfigured, orgIdForUser } from "@/lib/ai";
+import { AiGenerateCases } from "@/components/AiGenerateCases";
 
 export const dynamic = "force-dynamic";
 
@@ -100,6 +102,9 @@ export default async function ProjectPage({
   // F-14: permission-derived (covers custom roles).
   const perms = await loadPerms(session.userId, project.id);
   const canWrite = perms.has("case.write");
+  // F-29: only offer AI generation when the org has a key configured.
+  const orgId = await orgIdForUser(session.userId);
+  const aiOn = canWrite && !!orgId && (await aiConfigured(orgId));
   const rootSuites = project.suites.filter((s) => !s.parentId);
   const childrenOf = (id: string) =>
     project.suites.filter((s) => s.parentId === id);
@@ -273,6 +278,7 @@ export default async function ProjectPage({
             >
               <span className="inline-flex items-center gap-1.5"><TFIcon name="upload" className="h-4 w-4" /> Import</span>
             </Link>
+            {aiOn && <AiGenerateCases projectId={project.id} />}
             {canWrite && (
               <Link
                 href={`/projects/${project.slug}/cases/new${searchParams.suite ? `?suite=${searchParams.suite}` : ""}`}

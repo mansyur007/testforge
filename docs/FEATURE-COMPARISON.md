@@ -380,8 +380,10 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
       sinkron dengan hasil Cucumber JSON. Lihat F-27.
 - [x] *(Selesai 2026-07-17)* **Baselines** — snapshot suite untuk mendukung beberapa versi rilis
       paralel (konsep TestRail). Lihat F-28.
-- [ ] **AI assist** — generate draft test case dari deskripsi fitur/PRD, saran step, dedup
-      case mirip (jawaban terhadap Qase AIDEN); opsional dan bisa dimatikan di self-hosted.
+- [x] *(Selesai 2026-07-18)* **AI assist (BYO key)** — generate draft test case dari
+      deskripsi fitur/PRD, saran edge-case step, dan deteksi case mirip (trigram lokal, tanpa
+      key) — jawaban terhadap Qase AIDEN. Endpoint Anthropic-compatible + key terenkripsi per
+      org; opt-in per klik, mati total kalau tak dikonfigurasi (F-29).
 - [x] *(Selesai 2026-07-17)* **Export XLSX & JSON** (selain CSV), template import dengan
       mapping kolom tersimpan. Lihat F-30.
 - [x] *(Selesai 2026-07-17)* **Todos / antrian kerja personal** — halaman "assigned to me" lintas
