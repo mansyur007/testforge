@@ -53,6 +53,21 @@ html {
       transform: scaleX(0);
     }
   }
+
+  /* API docs (/docs/api): masks the blank gap before the Redoc CDN bundle
+     hydrates <redoc>, and the remount when switching v1/v2 (ApiDocs.tsx keys
+     the wrapper on specUrl). Only the wrapper we render moves — Redoc's own
+     internals are a vendored web component we don't touch. */
+  .tf-api-docs-fade {
+    animation: tf-api-docs-fade 200ms ease-out both;
+  }
+
+  @keyframes tf-api-docs-fade {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
 }
 
 /* Tipografi design system: heading memakai Space Grotesk */
