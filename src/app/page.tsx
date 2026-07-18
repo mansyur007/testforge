@@ -119,7 +119,7 @@ export default async function HomePage() {
   const [session, stars] = await Promise.all([getSession(), getGitHubStars()]);
 
   return (
-    <div className="bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <div className="tf-landing bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       {/* Navbar */}
       <header className="sticky top-0 z-40 border-b border-slate-100 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
