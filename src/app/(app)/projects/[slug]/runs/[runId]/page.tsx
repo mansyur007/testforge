@@ -163,7 +163,7 @@ export default async function RunDetailPage({
     <div className="space-y-6">
       <ProjectTabs slug={run.project.slug} name={run.project.name} active="runs" />
 
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <h2 className="text-xl font-bold">{run.name}</h2>
           <p className="text-sm text-slate-400">
@@ -196,7 +196,7 @@ export default async function RunDetailPage({
             )}
           </p>
         </div>
-        <div className="flex shrink-0 gap-2">
+        <div className="flex shrink-0 flex-wrap gap-2">
           {/* F-35: printable run report. */}
           <Link
             href={`/print/projects/${run.project.slug}/runs/${run.id}`}

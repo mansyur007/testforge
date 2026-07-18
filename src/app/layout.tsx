@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -24,6 +24,16 @@ export const metadata: Metadata = {
   title: "TestForge — Test Case Management",
   description:
     "Open source test case management platform — the free alternative to TestRail, Qase.io, and Zephyr.",
+};
+
+// F-36: enable installable/standalone rendering. viewport-fit: cover lets the
+// mobile executor pad its fixed bottom bar with env(safe-area-inset-bottom) so
+// the thumb-zone status buttons clear the home indicator.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0f172a",
 };
 
 export default function RootLayout({

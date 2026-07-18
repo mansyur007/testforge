@@ -142,6 +142,11 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   bar); "Save as PDF" comes straight from the browser's print dialog, so
   there's no server-side PDF dependency. Scope the catalog to a suite, a
   saved view, or a single case (F-35)
+- **Mobile execution PWA** — installable (manifest, icons, offline fallback
+  page via a hand-rolled service worker) with a single-card, thumb-zone
+  executor layout on phones. Record results with no signal: they queue in
+  IndexedDB and sync automatically when you're back online, with a
+  last-write-wins conflict notice so nothing is silently lost (F-36)
 
 ## Running
 

@@ -12,14 +12,10 @@ import { serializeRun } from "@/lib/api";
 import { buildResultSeeds } from "@/lib/datasets";
 import { loadCaseRevs } from "@/lib/case-revisions";
 import { loadStatusDefs } from "@/lib/result-status-defs";
-import { allowedStatusKeys, statusMeta } from "@/lib/result-statuses";
+import { statusMeta } from "@/lib/result-statuses";
 import { can } from "@/lib/permissions";
-import { publishRunEvent } from "@/lib/run-events";
-import {
-  collectCustomFromForm,
-  mergeCustomJson,
-  validateCustomValues,
-} from "@/lib/custom-fields";
+import { saveResult } from "@/lib/save-result";
+import { collectCustomFromForm } from "@/lib/custom-fields";
 
 // Tenant guard for run-level mutations: the run must belong to a project the
 // user is a member of.
@@ -108,101 +104,43 @@ export async function createRun(
   redirect(`/projects/${project.slug}/runs/${run.id}`);
 }
 
+// F-36 Part C: thin FormData adapter over saveResult (the shared write path).
+// Custom fields are collected here because that's form-shape-specific; the
+// membership/permission/status/validation/side-effect logic all lives in
+// saveResult so the offline JSON route and this action never drift.
 export async function submitResult(formData: FormData) {
   const session = await requireSession();
   const resultId = String(formData.get("resultId"));
-  const status = String(formData.get("status"));
-  const comment = String(formData.get("comment") ?? "").trim() || null;
-  const defectUrl = String(formData.get("defectUrl") ?? "").trim() || null;
+  const projectId = await db.testRunResult
+    .findFirst({
+      where: {
+        id: resultId,
+        run: { project: { members: { some: { userId: session.userId } } } },
+      },
+      select: { run: { select: { projectId: true } } },
+    })
+    .then((r) => r?.run.projectId);
+
+  let custom: Record<string, unknown> | undefined;
+  if (projectId) {
+    const defs = await db.customFieldDef.findMany({
+      where: { projectId, entity: "RESULT" },
+      orderBy: { order: "asc" },
+    });
+    if (defs.length > 0) custom = collectCustomFromForm(defs, formData);
+  }
+
   const elapsed = parseInt(String(formData.get("elapsedSeconds") ?? ""), 10);
-
-  const owned = await db.testRunResult.findFirst({
-    where: {
-      id: resultId,
-      run: { project: { members: { some: { userId: session.userId } } } },
-    },
-    select: { id: true, customJson: true, run: { select: { projectId: true } } },
+  const outcome = await saveResult(session.userId, session.name, resultId, {
+    status: String(formData.get("status")),
+    comment: String(formData.get("comment") ?? ""),
+    defectUrl: String(formData.get("defectUrl") ?? ""),
+    elapsedSeconds: Number.isFinite(elapsed) ? elapsed : null,
+    custom,
   });
-  if (!owned) notFound();
-
-  // F-14: executing (recording a result) is its own permission.
-  if (!(await can(session.userId, owned.run.projectId, "run.execute"))) return;
-
-  // F-14: only statuses defined (and active) for this project are accepted.
-  const statusDefs = await loadStatusDefs(owned.run.projectId);
-  if (!allowedStatusKeys(statusDefs).has(status)) return;
-
-  // F-03: validate RESULT custom fields; invalid values fail silently-safe
-  // (result still recorded, custom left unchanged) — the executor is a
-  // rapid-fire flow, blocking a P/F submit on a side field would be worse.
-  let customJson = owned.customJson;
-  const defs = await db.customFieldDef.findMany({
-    where: { projectId: owned.run.projectId, entity: "RESULT" },
-    orderBy: { order: "asc" },
-  });
-  if (defs.length > 0) {
-    const members = await db.projectMember.findMany({
-      where: { projectId: owned.run.projectId },
-      select: { userId: true },
-    });
-    const check = validateCustomValues(
-      defs,
-      collectCustomFromForm(defs, formData),
-      new Set(members.map((m) => m.userId))
-    );
-    if (check.ok) customJson = mergeCustomJson(owned.customJson, defs, check.values);
-  }
-
-  const result = await db.testRunResult.update({
-    where: { id: resultId },
-    data: {
-      status,
-      comment,
-      defectUrl,
-      customJson,
-      assigneeId: session.userId,
-      elapsedSeconds: Number.isFinite(elapsed) ? elapsed : undefined,
-    },
-    include: { run: { include: { project: true } }, testCase: true },
-  });
-
-  await logAudit({
-    userId: session.userId,
-    action: "result.submit",
-    entityType: "result",
-    entityId: resultId,
-    detail: status,
-  });
-  // L-04: tell everyone else on this run page. Fire-and-forget, same
-  // discipline as dispatchWebhook (§0.4).
-  publishRunEvent(result.runId, {
-    type: "result",
-    resultId: result.id,
-    caseId: result.caseId,
-    datasetName: result.datasetName,
-    status: result.status,
-    comment: result.comment,
-    elapsedSeconds: result.elapsedSeconds,
-    by: { id: session.userId, name: session.name },
-    at: new Date().toISOString(),
-  });
-  // F-14: any FAIL-kind status (custom ones included) triggers the alert.
-  if (statusMeta(statusDefs).kindOf(status) === "FAIL") {
-    const slug = result.run.project.slug;
-    await notify(result.run.projectId, "result.failed", {
-      title: `Test failed: ${result.testCase.title}`,
-      url: `${notifyBaseUrl()}/projects/${slug}/runs/${result.runId}`,
-      tone: "bad",
-      runId: result.runId, // keys the 1-per-minute aggregation window
-      fields: [
-        { label: "Run", value: result.run.name },
-        ...(comment ? [{ label: "Notes", value: comment }] : []),
-      ],
-    });
-  }
-  revalidatePath(
-    `/projects/${result.run.project.slug}/runs/${result.runId}`
-  );
+  // Preserve today's behavior: a missing/foreign result 404s; permission and
+  // invalid-status failures fail silently-safe (the executor is rapid-fire).
+  if (!outcome.ok && outcome.reason === "not-found") notFound();
 }
 
 export async function completeRun(formData: FormData) {

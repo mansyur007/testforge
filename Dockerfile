@@ -22,6 +22,10 @@ COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/prisma ./prisma
+# F-36: static assets (PWA icons, sw.js) live in public/ — the runtime stage
+# must copy it or every file under /public 404s in production (the trap that
+# bit F-37). Kept next to the other COPYs so it's obvious this stage owns it.
+COPY --from=builder /app/public ./public
 EXPOSE 3000
 # db push idempoten: membuat/menyelaraskan schema saat container start.
 # --accept-data-loss agar perubahan aditif (mis. menambah kolom unik) tidak

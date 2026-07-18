@@ -71,6 +71,20 @@ export function badgeStyle(color: string): {
   };
 }
 
+/** Readable foreground (white or ink) for text/glyphs on a FILLED status color
+ * — the mobile executor's thumb-zone buttons are solid at full opacity, unlike
+ * the pastel desktop chips, so sunlight on a lab floor needs real contrast. */
+export function onColorOf(color: string): string {
+  const hex = color.replace("#", "");
+  const n = parseInt(
+    hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex,
+    16
+  );
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.6 ? "#1b1a22" : "#ffffff";
+}
+
 /** Keyboard shortcuts for executor buttons: first letter of the label; when
  * two labels share a letter, the one earlier in `order` keeps it and the later
  * one gets none (spec: conflicts resolved by order, shown in tooltip). */

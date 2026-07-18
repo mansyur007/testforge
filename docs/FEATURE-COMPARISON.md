@@ -392,8 +392,10 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
       attachments), token per-project, rate limit per key.
 - [ ] **LDAP/Active Directory** untuk self-hosted enterprise (paritas fitur TestLink/Kiwi).
 - [x] *(Selesai 2026-07-18)* **Print-friendly view** test case & run untuk audit/compliance — route `/print/*` khusus (katalog case + run report), PDF via dialog print browser, tanpa dependensi server (F-35).
-- [ ] **PWA/mobile execution view** — eksekusi run nyaman dari ponsel/tablet saat testing
-      device fisik.
+- [x] *(Selesai 2026-07-18)* **PWA/mobile execution view** — installable PWA (manifest + ikon
+      + service worker offline fallback), executor single-card thumb-zone di ponsel, dan **antrian
+      hasil offline** (rekam tanpa sinyal, auto-sync saat online, konflik last-write-wins dilapor)
+      untuk testing device fisik (F-36).
 - [x] *(Selesai 2026-07-11)* **Docs/help center in-app** — `/docs/help`, panduan cara pakai per
       area fitur untuk end user (terpisah dari `/docs/api` yang untuk developer). Lihat F-37.
 - [x] *(Selesai 2026-07-16)* **Live quality badge** — SVG shields.io-style publik per project

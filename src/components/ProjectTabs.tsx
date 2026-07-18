@@ -79,12 +79,15 @@ export function ProjectTabs({
         <span>/</span>
       </div>
       <h1 className="text-2xl font-bold">{name}</h1>
-      <div className="mt-4 flex gap-1 border-b border-slate-200">
+      {/* F-36: scroll the tab row within its own box on narrow screens instead
+          of widening the page (no horizontal page scroll on a phone). Desktop
+          fits without a scrollbar, so it's unchanged. */}
+      <div className="mt-4 flex gap-1 overflow-x-auto border-b border-slate-200">
         {tabs.map((t) => (
           <Link
             key={t.key}
             href={t.href}
-            className={`border-b-2 px-4 py-2 text-sm font-medium ${
+            className={`shrink-0 whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium ${
               active === t.key
                 ? "border-indigo-600 text-indigo-600"
                 : "border-transparent text-slate-500 hover:text-slate-800"

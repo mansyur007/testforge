@@ -6,6 +6,7 @@ import { Logo, TFIcon } from "@/components/icons";
 import { LogoutButton } from "@/components/LogoutButton";
 import { SidebarProjects } from "@/components/SidebarProjects";
 import { CommandPalette } from "@/components/CommandPalette";
+import { AppShell } from "@/components/AppShell";
 import { loadMyWorkCounts } from "@/lib/my-work";
 
 export default async function AppLayout({
@@ -40,8 +41,9 @@ export default async function AppLayout({
   ];
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="fixed inset-y-0 flex w-60 flex-col border-r border-slate-800 bg-slate-900 text-slate-300">
+    <AppShell
+      sidebar={
+        <>
         <div className="px-5 py-5">
           <Logo href="/dashboard" size="sm" dark />
         </div>
@@ -83,8 +85,10 @@ export default async function AppLayout({
             <LogoutButton />
           </div>
         </div>
-      </aside>
-      <main className="ml-60 flex-1 p-8">{children}</main>
-    </div>
+        </>
+      }
+    >
+      {children}
+    </AppShell>
   );
 }
