@@ -1,0 +1,111 @@
+/* F-35: print & PDF-friendly document styles. Loaded only by the /print route
+   group's layout — never by the app shell. Design intent: ink on paper, brand
+   carried by typography and structure, not color. The screen preview of a print
+   route should already look like the paper output (white page, centered
+   column) so "what you see is what prints". */
+
+/* Page geometry */
+@page { size: A4; margin: 18mm 16mm 20mm; }
+/* Chrome ignores @page margin-box content (page numbers) — accepted limitation.
+   We do NOT use position:fixed running footers: they overlap content
+   unpredictably across engines. The per-section footer line (§2.4) carries the
+   provenance instead. */
+
+/* Screen shell: a plain white document column, no page-shadow illusion. On
+   paper the wrapper is transparent and the browser owns the margins. */
+.tf-print-doc {
+  background: #ffffff;
+  color: #1b1a22;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.45;
+}
+.tf-print-page {
+  max-width: 180mm;
+  margin: 0 auto;
+  padding: 12mm 10mm 24mm;
+}
+@media screen {
+  body { background: #eef1f5; }
+}
+@media print {
+  .tf-print-page { max-width: none; margin: 0; padding: 0; }
+}
+
+/* Typography: print is the one surface where the app's 14px idiom is wrong. */
+.tf-print-doc h1 { font-family: var(--font-display), system-ui, sans-serif; font-size: 20pt; font-weight: 700; letter-spacing: -0.01em; margin: 0; }
+.tf-print-doc h2 { font-family: var(--font-display), system-ui, sans-serif; font-size: 13pt; font-weight: 600; letter-spacing: -0.01em; margin: 0 0 3mm; }
+.tf-print-doc h3 { font-family: var(--font-display), system-ui, sans-serif; font-size: 11pt; font-weight: 600; margin: 0; }
+.tf-print-doc p { margin: 0 0 2mm; }
+.tf-meta-label { font-family: var(--font-mono), ui-monospace, monospace; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.04em; color: #475569; }
+.tf-mono { font-family: var(--font-mono), ui-monospace, monospace; }
+.tf-secondary { color: #475569; } /* slate-600 — nothing lighter than this on paper */
+
+/* Cover */
+.tf-print-cover { break-after: page; }
+.tf-print-cover .tf-rule { border: none; border-top: 2px solid #1b1a22; margin: 4mm 0 5mm; }
+.tf-scope-box { border: 1px solid #cbd5e1; border-radius: 4px; padding: 4mm; margin-top: 6mm; }
+
+/* Table of contents / summary */
+.tf-toc { list-style: none; margin: 0; padding: 0; }
+.tf-toc li { display: flex; justify-content: space-between; gap: 6mm; padding: 1mm 0; border-bottom: 1px solid #e2e8f0; }
+.tf-toc a { color: inherit; text-decoration: none; }
+.tf-toc .tf-count { color: #475569; font-family: var(--font-mono), ui-monospace, monospace; font-size: 9pt; white-space: nowrap; }
+
+/* Suite grouping + cases */
+.tf-print-suite { margin-top: 8mm; }
+h2 { break-after: avoid; }                          /* no orphaned suite headings */
+section, tr { orphans: 3; widows: 3; }
+.tf-print-case {
+  break-inside: avoid;                               /* a case never splits… */
+  padding: 3mm 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+.tf-print-case.tf-long { break-inside: auto; }       /* …unless taller than ~1 page */
+.tf-print-case .tf-case-head { display: flex; align-items: baseline; justify-content: space-between; gap: 4mm; }
+.tf-print-case .tf-case-title { font-weight: 600; font-size: 11pt; }
+
+/* Data tables (steps, custom fields, summary) */
+.tf-print-doc table.tf-steps { width: 100%; border-collapse: collapse; margin: 2mm 0; font-size: 9.5pt; }
+.tf-print-doc table.tf-steps th { text-align: left; border-bottom: 1px solid #94a3b8; padding: 1mm 2mm; font-family: var(--font-mono), ui-monospace, monospace; font-size: 8pt; text-transform: uppercase; color: #475569; }
+.tf-print-doc table.tf-steps td { border-bottom: 1px solid #e2e8f0; padding: 1.5mm 2mm; vertical-align: top; }
+.tf-print-doc table.tf-steps td.tf-step-num { width: 8mm; color: #475569; font-family: var(--font-mono), ui-monospace, monospace; }
+.tf-shared-origin { font-family: var(--font-mono), ui-monospace, monospace; font-size: 8pt; color: #475569; }
+
+.tf-fields { display: grid; grid-template-columns: max-content 1fr; gap: 0.5mm 4mm; margin: 2mm 0; font-size: 9.5pt; }
+.tf-fields dt { color: #475569; }
+.tf-fields dd { margin: 0; }
+
+.tf-expected { border-left: 2px solid #cbd5e1; padding-left: 3mm; margin: 2mm 0; }
+
+/* Badge rule: a colored pill prints as mud, so every chip becomes an outlined
+   glyph+label in mono. Color is kept (print-color-adjust: exact) as a hint on
+   color printers, but the outline + glyph carry the meaning in grayscale. */
+.tf-chip {
+  display: inline-flex; align-items: baseline; gap: 1mm;
+  border: 1px solid currentColor; border-radius: 3px;
+  padding: 0 1.5mm;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.02em;
+  background: transparent;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+
+/* Run report stacked bar: segments must survive grayscale, hence the outer
+   border and print-color-adjust. */
+.tf-stacked { display: flex; height: 6mm; border: 1px solid #1b1a22; border-radius: 2px; overflow: hidden; margin: 3mm 0; }
+.tf-stacked > span { display: block; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+/* Attachments */
+.tf-attach-list { list-style: none; margin: 1mm 0; padding: 0; font-size: 9pt; color: #475569; }
+.tf-attach-list li { padding: 0.5mm 0; }
+img { max-width: 100%; max-height: 60mm; }
+
+.tf-doc-footer { margin-top: 6mm; padding-top: 2mm; border-top: 1px solid #e2e8f0; font-size: 8pt; color: #475569; }
+
+/* Color flattening — overrides for shared components rendered inside print */
+.tf-markdown { font-size: 9.5pt; }
+.tf-markdown pre { background: #f8fafc !important; color: #1b1a22 !important; border: 1px solid #cbd5e1; }
+.tf-markdown a { color: inherit; text-decoration: underline; } /* blue ink lies on paper */
+.tf-markdown a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 8pt; color: #475569; }
+.tf-markdown img { max-width: 100%; max-height: 60mm; }

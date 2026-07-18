@@ -251,6 +251,22 @@ export default async function ProjectPage({
                 },
               ]}
             />
+            {/* F-35: printable case catalog, scoped to the active suite/view. */}
+            <Link
+              href={`/print/projects/${project.slug}/cases${(() => {
+                const p = new URLSearchParams();
+                if (searchParams.suite) p.set("suite", searchParams.suite);
+                if (searchParams.v && searchParams.v !== "all") p.set("view", searchParams.v);
+                const qs = p.toString();
+                return qs ? `?${qs}` : "";
+              })()}`}
+              target="_blank"
+              rel="noopener"
+              data-testid="print-cases-link"
+              className="rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
+            >
+              <span className="inline-flex items-center gap-1.5"><TFIcon name="print" className="h-4 w-4" /> Print view</span>
+            </Link>
             <Link
               href={`/projects/${project.slug}/import`}
               className="rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
