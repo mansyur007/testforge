@@ -26,10 +26,13 @@ function FormInner({
   lang,
   ssoLabel,
   passwordDisabled,
+  ldap,
 }: {
   lang: Lang;
   ssoLabel: string | null;
   passwordDisabled: boolean;
+  /** F-34: directory login is on, so this field takes a username too. */
+  ldap: boolean;
 }) {
   const t = dict[lang].auth.login;
   const [state, formAction] = useFormState(login, undefined);
@@ -87,16 +90,18 @@ function FormInner({
         )}
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">
-            {t.email}
+            {ldap ? `${t.email} / username` : t.email}
           </label>
+          {/* F-34: with a directory configured the value may be a bare username
+              like `jdoe`, which type="email" would reject in the browser. */}
           <input
             name="email"
-            type="email"
+            type={ldap ? "text" : "email"}
             required
             data-testid="login-email"
-            autoComplete="email"
+            autoComplete={ldap ? "username" : "email"}
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-            placeholder="you@company.com"
+            placeholder={ldap ? "jdoe or you@company.com" : "you@company.com"}
           />
         </div>
         <div>
@@ -142,14 +147,21 @@ export function LoginForm({
   lang,
   ssoLabel,
   passwordDisabled,
+  ldap = false,
 }: {
   lang: Lang;
   ssoLabel: string | null;
   passwordDisabled: boolean;
+  ldap?: boolean;
 }) {
   return (
     <Suspense>
-      <FormInner lang={lang} ssoLabel={ssoLabel} passwordDisabled={passwordDisabled} />
+      <FormInner
+        lang={lang}
+        ssoLabel={ssoLabel}
+        passwordDisabled={passwordDisabled}
+        ldap={ldap}
+      />
     </Suspense>
   );
 }

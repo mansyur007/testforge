@@ -28,6 +28,20 @@ services:
       # TF_OIDC_BUTTON_LABEL: "Single sign-on"
       # TF_OIDC_ALLOW_UNVERIFIED_EMAIL: "1" # only if your IdP omits email_verified
       # TF_DISABLE_PASSWORD_LOGIN: "1"     # SSO/social only (needs a provider!)
+      # F-34: LDAP / Active Directory. Dormant unless TF_LDAP_URL *and*
+      # TF_LDAP_BASE_DN are both set. Local accounts stay usable as a fallback.
+      # TF_LDAP_URL: "ldap://ldap.example.com:389"   # or ldaps://…:636
+      # TF_LDAP_BASE_DN: "dc=example,dc=com"
+      # TF_LDAP_BIND_DN: "cn=svc-testforge,ou=svc,dc=example,dc=com"  # omit = anonymous search
+      # TF_LDAP_BIND_PASSWORD: "${TF_LDAP_BIND_PASSWORD:-}"
+      # TF_LDAP_USER_FILTER: "(|(uid={{username}})(sAMAccountName={{username}})(mail={{username}}))"
+      # TF_LDAP_ATTR_EMAIL: "mail"         # attribute holding the email address
+      # TF_LDAP_ATTR_NAME: "cn"            # attribute holding the display name
+      # TF_LDAP_AUTO_PROVISION: "1"        # unknown directory user → new member
+      # TF_LDAP_DEFAULT_ROLE: "MEMBER"     # role for auto-provisioned users
+      # TF_LDAP_ORG_SLUG: ""               # only needed if the instance has >1 org
+      # TF_LDAP_START_TLS: "1"             # upgrade a plain ldap:// connection
+      # TF_LDAP_TLS_REJECT_UNAUTHORIZED: "0"  # ONLY for a self-signed internal CA
     volumes:
       - testforge-data:/data
     restart: unless-stopped

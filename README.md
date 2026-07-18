@@ -47,6 +47,13 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   via `TF_OIDC_ISSUER`; covers Google Workspace/Azure AD/Okta/Keycloak), plus
   optional per-account TOTP 2FA with single-use recovery codes.
   `TF_DISABLE_PASSWORD_LOGIN=1` makes an instance SSO/social-only.
+- **LDAP / Active Directory** — self-hosted instances can authenticate against a
+  corporate directory (`TF_LDAP_URL` + `TF_LDAP_BASE_DN`; OpenLDAP and AD both
+  work out of the box). Users sign in on the normal login form with their
+  directory username or email; `TF_LDAP_AUTO_PROVISION=1` creates the TestForge
+  account on first login. Local accounts keep working as a fallback, so a
+  directory outage can't lock the admin out. Supports `ldaps://` and StartTLS
+  (`TF_LDAP_START_TLS=1`); TOTP 2FA still applies on top of a directory bind.
 - **Attachments** — drag-drop/paste screenshots & files on test cases and run
   results (evidence), sha256-deduplicated storage in the `/data` volume,
   per-file limit via `TF_MAX_UPLOAD_MB` (default 10 MB)
