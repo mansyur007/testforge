@@ -34,6 +34,7 @@ export default async function AppLayout({
     { href: "/projects", label: "Projects", icon: "nav-projects" },
     { href: "/settings/team", label: "Team", icon: "nav-team" },
     { href: "/settings/api-keys", label: "API Keys", icon: "nav-keys" },
+    { href: "/settings/ai", label: "AI Assist", icon: "ai" },
     { href: "/settings/audit-log", label: "Audit Log", icon: "nav-audit" },
     { href: "/settings/backup", label: "Backup", icon: "nav-backup" },
     { href: "/settings/account", label: "Account", icon: "nav-account" },

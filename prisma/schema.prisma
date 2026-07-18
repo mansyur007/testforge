@@ -814,6 +814,13 @@ model Organization {
   slug      String   @unique
   createdAt DateTime @default(now())
 
+  // F-29: AI assist (BYO key). Org-level config for an Anthropic-compatible
+  // Messages endpoint. aiApiKeyEnc is AES-256-GCM encrypted (F-07 crypto) and
+  // never leaves the server. All AI features degrade cleanly when unset.
+  aiEndpoint  String? // base URL, e.g. https://api.anthropic.com (null = that default)
+  aiModel     String? // e.g. claude-sonnet-5
+  aiApiKeyEnc String? // encrypted API key; null = AI disabled
+
   users       User[]
   invitations Invitation[]
   roleDefs    RoleDef[]

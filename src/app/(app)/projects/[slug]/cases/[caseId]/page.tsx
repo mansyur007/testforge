@@ -30,6 +30,9 @@ import { CommentPanel } from "@/components/CommentPanel";
 import { ReviewPanel } from "@/components/ReviewPanel";
 import { formatDuration } from "@/lib/duration";
 import { loadPerms } from "@/lib/permissions";
+import { aiConfigured, orgIdForUser } from "@/lib/ai";
+import { findNearDuplicates } from "@/lib/case-dedupe";
+import { AiSuggestSteps } from "@/components/AiSuggestSteps";
 
 export const dynamic = "force-dynamic";
 
@@ -173,6 +176,23 @@ export default async function CaseDetailPage({
   const isGherkin = isGherkinCaseSteps(rawSteps); // F-27
   const steps = expandSteps(rawSteps, await loadStepGroups(testCase.projectId));
   const displayId = caseDisplayId(testCase.project.slug, testCase.seq);
+
+  // F-29: near-duplicate detection (local trigram similarity — no AI key
+  // needed) and AI edge-case suggestions (only when a key is configured).
+  const siblingCases = await db.testCase.findMany({
+    where: { projectId: testCase.projectId, deletedAt: null, id: { not: testCase.id } },
+    select: { id: true, seq: true, title: true },
+  });
+  const nearDuplicates = findNearDuplicates(
+    testCase.title,
+    siblingCases.map((c) => ({
+      id: c.id,
+      displayId: caseDisplayId(testCase.project.slug, c.seq),
+      title: c.title,
+    }))
+  );
+  const aiOrgId = await orgIdForUser(session.userId);
+  const aiOn = canWrite && !!aiOrgId && (await aiConfigured(aiOrgId));
   // Back link returns to the cases list, scoped to this case's suite if it has one.
   const backHref = `/projects/${testCase.project.slug}${testCase.suiteId ? `?suite=${testCase.suiteId}` : ""}`;
 
@@ -471,6 +491,37 @@ export default async function CaseDetailPage({
               </div>
             </section>
           )}
+
+          {/* F-29: possible duplicates (local trigram match — no AI key). */}
+          {nearDuplicates.length > 0 && (
+            <section
+              className="rounded-xl border border-amber-200 bg-amber-50 p-6"
+              data-testid="near-duplicates-panel"
+            >
+              <h3 className="mb-3 text-sm font-semibold uppercase text-amber-800">
+                Possible duplicates
+              </h3>
+              <ul className="space-y-2 text-sm">
+                {nearDuplicates.map((d) => (
+                  <li key={d.id} className="flex items-center justify-between gap-2">
+                    <Link
+                      href={`/projects/${testCase.project.slug}/cases/${d.id}`}
+                      className="min-w-0 truncate text-amber-900 hover:underline"
+                    >
+                      <span className="font-mono text-xs text-amber-700">{d.displayId}</span>{" "}
+                      {d.title}
+                    </Link>
+                    <span className="shrink-0 text-xs text-amber-700">
+                      {Math.round(d.score * 100)}% similar
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {/* F-29: AI edge-case suggestions (only when a key is configured). */}
+          {aiOn && <AiSuggestSteps caseId={testCase.id} />}
 
           <section className="rounded-xl border border-slate-200 bg-white p-6" data-testid="case-dependencies-panel">
             <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">

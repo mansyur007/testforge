@@ -1801,7 +1801,20 @@ Snapshot an entire suite tree + case revisions (F-05) as a named baseline; runs 
 "from baseline" pinning `caseRev`s; compare baseline vs current. TestRail Enterprise feature —
 in OSS it's a headline.
 
-### F-29 — AI assist (BYO key) `[ ]`
+### F-29 — AI assist (BYO key) `[x]`
+
+> **Status: DONE** (2026-07-18, branch `feat/ai-assist`, Opus 4.8). Org-level config on
+> `Organization` (`aiEndpoint`/`aiModel`/`aiApiKeyEnc`, key AES-256-GCM via F-07 crypto);
+> `/settings/ai` (org ADMIN, write-only key, Test button). `lib/ai.ts` calls an
+> Anthropic-compatible `{endpoint}/v1/messages` with **raw fetch** (no SDK dep — matches
+> `issue-providers.ts`; keeps the Docker image lean and the endpoint arbitrary), default model
+> `claude-sonnet-5`, robust JSON extraction from the response text (no `output_config.format`,
+> for endpoint compatibility). Three features, all opt-in per click, degrading cleanly when no
+> key is set: (1) generate DRAFT cases from a pasted requirement (preview → select → insert);
+> (2) suggest edge-case steps on a case; (3) near-duplicate detector = local title trigram
+> similarity (`lib/case-dedupe.ts`, **no key needed**). e2e `ai-assist.spec.ts` uses a local
+> mock Messages endpoint. Deferred: embeddings-based dedup (v1 is trigram per the brief).
+
 Settings → org: provider (Anthropic-compatible endpoint), model id, encrypted API key (F-07
 crypto). Features: (1) generate draft cases from a pasted requirement/PRD text → preview list →
 insert as DRAFT; (2) suggest missing edge-case steps for an open case; (3) near-duplicate case

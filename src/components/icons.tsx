@@ -39,6 +39,8 @@ const ICONS: Record<string, string> = {
   print: `<path d="M7.5 8.5 V4.5 a1 1 0 0 1 1 -1 h7 a1 1 0 0 1 1 1 v4"/><path d="M6 8.5 h12 a2 2 0 0 1 2 2 v4.5 a1 1 0 0 1 -1 1 h-2.5 M6 8.5 a2 2 0 0 0 -2 2 v4.5 a1 1 0 0 0 1 1 h2.5"/><path class="tf-acf" d="M7.5 14.5 h9 v4 a1 1 0 0 1 -1 1 h-7 a1 1 0 0 1 -1 -1 z"/><circle class="tf-ac" cx="16.5" cy="11.2" r="0.7"/>`,
   // F-36: hamburger menu — three bars, top one accented.
   menu: `<path class="tf-ac" d="M4.5 7 h15"/><path d="M4.5 12 h15 M4.5 17 h15"/>`,
+  // F-29: AI assist — a large four-point sparkle plus a small one.
+  ai: `<path class="tf-acf" d="M11 4 c.6 3.2 1.8 4.4 5 5 c-3.2 .6 -4.4 1.8 -5 5 c-.6 -3.2 -1.8 -4.4 -5 -5 c3.2 -.6 4.4 -1.8 5 -5 z"/><path class="tf-ac" d="M17.5 13 c.3 1.5 .9 2.1 2.4 2.4 c-1.5 .3 -2.1 .9 -2.4 2.4 c-.3 -1.5 -.9 -2.1 -2.4 -2.4 c1.5 -.3 2.1 -.9 2.4 -2.4 z"/>`,
   download: `<path class="tf-ac" d="M12 4 V15.5 M7.6 11.1 L12 15.5 l4.4 -4.4"/><path d="M5.5 19.5 h13"/>`,
   upload: `<path class="tf-ac" d="M12 15.5 V4 M7.6 8.4 L12 4 l4.4 4.4"/><path d="M5.5 19.5 h13"/>`,
   // 8. Communication
