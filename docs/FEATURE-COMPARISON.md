@@ -93,7 +93,7 @@ Legenda: ✅ ada · 🟡 sebagian/terbatas · ❌ tidak ada · ➖ tidak relevan
 | Dashboard custom (widget) | ❌ | ✅ | ✅ | ❌ | ➖ |
 | Report lintas project | ❌ | ✅ (Enterprise) | ✅ | ❌ | ➖ |
 | Scheduled/email report | ❌ | ✅ | 🟡 | ❌ | ✅ |
-| Export report PDF/print | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Export report PDF/print | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Share link publik (read-only) | ❌ | 🟡 | ✅ | ❌ | ➖ |
 | **Integrasi** |
 | REST API + OpenAPI | ✅ | ✅ (tanpa OpenAPI resmi) | ✅ | 🟡 (XML-RPC) | ✅ |
@@ -391,7 +391,7 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
 - [ ] **Public API v2** — cakupan penuh (milestones, members, webhooks, custom fields,
       attachments), token per-project, rate limit per key.
 - [ ] **LDAP/Active Directory** untuk self-hosted enterprise (paritas fitur TestLink/Kiwi).
-- [ ] **Print-friendly view** test case & run untuk audit/compliance.
+- [x] *(Selesai 2026-07-18)* **Print-friendly view** test case & run untuk audit/compliance — route `/print/*` khusus (katalog case + run report), PDF via dialog print browser, tanpa dependensi server (F-35).
 - [ ] **PWA/mobile execution view** — eksekusi run nyaman dari ponsel/tablet saat testing
       device fisik.
 - [x] *(Selesai 2026-07-11)* **Docs/help center in-app** — `/docs/help`, panduan cara pakai per

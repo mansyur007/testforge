@@ -1869,7 +1869,7 @@ environments; project-scoped tokens; per-key rate limits; typed OpenAPI with gen
 Self-hosted-only login backend via env (`TF_LDAP_URL`, bind DN, user filter); maps to org
 members. Parity with TestLink/Kiwi for enterprises that lack OIDC.
 
-### F-35 — Print & PDF-friendly case/run views `[ ]`
+### F-35 — Print & PDF-friendly case/run views `[x]`
 
 > **Full work order — written 2026-07-13 by Fable 5 as a design handoff.** Fable was the
 > assigned model for this feature; this spec encodes every design decision at implementation

@@ -136,6 +136,12 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   (cycles rejected); in a run, a dependent whose prerequisite just failed
   gets a one-click "Accept — mark BLOCKED" suggestion — never applied
   automatically (F-32)
+- **Print & PDF views** — dedicated `/print/*` routes render a clean,
+  paginated document (cover with provenance, clickable TOC, cases with
+  fully-expanded steps or a run report with pass-rate summary + stacked
+  bar); "Save as PDF" comes straight from the browser's print dialog, so
+  there's no server-side PDF dependency. Scope the catalog to a suite, a
+  saved view, or a single case (F-35)
 
 ## Running
 

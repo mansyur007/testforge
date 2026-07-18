@@ -242,6 +242,16 @@ export default async function CaseDetailPage({
           </div>
         </div>
         <div className="flex shrink-0 gap-2">
+          {/* F-35: one-case printable document. */}
+          <Link
+            href={`/print/projects/${testCase.project.slug}/cases?case=${testCase.id}`}
+            target="_blank"
+            rel="noopener"
+            data-testid="print-case-link"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100"
+          >
+            <TFIcon name="print" className="h-4 w-4" /> Print view
+          </Link>
           <Link
             href={`/projects/${testCase.project.slug}/cases/${testCase.id}/edit`}
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100"

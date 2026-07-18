@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { TFIcon } from "@/components/icons";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { caseDisplayId, type TestStep } from "@/lib/constants";
@@ -195,6 +197,16 @@ export default async function RunDetailPage({
           </p>
         </div>
         <div className="flex shrink-0 gap-2">
+          {/* F-35: printable run report. */}
+          <Link
+            href={`/print/projects/${run.project.slug}/runs/${run.id}`}
+            target="_blank"
+            rel="noopener"
+            data-testid="print-run-link"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100"
+          >
+            <TFIcon name="print" className="h-4 w-4" /> Print view
+          </Link>
           <ExportMenu
             items={[
               { label: "CSV", href: `/api/export/run?id=${run.id}`, testid: "export-csv-link" },
