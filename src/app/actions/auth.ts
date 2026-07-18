@@ -23,6 +23,14 @@ import {
   TOKEN_TYPES,
 } from "@/lib/tokens";
 import { logAudit } from "@/lib/audit";
+import {
+  ldapEnabled,
+  ldapConfig,
+  authenticateLdap,
+  type LdapConfig,
+} from "@/lib/ldap";
+import crypto from "crypto";
+import type { User } from "@prisma/client";
 import { cookies } from "next/headers";
 import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
 
@@ -179,21 +187,112 @@ export async function resendVerification(
   };
 }
 
+// F-34: resolves the org that LDAP-provisioned accounts join. Self-hosted
+// instances normally have exactly one org, so that is the zero-config default;
+// TF_LDAP_ORG_SLUG is only needed when an instance has several.
+async function resolveLdapOrg(slug: string) {
+  if (slug) return db.organization.findUnique({ where: { slug } });
+  const orgs = await db.organization.findMany({ take: 2, orderBy: { createdAt: "asc" } });
+  return orgs.length === 1 ? orgs[0] : null;
+}
+
+// F-34: authenticate against the directory and map the result onto a local
+// user. Exactly one of the two fields is meaningful: `user` on success, or
+// `error` to surface at /login — where a null `error` means "rejected, fall
+// through to the generic wrong-credentials message".
+type LdapLoginOutcome = { user?: User; error?: string | null };
+
+async function loginViaLdap(
+  cfg: LdapConfig,
+  username: string,
+  password: string
+): Promise<LdapLoginOutcome> {
+  const result = await authenticateLdap(cfg, username, password);
+  if (!result.ok) {
+    if (result.reason === "no_email")
+      return { error: "Your directory entry has no email address. Ask an admin." };
+    // "not_found" and "error" deliberately look identical to a wrong password:
+    // telling an attacker which usernames exist in the directory is a leak.
+    return { error: null as string | null };
+  }
+
+  const { email, name } = result.user;
+  let user = await db.user.findUnique({ where: { email } });
+
+  if (!user) {
+    if (!cfg.autoProvision)
+      return { error: `No TestForge account for ${email}. Ask an admin to invite you.` };
+    const org = await resolveLdapOrg(cfg.orgSlug);
+    if (!org) {
+      console.error("[ldap] cannot resolve an organization for auto-provisioning");
+      return { error: "Directory login is misconfigured on this instance. Ask an admin." };
+    }
+    user = await db.user.create({
+      data: {
+        name,
+        email,
+        // No usable password — the directory owns this account's credentials.
+        // Same "no local password" convention as OAuth/OIDC users.
+        passwordHash: crypto.randomBytes(32).toString("hex"),
+        role:
+          cfg.defaultRole === "ADMIN" ? "ADMIN" : cfg.defaultRole === "VIEWER" ? "VIEWER" : "MEMBER",
+        organizationId: org.id,
+        // The directory is the authority on this address; no email round-trip.
+        emailVerifiedAt: new Date(),
+      },
+    });
+    await logAudit({ userId: user.id, action: "auth.register_ldap" });
+  } else if (!user.emailVerifiedAt) {
+    // An existing local account that had never verified: the directory just
+    // asserted the address, so AU-001 is satisfied.
+    user = await db.user.update({
+      where: { id: user.id },
+      data: { emailVerifiedAt: new Date() },
+    });
+  }
+
+  return { user };
+}
+
 export async function login(
   _prev: { error?: string } | undefined,
   formData: FormData
 ) {
+  // With LDAP this field holds a directory username (e.g. `jdoe`) rather than an
+  // email, so it is not validated as an address here.
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
   const rememberMe = formData.get("rememberMe") === "on";
   const next = String(formData.get("next") ?? "");
 
   const t = msgs();
-  if (passwordLoginDisabled()) return { error: PASSWORD_LOGIN_DISABLED_MSG };
+  // F-34: TF_DISABLE_PASSWORD_LOGIN switches off *local* passwords. When LDAP is
+  // configured the form stays live, because directory credentials are exactly
+  // how an LDAP-only instance is meant to be used.
+  const ldapCfg = ldapEnabled() ? ldapConfig() : null;
+  const localPasswordEnabled = !passwordLoginDisabled();
+  if (!localPasswordEnabled && !ldapCfg) return { error: PASSWORD_LOGIN_DISABLED_MSG };
   if (isLockedOut(email)) return { error: t.lockedOut };
 
-  const user = await db.user.findUnique({ where: { email } });
-  if (!user || !(await verifyPassword(password, user.passwordHash))) {
+  let user = localPasswordEnabled ? await db.user.findUnique({ where: { email } }) : null;
+  let authOk = !!user && (await verifyPassword(password, user!.passwordHash));
+  let viaLdap = false;
+
+  // F-34: the directory is a fallback, not a replacement — local accounts (the
+  // bootstrap admin above all) keep working even when LDAP is down.
+  if (!authOk && ldapCfg) {
+    const outcome = await loginViaLdap(ldapCfg, email, password);
+    if (outcome.user) {
+      user = outcome.user;
+      authOk = true;
+      viaLdap = true;
+    } else if (outcome.error) {
+      recordFailure(email);
+      return { error: outcome.error };
+    }
+  }
+
+  if (!user || !authOk) {
     recordFailure(email);
     return { error: t.wrongCredentials };
   }
@@ -209,13 +308,17 @@ export async function login(
   // mints the short-lived pending token and hands off to the second step. The
   // lockout counter is intentionally left intact so wrong TOTP codes at
   // /login/2fa keep drawing down the same budget as wrong passwords.
+  //
+  // F-34: LDAP logins go through this step too, unlike OIDC. An OIDC provider
+  // owns its own MFA policy, but an LDAP bind is only a password check — so the
+  // app's TOTP stays the second factor.
   if (user.totpEnabledAt) {
     await createPending2fa({ userId: user.id, rememberMe, next });
     redirect("/login/2fa");
   }
 
   failedAttempts.delete(email);
-  await logAudit({ userId: user.id, action: "auth.login" });
+  await logAudit({ userId: user.id, action: "auth.login", ...(viaLdap && { detail: "ldap" }) });
   await createSession(user, rememberMe);
 
   // PRD §12.3 langkah 6–7: first login → onboarding wizard

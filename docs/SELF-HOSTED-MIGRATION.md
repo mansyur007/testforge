@@ -208,6 +208,7 @@ for a migration:
 | `NEXT_PUBLIC_BASE_URL` | Set to the **new** domain (e.g. `https://testforge.example.com`). |
 | `GOOGLE_/GITHUB_CLIENT_*` | If you use OAuth login, register the **new** domain's callback URL in the Google/GitHub app settings, or users can't sign in via provider. Email+password is unaffected. |
 | `SMTP_URL` / `SMTP_FROM` | Point at your own mail sender if you want verification/reset/invite emails. |
+| `TF_LDAP_*` | If you authenticate against a directory, check the **new** host can actually reach `TF_LDAP_URL` (firewall/VPN rules often follow the old IP) and that its CA is trusted. Nothing about LDAP is stored in the database, so no data moves — but a directory that is unreachable from the new host means LDAP users can't log in. Local accounts still can. |
 
 ### A note on `AUTH_SECRET` and sessions
 

@@ -392,7 +392,7 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
       menyarankan (bukan otomatis) BLOCK dependen saat prasyarat gagal. Lihat F-32.
 - [ ] **Public API v2** — cakupan penuh (milestones, members, webhooks, custom fields,
       attachments), token per-project, rate limit per key.
-- [ ] **LDAP/Active Directory** untuk self-hosted enterprise (paritas fitur TestLink/Kiwi).
+- [x] **LDAP/Active Directory** untuk self-hosted enterprise (paritas fitur TestLink/Kiwi).
 - [x] *(Selesai 2026-07-18)* **Print-friendly view** test case & run untuk audit/compliance — route `/print/*` khusus (katalog case + run report), PDF via dialog print browser, tanpa dependensi server (F-35).
 - [x] *(Selesai 2026-07-18)* **PWA/mobile execution view** — installable PWA (manifest + ikon
       + service worker offline fallback), executor single-card thumb-zone di ponsel, dan **antrian

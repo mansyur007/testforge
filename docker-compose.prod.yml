@@ -43,6 +43,13 @@ services:
       # TF_OIDC_CLIENT_SECRET: ${TF_OIDC_CLIENT_SECRET:-}
       # TF_OIDC_AUTO_PROVISION: "1"
       # TF_DISABLE_PASSWORD_LOGIN: "1"    # SSO/social only (needs a provider!)
+      # LDAP / Active Directory (F-34). Dormant unless TF_LDAP_URL and
+      # TF_LDAP_BASE_DN are both set; see docker-compose.yml for the full list.
+      # TF_LDAP_URL: ${TF_LDAP_URL:-}
+      # TF_LDAP_BASE_DN: ${TF_LDAP_BASE_DN:-}
+      # TF_LDAP_BIND_DN: ${TF_LDAP_BIND_DN:-}
+      # TF_LDAP_BIND_PASSWORD: ${TF_LDAP_BIND_PASSWORD:-}
+      # TF_LDAP_AUTO_PROVISION: "1"
     volumes:
       - testforge_data:/data
     expose:

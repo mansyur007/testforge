@@ -4,6 +4,7 @@ import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
 import { LoginForm } from "@/components/LoginForm";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { oidcConfig } from "@/lib/oidc";
+import { ldapEnabled } from "@/lib/ldap";
 
 export const dynamic = "force-dynamic";
 
@@ -11,8 +12,11 @@ export default function LoginPage() {
   const lang = resolveLang(cookies().get(LANG_COOKIE)?.value);
   const t = dict[lang].auth.login;
   const oidc = oidcConfig();
+  const ldap = ldapEnabled();
   // F-20: an operator can hide the password form entirely (SSO/social only).
-  const passwordDisabled = process.env.TF_DISABLE_PASSWORD_LOGIN === "1";
+  // F-34: except when LDAP is configured — directory credentials go through
+  // this same form, so an LDAP-only instance still needs it.
+  const passwordDisabled = process.env.TF_DISABLE_PASSWORD_LOGIN === "1" && !ldap;
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
@@ -25,6 +29,7 @@ export default function LoginPage() {
           lang={lang}
           ssoLabel={oidc ? oidc.buttonLabel : null}
           passwordDisabled={passwordDisabled}
+          ldap={ldap}
         />
         <div className="mt-6 flex justify-center">
           <LanguageSwitcher current={lang} />

@@ -1911,7 +1911,7 @@ groups (not a map) and plan creation must filter `deletedAt: null`; the webhook 
 is comma-separated, not JSON; and `Milestone` has only id/name/dueDate/status — no description
 or completedAt — so don't serialize fields that aren't there.
 
-### F-34 — LDAP / Active Directory `[ ]`
+### F-34 — LDAP / Active Directory `[x]`
 Self-hosted-only login backend via env (`TF_LDAP_URL`, bind DN, user filter); maps to org
 members. Parity with TestLink/Kiwi for enterprises that lack OIDC.
 
