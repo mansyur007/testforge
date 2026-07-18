@@ -2,13 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Smooth scroll untuk anchor link navbar landing page */
-html {
+/* Smooth scroll untuk anchor link navbar landing page. Discope ke halaman itu
+   sendiri (wrapper `.tf-landing` di page.tsx) — bukan `html` global. Redoc di
+   /docs/api mengasumsikan scroll instan/sinkron saat navigasi sidebar; dengan
+   scroll-behavior:smooth global, window.scrollY tak pernah berubah saat klik
+   item sidebar (silently broken, tanpa error). :has() menjaga page.tsx tetap
+   server component murni, tanpa JS. */
+html:has(.tf-landing) {
   scroll-behavior: smooth;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html {
+  html:has(.tf-landing) {
     scroll-behavior: auto;
   }
 }
