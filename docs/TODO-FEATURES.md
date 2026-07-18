@@ -1873,10 +1873,43 @@ to me, (c) reviews requested from me (F-15) — each with deep links and counts 
 when a prerequisite's result is FAILED/BLOCKED, dependents auto-suggest BLOCKED (one-click
 accept, never silent).
 
-### F-33 — API v2 `[ ]`
+### F-33 — API v2 `[x]`
 Full-coverage REST (`/api/v2`): milestones, members, webhooks, fields, attachments, plans,
 environments; project-scoped tokens; per-key rate limits; typed OpenAPI with generated client
 (`packages/api-client`). v1 stays frozen + supported.
+
+**Shipped.** 15 route files under `src/app/api/v2/`, 34 operations across the 7 resource
+groups (list/create + get/patch/delete each; attachments upload multipart and have no PATCH
+since file bytes are immutable).
+
+- **Core layer** — `src/lib/api-v2.ts`. `guardV2()` mirrors v1's session-then-Bearer order but
+  consumes the *key's own* budget and returns the key so `resolveProject()` can enforce scope.
+  Nothing here is imported by v1, so v1 is frozen by construction, not by discipline.
+- **Project-scoped tokens** — `ApiKey.projectId` (null = org-wide, the v1 behaviour). A scoped
+  key gets **403** on any other project even when its owning user is a member there. The check
+  deliberately 403s rather than 404s: the caller holds a valid key, so "wrong project for this
+  key" is actionable and leaks nothing its own key metadata wouldn't.
+- **Per-key rate limits** — `ApiKey.rateLimitPerMin` (null = global `API_RATE_LIMIT`). Buckets
+  are keyed by key id, so exhausting one key never touches another. *Every* key-authed response
+  carries `X-RateLimit-*`; v1 only sent them on the 429.
+- **Uniform pagination** — every collection takes `page`/`perPage` (clamped, never a 422) and
+  returns `{ items, meta }`. This is a real v2-only fix: v1 is inconsistent, returning
+  `{data, total, nextCursor}` for cases but bare `{items}` for environments.
+- **OpenAPI + client** — `src/lib/openapi-v2.ts` served at `/api/v2/openapi`, hand-written
+  beside the routes as v1's is. `packages/api-client` generates types and one method per
+  operation from that document; output is checked in so consumers never run the generator.
+  Explicit `operationId`s keep names clean (`createMilestone`, not `createAMilestone`), and the
+  error schema is `ApiError` so the generated types don't shadow the global `Error`.
+- **Docs** — `/docs/api` gained a v1/v2 switcher; v1 stays the default so existing bookmarks
+  land on the API their integrations actually use.
+
+Deletes detach rather than cascade wherever test history is at stake: removing a milestone,
+plan or environment nulls the reference on its runs and keeps every result.
+
+Gotchas for the next person: `buildCombinations()` takes resolved `{name, options}` config
+groups (not a map) and plan creation must filter `deletedAt: null`; the webhook `events` column
+is comma-separated, not JSON; and `Milestone` has only id/name/dueDate/status — no description
+or completedAt — so don't serialize fields that aren't there.
 
 ### F-34 — LDAP / Active Directory `[ ]`
 Self-hosted-only login backend via env (`TF_LDAP_URL`, bind DN, user filter); maps to org

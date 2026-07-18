@@ -5,7 +5,8 @@
   "workspaces": [
     "packages/cli",
     "packages/playwright-reporter",
-    "packages/cypress-reporter"
+    "packages/cypress-reporter",
+    "packages/api-client"
   ],
   "scripts": {
     "dev": "next dev",
