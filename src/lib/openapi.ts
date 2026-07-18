@@ -1202,8 +1202,8 @@ export function openApiSpec() {
           requestBody: {
             required: true,
             content: {
-              "application/xml": { schema: { type: "string" }, examples: { junit: {}, trx: {}, nunit3: {}, xunit2: {} } },
-              "application/json": { schema: { type: "string" }, examples: { cucumber: {}, mocha: {} } },
+              "application/xml": { schema: { type: "string" } },
+              "application/json": { schema: { type: "string" } },
             },
           },
           responses: {
