@@ -202,7 +202,13 @@ export default async function ReportsPage({
         ) : (
           <div className="flex h-44 items-end gap-2">
             {trend.map((t, i) => (
-              <div key={i} className="group flex flex-1 flex-col items-center gap-1">
+              // h-full + justify-end: the bar's `height: N%` needs a parent with a
+              // definite height to resolve against, or it collapses to 0px. Same fix
+              // as the dashboard trend widget (DashboardWidgets.tsx).
+              // min-w-0: a flex item defaults to min-width:auto, so the truncated run
+              // name below sets a floor the column can't shrink past and the chart
+              // overflows its card once a project has more than a handful of runs.
+              <div key={i} className="group flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1">
                 <span className="text-xs font-medium text-slate-600">{t.rate}%</span>
                 <div
                   className={`w-full rounded-t ${t.rate >= 80 ? "bg-green-400" : t.rate >= 50 ? "bg-yellow-400" : "bg-red-400"}`}

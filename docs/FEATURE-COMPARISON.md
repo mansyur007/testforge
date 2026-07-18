@@ -338,33 +338,41 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
 - [x] *(Selesai 2026-07-11)* **Format hasil automasi tambahan** — parser TRX (MSTest), NUnit3,
       xUnit v2, Cucumber JSON, Mocha JSON di endpoint `/api/v1/results` generik (JUnit tetap
       jalan lewat `/api/v1/junit`); Allure belum.
-- [ ] **Reporter resmi per framework** — paket npm `@testforge/playwright`,
-      `@testforge/cypress`, pip `testforge-pytest` yang stream hasil real-time (bukan hanya
-      upload XML di akhir), + **CLI `testforge-cli`** untuk CI.
+- [x] *(Selesai 2026-07-13)* **Reporter resmi per framework** — paket npm
+      `testforge-playwright-reporter`, `testforge-cypress-reporter`, pip `pytest-testforge`
+      yang stream hasil real-time (bukan hanya upload XML di akhir), + **CLI `testforge-cli`**
+      untuk CI. Publish ke npm/PyPI masih manual. Lihat F-12.
 - [x] *(Selesai 2026-07-12)* **Parameterisasi / dataset** — variabel `{{param}}` di steps + tabel
       dataset per case; run mengeksekusi satu baris dataset sebagai satu hasil.
-- [ ] **Custom result status & custom role** — admin bisa menambah/mengubah status hasil
-      (warna, makna pass/fail) dan membuat role dengan permission granular.
-- [ ] **Review workflow case** — status alur `DRAFT → IN_REVIEW → APPROVED` dengan reviewer,
-      komentar review, dan filter "perlu review" (seperti Qase).
-- [ ] **Komentar & @mention** — komentar di case dan hasil run, mention memicu
-      notifikasi/email; activity feed per entity (bukan hanya audit log global).
-- [ ] **Dashboard & report builder** — widget yang bisa disusun (pass rate, coverage,
-      defect, velocity) per project; **perbandingan antar run/milestone**; export **PDF**;
+- [x] *(Selesai 2026-07-12)* **Custom result status & custom role** — admin bisa
+      menambah/mengubah status hasil (warna, makna pass/fail) dan membuat role dengan
+      permission granular. Lihat F-14.
+- [x] *(Selesai 2026-07-12)* **Review workflow case** — status alur
+      `DRAFT → IN_REVIEW → APPROVED` dengan reviewer, komentar review, dan filter
+      "perlu review" (seperti Qase). Lihat F-15.
+- [x] *(Selesai 2026-07-12)* **Komentar & @mention** — komentar di case dan hasil run,
+      mention memicu notifikasi/email. Uploader attachment di composer komentar ditunda
+      (butuh flow draft-id 2-fase). Lihat F-16.
+- [x] *(Selesai 2026-07-13)* **Dashboard & report builder** — widget yang bisa disusun
+      (pass rate, coverage, defect, velocity) per project; **perbandingan antar run/milestone**;
       **scheduled email report**; **share link publik read-only** untuk run report.
-- [ ] **Requirement management & traceability** — entity Requirement (atau import dari
-      Jira epic/story), link N:M ke case, matrix coverage requirement→case→hasil terakhir
-      (mengisi kekosongan yang ditinggal TestLink).
+      **Export PDF dashboard TIDAK dibangun** (share link dianggap cukup); PDF untuk katalog
+      case & run report ada lewat dialog print browser di F-35. Lihat F-17.
+- [x] *(Selesai 2026-07-13)* **Requirement management & traceability** — entity Requirement,
+      link N:M ke case, matrix coverage requirement→case→hasil terakhir (mengisi kekosongan
+      yang ditinggal TestLink). Import via CSV paste; picker terbalik di case detail ditunda.
+      Lihat F-18.
 - [x] *(Selesai 2026-07-12)* **Environments** — daftar environment per project (staging/prod/…),
       dipilih saat membuat run, jadi dimensi filter di reports.
-- [ ] **SSO SAML/OIDC + 2FA (TOTP)** — wajib untuk adopsi perusahaan; OIDC dulu (lebih
-      mudah, mencakup Google Workspace/Azure AD/Keycloak), SAML menyusul; SCIM paling akhir.
+- [x] *(Selesai 2026-07-16)* **SSO OIDC + 2FA (TOTP)** — OIDC generik (mencakup Google
+      Workspace/Azure AD/Keycloak) + 2FA TOTP dengan recovery code. **SAML & SCIM sengaja
+      out of scope**, belum dibangun. LDAP/AD menyusul di F-34. Lihat F-20.
 - [x] *(Selesai 2026-07-12)* **Mute/quarantine test** — tandai case automation sebagai muted;
       hasilnya tercatat tapi tidak menggagalkan pass rate; laporan test yang lama di-mute.
 - [x] *(Selesai 2026-07-12)* **Import dari TestRail/Qase/TestLink** — importer XML TestRail,
       export JSON Qase, dan XML TestLink (bukan cuma CSV) untuk menurunkan biaya pindah.
-- [ ] **Estimasi & forecast** — field estimasi per case, agregat per run/plan, forecast sisa
-      waktu berdasar kecepatan aktual tester (data timer sudah ada).
+- [x] *(Selesai 2026-07-12)* **Estimasi & forecast** — field estimasi per case, agregat per
+      run/plan, forecast sisa waktu berdasar kecepatan aktual tester. Lihat F-23.
 - [x] *(Selesai 2026-07-11)* **Bulk move/copy antar suite & antar project** + reorder
       drag-and-drop case dalam suite. Move antar suite lewat drag-drop ternyata sudah lama ada;
       yang baru ditambahkan cuma Copy-to-project dan drag-reorder.
@@ -390,8 +398,9 @@ Yang sudah **lebih baik atau setara** dibanding kompetitor (jangan dirusak saat 
       project (hasil run + case yang di-assign, + review diminta) seperti TestRail Todos. Lihat F-31.
 - [x] *(Selesai 2026-07-17)* **Case dependencies** — tandai case yang bergantung case lain; run
       menyarankan (bukan otomatis) BLOCK dependen saat prasyarat gagal. Lihat F-32.
-- [ ] **Public API v2** — cakupan penuh (milestones, members, webhooks, custom fields,
-      attachments), token per-project, rate limit per key.
+- [x] *(Selesai 2026-07-18)* **Public API v2** — cakupan penuh (milestones, members, webhooks,
+      custom fields, attachments), token per-project, rate limit per key, plus paket
+      `packages/api-client` yang di-generate dari spec. v1 tetap jalan & frozen. Lihat F-33.
 - [x] **LDAP/Active Directory** untuk self-hosted enterprise (paritas fitur TestLink/Kiwi).
 - [x] *(Selesai 2026-07-18)* **Print-friendly view** test case & run untuk audit/compliance — route `/print/*` khusus (katalog case + run report), PDF via dialog print browser, tanpa dependensi server (F-35).
 - [x] *(Selesai 2026-07-18)* **PWA/mobile execution view** — installable PWA (manifest + ikon
