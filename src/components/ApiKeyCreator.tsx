@@ -53,41 +53,87 @@ function CopyButton({ value }: { value: string }) {
   );
 }
 
-export function ApiKeyCreator() {
+export function ApiKeyCreator({
+  projects = [],
+}: {
+  /** Projects the current user belongs to — the scoping choices. */
+  projects?: { id: string; name: string }[];
+}) {
   const [state, formAction] = useFormState(createApiKey, undefined);
 
   return (
     <div className="space-y-3">
       <form
         action={formAction}
-        className="flex items-end gap-3 rounded-xl border border-slate-200 bg-white p-5"
+        className="space-y-4 rounded-xl border border-slate-200 bg-white p-5"
       >
-        <div className="flex-1">
-          <label className="mb-1 block text-xs font-medium text-slate-500">
-            Key name (e.g. github-actions)
-          </label>
-          <input
-            name="name"
-            required
-            data-testid="apikey-name-input"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-          />
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="min-w-0 flex-1">
+            <label className="mb-1 block text-xs font-medium text-slate-500">
+              Key name (e.g. github-actions)
+            </label>
+            <input
+              name="name"
+              required
+              data-testid="apikey-name-input"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-500">
+              Access
+            </label>
+            <select
+              name="scope"
+              defaultValue="WRITE"
+              data-testid="apikey-scope-select"
+              className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            >
+              <option value="WRITE">Read &amp; write</option>
+              <option value="READ">Read-only</option>
+            </select>
+          </div>
+          <SubmitButton />
         </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">
-            Access
-          </label>
-          <select
-            name="scope"
-            defaultValue="WRITE"
-            data-testid="apikey-scope-select"
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
-          >
-            <option value="WRITE">Read &amp; write</option>
-            <option value="READ">Read-only</option>
-          </select>
+
+        {/* F-33: both fields are optional; blank keeps the pre-v2 behaviour. */}
+        <div className="flex flex-wrap items-end gap-3 border-t border-slate-100 pt-4">
+          <div className="min-w-0 flex-1">
+            <label className="mb-1 block text-xs font-medium text-slate-500">
+              Project scope
+            </label>
+            <select
+              name="projectId"
+              defaultValue=""
+              data-testid="apikey-project-select"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            >
+              <option value="">All my projects (org-wide)</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-slate-400">
+              A scoped key is rejected on every other project — useful for CI.
+            </p>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-slate-500">
+              Rate limit (req/min)
+            </label>
+            <input
+              name="rateLimitPerMin"
+              type="number"
+              min={1}
+              placeholder="Default"
+              data-testid="apikey-ratelimit-input"
+              className="w-32 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            />
+            <p className="mt-1 text-xs text-slate-400">Blank = server default.</p>
+          </div>
         </div>
-        <SubmitButton />
       </form>
       {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
       {state?.createdKey && (

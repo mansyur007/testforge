@@ -7,10 +7,20 @@ export const dynamic = "force-dynamic";
 
 export default async function ApiKeysPage() {
   const session = await requireSession();
-  const keys = await db.apiKey.findMany({
-    where: { userId: session.userId },
-    orderBy: { createdAt: "desc" },
-  });
+  const [keys, memberships] = await Promise.all([
+    db.apiKey.findMany({
+      where: { userId: session.userId },
+      orderBy: { createdAt: "desc" },
+      include: { project: { select: { name: true } } },
+    }),
+    // F-33: only projects the user belongs to can be chosen as a key's scope.
+    db.projectMember.findMany({
+      where: { userId: session.userId },
+      select: { project: { select: { id: true, name: true } } },
+      orderBy: { project: { name: "asc" } },
+    }),
+  ]);
+  const projects = memberships.map((m) => m.project);
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -30,15 +40,17 @@ export default async function ApiKeysPage() {
         </p>
       </div>
 
-      <ApiKeyCreator />
+      <ApiKeyCreator projects={projects} />
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
             <tr>
               <th className="px-5 py-3">Name</th>
               <th className="px-5 py-3">Key</th>
               <th className="px-5 py-3">Access</th>
+              <th className="px-5 py-3">Scope</th>
+              <th className="px-5 py-3">Rate limit</th>
               <th className="px-5 py-3">Last Used</th>
               <th className="px-5 py-3"></th>
             </tr>
@@ -61,6 +73,18 @@ export default async function ApiKeysPage() {
                     {k.scope === "READ" ? "Read-only" : "Read & write"}
                   </span>
                 </td>
+                <td className="px-5 py-3 text-xs">
+                  {k.project ? (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 font-medium text-amber-800">
+                      {k.project.name}
+                    </span>
+                  ) : (
+                    <span className="text-slate-400">All projects</span>
+                  )}
+                </td>
+                <td className="px-5 py-3 text-xs text-slate-500">
+                  {k.rateLimitPerMin ? `${k.rateLimitPerMin}/min` : "Default"}
+                </td>
                 <td className="px-5 py-3 text-xs text-slate-500">
                   {k.lastUsedAt
                     ? k.lastUsedAt.toLocaleString("en-US")
@@ -73,7 +97,7 @@ export default async function ApiKeysPage() {
             ))}
             {keys.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-8 text-center text-slate-400">
+                <td colSpan={7} className="px-5 py-8 text-center text-slate-400">
                   No API keys yet.
                 </td>
               </tr>
