@@ -34,7 +34,11 @@ test(`TC-${TC}-30 Mute/quarantine: flaky -> mute -> excluded everywhere -> unmut
 
   // 2. Three runs, statuses PASSED/FAILED/PASSED -> 2 flips -> flaky.
   let failedRunId = "";
-  for (const [i, status] of ["PASSED", "FAILED", "PASSED"].entries()) {
+  // Index loop, not `.entries()`: this repo's tsconfig target predates es2015
+  // iterators, so iterating an ArrayIterator fails `tsc --noEmit`.
+  const flakySequence = ["PASSED", "FAILED", "PASSED"];
+  for (let i = 0; i < flakySequence.length; i++) {
+    const status = flakySequence[i];
     const runRes = await page.request.post(
       `/api/v1/projects/${E2E.projectSlug}/runs`,
       { data: { name: `Flaky run ${i} ${ts}`, caseIds: [target.id] } }
