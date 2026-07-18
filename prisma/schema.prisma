@@ -756,6 +756,20 @@ model TestRunResult {
   @@unique([runId, caseId, datasetName])
 }
 
+// F-36 Part C: idempotency ledger for offline-queued result submissions. Each
+// queued write carries a client-minted UUID (`clientId`); claiming it inside
+// the write transaction means a double-flush (two tabs draining the same
+// queue) applies once and fires side effects once. Grows one row per submit
+// that carries a clientId (offline/mobile path only) — small and prunable.
+model ResultSubmission {
+  clientId  String   @id
+  resultId  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@index([resultId])
+}
+
 // F-16: flat (non-threaded) comments on a case, run, or run result. bodyMd is
 // Markdown (F-02 renderer); mentions are stored inline as `@[userId]` tokens.
 // Soft delete keeps the row so the thread reads "deleted" instead of collapsing.

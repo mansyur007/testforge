@@ -2039,7 +2039,19 @@ every browser; it's the cheapest professional touch in this whole feature.
 - [ ] Docker note: everything here is routes + a CSS import → bundles into `.next`;
       **no `public/` needed, no Dockerfile change** (contrast with F-36, which needs one).
 
-### F-36 — Mobile execution PWA `[ ]`
+### F-36 — Mobile execution PWA `[x]`
+
+> **Status: DONE** (2026-07-18, branch `feat/mobile-pwa`, all four parts in one PR). Built as
+> written. Notes/deviations: (1) `PwaRegistrar` + a responsive **`AppShell`** wrapper were added
+> — the work order scoped Part D to `RunExecutor`, but the app shell's fixed `w-60` sidebar +
+> `ml-60` main broke a 375 px viewport, so the shell became an off-canvas drawer below `md`
+> (desktop pixel-identical via `md:` prefixes). `ProjectTabs` scrolls horizontally and the run
+> header wraps on narrow screens for the same reason (both `md:`-gated). (2) Idempotency uses a
+> `ResultSubmission` ledger table (clientId claimed inside the write transaction). (3) `Toast`
+> already existed from L-04 and is reused for the conflict toast. (4) The online submit still
+> carries F-03 custom fields via the JSON route; only the offline queued body is status-only,
+> per spec. (5) Part B (service worker) never registers in dev, so its AC is a manual prod-image
+> check — e2e `pwa-mobile.spec.ts` covers Parts A/C/D.
 
 > **Full work order — written 2026-07-13 by Fable 5 as a design handoff** (same contract as
 > F-35's note: design decisions are final, build them as written; read §7 first).

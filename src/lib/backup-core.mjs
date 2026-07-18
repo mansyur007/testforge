@@ -52,6 +52,7 @@ export const MODEL_ORDER = [
   "TestPlan",
   "TestRun",
   "TestRunResult",
+  "ResultSubmission",
   "Comment",
   "Attachment",
   "Session",
