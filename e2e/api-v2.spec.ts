@@ -289,8 +289,9 @@ test.describe("API v2", () => {
       for (const value of Object.values(obj)) walk(value);
     })(spec);
     expect(refs.size).toBeGreaterThan(0);
-    for (const ref of refs)
-      expect(defined).toContain(ref.replace("#/components/schemas/", ""));
+    refs.forEach((ref) =>
+      expect(defined).toContain(ref.replace("#/components/schemas/", ""))
+    );
   });
 
   test("v1 remains available and keeps its original list shape", async ({

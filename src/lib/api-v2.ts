@@ -1,7 +1,6 @@
 import type {
   ApiKey,
   Attachment,
-  CustomFieldDef,
   Environment,
   Milestone,
   ProjectMember,
@@ -305,5 +304,3 @@ export function serializeAttachmentV2(a: Attachment) {
     createdAt: a.createdAt.toISOString(),
   };
 }
-
-export type { CustomFieldDef };
