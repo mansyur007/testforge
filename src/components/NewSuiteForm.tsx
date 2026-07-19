@@ -9,10 +9,11 @@ import { createSuite } from "@/app/actions/projects";
 // — React 18 doesn't auto-clear uncontrolled fields after a server action.
 export function NewSuiteForm({
   projectId,
-  rootSuites,
+  suites,
 }: {
   projectId: string;
-  rootSuites: { id: string; name: string }[];
+  // Urutan DFS, `depth` dipakai untuk indentasi label option.
+  suites: { id: string; name: string; depth: number }[];
 }) {
   const [state, formAction] = useFormState(createSuite, undefined);
   const formRef = useRef<HTMLFormElement>(null);
@@ -40,9 +41,12 @@ export function NewSuiteForm({
         className="w-full rounded border border-slate-200 px-2 py-1.5 text-xs"
       >
         <option value="">(root suite)</option>
-        {rootSuites.map((s) => (
+        {suites.map((s) => (
           <option key={s.id} value={s.id}>
-            section in: {s.name}
+            {/* nbsp: satu-satunya indentasi yang bertahan di <option> */}
+            {"  ".repeat(s.depth)}
+            {s.depth === 0 ? "section in: " : "↳ "}
+            {s.name}
           </option>
         ))}
       </select>
