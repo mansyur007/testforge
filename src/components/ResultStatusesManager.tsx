@@ -66,7 +66,7 @@ function StatusRow({ projectId, def }: { projectId: string; def: StatusDefLite }
         <input
           name="label"
           defaultValue={def.label}
-          className="w-36 rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-indigo-500 focus:outline-none"
+          className="w-36 rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
         />
         <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
           {def.key}
@@ -155,7 +155,7 @@ export function ResultStatusesManager({
             required
             placeholder='e.g. "Known Issue"'
             data-testid="status-label-input"
-            className="w-44 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-44 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           />
           <select
             name="kind"

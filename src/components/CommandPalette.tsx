@@ -177,7 +177,7 @@ export function CommandPalette() {
               }}
               placeholder="Search cases, runs, suites, milestones…"
               data-testid="global-search-input"
-              className="w-full border-b border-slate-200 px-4 py-3 text-sm focus:outline-none"
+              className="w-full border-b border-slate-200 px-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             />
 
             <div className="max-h-80 overflow-y-auto p-2">
@@ -192,7 +192,7 @@ export function CommandPalette() {
                         key={r.href}
                         type="button"
                         onClick={() => go(r)}
-                        className="flex w-full items-center rounded-lg px-2 py-1.5 text-left text-sm hover:bg-slate-100"
+                        className="flex w-full items-center rounded-lg px-2 py-1.5 text-left text-sm hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                       >
                         <span className="truncate">{r.label}</span>
                       </button>
@@ -224,7 +224,9 @@ export function CommandPalette() {
                         onClick={() => go(item)}
                         onMouseEnter={() => setIdx(flat)}
                         className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm ${
-                          flat === idx ? "bg-indigo-50 text-indigo-800" : "hover:bg-slate-100"
+                          flat === idx
+                            ? "bg-indigo-50 text-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                            : "hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
                         }`}
                       >
                         {item.sub && (

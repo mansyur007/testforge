@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { moveCases } from "@/app/actions/cases";
 import { CASE_DND_MIME, CASES_MOVED_EVENT } from "@/lib/dnd";
 
@@ -20,6 +20,8 @@ export function SuiteDropZone({
   children: React.ReactNode;
 }) {
   const [over, setOver] = useState(false);
+  // dragenter/dragleave bubble from children, so track depth to avoid flicker.
+  const depth = useRef(0);
   const [pending, startTransition] = useTransition();
 
   function onDrop(e: React.DragEvent) {
@@ -47,16 +49,32 @@ export function SuiteDropZone({
 
   return (
     <div
+      onDragEnter={(e) => {
+        if (!e.dataTransfer.types.includes(CASE_DND_MIME)) return;
+        depth.current += 1;
+        setOver(true);
+      }}
       onDragOver={(e) => {
         if (!e.dataTransfer.types.includes(CASE_DND_MIME)) return;
         e.preventDefault();
         e.dataTransfer.dropEffect = "move";
-        if (!over) setOver(true);
       }}
-      onDragLeave={() => setOver(false)}
-      onDrop={onDrop}
-      className={`${className} rounded transition-colors ${
-        over ? "ring-2 ring-indigo-400 bg-indigo-50" : ""
+      onDragLeave={() => {
+        depth.current -= 1;
+        if (depth.current <= 0) {
+          depth.current = 0;
+          setOver(false);
+        }
+      }}
+      onDrop={(e) => {
+        depth.current = 0;
+        setOver(false);
+        onDrop(e);
+      }}
+      className={`${className} rounded motion-safe:transition-[background-color,box-shadow] motion-safe:duration-fast motion-safe:ease-tf-out ${
+        over
+          ? "bg-indigo-50 shadow-[0_0_0_2px_theme(colors.indigo.400)]"
+          : "shadow-[0_0_0_0_transparent]"
       } ${pending ? "opacity-60" : ""}`}
     >
       {children}

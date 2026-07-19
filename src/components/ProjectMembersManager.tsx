@@ -111,7 +111,7 @@ export function ProjectMembersManager({
               <select
                 value={addUserId}
                 onChange={(e) => setAddUserId(e.target.value)}
-                className="min-w-[16rem] rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                className="min-w-[16rem] rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               >
                 <option value="">Select a person…</option>
                 {addable.map((u) => (
@@ -123,7 +123,7 @@ export function ProjectMembersManager({
               <select
                 value={addRole}
                 onChange={(e) => setAddRole(e.target.value)}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               >
                 {ROLE_OPTIONS.map((r) => (
                   <option key={r} value={r}>
@@ -199,7 +199,7 @@ export function ProjectMembersManager({
                               )
                             )
                           }
-                          className="rounded-lg border border-slate-300 px-2 py-1 text-xs focus:border-indigo-500 focus:outline-none"
+                          className="rounded-lg border border-slate-300 px-2 py-1 text-xs focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                         >
                           {ROLE_OPTIONS.map((r) => (
                             <option key={r} value={r}>

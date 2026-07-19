@@ -101,7 +101,7 @@ export function NewPlanForm({
               required
               placeholder="e.g. Release 2.0 cross-browser"
               data-testid="plan-name-input"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             />
           </div>
           <div>
@@ -126,7 +126,7 @@ export function NewPlanForm({
             </label>
             <input
               name="description"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             />
           </div>
         </div>

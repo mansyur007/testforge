@@ -38,7 +38,7 @@ export default function ApiDocsPage({
             key={v.id}
             href={`/docs/api?v=${v.id}`}
             aria-current={v.id === active.id ? "page" : undefined}
-            className={`rounded-full px-3 py-1 text-sm font-medium motion-safe:transition-colors motion-safe:duration-150 motion-safe:ease-out ${
+            className={`rounded-full px-3 py-1 text-sm font-medium motion-safe:transition-colors motion-safe:duration-fast motion-safe:ease-tf-out ${
               v.id === active.id
                 ? "bg-indigo-600 text-white"
                 : "text-slate-600 hover:bg-slate-100"

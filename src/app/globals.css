@@ -59,19 +59,31 @@ html:has(.tf-landing) {
     }
   }
 
-  /* API docs (/docs/api): masks the blank gap before the Redoc CDN bundle
-     hydrates <redoc>, and the remount when switching v1/v2 (ApiDocs.tsx keys
-     the wrapper on specUrl). Only the wrapper we render moves — Redoc's own
-     internals are a vendored web component we don't touch. */
+}
+
+/* API docs (/docs/api): masks the blank gap before the Redoc CDN bundle
+   hydrates <redoc>, and remounts when switching v1/v2. Opacity remains active
+   for reduced motion as useful feedback; only the translate is motion-safe.
+   A transition re-targets rapid toggles instead of restarting from zero. */
+.tf-api-docs-fade {
+  opacity: 0;
+  transition: opacity 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.tf-api-docs-fade[data-mounted="true"] {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
   .tf-api-docs-fade {
-    animation: tf-api-docs-fade 200ms ease-out both;
+    transform: translateY(4px);
+    transition:
+      opacity 200ms cubic-bezier(0.23, 1, 0.32, 1),
+      transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
   }
 
-  @keyframes tf-api-docs-fade {
-    from {
-      opacity: 0;
-      transform: translateY(4px);
-    }
+  .tf-api-docs-fade[data-mounted="true"] {
+    transform: translateY(0);
   }
 }
 

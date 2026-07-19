@@ -65,9 +65,9 @@ export function AiGenerateCases({ projectId }: { projectId: string }) {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 sm:p-8">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 sm:p-8 motion-safe:animate-tf-fade-in">
           <div
-            className="w-full max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-xl"
+            className="w-full max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-xl motion-safe:animate-tf-pop-in"
             data-testid="ai-generate-modal"
           >
             <div className="mb-3 flex items-center justify-between">
@@ -95,7 +95,7 @@ export function AiGenerateCases({ projectId }: { projectId: string }) {
                   rows={8}
                   placeholder="As a user, I want to reset my password so that…"
                   data-testid="ai-generate-input"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 />
                 {error && (
                   <p className="mt-2 text-sm text-red-600" data-testid="ai-generate-error">

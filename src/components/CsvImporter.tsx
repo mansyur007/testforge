@@ -118,7 +118,7 @@ export function CsvImporter({
           <select
             value={suiteId}
             onChange={(e) => setSuiteId(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           >
             <option value="">(no suite)</option>
             {suites

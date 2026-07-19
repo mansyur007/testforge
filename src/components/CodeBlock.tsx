@@ -20,7 +20,7 @@ export function CodeBlock({ code }: { code: string }) {
     <div className="group relative">
       <button
         onClick={copy}
-        className="absolute right-2 top-2 rounded-md border border-slate-700 bg-slate-800/80 px-2 py-1 text-xs font-medium text-slate-300 opacity-0 transition hover:bg-slate-700 hover:text-white focus:opacity-100 group-hover:opacity-100"
+        className="absolute right-2 top-2 rounded-md border border-slate-700 bg-slate-800/80 px-2 py-1 text-xs font-medium text-slate-300 opacity-0 motion-safe:transition-[opacity,color,background-color] motion-safe:duration-fast motion-safe:ease-tf-out hover:bg-slate-700 hover:text-white focus:opacity-100 group-hover:opacity-100"
       >
         {copied ? "Copied ✓" : "Copy"}
       </button>

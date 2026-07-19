@@ -34,7 +34,7 @@ export function NewSuiteForm({
         placeholder="New suite name..."
         required
         data-testid="suite-name-input"
-        className="w-full rounded border border-slate-200 px-2 py-1.5 text-xs focus:border-indigo-500 focus:outline-none"
+        className="w-full rounded border border-slate-200 px-2 py-1.5 text-xs focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
       />
       <select
         name="parentId"

@@ -18,7 +18,7 @@ export type SharedGroupItem = {
 };
 
 const inputCls =
-  "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none";
+  "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500";
 
 // Compact inline step editor shared by the create & edit forms. Steps are
 // serialized into a hidden stepsJson input, same convention as CaseForm.

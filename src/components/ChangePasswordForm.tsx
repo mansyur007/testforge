@@ -50,7 +50,7 @@ export function ChangePasswordForm({ mode }: { mode: "change" | "set" }) {
             type="password"
             required
             autoComplete="current-password"
-            className="w-full max-w-sm rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full max-w-sm rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           />
         </div>
       )}
@@ -64,7 +64,7 @@ export function ChangePasswordForm({ mode }: { mode: "change" | "set" }) {
           type="password"
           required
           autoComplete="new-password"
-          className="w-full max-w-sm rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          className="w-full max-w-sm rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
         />
         <p className="mt-1 text-xs text-slate-400">
           At least 8 characters, with 1 uppercase letter and 1 number.
@@ -80,7 +80,7 @@ export function ChangePasswordForm({ mode }: { mode: "change" | "set" }) {
           type="password"
           required
           autoComplete="new-password"
-          className="w-full max-w-sm rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          className="w-full max-w-sm rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
         />
       </div>
 

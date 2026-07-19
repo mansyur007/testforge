@@ -123,13 +123,13 @@ export function TeamManager({
             onChange={(e) => setEmails(e.target.value)}
             rows={3}
             placeholder="teammate@example.com, another@example.com"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           />
           <div className="flex items-center gap-3">
             <select
               value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value)}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
               <option value="MEMBER">Member</option>
               <option value="ADMIN">Admin</option>
@@ -201,7 +201,7 @@ export function TeamManager({
                               )
                             )
                           }
-                          className="rounded-lg border border-slate-300 px-2 py-1 text-xs focus:border-indigo-500 focus:outline-none"
+                          className="rounded-lg border border-slate-300 px-2 py-1 text-xs focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                         >
                           {ROLE_OPTIONS.map((r) => (
                             <option key={r} value={r}>

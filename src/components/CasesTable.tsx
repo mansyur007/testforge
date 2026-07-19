@@ -531,7 +531,7 @@ export function CasesTable({
                         onChange={(e) =>
                           inlineUpdate(c.id, "automationStatus", e.target.value)
                         }
-                        className="cursor-pointer rounded border border-slate-300 bg-white px-1.5 py-0.5 text-xs text-slate-600 focus:border-indigo-500 focus:outline-none disabled:opacity-50"
+                        className="cursor-pointer rounded border border-slate-300 bg-white px-1.5 py-0.5 text-xs text-slate-600 focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50"
                       >
                         {AUTOMATION_STATUSES.map((a) => (
                           <option key={a} value={a}>
@@ -635,8 +635,8 @@ export function CasesTable({
       </div>
 
       {showDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-          <div className="w-full max-w-md space-y-4 rounded-xl bg-white p-6 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 motion-safe:animate-tf-fade-in">
+          <div className="w-full max-w-md space-y-4 rounded-xl bg-white p-6 shadow-xl motion-safe:animate-tf-pop-in">
             <h3 className="text-lg font-semibold text-slate-900">
               Delete {selected.size} test case{selected.size === 1 ? "" : "s"}?
             </h3>
@@ -652,7 +652,7 @@ export function CasesTable({
               onChange={(e) => setConfirmText(e.target.value)}
               placeholder={projectName}
               data-testid="cases-bulk-delete-confirm-input"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-red-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             />
             {error && <p className="text-sm text-red-600">{error}</p>}
             <div className="flex justify-end gap-2">
@@ -678,8 +678,8 @@ export function CasesTable({
       )}
 
       {showCopy && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-          <div className="w-full max-w-md space-y-4 rounded-xl bg-white p-6 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 motion-safe:animate-tf-fade-in">
+          <div className="w-full max-w-md space-y-4 rounded-xl bg-white p-6 shadow-xl motion-safe:animate-tf-pop-in">
             <h3 className="text-lg font-semibold text-slate-900">
               Copy {selected.size} test case{selected.size === 1 ? "" : "s"} to another project
             </h3>
@@ -694,7 +694,7 @@ export function CasesTable({
               value={copyTarget}
               onChange={(e) => setCopyTarget(e.target.value)}
               data-testid="cases-copy-target"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
               {otherProjects.map((p) => (
                 <option key={p.id} value={p.id}>

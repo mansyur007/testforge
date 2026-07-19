@@ -225,7 +225,7 @@ export default async function RunsPage({
             name="name"
             required
             placeholder="Milestone name, e.g. Release v2.0"
-            className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           />
           <input type="date" name="dueDate" className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
           <button className="rounded-lg bg-slate-800 px-4 py-2 text-sm text-white hover:bg-slate-700">

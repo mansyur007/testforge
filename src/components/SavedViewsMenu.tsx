@@ -139,7 +139,7 @@ export function SavedViewsMenu({
       {open && (
         <div
           data-testid="saved-views-panel"
-          className="absolute left-0 z-40 mt-1 w-72 rounded-xl border border-slate-200 bg-white p-2 shadow-xl"
+          className="absolute left-0 z-40 mt-1 w-72 origin-top-left rounded-xl border border-slate-200 bg-white p-2 shadow-xl motion-safe:animate-tf-pop-in"
         >
           <button
             type="button"
@@ -172,7 +172,7 @@ export function SavedViewsMenu({
                   autoFocus
                   placeholder="View name…"
                   data-testid="saved-view-name"
-                  className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 />
                 <div className="flex items-center gap-3 text-xs text-slate-600">
                   {canShare && (

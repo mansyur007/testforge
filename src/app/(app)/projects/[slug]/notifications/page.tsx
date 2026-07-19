@@ -167,7 +167,7 @@ export default async function NotificationsPage({
               required
               placeholder="Recipients, comma-separated emails"
               data-testid="report-schedule-recipients-input"
-              className="min-w-64 flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none"
+              className="min-w-64 flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             />
             <button
               className="rounded-lg bg-slate-800 px-3 py-1.5 text-sm text-white hover:bg-slate-700"

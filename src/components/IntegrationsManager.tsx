@@ -71,7 +71,7 @@ function CredentialFields({ provider }: { provider: string }) {
             autoComplete="off"
             placeholder="you@company.com"
             data-testid="integration-email-input"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           />
         </div>
         <div>
@@ -84,7 +84,7 @@ function CredentialFields({ provider }: { provider: string }) {
             autoComplete="new-password"
             placeholder="••••••••"
             data-testid="integration-token-input"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           />
         </div>
       </div>
@@ -100,7 +100,7 @@ function CredentialFields({ provider }: { provider: string }) {
         autoComplete="new-password"
         placeholder={provider === "GITHUB" ? "ghp_… (repo scope)" : "glpat-… (api scope)"}
         data-testid="integration-token-input"
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
       />
     </div>
   );
@@ -147,7 +147,7 @@ function IntegrationForm({
               value={provider}
               onChange={(e) => setProvider(e.target.value)}
               data-testid="integration-provider-select"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
               {Object.entries(PROVIDER_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>
@@ -166,7 +166,7 @@ function IntegrationForm({
             defaultValue={editing?.baseUrl ?? ""}
             placeholder={BASE_HINTS[editing?.provider ?? provider].placeholder}
             data-testid="integration-baseurl-input"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           />
         </div>
         <div>
@@ -179,7 +179,7 @@ function IntegrationForm({
             defaultValue={editing?.targetKey ?? ""}
             placeholder={TARGET_HINTS[editing?.provider ?? provider].placeholder}
             data-testid="integration-target-input"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           />
         </div>
       </div>

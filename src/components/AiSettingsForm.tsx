@@ -60,7 +60,7 @@ export function AiSettingsForm({
             defaultValue={endpoint}
             placeholder="https://api.anthropic.com"
             data-testid="ai-endpoint"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           />
           <p className="mt-1 text-xs text-slate-400">
             Any Anthropic-compatible Messages API base URL. Leave as the default
@@ -77,7 +77,7 @@ export function AiSettingsForm({
             defaultValue={model}
             placeholder={defaultModel}
             data-testid="ai-model"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           />
         </div>
 
@@ -91,7 +91,7 @@ export function AiSettingsForm({
             autoComplete="off"
             placeholder={configured ? "•••••••• (leave blank to keep)" : "sk-ant-..."}
             data-testid="ai-key"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           />
           <p className="mt-1 text-xs text-slate-400">
             Stored encrypted; never displayed again.

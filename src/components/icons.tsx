@@ -96,7 +96,7 @@ export function BackLink({
     <Link
       href={href}
       data-testid={testId}
-      className={`inline-flex items-center gap-1 text-sm font-medium motion-safe:transition-colors motion-safe:duration-150 ${colors} ${className}`}
+      className={`inline-flex items-center gap-1 text-sm font-medium motion-safe:transition-colors motion-safe:duration-fast motion-safe:ease-tf-out ${colors} ${className}`}
     >
       <TFIcon name="chevron-left" className="h-4 w-4 shrink-0" />
       {children}
