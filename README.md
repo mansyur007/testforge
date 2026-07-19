@@ -2,7 +2,7 @@
 
 Open source test case management platform — a free alternative to TestRail,
 Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
-[AUDIT-PRD.md](AUDIT-PRD.md) for the audit of that document).
+[docs/DOCUMENTATION.md Part II](docs/DOCUMENTATION.md#part-ii--prd-audit) for the audit of that document).
 
 ## MVP Features (v0.1)
 
@@ -281,8 +281,9 @@ repo. Follow these rules before changing code, git, or deploy.
 
 ### Project context
 
-- `APP-AUDIT.md` — architecture, auth, user flows, feature gaps.
-- `AUDIT-PRD.md` — PRD scope vs MVP.
+- `docs/DOCUMENTATION.md` — the consolidated project documentation: application audit
+  (architecture, auth, user flows), PRD audit, competitor comparison, and the full
+  implementation work orders for all 42 shipped features.
 - EMHA estate deploy skill (VPS, Caddy): `.claude/skills/` — local, gitignored;
   brief guide in § Git & deploy and the deploy workflow.
 
