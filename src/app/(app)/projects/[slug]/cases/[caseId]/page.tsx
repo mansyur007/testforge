@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TFIcon } from "@/components/icons";
+import { TFIcon, BackLink } from "@/components/icons";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
@@ -210,13 +210,7 @@ export default async function CaseDetailPage({
         active="cases"
       />
 
-      <Link
-        href={backHref}
-        data-testid="case-back"
-        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-indigo-600"
-      >
-        ← Back to test cases
-      </Link>
+      <BackLink href={backHref} testId="case-back">Back to test cases</BackLink>
 
       <div className="flex items-start justify-between gap-4">
         <div>

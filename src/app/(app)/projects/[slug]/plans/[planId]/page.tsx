@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackLink } from "@/components/icons";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
@@ -103,12 +104,7 @@ export default async function PlanDetailPage({
     <div className="space-y-6">
       <ProjectTabs slug={plan.project.slug} name={plan.project.name} active="plans" />
 
-      <Link
-        href={`/projects/${plan.project.slug}/plans`}
-        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-indigo-600"
-      >
-        ← Back to test plans
-      </Link>
+      <BackLink href={`/projects/${plan.project.slug}/plans`}>Back to test plans</BackLink>
 
       <div className="flex items-start justify-between gap-4">
         <div>

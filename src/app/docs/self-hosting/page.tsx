@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
-import { Logo, TFIcon } from "@/components/icons";
+import { Logo, TFIcon, BackLink } from "@/components/icons";
 
 export const metadata: Metadata = {
   title: "Self-Hosting — TestForge",
@@ -24,9 +24,7 @@ export default function SelfHostingPage() {
     <main className="mx-auto max-w-3xl px-4 py-12">
       <div className="mb-8 flex items-center justify-between">
         <Logo size="sm" />
-        <Link href="/" className="text-sm text-indigo-600 hover:underline">
-          {t.back}
-        </Link>
+        <BackLink href="/">{t.back}</BackLink>
       </div>
       <h1 className="flex items-center gap-3 text-3xl font-bold">
         <TFIcon name="docker-setup" className="h-9 w-9" />

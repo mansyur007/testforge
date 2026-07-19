@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackLink } from "@/components/icons";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
@@ -173,12 +174,7 @@ export default async function RunComparePage({
 
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Run Comparison</h2>
-        <Link
-          href={`/projects/${project.slug}/runs`}
-          className="text-sm text-indigo-600 hover:underline"
-        >
-          ← Back to runs
-        </Link>
+        <BackLink href={`/projects/${project.slug}/runs`}>Back to runs</BackLink>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">

@@ -188,7 +188,7 @@ const en = {
       email: "Email",
       submit: "Send Reset Link",
       submitting: "Sending...",
-      back: "← Back to login",
+      back: "Back to login",
       devMode: "Dev mode (SMTP not configured):",
     },
     reset: {
@@ -227,7 +227,7 @@ const en = {
   },
   docs: {
     selfHosting: {
-      back: "← Back to home",
+      back: "Back to home",
       title: "Self-Host in 5 Minutes",
       intro:
         "TestForge runs on your own infrastructure — your data is 100% yours. Minimum requirements: Docker and 2GB RAM (PRD §5.4).",
@@ -429,7 +429,7 @@ const id: typeof en = {
       email: "Email",
       submit: "Kirim Link Reset",
       submitting: "Mengirim...",
-      back: "← Kembali ke login",
+      back: "Kembali ke login",
       devMode: "Mode dev (SMTP belum dikonfigurasi):",
     },
     reset: {
@@ -468,7 +468,7 @@ const id: typeof en = {
   },
   docs: {
     selfHosting: {
-      back: "← Kembali ke beranda",
+      back: "Kembali ke beranda",
       title: "Self-Host dalam 5 Menit",
       intro:
         "TestForge berjalan di infrastruktur kamu sendiri — data 100% milik kamu. Kebutuhan minimum: Docker dan 2GB RAM (PRD §5.4).",

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackLink } from "@/components/icons";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
@@ -69,12 +70,7 @@ export default async function SessionDetailPage({
 
       <div className="flex items-start justify-between gap-4">
         <div>
-          <Link
-            href={`/projects/${project.slug}/sessions`}
-            className="text-sm text-indigo-600 hover:underline"
-          >
-            ← Sessions
-          </Link>
+          <BackLink href={`/projects/${project.slug}/sessions`}>Sessions</BackLink>
           <h2 className="mt-1 text-xl font-bold">{s.charter}</h2>
           <p className="mt-1 text-sm text-slate-500">
             Tester: <b>{s.tester.name}</b> ·{" "}

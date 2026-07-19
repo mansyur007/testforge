@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import { BackLink } from "@/components/icons";
 import { useRouter } from "next/navigation";
 import { PRIORITY_BADGES } from "@/lib/constants";
 import {
@@ -635,12 +635,7 @@ export function RunExecutor({
       {/* F-36 Part D: mobile top bar — position, prev/next, progress strip. */}
       <div className="sticky top-12 z-20 -mx-4 mb-3 bg-slate-900 text-white md:hidden">
         <div className="flex items-center justify-between px-3 py-2">
-          <Link
-            href={`/projects/${projectSlug}/runs`}
-            className="text-sm text-slate-300 hover:text-white"
-          >
-            ← Runs
-          </Link>
+          <BackLink href={`/projects/${projectSlug}/runs`} variant="dark">Runs</BackLink>
           <button
             onClick={() => setSheetOpen(true)}
             data-testid="mobile-position"
