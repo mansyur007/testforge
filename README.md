@@ -275,9 +275,10 @@ repo. Follow these rules before changing code, git, or deploy.
   `docker-compose.prod.yml` · deploy via `.github/workflows/deploy.yml`.
 - `NEXT_PUBLIC_*` variables are **baked at Docker build time** — change them in
   `docker-compose.prod.yml` (and rebuild), not only as fallbacks in TSX code.
-- **GitHub links for visitors** (clone, Star on GitHub): decoy
-  `mansyur007/test-forge`. **Actual dev/CI repo**: `mansyur007/testforge` — do not
-  move source to the decoy unless asked.
+- **GitHub links for visitors** (clone, Star on GitHub) now point at the real
+  repo `mansyur007/testforge`, same as dev/CI. The former decoy
+  `mansyur007/test-forge` still exists on GitHub but is no longer referenced
+  from this source tree.
 
 ### Project context
 

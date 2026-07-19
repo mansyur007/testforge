@@ -1,7 +1,7 @@
 # pytest-testforge
 
 A [pytest](https://pytest.org) plugin that streams results to
-[TestForge](https://github.com/mansyur007/test-forge): it opens a run at session
+[TestForge](https://github.com/mansyur007/testforge): it opens a run at session
 start, posts each test result as it finishes, and completes the run at the end.
 
 Zero dependencies — uses only the Python standard library.

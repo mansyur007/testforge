@@ -1,6 +1,6 @@
 # testforge-cli
 
-Command-line uploader for [TestForge](https://github.com/mansyur007/test-forge),
+Command-line uploader for [TestForge](https://github.com/mansyur007/testforge),
 a free, open-source test case management platform.
 
 Three commands for CI and for keeping test cases in git:
