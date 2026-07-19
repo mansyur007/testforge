@@ -9,7 +9,7 @@ import { memberScope } from "@/lib/projects";
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { NewSuiteForm } from "@/components/NewSuiteForm";
 import { CasesTable } from "@/components/CasesTable";
-import { SuiteTree } from "@/components/SuiteTree";
+import { SuiteTree, type SuiteNode } from "@/components/SuiteTree";
 import { SavedViewsMenu } from "@/components/SavedViewsMenu";
 import { ExportMenu } from "@/components/ExportMenu";
 import { sanitizeCaseFilters, viewHref } from "@/lib/saved-views";
@@ -105,7 +105,6 @@ export default async function ProjectPage({
   // F-29: only offer AI generation when the org has a key configured.
   const orgId = await orgIdForUser(session.userId);
   const aiOn = canWrite && !!orgId && (await aiConfigured(orgId));
-  const rootSuites = project.suites.filter((s) => !s.parentId);
   const childrenOf = (id: string) =>
     project.suites.filter((s) => s.parentId === id);
 
@@ -119,9 +118,49 @@ export default async function ProjectPage({
   const directCaseCount = new Map<string, number>();
   for (const g of grouped)
     if (g.suiteId) directCaseCount.set(g.suiteId, g._count._all);
-  const subtreeCaseCount = (id: string): number =>
-    (directCaseCount.get(id) ?? 0) +
-    childrenOf(id).reduce((sum, ch) => sum + subtreeCaseCount(ch.id), 0);
+  // `parentId` tidak punya constraint anti-siklus di DB dan suite bisa dibuat
+  // lewat REST API / importer, jadi setiap traversal membawa set id yang sudah
+  // dikunjungi — data rusak memotong cabang, bukan mematikan halaman.
+  const subtreeCaseCount = (id: string, seen = new Set<string>()): number => {
+    if (seen.has(id)) return 0;
+    seen.add(id);
+    return (
+      (directCaseCount.get(id) ?? 0) +
+      childrenOf(id).reduce((sum, ch) => sum + subtreeCaseCount(ch.id, seen), 0)
+    );
+  };
+
+  // Nesting sedalam ini tidak masuk akal untuk suite QA; lebih dalam tetap
+  // dihitung di caseCount tapi tidak dirender.
+  const MAX_TREE_DEPTH = 8;
+  const buildTree = (
+    parentId: string | null,
+    depth = 0,
+    seen = new Set<string>()
+  ): SuiteNode[] => {
+    if (depth >= MAX_TREE_DEPTH) return [];
+    return project.suites
+      .filter((s) => (s.parentId ?? null) === parentId && !seen.has(s.id))
+      .sort((a, b) => a.order - b.order || a.name.localeCompare(b.name))
+      .map((s) => ({
+        id: s.id,
+        name: s.name,
+        caseCount: subtreeCaseCount(s.id),
+        children: buildTree(s.id, depth + 1, new Set(seen).add(s.id)),
+      }));
+  };
+
+  // Urutan DFS yang sama dengan tree, dipakai untuk dropdown parent di form.
+  const flattenTree = (
+    nodes: SuiteNode[],
+    depth = 0
+  ): { id: string; name: string; depth: number }[] =>
+    nodes.flatMap((n) => [
+      { id: n.id, name: n.name, depth },
+      ...flattenTree(n.children, depth + 1),
+    ]);
+
+  const suiteTree = buildTree(null);
 
   return (
     <div className="space-y-6">
@@ -139,21 +178,12 @@ export default async function ProjectPage({
               canWrite={canWrite}
               activeSuite={searchParams.suite}
               searchParams={searchParams}
-              roots={rootSuites.map((suite) => ({
-                id: suite.id,
-                name: suite.name,
-                caseCount: subtreeCaseCount(suite.id),
-                children: childrenOf(suite.id).map((section) => ({
-                  id: section.id,
-                  name: section.name,
-                  caseCount: subtreeCaseCount(section.id),
-                })),
-              }))}
+              roots={suiteTree}
             />
             <div className="mt-3">
               <NewSuiteForm
                 projectId={project.id}
-                rootSuites={rootSuites.map((s) => ({ id: s.id, name: s.name }))}
+                suites={flattenTree(suiteTree)}
               />
             </div>
           </div>
@@ -234,7 +264,8 @@ export default async function ProjectPage({
                   : "border-slate-300 hover:bg-slate-100"
               }`}
             >
-              🧐 Needs my review
+              <TFIcon name="review" className="mr-1 inline-block h-4 w-4 align-[-3px]" />
+              Needs my review
               {needsMyReview > 0 && (
                 <span
                   className="ml-1.5 rounded-full bg-amber-500 px-1.5 py-0.5 text-xs font-semibold text-white"

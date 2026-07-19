@@ -30,6 +30,9 @@ const ICONS: Record<string, string> = {
   "nav-audit": `<path d="M6 4.5 h8.5 a1.8 1.8 0 0 1 1.8 1.8 V17 a2.2 2.2 0 0 0 2.2 2.2 H8.4 A2.4 2.4 0 0 1 6 16.8 z"/><path class="tf-ac" d="M9 9 h5 M9 12.4 h5"/>`,
   "nav-tree": `<rect class="tf-acf" x="4" y="4" width="6" height="3.6" rx="1"/><path d="M7 7.6 V17 M7 12 h4 M7 17 h4"/><rect x="13" y="10.2" width="6" height="3.6" rx="1"/><rect x="13" y="15.2" width="6" height="3.6" rx="1"/>`,
   "nav-account": `<circle cx="12" cy="8.4" r="3.5"/><path class="tf-acf" d="M5.5 19.2 a6.5 6.5 0 0 1 13 0 z"/>`,
+  // Pasangan folder untuk suite tree — tertutup saat collapsed, terbuka saat expanded.
+  folder: `<path class="tf-acf" d="M3.6 7.4 a2 2 0 0 1 2 -2 h3.3 l1.8 2 H18.4 a2 2 0 0 1 2 2 V17 a2 2 0 0 1 -2 2 H5.6 a2 2 0 0 1 -2 -2 z"/>`,
+  "folder-open": `<path d="M3.6 16.6 V7.4 a2 2 0 0 1 2 -2 h3.3 l1.8 2 H17 a2 2 0 0 1 2 2 v1.6"/><path class="tf-acf" d="M3.6 11 h16.6 a1 1 0 0 1 .97 1.25 l-1.4 5.3 A2 2 0 0 1 17.8 19 H5.6 a2 2 0 0 1 -2 -2 z"/>`,
   "nav-team": `<circle cx="9" cy="8.5" r="3"/><path class="tf-acf" d="M3.5 18.5 a5.5 5.5 0 0 1 11 0 z"/><circle class="tf-ac" cx="16.6" cy="9" r="2.2"/><path class="tf-ac" d="M15.2 14.3 a4.4 4.4 0 0 1 5.3 4.2 h-2.8"/>`,
   "nav-help": `<circle cx="12" cy="12" r="8"/><path class="tf-ac" d="M9.4 9.6 a2.7 2.7 0 0 1 5.2 1 c0 1.8 -2.3 2 -2.3 3.6"/><circle class="tf-acf" cx="12.2" cy="17" r="0.9"/>`,
   // L-05: archive box — lid, body, latch.
@@ -59,6 +62,8 @@ const ICONS: Record<string, string> = {
   geo: `<path class="tf-acf" d="M12 3.5 a6 6 0 0 1 6 6 c0 4.4 -6 11 -6 11 s-6 -6.6 -6 -11 a6 6 0 0 1 6 -6 z"/><circle class="tf-ac" cx="12" cy="9.5" r="2.2"/>`,
   "docker-setup": `<rect x="5" y="11" width="3" height="3" rx=".5"/><rect x="8.5" y="11" width="3" height="3" rx=".5"/><rect x="12" y="11" width="3" height="3" rx=".5"/><rect class="tf-acf" x="8.5" y="7.5" width="3" height="3" rx=".5"/><path class="tf-ac" d="M4 14.5 h13 a4 4 0 0 0 3.8 -3 a2.4 2.4 0 0 0 -3.4 .4 a3 3 0 0 0 -2 -3 a3.2 3.2 0 0 0 -.4 3 M5 18.5 c3.5 1.6 9.5 1.4 12 -2.5"/>`,
   checklist: `<rect x="4" y="4" width="16" height="16" rx="3.4"/><path class="tf-ac" d="M8 12.2 l2.6 2.6 L16.2 9"/>`,
+  // F-15: eye — "needs my review" filter chip.
+  review: `<path d="M3 12 c2.4 -4.6 5.9 -6.8 9 -6.8 s6.6 2.2 9 6.8 c-2.4 4.6 -5.9 6.8 -9 6.8 s-6.6 -2.2 -9 -6.8 z"/><circle class="tf-acf" cx="12" cy="12" r="2.6"/>`,
   // 13. Back navigation
   "chevron-left": `<path d="M15 5.5 L8.5 12 l6.5 6.5"/>`,
   // 12. Success
