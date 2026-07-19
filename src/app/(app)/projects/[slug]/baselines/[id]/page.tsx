@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackLink } from "@/components/icons";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
@@ -61,12 +62,7 @@ export default async function BaselineDetailPage({
 
       <div className="flex items-start justify-between gap-4">
         <div>
-          <Link
-            href={`/projects/${project.slug}/baselines`}
-            className="text-sm text-indigo-600 hover:underline"
-          >
-            ← Baselines
-          </Link>
+          <BackLink href={`/projects/${project.slug}/baselines`}>Baselines</BackLink>
           <h2 className="mt-1 text-xl font-bold">{baseline.name}</h2>
           <p className="mt-1 text-sm text-slate-500">
             Scope: <b>{scopeLabel}</b> · {comparison.length} case

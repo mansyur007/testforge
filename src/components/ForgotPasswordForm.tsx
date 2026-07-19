@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useFormState, useFormStatus } from "react-dom";
 import { forgotPassword } from "@/app/actions/auth";
 import { dict, type Lang } from "@/lib/i18n";
+import { BackLink } from "@/components/icons";
 
 function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus();
@@ -59,10 +59,8 @@ export function ForgotPasswordForm({ lang }: { lang: Lang }) {
         />
       </div>
       <SubmitButton label={t.submit} pendingLabel={t.submitting} />
-      <p className="text-center text-sm text-slate-500">
-        <Link href="/login" className="font-medium text-indigo-600 hover:underline">
-          {t.back}
-        </Link>
+      <p className="flex justify-center text-sm text-slate-500">
+        <BackLink href="/login" className="font-medium">{t.back}</BackLink>
       </p>
     </form>
   );

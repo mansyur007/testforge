@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 /* Sistem ikon TestForge — dikonversi dari "testforge design system"
    (icons-data.js, gaya C: stroke 1.8, aksen indigo, fill accent-soft).
@@ -58,11 +59,45 @@ const ICONS: Record<string, string> = {
   geo: `<path class="tf-acf" d="M12 3.5 a6 6 0 0 1 6 6 c0 4.4 -6 11 -6 11 s-6 -6.6 -6 -11 a6 6 0 0 1 6 -6 z"/><circle class="tf-ac" cx="12" cy="9.5" r="2.2"/>`,
   "docker-setup": `<rect x="5" y="11" width="3" height="3" rx=".5"/><rect x="8.5" y="11" width="3" height="3" rx=".5"/><rect x="12" y="11" width="3" height="3" rx=".5"/><rect class="tf-acf" x="8.5" y="7.5" width="3" height="3" rx=".5"/><path class="tf-ac" d="M4 14.5 h13 a4 4 0 0 0 3.8 -3 a2.4 2.4 0 0 0 -3.4 .4 a3 3 0 0 0 -2 -3 a3.2 3.2 0 0 0 -.4 3 M5 18.5 c3.5 1.6 9.5 1.4 12 -2.5"/>`,
   checklist: `<rect x="4" y="4" width="16" height="16" rx="3.4"/><path class="tf-ac" d="M8 12.2 l2.6 2.6 L16.2 9"/>`,
+  // 13. Back navigation
+  "chevron-left": `<path d="M15 5.5 L8.5 12 l6.5 6.5"/>`,
   // 12. Success
   celebrate: `<path class="tf-acf" d="M4 20 L8.6 8.4 a1 1 0 0 1 1.6 -.35 l5.7 5.7 a1 1 0 0 1 -.35 1.6 z"/><path class="tf-ac" d="M16.5 4 v2.4 M19.8 7.2 l-1.7 1.7 M20.5 11.5 h-2.4"/><circle class="tf-ac" cx="13.5" cy="5.5" r="0.6"/><circle class="tf-ac" cx="19.5" cy="13" r="0.6"/>`,
 };
 
 export type IconName = keyof typeof ICONS;
+
+/* Back-navigation link: chevron + label, used in place of a bare "←" glyph
+   (inconsistent glyph metrics/weight across fonts). `dark` variant is for
+   links on a dark bar (e.g. the mobile run executor). */
+export function BackLink({
+  href,
+  children,
+  variant = "default",
+  className = "",
+  testId,
+}: {
+  href: string;
+  children: ReactNode;
+  variant?: "default" | "dark";
+  className?: string;
+  testId?: string;
+}) {
+  const colors =
+    variant === "dark"
+      ? "text-slate-300 hover:text-white"
+      : "text-slate-500 hover:text-indigo-600";
+  return (
+    <Link
+      href={href}
+      data-testid={testId}
+      className={`inline-flex items-center gap-1 text-sm font-medium motion-safe:transition-colors motion-safe:duration-150 ${colors} ${className}`}
+    >
+      <TFIcon name="chevron-left" className="h-4 w-4 shrink-0" />
+      {children}
+    </Link>
+  );
+}
 
 export function TFIcon({
   name,

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { BackLink } from "@/components/icons";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
@@ -33,12 +33,7 @@ export default async function SharedStepsPage({
   return (
     <div className="space-y-6">
       <ProjectTabs slug={project.slug} name={project.name} active="cases" />
-      <Link
-        href={`/projects/${project.slug}`}
-        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-indigo-600"
-      >
-        ← Back to test cases
-      </Link>
+      <BackLink href={`/projects/${project.slug}`}>Back to test cases</BackLink>
       <div>
         <h2 className="text-lg font-semibold">Shared Steps</h2>
         <p className="text-sm text-slate-400">

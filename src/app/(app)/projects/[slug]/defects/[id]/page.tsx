@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackLink } from "@/components/icons";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
@@ -64,12 +65,7 @@ export default async function DefectDetailPage({
 
       <div className="flex items-start justify-between gap-4">
         <div>
-          <Link
-            href={`/projects/${project.slug}/defects`}
-            className="text-sm text-indigo-600 hover:underline"
-          >
-            ← Defects
-          </Link>
+          <BackLink href={`/projects/${project.slug}/defects`}>Defects</BackLink>
           <h2 className="mt-1 text-xl font-bold">
             <span className="font-mono text-sm text-slate-400">
               {defectDisplayId(project.slug, defect.seq)}

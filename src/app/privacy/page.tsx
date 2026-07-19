@@ -1,13 +1,11 @@
-import Link from "next/link";
+import { BackLink } from "@/components/icons";
 
 export const metadata = { title: "Privacy Policy — TestForge" };
 
 export default function PrivacyPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
-      <Link href="/" className="text-sm text-indigo-600 hover:underline">
-        ← Back to home
-      </Link>
+      <BackLink href="/">Back to home</BackLink>
       <h1 className="mt-4 text-3xl font-bold">Privacy Policy</h1>
       <div className="mt-6 space-y-4 text-sm text-slate-600">
         <p>

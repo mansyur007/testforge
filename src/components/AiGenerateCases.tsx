@@ -155,9 +155,10 @@ export function AiGenerateCases({ projectId }: { projectId: string }) {
                 <div className="mt-3 flex justify-between">
                   <button
                     onClick={reset}
-                    className="rounded-lg border border-slate-300 px-3 py-2 text-sm hover:bg-slate-100"
+                    className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-100"
                   >
-                    ← Start over
+                    <TFIcon name="chevron-left" className="h-4 w-4" />
+                    Start over
                   </button>
                   <button
                     onClick={insert}

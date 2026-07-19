@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BackLink } from "@/components/icons";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
@@ -62,12 +63,7 @@ export default async function TraceabilityMatrixPage({
 
       <div className="flex items-center justify-between">
         <div>
-          <Link
-            href={`/projects/${project.slug}/requirements`}
-            className="text-sm text-indigo-600 hover:underline"
-          >
-            ← Requirements
-          </Link>
+          <BackLink href={`/projects/${project.slug}/requirements`}>Requirements</BackLink>
           <h2 className="mt-1 text-lg font-semibold">Traceability Matrix</h2>
         </div>
         <a
