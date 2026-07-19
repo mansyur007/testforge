@@ -108,7 +108,7 @@ function LinkIssueForm({
           required
           placeholder="QA-123, #42, or issue URL"
           data-testid="issue-link-input"
-          className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs focus:border-indigo-500 focus:outline-none"
+          className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
         />
         <LinkSubmit />
       </div>
@@ -162,8 +162,8 @@ function CreateIssueModal({
   }, [state]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 motion-safe:animate-tf-fade-in">
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl motion-safe:animate-tf-pop-in">
         <div className="mb-4 flex items-start justify-between">
           <div>
             <h3 className="text-lg font-bold">File an issue</h3>
@@ -198,7 +198,7 @@ function CreateIssueModal({
                 name="title"
                 defaultValue={draft.title}
                 data-testid="issue-create-title"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               />
             </div>
             <div>
@@ -210,7 +210,7 @@ function CreateIssueModal({
                 rows={14}
                 defaultValue={draft.body}
                 data-testid="issue-create-body"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-xs focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-xs focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
               />
             </div>
             <div className="flex items-center gap-3">

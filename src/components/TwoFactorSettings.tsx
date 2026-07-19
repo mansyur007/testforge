@@ -63,7 +63,7 @@ function CodeInput({ name = "code", placeholder = "123456" }: { name?: string; p
       required
       data-testid="totp-code"
       placeholder={placeholder}
-      className="w-40 rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm tracking-widest focus:border-indigo-500 focus:outline-none"
+      className="w-40 rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm tracking-widest focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
     />
   );
 }

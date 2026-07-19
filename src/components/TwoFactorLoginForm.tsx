@@ -36,7 +36,7 @@ export function TwoFactorLoginForm() {
           required
           data-testid="verify-2fa-code"
           placeholder="123456"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-center font-mono text-lg tracking-[0.4em] focus:border-indigo-500 focus:outline-none"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-center font-mono text-lg tracking-[0.4em] focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
         />
         <p className="mt-1 text-xs text-slate-400">
           Enter the 6-digit code from your authenticator app, or a recovery code.

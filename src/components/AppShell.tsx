@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { Logo, TFIcon } from "@/components/icons";
 import { PwaRegistrar } from "@/components/PwaRegistrar";
+import { FOCUS_RING_DARK } from "@/components/focus";
 
 // F-36: responsive app shell. Desktop (≥md) is pixel-identical to before — the
 // w-60 sidebar is fixed and main clears it with ml-60. Below md the sidebar
@@ -32,7 +33,7 @@ export function AppShell({
           onClick={() => setOpen(true)}
           data-testid="mobile-nav-toggle"
           aria-label="Open menu"
-          className="grid h-9 w-9 place-items-center rounded-lg hover:bg-slate-800"
+          className={`grid h-9 w-9 place-items-center rounded-lg hover:bg-slate-800 ${FOCUS_RING_DARK}`}
         >
           <TFIcon name="menu" current className="h-5 w-5" />
         </button>
@@ -49,7 +50,7 @@ export function AppShell({
       )}
 
       <aside
-        className={`fixed inset-y-0 z-50 flex w-60 flex-col border-r border-slate-800 bg-slate-900 text-slate-300 transition-transform duration-200 md:z-auto md:translate-x-0 ${
+        className={`fixed inset-y-0 z-50 flex w-60 flex-col border-r border-slate-800 bg-slate-900 text-slate-300 motion-safe:transition-transform motion-safe:duration-panel motion-safe:ease-tf-drawer md:z-auto md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
         data-testid="app-sidebar"

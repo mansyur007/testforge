@@ -175,7 +175,7 @@ export default async function FieldsPage({
               defaultValue={gatePolicy?.minPassRate ?? ""}
               disabled={!canAdmin}
               data-testid="gate-min-pass-rate"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none disabled:bg-slate-50"
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:bg-slate-50"
             />
           </label>
           <label className="block text-sm">
@@ -187,7 +187,7 @@ export default async function FieldsPage({
               defaultValue={gatePolicy?.maxNewFailures ?? ""}
               disabled={!canAdmin}
               data-testid="gate-max-new-failures"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none disabled:bg-slate-50"
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:bg-slate-50"
             />
           </label>
           <label className="block text-sm">
@@ -198,7 +198,7 @@ export default async function FieldsPage({
               placeholder="smoke, critical"
               disabled={!canAdmin}
               data-testid="gate-required-tags"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none disabled:bg-slate-50"
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:bg-slate-50"
             />
           </label>
           <label className="flex items-end gap-2 pb-2 text-sm">

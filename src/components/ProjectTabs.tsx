@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { TFIcon } from "@/components/icons";
+import { FOCUS_RING } from "@/components/focus";
 
 type TabKey =
   | "cases"
@@ -56,7 +57,7 @@ function GroupMenu({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className={`inline-flex items-center gap-1.5 whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium ${
+        className={`inline-flex items-center gap-1.5 whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium ${FOCUS_RING} ${
           isActive
             ? "border-indigo-600 text-indigo-600"
             : "border-transparent text-slate-500 hover:text-slate-800"
@@ -67,13 +68,13 @@ function GroupMenu({
         <span className="text-[10px]">▾</span>
       </button>
       {open && (
-        <div className="absolute left-0 z-40 mt-1 w-44 rounded-xl border border-slate-200 bg-white p-1 shadow-xl">
+        <div className="absolute left-0 z-40 mt-1 w-44 origin-top-left rounded-xl border border-slate-200 bg-white p-1 shadow-xl motion-safe:animate-tf-pop-in">
           {items.map((t) => (
             <Link
               key={t.key}
               href={t.href}
               onClick={() => setOpen(false)}
-              className={`block rounded-lg px-3 py-1.5 text-sm ${
+              className={`block rounded-lg px-3 py-1.5 text-sm ${FOCUS_RING} ${
                 t.key === activeKey
                   ? "text-indigo-600"
                   : "text-slate-700 hover:bg-slate-100"
@@ -152,7 +153,7 @@ export function ProjectTabs({
   return (
     <div>
       <div className="mb-1 flex items-center gap-2 text-sm text-slate-400">
-        <Link href="/projects" className="hover:text-slate-600">
+        <Link href="/projects" className={`hover:text-slate-600 ${FOCUS_RING}`}>
           Projects
         </Link>
         <span>/</span>
@@ -164,7 +165,7 @@ export function ProjectTabs({
             <Link
               key={t.key}
               href={t.href}
-              className={`shrink-0 whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium ${
+              className={`shrink-0 whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium ${FOCUS_RING} ${
                 active === t.key
                   ? "border-indigo-600 text-indigo-600"
                   : "border-transparent text-slate-500 hover:text-slate-800"

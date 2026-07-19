@@ -32,7 +32,7 @@ export function DefectStatusSelect({
           await changeDefectStatus(fd);
         });
       }}
-      className={`cursor-pointer rounded-lg border-0 px-2 py-1 text-xs font-medium focus:ring-2 focus:ring-indigo-400 disabled:opacity-50 ${DEFECT_STATUS_BADGES[status as DefectStatus] ?? DEFECT_STATUS_BADGES.OPEN} ${className}`}
+      className={`cursor-pointer rounded-lg border-0 px-2 py-1 text-xs font-medium focus:ring-2 focus:ring-indigo-400 disabled:opacity-50 motion-safe:transition-colors motion-safe:duration-fast motion-safe:ease-tf-out ${DEFECT_STATUS_BADGES[status as DefectStatus] ?? DEFECT_STATUS_BADGES.OPEN} ${className}`}
     >
       {DEFECT_STATUSES.map((s) => (
         <option key={s} value={s}>

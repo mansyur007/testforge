@@ -513,7 +513,7 @@ export function RunExecutor({
         setActiveIdx(i);
         onPick?.();
       }}
-      className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm motion-safe:transition-colors motion-safe:duration-1000 ${
+      className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm motion-safe:transition-colors motion-safe:duration-fast motion-safe:ease-tf-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
         flash[r.id]
           ? "bg-amber-50"
           : i === activeIdx
@@ -570,7 +570,7 @@ export function RunExecutor({
         </span>
       )}
       <span
-        className="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
+        className="shrink-0 rounded-full px-2 py-0.5 text-xs font-medium motion-safe:transition-colors motion-safe:duration-fast motion-safe:ease-tf-out"
         style={badgeStyle(meta.colorOf(view(r).status))}
       >
         {view(r).status.replace(/_/g, " ")}
@@ -690,7 +690,11 @@ export function RunExecutor({
         {/* Active case detail + submission */}
         <div className="min-w-0 flex-1 space-y-4">
           <div
-            className="rounded-xl border border-slate-200 bg-white p-6 motion-safe:transition-transform"
+            className={`rounded-xl border border-slate-200 bg-white p-6 ${
+              dragX
+                ? ""
+                : "motion-safe:transition-transform motion-safe:duration-panel motion-safe:ease-tf-out"
+            }`}
             style={{ transform: dragX ? `translateX(${dragX}px)` : undefined }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
@@ -882,7 +886,7 @@ export function RunExecutor({
                   value={defectUrl}
                   onChange={(e) => setDefectUrl(e.target.value)}
                   placeholder="Bug report URL if failed (Jira/GitHub Issue)..."
-                  className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                 />
                 {customDefs.length > 0 && (
                   <div
@@ -933,7 +937,7 @@ export function RunExecutor({
                       disabled={busy}
                       data-testid={`submit-status-${d.key}`}
                       title={letter ? `Shortcut: ${letter.toUpperCase()}` : d.label}
-                      className="rounded-lg px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+                      className="rounded-lg px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50 motion-safe:transition-transform motion-safe:duration-fast motion-safe:ease-tf-out motion-safe:active:scale-[0.98]"
                       style={{ backgroundColor: d.color }}
                     >
                       {glyphFor(d)} {d.label}
@@ -978,7 +982,7 @@ export function RunExecutor({
                 onClick={() => submit(d.key)}
                 disabled={busy}
                 data-testid={`mobile-submit-${d.key}`}
-                className="flex items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold disabled:opacity-50"
+                className="flex items-center justify-center gap-1.5 rounded-xl px-3 text-sm font-semibold disabled:opacity-50 motion-safe:transition-transform motion-safe:duration-fast motion-safe:ease-tf-out motion-safe:active:scale-[0.98]"
                 style={{
                   minHeight: 52,
                   backgroundColor: d.color,
@@ -1001,7 +1005,7 @@ export function RunExecutor({
             onClick={() => setSheetOpen(false)}
             aria-hidden
           />
-          <div className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-2xl bg-white p-3">
+          <div className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-2xl bg-white p-3 motion-safe:animate-tf-sheet-up">
             <div className="mb-2 flex items-center justify-between">
               <h3 className="text-sm font-semibold">Cases</h3>
               <button

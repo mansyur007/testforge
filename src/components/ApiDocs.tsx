@@ -1,6 +1,7 @@
 "use client";
 
 import Script from "next/script";
+import { useEffect, useState } from "react";
 
 // Renders the OpenAPI spec with Redoc loaded from a CDN — keeps the app free of
 // a heavy docs dependency. The <redoc> element is auto-hydrated by the bundle
@@ -12,10 +13,21 @@ import Script from "next/script";
 // (and the first-load gap before the CDN bundle hydrates <redoc>) — see
 // globals.css; it only touches our wrapper, never Redoc's own internals.
 export function ApiDocs({ specUrl = "/api/v1/openapi" }: { specUrl?: string }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(false);
+    const raf = requestAnimationFrame(() =>
+      requestAnimationFrame(() => setMounted(true))
+    );
+    return () => cancelAnimationFrame(raf);
+  }, [specUrl]);
+
   return (
     <>
       <div
         key={specUrl}
+        data-mounted={mounted}
         className="tf-api-docs-fade"
         dangerouslySetInnerHTML={{
           __html: `<redoc spec-url="${specUrl}"></redoc>`,

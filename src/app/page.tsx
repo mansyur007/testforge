@@ -110,8 +110,9 @@ const integrationNames = [
 // §7.4 says "translate/opacity only"; `scale` is used here because it is
 // GPU-composited exactly like translate — the rule exists to keep motion off
 // layout-triggering properties (cf. the amber flash in RunExecutor.tsx).
+// The scale effect is motion-safe too, avoiding a one-frame jump when reduced.
 const CTA_MOTION =
-  "motion-safe:transition motion-safe:duration-150 motion-safe:ease-out active:scale-[0.98]";
+  "transition-colors duration-fast ease-tf-out motion-safe:transition-[color,background-color,transform] motion-safe:active:scale-[0.98]";
 
 export default async function HomePage() {
   const lang = resolveLang(cookies().get(LANG_COOKIE)?.value);
@@ -395,7 +396,7 @@ export default async function HomePage() {
             >
               <summary className="cursor-pointer list-none font-medium">
                 {f.q}
-                <span className="float-right text-slate-400 group-open:rotate-45 motion-safe:transition-transform motion-safe:duration-200 motion-safe:ease-out">
+                <span className="float-right text-slate-400 motion-safe:group-open:rotate-45 motion-safe:transition-transform motion-safe:duration-panel motion-safe:ease-tf-out">
                   ＋
                 </span>
               </summary>

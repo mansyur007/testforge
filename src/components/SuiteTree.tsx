@@ -178,11 +178,11 @@ export function SuiteTree({
                 aria-label={open ? "Collapse" : "Expand"}
                 aria-expanded={open}
                 data-testid={`suite-toggle-${node.id}`}
-                className="grid h-8 w-4 shrink-0 place-items-center text-slate-400 hover:text-slate-700"
+                className="grid h-8 w-4 shrink-0 place-items-center text-slate-400 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
               >
                 <svg
                   viewBox="0 0 20 20"
-                  className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-90" : ""}`}
+                  className={`h-3.5 w-3.5 motion-safe:transition-transform motion-safe:duration-fast motion-safe:ease-tf-out ${open ? "rotate-90" : ""}`}
                   fill="currentColor"
                 >
                   <path d="M7 5l6 5-6 5V5z" />
@@ -200,7 +200,7 @@ export function SuiteTree({
               <Link
                 href={buildHref(node.id)}
                 data-testid={`suite-link-${node.id}`}
-                className={`flex min-w-0 flex-1 items-center gap-1.5 rounded px-1.5 py-1.5 hover:bg-slate-100 ${
+                className={`flex min-w-0 flex-1 items-center gap-1.5 rounded px-1.5 py-1.5 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
                   active ? "bg-indigo-50 font-medium text-indigo-700" : "text-slate-700"
                 }`}
               >
@@ -250,14 +250,14 @@ export function SuiteTree({
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search suites…"
             data-testid="suite-search"
-            className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           />
           {expandable.length > 0 && (
             <div className="flex items-center gap-2 text-xs">
               <button
                 type="button"
                 onClick={() => setCollapsed(new Set())}
-                className="text-slate-500 hover:text-indigo-600"
+                className="text-slate-500 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
               >
                 Expand all
               </button>
@@ -265,7 +265,7 @@ export function SuiteTree({
               <button
                 type="button"
                 onClick={() => setCollapsed(new Set(expandable))}
-                className="text-slate-500 hover:text-indigo-600"
+                className="text-slate-500 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
               >
                 Collapse all
               </button>
@@ -284,7 +284,7 @@ export function SuiteTree({
           <SuiteDropZone projectSlug={slug} suiteId={null}>
             <Link
               href={buildHref(undefined)}
-              className={`block rounded px-1.5 py-1.5 hover:bg-slate-100 ${
+              className={`block rounded px-1.5 py-1.5 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
                 !activeSuite ? "bg-indigo-50 font-medium text-indigo-700" : ""
               }`}
             >

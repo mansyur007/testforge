@@ -73,7 +73,7 @@ export function CaseSelector({
           value={fQ}
           onChange={(e) => setFQ(e.target.value)}
           placeholder="Search title..."
-          className="w-44 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none"
+          className="w-44 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
         />
         <select value={fPriority} onChange={(e) => setFPriority(e.target.value)}
           className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm">
@@ -89,7 +89,7 @@ export function CaseSelector({
           value={fTag}
           onChange={(e) => setFTag(e.target.value)}
           placeholder="Tag..."
-          className="w-28 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none"
+          className="w-28 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
         />
         <button type="button" onClick={selectAllFiltered}
           className="rounded-lg border border-indigo-300 px-3 py-1.5 text-sm text-indigo-600 hover:bg-indigo-50">

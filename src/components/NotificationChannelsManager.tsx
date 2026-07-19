@@ -62,7 +62,7 @@ function TargetInput({ type }: { type: string }) {
           name="to"
           placeholder="qa@company.com, lead@company.com"
           data-testid="channel-to-input"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
         />
       </div>
     );
@@ -75,7 +75,7 @@ function TargetInput({ type }: { type: string }) {
         name="webhookUrl"
         placeholder={URL_PLACEHOLDERS[type]}
         data-testid="channel-url-input"
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
       />
     </div>
   );
@@ -130,7 +130,7 @@ function ChannelForm({
               value={type}
               onChange={(e) => setType(e.target.value)}
               data-testid="channel-type-select"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
               {Object.entries(TYPE_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>
@@ -150,7 +150,7 @@ function ChannelForm({
             defaultValue={editing?.name ?? ""}
             placeholder="#qa-alerts"
             data-testid="channel-name-input"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           />
         </div>
       </div>

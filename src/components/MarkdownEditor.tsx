@@ -12,7 +12,7 @@ import { Markdown } from "@/components/Markdown";
 // FormData submission always sees it.
 
 const inputCls =
-  "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none";
+  "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500";
 
 export function MarkdownEditor({
   name,
@@ -130,7 +130,7 @@ export function MarkdownEditor({
         }}
         placeholder={placeholder}
         data-testid={testId}
-        className={`${inputCls} rounded-t-none border-0 focus:outline-none ${
+        className={`${inputCls} rounded-t-none border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
           tab === "preview" ? "hidden" : ""
         }`}
       />

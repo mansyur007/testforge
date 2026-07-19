@@ -8,7 +8,7 @@ import { OAuthButtons } from "@/components/OAuthButtons";
 import { dict, type Lang } from "@/lib/i18n";
 
 const inputCls =
-  "w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:border-indigo-500";
+  "w-full rounded-lg border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-indigo-500";
 
 function slugify(name: string) {
   return name

@@ -11,7 +11,7 @@ import {
 } from "@/app/actions/onboarding";
 
 const inputCls =
-  "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none";
+  "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500";
 
 const TEMPLATES = [
   { id: "blank", icon: "tpl-blank", label: "Blank", desc: "Start from scratch" },
@@ -105,7 +105,7 @@ export function OnboardingWizard({ userName }: { userName: string }) {
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className={`h-1.5 flex-1 rounded-full ${i <= step ? "bg-indigo-600" : "bg-slate-200"}`}
+                    className={`h-1.5 flex-1 rounded-full motion-safe:transition-colors motion-safe:duration-panel motion-safe:ease-tf-out ${i <= step ? "bg-indigo-600" : "bg-slate-200"}`}
                   />
                 ))}
               </div>
@@ -122,7 +122,7 @@ export function OnboardingWizard({ userName }: { userName: string }) {
           )}
 
           {step === 1 && (
-            <div className="space-y-4">
+            <div className="space-y-4 motion-safe:animate-tf-pop-in">
               <h1 className="text-lg font-bold">Create Your First Project</h1>
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-700">
@@ -184,7 +184,7 @@ export function OnboardingWizard({ userName }: { userName: string }) {
           )}
 
           {step === 2 && (
-            <div className="space-y-4">
+            <div className="space-y-4 motion-safe:animate-tf-pop-in">
               <h1 className="text-lg font-bold">Invite Team Members</h1>
               <p className="text-sm text-slate-500">
                 Working solo? Just skip — you can invite anytime later.
@@ -230,7 +230,7 @@ export function OnboardingWizard({ userName }: { userName: string }) {
           )}
 
           {step === 3 && (
-            <div className="space-y-4">
+            <div className="space-y-4 motion-safe:animate-tf-pop-in">
               <h1 className="text-lg font-bold">Choose Integrations</h1>
               <p className="text-sm text-slate-500">
                 Mark the ones you want to use — detailed setup can be done later.
@@ -278,7 +278,7 @@ export function OnboardingWizard({ userName }: { userName: string }) {
           )}
 
           {step === 4 && (
-            <div className="space-y-4 text-center">
+            <div className="space-y-4 text-center motion-safe:animate-tf-pop-in">
               <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-50 text-green-600">
                 <TFIcon name="celebrate" current className="h-8 w-8" />
               </div>

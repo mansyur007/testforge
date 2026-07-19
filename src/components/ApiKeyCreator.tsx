@@ -76,7 +76,7 @@ export function ApiKeyCreator({
               name="name"
               required
               data-testid="apikey-name-input"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             />
           </div>
           <div>
@@ -87,7 +87,7 @@ export function ApiKeyCreator({
               name="scope"
               defaultValue="WRITE"
               data-testid="apikey-scope-select"
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
               <option value="WRITE">Read &amp; write</option>
               <option value="READ">Read-only</option>
@@ -106,7 +106,7 @@ export function ApiKeyCreator({
               name="projectId"
               defaultValue=""
               data-testid="apikey-project-select"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
               <option value="">All my projects (org-wide)</option>
               {projects.map((p) => (
@@ -129,7 +129,7 @@ export function ApiKeyCreator({
               min={1}
               placeholder="Default"
               data-testid="apikey-ratelimit-input"
-              className="w-32 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-32 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             />
             <p className="mt-1 text-xs text-slate-400">Blank = server default.</p>
           </div>

@@ -151,7 +151,7 @@ export function AttachmentUploader({
             if (e.clipboardData.files.length) upload(e.clipboardData.files);
           }}
           onClick={() => inputRef.current?.click()}
-          className={`cursor-pointer rounded-lg border-2 border-dashed px-4 py-3 text-center text-xs transition-colors ${
+          className={`cursor-pointer rounded-lg border-2 border-dashed px-4 py-3 text-center text-xs motion-safe:transition-colors motion-safe:duration-fast motion-safe:ease-tf-out ${
             dragOver
               ? "border-indigo-400 bg-indigo-50 text-indigo-600"
               : "border-slate-300 text-slate-400 hover:border-indigo-300 hover:text-slate-500"

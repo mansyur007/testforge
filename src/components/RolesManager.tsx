@@ -148,7 +148,7 @@ export function RolesManager({ roles }: { roles: RoleView[] }) {
             required
             placeholder='New role name, e.g. "Executor"'
             data-testid="role-name-input"
-            className="w-56 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-56 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
           />
           <Submit label="+ Role" />
         </div>

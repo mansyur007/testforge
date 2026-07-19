@@ -39,7 +39,7 @@ export function ExportMenu({
       {open && (
         <div
           data-testid="export-menu-panel"
-          className="absolute right-0 z-40 mt-1 w-44 rounded-xl border border-slate-200 bg-white p-1 shadow-xl"
+          className="absolute right-0 z-40 mt-1 w-44 origin-top-right rounded-xl border border-slate-200 bg-white p-1 shadow-xl motion-safe:animate-tf-pop-in"
         >
           {items.map((item) => (
             <a

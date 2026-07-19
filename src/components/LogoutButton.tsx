@@ -18,11 +18,11 @@ export function LogoutButton() {
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 motion-safe:animate-tf-fade-in"
           onClick={() => setOpen(false)}
         >
           <div
-            className="w-full max-w-sm rounded-xl bg-white p-6 text-slate-900 shadow-xl"
+            className="w-full max-w-sm rounded-xl bg-white p-6 text-slate-900 shadow-xl motion-safe:animate-tf-pop-in"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-lg font-semibold">Log out of your account?</h2>
