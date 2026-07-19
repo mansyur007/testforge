@@ -26,6 +26,10 @@ export default function ApiDocsPage({
   return (
     <>
       <nav className="flex flex-wrap items-center gap-3 border-b border-slate-200 bg-white px-6 py-3">
+        <Link href="/dashboard" className="text-sm text-indigo-600 hover:underline">
+          Back to app
+        </Link>
+        <span className="h-4 w-px bg-slate-200" aria-hidden="true" />
         <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
           API version
         </span>
