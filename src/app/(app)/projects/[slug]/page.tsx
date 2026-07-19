@@ -234,7 +234,8 @@ export default async function ProjectPage({
                   : "border-slate-300 hover:bg-slate-100"
               }`}
             >
-              🧐 Needs my review
+              <TFIcon name="review" className="mr-1 inline-block h-4 w-4 align-[-3px]" />
+              Needs my review
               {needsMyReview > 0 && (
                 <span
                   className="ml-1.5 rounded-full bg-amber-500 px-1.5 py-0.5 text-xs font-semibold text-white"

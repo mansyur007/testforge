@@ -59,6 +59,8 @@ const ICONS: Record<string, string> = {
   geo: `<path class="tf-acf" d="M12 3.5 a6 6 0 0 1 6 6 c0 4.4 -6 11 -6 11 s-6 -6.6 -6 -11 a6 6 0 0 1 6 -6 z"/><circle class="tf-ac" cx="12" cy="9.5" r="2.2"/>`,
   "docker-setup": `<rect x="5" y="11" width="3" height="3" rx=".5"/><rect x="8.5" y="11" width="3" height="3" rx=".5"/><rect x="12" y="11" width="3" height="3" rx=".5"/><rect class="tf-acf" x="8.5" y="7.5" width="3" height="3" rx=".5"/><path class="tf-ac" d="M4 14.5 h13 a4 4 0 0 0 3.8 -3 a2.4 2.4 0 0 0 -3.4 .4 a3 3 0 0 0 -2 -3 a3.2 3.2 0 0 0 -.4 3 M5 18.5 c3.5 1.6 9.5 1.4 12 -2.5"/>`,
   checklist: `<rect x="4" y="4" width="16" height="16" rx="3.4"/><path class="tf-ac" d="M8 12.2 l2.6 2.6 L16.2 9"/>`,
+  // F-15: eye — "needs my review" filter chip.
+  review: `<path d="M3 12 c2.4 -4.6 5.9 -6.8 9 -6.8 s6.6 2.2 9 6.8 c-2.4 4.6 -5.9 6.8 -9 6.8 s-6.6 -2.2 -9 -6.8 z"/><circle class="tf-acf" cx="12" cy="12" r="2.6"/>`,
   // 13. Back navigation
   "chevron-left": `<path d="M15 5.5 L8.5 12 l6.5 6.5"/>`,
   // 12. Success
