@@ -1,4 +1,760 @@
-# TestForge — Feature TODO Specifications (Implementation Work Orders)
+# TestForge — Consolidated Project Documentation
+
+> **Purpose.** This is the single reference document for TestForge: what was audited, what was
+> specified, what was compared against the competition, and — feature by feature — **what was
+> built**. It replaces four separate documents that previously lived at the repository root and
+> in `docs/`. Nothing was summarised away: every section below is the full text of its source
+> document, with only the heading levels adjusted and the Indonesian-language part translated
+> into English.
+>
+> Consolidated: 2026-07-19.
+
+---
+
+## Statement of completion
+
+**Every feature specified for TestForge has been implemented and merged into `main`.**
+
+| Backlog track | Range | Count | Status |
+|---|---|---:|---|
+| P1 — foundations expected by TestRail/Qase users | F-01 … F-10 | 10 | ✅ all shipped |
+| P2 — competitive differentiators | F-11 … F-24 | 14 | ✅ all shipped |
+| P3 — nice-to-have / niche segments | F-25 … F-37 | 13 | ✅ all shipped |
+| Leapfrog — features no competitor has | L-01 … L-05 | 5 | ✅ all shipped |
+| **Total** | | **42** | **✅ 42 / 42 complete** |
+
+Each work order in [Part IV](#part-iv--feature-work-orders) carries a `[x]` marker and, in most
+cases, its completion date and any deliberately deferred sub-scope. Deliberate exclusions are
+recorded in place rather than silently dropped — the notable ones being SAML and SCIM (out of
+scope in favour of OIDC in F-20), Allure result parsing (F-11), dashboard PDF export
+(superseded by share links and browser print in F-17/F-35), and the attachment uploader in the
+comment composer (F-16, needs a two-phase draft-id flow).
+
+Two operational guides remain as separate documents because they are living how-to references
+for users rather than a record of work completed:
+
+- [`docs/SELF-HOSTED-MIGRATION.md`](SELF-HOSTED-MIGRATION.md) — whole-instance backup & restore.
+- [`docs/CASES-AS-CODE.md`](CASES-AS-CODE.md) — the L-03 GitOps two-way sync workflow.
+
+---
+
+## What was merged into this document
+
+| Part | Source document | Original size | What it is |
+|---|---|---:|---|
+| [Part I](#part-i--application-audit--user-flows) | `APP-AUDIT.md` | 135 lines | Application audit and end-to-end user flows, snapshot of `main` dated 2026-06-14, taken after the migration to OAuth-only authentication. |
+| [Part II](#part-ii--prd-audit) | `AUDIT-PRD.md` | 100 lines | Audit of `TestForge_PRD_v1.0.docx` — missing features, internal inconsistencies, scope risks, and what the MVP actually delivered against it. |
+| [Part III](#part-iii--competitive-comparison) | `docs/FEATURE-COMPARISON.md` | 434 lines | Feature-by-feature comparison against TestRail, Qase, TestLink and Test IO, and the gap analysis that generated the backlog. **Translated from Indonesian.** |
+| [Part IV](#part-iv--feature-work-orders) | `docs/TODO-FEATURES.md` | 2802 lines | The executable backlog: full implementation work orders for all 42 features, plus repo conventions and the design system appendix. |
+
+### How to read it
+
+The four parts are deliberately in chronological-causal order: the audits (I, II) found the
+gaps, the competitive comparison (III) prioritised them into a roadmap, and the work orders
+(IV) specified and delivered them. Parts I–III are **historical snapshots** — they describe the
+codebase as it stood when each was written, so statements there of the form "TestForge does not
+yet have X" should be read against Part IV, which records X being built. Part IV's §0 (repo
+conventions) and §7 (design system appendix) are the only sections still **normative for new
+work**.
+
+---
+
+## Part I — Application Audit & User Flows
+
+*Source document: `APP-AUDIT.md`. Reproduced verbatim; original title: "TestForge — Application Audit & User Flows".*
+
+> Compiled 2026-06-14. Snapshot of `main` after migration to **OAuth-only auth**.
+> For relaxed review — not for execution. Sections marked ⚠️ = items you should decide on/review.
+
+---
+
+### 1. Summary
+
+TestForge = open-source **Test Case Management** platform (TestRail/Zephyr alternative).
+- **Stack:** Next.js 14 (App Router) · React 18 · Prisma + SQLite (portable to Postgres) · Tailwind · JWT session (jose) · TypeScript.
+- **Deploy:** Docker Compose on VPS `103.169.207.239`, fronted by Tokopudidi's Caddy stack, domain `testforge.emha.space`. Auto-deploy via GitHub Actions on push to `main`.
+- **UI language:** bilingual (EN/ID) via `src/lib/i18n.ts` + cookie `tf_lang`.
+- **Build status:** `tsc` ✅ · `next build` ✅ · OAuth route live & verified (307 → provider).
+
+---
+
+### 2. Authentication & Access Control
+
+#### Login/Signup — OAuth only (Google + GitHub)
+- Single route handles initiate + callback: `src/app/api/auth/oauth/[provider]/route.ts`.
+- Flow: button → redirect to provider (set CSRF `state` cookie, httpOnly) → callback validates `state` → exchange `code`→token → fetch profile/email → create user (`emailVerifiedAt` set immediately) → create session → redirect `/onboarding` (new user) or `/dashboard`.
+- GitHub: fallback to fetch primary verified email when profile hides email.
+- Session: JWT in `tf_session` cookie, httpOnly, 1 day (default) / 30 days. Set `rememberMe=true` for OAuth.
+
+#### Role / RBAC
+- **Global user role:** `ADMIN | MEMBER | VIEWER`. **First user in DB becomes ADMIN automatically** (`userCount === 0`).
+- **Per-project role (`ProjectMember`):** `OWNER | ADMIN | MEMBER | VIEWER`. Project creator becomes `OWNER`.
+- **Enforcement:** `VIEWER` denied write access (create project/case/run). `requireSession()` guard in `(app)/layout.tsx` protects the entire app area (no `middleware.ts`; protection per layout/page).
+
+#### API for CI/CD
+- API Key (Bearer) — stored as SHA-256 hash, only 8-char prefix displayed.
+- `POST /api/v1/junit` — **requires** API key auth.
+- `GET/POST /api/v1/projects/[slug]/cases` — accepts **session OR** API key.
+
+⚠️ **Items for you to review (auth):**
+1. **No password fallback.** If 4 OAuth env vars are wrong/expired → nobody can log in. No "break-glass" admin.
+2. **First-login-becomes-admin.** On empty prod DB, whoever logs in first = ADMIN. Make sure you are first (already noted).
+3. **Legacy admin seed** (`admin@testforge.local` + password) can no longer log in — demo data is orphaned.
+
+---
+
+### 3. Feature Inventory
+
+| Area | Route | Function | Write denied for VIEWER |
+|---|---|---|---|
+| **Landing** | `/` | Marketing: features, comparison, demo, integrations, testimonials, FAQ. Bilingual. | — |
+| **Auth** | `/login`, `/signup`, `/register`→`/signup` | OAuth Google/GitHub. | — |
+| **Onboarding** | `/onboarding` | 3-step wizard: create first project (blank/web/mobile/api template) → invite team → integration interests. | — |
+| **Dashboard** | `/dashboard` | Cross-project summary. | — |
+| **Projects** | `/projects`, `/projects/[slug]` | List + create project; suite/case tab, milestone. | ✅ |
+| **Test Case** | `.../cases/new`, `.../cases/[id]`, `.../[id]/edit` | Case CRUD: title, steps (JSON action/expected), preconditions, priority, type, status, automationStatus, tags, assignee, linked issues. Clone, soft-delete, **bulk edit**. | ✅ |
+| **Suite/Section** | within `/projects/[slug]` | Recursive hierarchy (suite → section via `parentId`). | ✅ |
+| **Test Run** | `.../runs`, `.../runs/new`, `.../runs/[id]` | Create run (select cases), execute results (PASSED/FAILED/BLOCKED/SKIPPED/etc + comment, time, defect URL), complete run, **rerun failed**. | ✅ |
+| **Reports** | `.../reports` | Run result statistics per project. | — |
+| **Import** | `.../import`, `POST /api/import/cases` | Import test cases from **CSV** (papaparse). Template available. | ✅ |
+| **Export** | `/api/export/cases`, `/api/export/run` | Export cases & run results. | — |
+| **API Keys** | `/settings/api-keys` | Create/delete API key for CI/CD. | — |
+| **Audit Log** | `/settings/audit-log` | Action history (login, CRUD, etc.). | — |
+| **CI/CD API** | `/api/v1/junit`, `/api/v1/projects/[slug]/cases` | Ingest JUnit XML results; read/write cases via API. | via API key |
+| **Docs** | `/docs/self-hosting` | Self-host guide (env, Docker, VPS). | — |
+| **Legal** | `/terms`, `/privacy` | Static pages. | — |
+
+---
+
+### 4. User Flows (end-to-end)
+
+**A. New user onboarding**
+`/login` → click Continue with Google/GitHub → provider consent → callback → user created (verified) → session → `/onboarding` → create first project (select template → suite auto-created) → invite team (optional) → select integration interests → `completeOnboarding` sets `onboardedAt` → `/dashboard`.
+
+**B. Create & run tests**
+`/projects` → create project (become OWNER) → create suite/section → add test case (steps, priority, assignee…) → `/runs/new` select cases → create run → execute: mark each result + comment/defect → complete run → view `/reports`. Can **rerun failed** for follow-up run.
+
+**C. CI/CD integration**
+`/settings/api-keys` create key → in pipeline send `POST /api/v1/junit` (header `Authorization: Bearer <key>`) with JUnit XML → results appear as automatic run (`source=JUNIT`).
+
+**D. Bulk import**
+`/projects/[slug]/import` → download CSV template → upload → preview → commit to project.
+
+**E. Logout** — "Sign out" button in sidebar → `clearSession` → `/login`.
+
+---
+
+### 5. Data Model (13 entities)
+
+`User` · `Organization` · `Project` · `ProjectMember` · `Milestone` · `TestSuite` (recursive) · `TestCase` · `TestRun` · `TestRunResult` · `ApiKey` · `Invitation` · `VerificationToken` · `AuditLog`.
+
+Important notes:
+- `TestCase.seq` + `Project.caseCounter` → human-readable ID `TC-[SLUG]-[seq]`.
+- `TestCase.deletedAt` → soft delete (queries always filter `deletedAt: null`).
+- `User.organizationId` **nullable** → app runs without org.
+- Cascade delete configured cleanly (delete project → suite/case/run/result deleted too).
+
+---
+
+### 6. ⚠️ Findings & Gaps for Review
+
+**Leftover from OAuth migration (cleanup, not bugs):**
+1. **`VerificationToken`** still in schema but no longer used (verification/reset flow removed). Can drop on next DB migration.
+2. **`User.passwordHash`** still `NOT NULL`; OAuth fills it with random bytes. Safe, but column is misleading. Consider making it nullable.
+3. **i18n** still holds many dead strings (email/password form, verifyEmail, forgotPassword). Harmless, just dusty.
+
+**Incomplete flows (existed before this session):**
+4. **Team invite = dead end.** `onboardingInvite` creates `Invitation` record but **no email is sent** (no SMTP) **and there is no accept-invite page**. Invited people have no way in except OAuth login themselves (then become user without org). → "Invite team" feature is cosmetic for now.
+5. **Org never created for OAuth users.** Onboarding creates a *project*, not an *organization*. So `organizationId` is always null for OAuth users. Doesn't crash (org optional), but org-based features (invites) don't work.
+6. **Soft-delete without recycle bin.** Cases get `deletedAt` but no restore/trash UI. Deleted = gone from UI forever.
+
+**Operational / security:**
+7. **No break-glass login** (see §2). Lockout risk if OAuth breaks.
+8. **OAuth client secret in chat history** from this session → consider rotating.
+9. **Rate-limit lockout** existed for password login; no longer relevant (OAuth). No OAuth-specific rate limit besides `state` protection.
+10. **`AUTH_SECRET`** has dev default (`testforge-dev-secret`) in `lib/auth.ts` — ensure prod env truly overrides (already set on VPS ✅).
+
+**What's already good:**
+- ✅ CSRF `state` on OAuth, httpOnly/secure cookies.
+- ✅ API key stored as hash, not plaintext.
+- ✅ `requireSession` guard consistent across `(app)` area.
+- ✅ Cascade delete & unique constraints clean.
+- ✅ Audit log for important actions.
+- ✅ Soft-delete filtered consistently in all queries/endpoints.
+
+---
+
+### 7. Priority Suggestions (if continuing)
+
+| Priority | Item | Reason |
+|---|---|---|
+| 🔴 High | Decide **org + team invite** strategy (§6.4–6.5) or hide invite step in onboarding | Feature is misleading today |
+| 🟡 Medium | **Break-glass / guarantee at least 1 admin** | Avoid total lockout |
+| 🟡 Medium | DB migration: drop `VerificationToken`, `passwordHash` nullable | Post-OAuth cleanup |
+| 🟢 Low | Recycle bin for cases | Prevent data loss |
+| 🟢 Low | Clean up dead i18n strings | Maintenance |
+
+---
+*End of audit. Enjoy lowering your cortisol — everything is committed & deployed, nothing hanging.* 🌿
+## Part II — PRD Audit
+
+*Source document: `AUDIT-PRD.md`. Reproduced verbatim; original title: "TestForge PRD v1.0 Audit".*
+
+Audit results for `TestForge_PRD_v1.0.docx` (June 2025). Overall this PRD is
+**mature and above average**: competitor analysis, personas, user stories
+with acceptance criteria, measurable NFRs, data model, and open source strategy.
+However, the following **functional gaps, internal inconsistencies, and scope
+risks** were found.
+
+### 1. MISSING Features (needed but not in the PRD)
+
+| # | Gap | Impact | Status in this MVP |
+|---|-----|--------|-------------------|
+| 1 | **Forgot password / reset password** — not mentioned at all even though email+password auth is P0 | Critical: user permanently locked out on self-hosted without DB admin | Not yet (needs SMTP) — backlog v0.2 |
+| 2 | **Comments / discussion on test cases** — §4.5.1 mentions "latest comments" in activity feed, but comment feature not specified anywhere | Collaboration (main product goal) is incomplete | Partial: comment per execution result exists |
+| 3 | **Rerun failed tests only** — standard TestRail/Qase feature to create new run from failed cases | Very common regression workflow | ✅ Implemented |
+| 4 | **Shared/reusable steps** — common steps (e.g. login) must be copied to hundreds of cases | Expensive test case maintenance | Not yet — backlog |
+| 5 | **Review/approval workflow** — `Draft` status exists, but no definition of who/how Draft → Active | Test case quality gate unclear | Not yet — backlog |
+| 6 | **Recycle bin / restore** — version history exists, but no spec for recovering deleted cases | Accidental data loss | ✅ Soft delete (`deletedAt`) prepared |
+| 7 | **Onboarding / sample data** — no first-run experience spec | Open source adoption heavily depends on first 5 minutes | ✅ Demo project seed |
+| 8 | **Test run comparison** — compare two runs (before vs after fix) | Regression analysis | Not yet — backlog |
+| 9 | **Estimated duration per case** — actual timer exists (§4.3.3), but without estimate field can't plan run capacity | QA Lead can't estimate run deadline | Not yet — backlog |
+| 10 | **Backup/restore & full data export** — important for self-hosted, not mentioned | User data loss risk | Partial: CSV export per entity |
+| 11 | **Email service (SMTP)** — US-005 requires email notifications, but SMTP not in tech stack §5.1 or deployment §5.4 | US-005 acceptance criteria can't be met | Not yet — backlog |
+| 12 | **Telemetry privacy policy** — §11 relies on "opt-in telemetry" but feature not specified | Open source community trust | Not yet — backlog |
+
+### 2. Internal PRD Inconsistencies
+
+| # | Finding | Location |
+|---|--------|--------|
+| 1 | **`milestones` entity missing from ERD** even though used in §4.3.1 ("set milestone for test run") and §9 (`test_runs.milestone_id`) | §9 vs §4.3.1 — ✅ fixed in schema |
+| 2 | **`api_keys` table not in ERD** even though §5.3 requires API key for CI/CD and §5.5 requires hashing | §9 vs §5.3/§5.5 — ✅ fixed |
+| 3 | **`audit_logs` table not in ERD** even though §5.5 and §8 require audit log with 90-day retention | §9 vs §5.5 — ✅ fixed |
+| 4 | **Version history (§4.2.2) has no table** `test_case_versions` in ERD | §9 vs §4.2.2 — backlog |
+| 5 | **Requirement traceability matrix (§4.5.3)** needs `requirements` entity, not in ERD | §9 vs §4.5.3 — backlog (v0.3 per roadmap) |
+| 6 | **Custom fields**: §4.2.1 says "configurable per project" but no custom field definition table (only `custom_fields_json` on test_cases) | §9 — backlog v0.2 |
+| 7 | **`In Progress` status §4.3.2** trigger is "automatic when started" but "started" not defined (open page? click start button?) | §4.3.2 — in this MVP: manual |
+| 8 | **MVP §7.1 mentions "Export PDF" P1** but tech stack doesn't include PDF generation library | §7.1 vs §5.1 — this MVP uses CSV first |
+
+### 3. Scope Risks & Recommendations
+
+1. **3-month MVP scope too ambitious** — full CRUD REST API + JUnit upload +
+   CSV import/export + RBAC + Docker in 3 months is realistic only for team ≥3
+   full-time engineers. Recommendation: trim public REST API to CI-needed endpoints
+   only (as in this MVP).
+2. **GraphQL (§5.2) should be removed from initial spec** — dual API (REST+GraphQL)
+   doubles maintenance; no user story requires it.
+3. **10 automation frameworks in §4.4.1 not realistic for launch** — framework-agnostic JUnit XML
+   (as in this MVP) already covers Cypress, Playwright,
+   Jest, Pytest, Mocha, Selenium at once. Native plugins enough for 2 (Cypress,
+   Playwright) in v0.2 per roadmap.
+4. **WebSocket realtime (§5.1) not needed in MVP** — polling/refresh enough;
+   add when there's evidence of simultaneous collaboration need.
+5. **No conflict editing definition** — two users editing same test case
+   will overwrite each other. Need strategy (optimistic locking / aware last-write-wins)
+   before realtime collaboration features.
+
+### 4. Additional Audit: Section 11 (Homepage) & 12 (Register/Sign Up)
+
+Audit for PRD revision adding homepage and auth specs
+(`TestForge_PRD_v1.0 (1).docx`). Both sections are detailed and actionable
+(ready-to-use copywriting, prioritized FRs). Findings:
+
+#### 4.1 New inconsistencies & gaps
+
+| # | Finding | Impact |
+|---|--------|--------|
+| 1 | **ERD §9 not updated**: §12.2 needs `organizations` entity (unique slug per workspace), §12.3/12.5 need `verification_tokens`, §12.4 needs `invitations` — none in ERD | ✅ All three added to schema |
+| 2 | **SMTP still not in tech stack §5.1** — now a hard blocker: AU-001 requires email verification before login, §12.5 details verification email, §12.4 needs invite email | Implemented with dev-mode fallback (link shown in UI/log when `SMTP_URL` empty) |
+| 3 | **AU-010 (JWT 15 min + refresh token rotation)** conflicts with §12.6.1 "Remember me = 30 days" without explaining non-remember session duration; rotation needs refresh_tokens table also missing from ERD | MVP: JWT cookie 1 day / 30 days (remember me); rotation in backlog |
+| 4 | **CAPTCHA (§12.6.2)** mentions hCaptcha/reCAPTCHA — external service not in tech stack, and reCAPTCHA v3 doesn't have "display after 5 failures" (that's v2 behavior) | Backlog; 5x/5 min lockout already works |
+| 5 | **Testimonials (§11.2 #8)** require early user quotes — product not launched, no users yet | Filled with placeholder labeled "Early Adopter/Beta Tester"; replace with real testimonials before launch |
+| 6 | **Social proof (§11.2 #2)** shows user/install count — data doesn't exist; fake numbers hurt credibility | Replaced with factual metrics (Docker setup, framework count) |
+| 7 | **HP-005 GitHub stars** needs public repo that doesn't exist yet | Implemented fetch + 1 hour cache with "—" fallback if repo not found |
+| 8 | **Login lockout**: §12.6.2 requires per-IP **and** per-email; old §8 only per-account | Per-email implemented; per-IP needs trust proxy header, deployment backlog |
+| 9 | **§12.1 GitLab OAuth (P1), SAML (P2), Magic Link (P2)** | Per roadmap priority: not in MVP; OAuth route architecture already generic for adding providers |
+| 10 | **Onboarding Step 3 (§12.4)** mentions "click to connect" Jira/Slack — integrations only on v0.2 roadmap, so real "connect" impossible at MVP | Implemented as interest recording, not real connection |
+
+#### 4.2 Functional requirements status
+
+**Homepage (HP)**: HP-001 (static+SSR, lightweight) ✅ · HP-002 ✅ · HP-003 ✅
+(/docs/self-hosting) · HP-004 ✅ · HP-005 ✅ (fallback) · HP-006 partial
+(demo section + live demo link; video tour not yet) · HP-007 ✅ (dark mode via
+prefers-color-scheme) · HP-008 ✅ (meta, OG, sitemap, robots) · HP-009 backlog
+(analytics) · HP-010 ✅ (server component, works without JS).
+
+**Auth (AU)**: AU-001 ✅ · AU-002/003 ✅ (OAuth route ready; active when env
+client ID/secret set) · AU-004 ✅ · AU-005 ✅ · AU-006 ✅ · AU-007 ✅ ·
+AU-008 ✅ · AU-009 ✅ (per email) · AU-010 partial (see 4.1 #3) · AU-011
+backlog (needs refresh token store) · AU-012 partial (labels + built-in keyboard nav
+; full ARIA audit not yet).
+
+### 5. Implemented in this MVP
+
+All **P0** §7.1 items: projects (create/archive), full test case CRUD with all standard fields,
+suite+section hierarchy, manual test run with execution + keyboard
+shortcuts (US-002), basic auth + RBAC, REST API + API key. Plus **P1** items:
+CSV import with preview/validation (US-004), CSV export, framework-agnostic JUnit XML upload
+with auto-matching (US-010), run reports + flaky test +
+bug correlation + automation coverage, and audit gap fixes #3, #6, #7
+plus inconsistencies #1–#3.
+## Part III — Competitive Comparison
+
+*Source document: `docs/FEATURE-COMPARISON.md`. Translated from Indonesian; original title: "TestForge vs Kompetitor — Perbandingan Fitur & Roadmap TODO".*
+
+> Created: 2026-07-08. The comparison is based on competitors' public feature sets (each
+> vendor's own documentation/marketing, as of roughly early 2026 — pricing and details may
+> change) and on the actual state of the TestForge code on the branch at the time of writing.
+>
+> The final part of this document ([§7 Gap Analysis → TODO](#7-gap-analysis--todo-features)) is
+> the list of features TestForge **did not have** yet, prioritised as a roadmap.
+
+### Table of contents (comparison)
+
+1. [Where each product sits](#1-where-each-product-sits)
+2. [Comparison table at a glance](#2-comparison-table-at-a-glance)
+3. [Detailed comparison per feature area](#3-detailed-comparison-per-feature-area)
+4. [Detailed profile per product](#4-detailed-profile-per-product)
+5. [Other tools worth watching](#5-other-tools-worth-watching)
+6. [TestForge's strengths at the time of writing](#6-testforges-strengths-at-the-time-of-writing)
+7. [Gap Analysis → TODO features](#7-gap-analysis--todo-features)
+
+---
+
+### 1. Where each product sits
+
+| Product | Category | Model | Positioning notes |
+|---|---|---|---|
+| **TestForge** | Test case management (TCM) | Open source, self-hosted (Docker) + hosted `testforge.emha.space` | Free alternative to TestRail/Qase; Next.js + Prisma; SQLite in dev / PostgreSQL in prod |
+| **TestRail** (Gurock/Idera) | TCM | Commercial SaaS + server (Enterprise) | De-facto market leader; the most mature option for large manual QA teams |
+| **Qase** | Modern TCM + TestOps | Commercial SaaS, has a free tier | Modern TestRail challenger; strong on automation reporting & AI |
+| **TestLink** | TCM | Open source (GPL, PHP) | Older generation; strong on requirement traceability, but UI and development have stagnated |
+| **Test IO** (EPAM) | **Not a TCM** — crowdtesting service | Commercial, pay per test cycle | Rents out a crowd of human testers + real devices; complements a TCM, does not replace one |
+| Zephyr Scale, Xray | TCM inside Jira | Commercial (Atlassian Marketplace) | The default choice for teams that live in Jira |
+| Testmo, Testiny, PractiTest, qTest, Allure TestOps, Kiwi TCMS, Azure Test Plans | TCM | Mixed | Covered briefly in §5 |
+
+Important: **Test IO is not apples-to-apples** with TestForge. Test IO sells *people*
+(exploratory crowdtesting, hundreds of real devices, output in the form of bug reports), not
+*software* for managing test cases. The only Test IO features worth borrowing for TestForge are
+the concepts of *exploratory/session-based testing* and *attachment-rich bug reports* — both are
+on the TODO list in §7.
+
+---
+
+### 2. Comparison table at a glance
+
+Legend: ✅ present · 🟡 partial/limited · ❌ absent · ➖ not relevant for that product category.
+
+| Feature | TestForge | TestRail | Qase | TestLink | Test IO |
+|---|:-:|:-:|:-:|:-:|:-:|
+| **Organisation & structure** |
+| Multi-project | ✅ | ✅ | ✅ | ✅ | ➖ |
+| Suite → section hierarchy (nested) | ✅ | ✅ | ✅ | ✅ | ➖ |
+| Multi-tenant organization/workspace | ✅ | ✅ | ✅ | ❌ | ➖ |
+| **Test case design** |
+| Structured steps (action + expected) | ✅ | ✅ | ✅ | ✅ | ➖ |
+| Auto ID (`TC-SLUG-001`) | ✅ | ✅ | ✅ | ✅ | ➖ |
+| Priority / type / tags / assignee | ✅ | ✅ | ✅ | 🟡 (keywords) | ➖ |
+| Clone & bulk edit | ✅ | ✅ | ✅ | 🟡 | ➖ |
+| Soft delete / recycle bin | ✅ | ✅ | ✅ | ❌ | ➖ |
+| **Attachments / images on cases & results** | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Custom fields** | ✅ (9 types) | ✅ (very strong) | ✅ | ✅ | ➖ |
+| **Shared steps (reusable steps)** | ✅ | ✅ | ✅ | ❌ | ➖ |
+| **Case versioning / change history** | ✅ | ✅ | ✅ | ✅ | ➖ |
+| **Parameterisation / datasets** | ✅ | ✅ | ✅ | ❌ | ➖ |
+| **Case templates (text/BDD/exploratory)** | ✅ (BDD + exploratory session) | ✅ | 🟡 | ❌ | ➖ |
+| Rich text / markdown + inline images | ✅ (GFM) | ✅ | ✅ | 🟡 | ➖ |
+| Review/approval workflow for cases | ❌ | 🟡 | ✅ | ❌ | ➖ |
+| **Planning & execution** |
+| Test run + pick cases via filter | ✅ | ✅ | ✅ | ✅ | ➖ |
+| 7 colour-coded result statuses + keyboard shortcuts | ✅ | ✅ | ✅ | 🟡 | ➖ |
+| Automatic timer per result | ✅ | 🟡 (manual elapsed) | ✅ | ❌ | ➖ |
+| Rerun failed only | ✅ | ✅ | ✅ | ❌ | ➖ |
+| Milestones | ✅ (basic) | ✅ (+sub-milestones) | ✅ | 🟡 (builds) | ➖ |
+| **Test plans (collection of runs + configurations)** | ✅ | ✅ | ✅ | ✅ | ➖ |
+| **Configurations (browser × OS matrix)** | ✅ | ✅ | ✅ | ✅ (platforms) | ➖ |
+| **Environments per run** | ✅ | 🟡 | ✅ | ❌ | ➖ |
+| **Custom result statuses** | ❌ (hardcoded) | ✅ | ✅ | ✅ | ➖ |
+| Time estimates & forecast | ❌ | ✅ | 🟡 | ❌ | ➖ |
+| Exploratory / session-based testing | ✅ | 🟡 (template) | 🟡 | ❌ | ✅ (core product) |
+| **Requirements & traceability** |
+| Requirement management + coverage matrix | ❌ | 🟡 (via references) | 🟡 (via Jira) | ✅ (strongest) | ➖ |
+| Two-way case ↔ issue tracker linking | 🟡 (URL string) | ✅ | ✅ | ✅ | ✅ |
+| Built-in defect entity | ✅ | ❌ | ✅ | ❌ | ✅ |
+| **Automation** |
+| JUnit XML upload via API | ✅ | 🟡 (via custom API) | ✅ | 🟡 (XML-RPC) | ➖ |
+| Auto-match result ↔ case (ID annotation) | ✅ | 🟡 | ✅ | 🟡 | ➖ |
+| Other formats (TRX/NUnit/Allure/Cucumber JSON) | 🟡 (TRX/NUnit3/xUnit2/Cucumber/Mocha, no Allure yet) | 🟡 | ✅ | ❌ | ➖ |
+| Per-framework reporter/SDK (npm/pip) | ❌ | 🟡 (third party) | ✅ (10+ official) | ❌ | ➖ |
+| CLI uploader | ❌ | ❌ | ✅ | ❌ | ➖ |
+| Flaky detection | ✅ | ❌ | ✅ | ❌ | ➖ |
+| Mute/quarantine flaky tests | ✅ | ❌ | ✅ | ❌ | ➖ |
+| **Reporting** |
+| Pass rate trend | ✅ | ✅ | ✅ | 🟡 | ➖ |
+| Automation coverage | ✅ | 🟡 | ✅ | ❌ | ➖ |
+| Run-to-run comparison | ❌ | ✅ | ✅ | ❌ | ➖ |
+| Custom dashboards (widgets) | ❌ | ✅ | ✅ | ❌ | ➖ |
+| Cross-project reporting | ❌ | ✅ (Enterprise) | ✅ | ❌ | ➖ |
+| Scheduled/email reports | ❌ | ✅ | 🟡 | ❌ | ✅ |
+| PDF/print report export | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Public share link (read-only) | ❌ | 🟡 | ✅ | ❌ | ➖ |
+| **Integrations** |
+| REST API + OpenAPI | ✅ | ✅ (no official OpenAPI) | ✅ | 🟡 (XML-RPC) | ✅ |
+| Webhooks (HMAC-signed) | ✅ | 🟡 | ✅ | ❌ | ✅ |
+| Native Jira integration | 🟡 (create/link/status; no Jira-side plugin yet) | ✅ (two-way plugin) | ✅ | ✅ | ✅ |
+| GitHub/GitLab issues | ❌ | ✅ | ✅ | 🟡 | ➖ |
+| Slack/Teams notifications | ✅ | ✅ | ✅ | ❌ | ✅ |
+| Import from other tools (TestRail/Qase/XML) | ✅ (CSV + TestRail/Qase/TestLink) | ✅ | ✅ (TestRail, CSV) | ✅ (XML) | ➖ |
+| CSV export | ✅ | ✅ (+XLSX/XML) | ✅ (+JSON) | ✅ (XML) | ➖ |
+| **Collaboration** |
+| Comments & @mentions on cases/runs | ❌ | 🟡 | ✅ | ❌ | ✅ |
+| Activity feed / per-entity history | 🟡 (global audit log) | ✅ | ✅ | 🟡 | ➖ |
+| Saved filters / saved views | ✅ (cases) | ✅ | ✅ | ❌ | ➖ |
+| Global full-text search | ✅ (⌘K) | ✅ | ✅ | 🟡 | ➖ |
+| **Security & admin** |
+| RBAC (org + project roles) | ✅ (2 layers) | ✅ | ✅ (+custom roles) | ✅ | ➖ |
+| Custom roles | ❌ | ✅ | ✅ | ✅ | ➖ |
+| Email verification + password reset | ✅ | ✅ | ✅ | 🟡 | ➖ |
+| OAuth login (Google/GitHub) | ✅ | 🟡 | ✅ | ❌ | ➖ |
+| SSO SAML/OIDC | 🟡 (OIDC; SAML deferred) | ✅ (Enterprise) | ✅ | ❌ | ✅ |
+| 2FA/TOTP | ✅ | ✅ | ✅ | ❌ | ✅ |
+| SCIM provisioning | ❌ | 🟡 | ✅ | ❌ | ➖ |
+| Audit log + export | ✅ | ✅ (Enterprise) | ✅ | ❌ | ➖ |
+| Scoped API keys (READ/WRITE) + hashing | ✅ | 🟡 | ✅ | ❌ | ➖ |
+| Rate limiting & brute-force lockout | ✅ | ✅ | ✅ | ❌ | ➖ |
+| **Deployment & pricing** |
+| Self-hosted | ✅ (Docker, one command) | ✅ (Enterprise Server, expensive) | ❌ | ✅ | ➖ |
+| Open source | ✅ | ❌ | ❌ | ✅ | ➖ |
+| Free tier | ✅ (everything is free) | ❌ (trial only) | ✅ (≤3 users) | ✅ | ❌ |
+| Indicative price (cloud, per user/month) | Free | ~$37–74 | ~$20–40 | Free | per test cycle |
+| UI i18n (EN/ID) | ✅ | 🟡 | 🟡 | ✅ (many languages) | ➖ |
+
+---
+
+### 3. Detailed comparison per feature area
+
+#### 3.1 Test case design & organisation
+
+- **TestRail** is the most flexible: *case templates* (Text, Steps, Exploratory Session, BDD),
+  **custom fields** per template with 10+ field types (dropdown, multi-select, steps, URL,
+  user, date…), **shared steps** used across cases and updated everywhere at once, per-case
+  change history complete with diffs, and **datasets/parameterisation** (one case executed N
+  times with different variables). The repository mode can be *single suite* or *multi-suite +
+  baselines* (suite snapshots for parallel releases).
+- **Qase** follows closely: shared steps, custom fields, per-case parameters, drag-and-drop
+  attachments, *muted tests*, and a **review workflow** (cases in draft/in-review/actual status)
+  that is more formal than TestRail's.
+- **TestLink** is unique in its **keywords** (similar to tags) and built-in case versioning
+  (every edit bumps the version, and a test plan pins a specific version — a good concept that
+  neither TestForge nor modern Qase has).
+- **TestForge** already had a good foundation (JSON action/expected steps, priority/type/status/
+  automation status, tags, clone, bulk edit, inline priority & automation editing in the table,
+  soft delete + scheduled purge) but **did not yet have**: attachments, custom fields, shared
+  steps, versioning, parameterisation, templates, rich text. This was gap cluster №1.
+
+#### 3.2 Planning & execution
+
+- **TestRail**: *test plans* wrap many runs + **configurations** (a matrix — e.g.
+  Chrome/Firefox × Win/macOS produces one run per combination), tiered milestones, per-case
+  estimates and a **forecast** of remaining execution time, "todos" (a personal work queue per
+  tester).
+- **Qase**: test plans, environments (staging/prod), configurations, default assignee, a rerun
+  wizard, and *fast run* (quick execution without creating a formal run).
+- **TestLink**: test plan + **builds** (equivalent to runs) + **platforms** (equivalent to
+  configurations).
+- **Test IO**: execution is done by the crowd; its interesting features are the *test cycle*
+  with a scope, a real device matrix, and bug reports with photo/video evidence.
+- **TestForge**: single runs were already strong (7 statuses, `P/F/B/S/R` + `J/K` shortcuts,
+  automatic timer, partial runs, rerun failed only, select-all, per-result assignee, defect URL,
+  milestones). **Missing**: test plans, configurations, environments, custom statuses,
+  estimates/forecast, exploratory sessions. This was gap cluster №2.
+
+#### 3.3 Automation & CI/CD
+
+- **Qase** is the strongest: official reporters for Playwright, Cypress, pytest, JUnit, TestNG,
+  Jest, WebdriverIO, Robot Framework and more (publishing results in real time per test rather
+  than one upload at the end), a `qase-cli` CLI, an API v2 for bulk results, and automation
+  analytics (flaky, slowest, muted).
+- **TestRail** relies on the `add_result_for_case` API + third-party integrations (railflow,
+  trcli). The official `trcli` can parse JUnit XML.
+- **TestForge** was already heading the right way: a framework-agnostic `POST /api/v1/junit`
+  with auto-matching on `TC-WEB-001` annotations/exact titles, an `origin` column (CI vs local),
+  flaky detection in reports, HMAC webhooks. **Missing**: formats other than JUnit (TRX, NUnit3,
+  Allure, Cucumber JSON, Mocha JSON), official npm/pip reporters, a CLI, real-time result
+  streaming, and flaky mute/quarantine. Gap cluster №3.
+
+#### 3.4 Reporting & analytics
+
+- **TestRail**: a separate report engine (activity, coverage, comparison across runs/milestones,
+  property distribution), schedulable & emailable, cross-project (Enterprise).
+- **Qase**: widget-based custom dashboards (query builder), run reports shareable as a public
+  read-only link, PDF export.
+- **TestForge**: pass rate trend per run, flaky, bug correlation, automation coverage — good for
+  an MVP but static (cannot be composed or filtered), no run-to-run comparison, no share links,
+  no PDF/scheduled reports. Gap cluster №4.
+
+#### 3.5 Integrations & ecosystem
+
+- **TestRail**: defect plugin integrations (Jira, Azure DevOps, GitHub, GitLab, Bugzilla,
+  Redmine, YouTrack…) — push a defect from a failed result, see defect status inside TestRail,
+  and on the Jira side a plugin shows test results from the issue.
+- **Qase**: a two-way Jira app, GitHub/GitLab, Slack, webhooks.
+- **TestLink**: classic bug tracker linking (Mantis, Bugzilla, Jira via connector).
+- **TestForge**: `linkedIssues` was only a comma-separated URL string; `defectUrl` on run results
+  was also a string. No create-issue-from-failure, no status sync, no Slack/Teams/Discord
+  notifications. The per-project (HMAC) webhook is a good foundation for building this.
+  Gap cluster №5.
+
+#### 3.6 Collaboration & UX
+
+- Qase/TestRail have per-case/per-result comments, @mentions, saved views, global search, and a
+  per-entity activity stream. TestForge only had a global audit log (admin-facing), with no
+  user-facing collaboration. Gap cluster №6.
+
+#### 3.7 Enterprise & security
+
+- TestForge was already decent (JWT + email verification, OAuth, lockout, rate limiting, hashed
+  and scoped API keys, audit log + export, two-layer org/project RBAC). The remaining gap for
+  serious team adoption: **SSO SAML/OIDC, 2FA, SCIM, custom roles, session management** (see §7
+  P2).
+
+---
+
+### 4. Detailed profile per product
+
+#### 4.1 TestRail
+
+- **Strengths**: maturity (since 2004), the deepest custom fields & templates, test plans +
+  configurations, baselines, forecast, the most complete report engine, the broadest defect
+  plugin ecosystem, UI scripts (UI customisation via JS), large documentation & community.
+- **Weaknesses**: expensive (cloud ~$37/user/month Professional, ~$74 Enterprise; server is
+  Enterprise-only), the UI feels dated, the API has no official OpenAPI and strict cloud rate
+  limits, no free tier, first-class automation only arrived via `trcli` (which feels bolted on),
+  not open source.
+- **Lesson for TestForge**: shared steps, configurations, forecast, defect plugin architecture,
+  saved views ("filters") — the features that keep large manual QA teams on board.
+
+#### 4.2 Qase
+
+- **Strengths**: modern and fast UX, a free tier, the most official automation reporters, a case
+  review workflow, a built-in defect entity, dashboard widgets, public share links, tidy API
+  v1+v2, SSO/SCIM on business plans, AI features (generate cases from a description/document,
+  AIDEN).
+- **Weaknesses**: no self-hosting (a deal-breaker for data-sensitive teams), enterprise features
+  locked behind top tiers, configurations/environments not as deep as TestRail plans.
+- **Lesson for TestForge**: positionally, TestForge is closest to "an open source Qase". Priority
+  features to emulate: attachments, per-framework reporters, report share links, review
+  workflow, defects.
+
+#### 4.3 TestLink
+
+- **Strengths**: free & GPL, the best-in-class **requirement management + traceability matrix**
+  (import requirements, link to cases, requirement coverage reports), case versioning + test
+  plans pinning versions, platforms, many languages.
+- **Weaknesses**: an old PHP monolith, a 2000s frame-based UI, the last stable release is years
+  old (1.9.x), an antiquated XML-RPC API, no modern automation, a troublesome install.
+- **Lesson for TestForge**: TestLink proves that the open-source-self-hosted segment is real and
+  is currently *vacant*, abandoned by modern players — precisely TestForge's target. Worth
+  borrowing: requirement traceability and case versioning.
+
+#### 4.4 Test IO
+
+- **Strengths**: hundreds of thousands of human testers, a real device matrix (not emulators),
+  rich bug reports (screenshots, video, reproduction steps), on-demand test cycles, bug tracker
+  integrations.
+- **Weaknesses**: not a TCM — it does not manage a team's internal test case repository;
+  expensive; crowd quality varies.
+- **Lesson for TestForge**: support *exploratory sessions* and *media-rich bug reports* so that
+  the output of manual testers (internal or crowd) can live in TestForge.
+
+---
+
+### 5. Other tools worth watching
+
+| Tool | In brief | Differentiating feature relevant to TestForge |
+|---|---|---|
+| **Zephyr Scale** (SmartBear) | TCM native to Jira | Automatic issue↔case traceability, BDD, versioning |
+| **Xray** | TCM native to Jira, strong on automation | Requirement coverage, first-class Cucumber, test environments |
+| **Testmo** | Modern unified TCM | One place for manual + automation + **exploratory sessions**; excellent CLI for submitting automation results |
+| **PractiTest** | Enterprise TCM | Full requirements module, strong dashboards, exploratory |
+| **qTest** (Tricentis) | Enterprise TCM | Cross-project insights, Tricentis Tosca integration |
+| **Allure TestOps** | Automation-first TCM | Test cases as code, real-time launches, the deepest automation analytics |
+| **Kiwi TCMS** | Open source (Python/Django) — the closest OSS competitor | Test plans + versioning, API, telemetry reports; UI older than TestForge's |
+| **Testiny** | Lightweight modern TCM, inexpensive | Fast UX, small self-hosted free tier |
+| **Azure Test Plans** | Part of Azure DevOps | Configurations, exploratory testing with screen recording |
+| **TestLodge, Tuskr, QA Touch, TestCollab** | Lightweight TCM | Basic features, price is the main differentiator |
+
+---
+
+### 6. TestForge's strengths at the time of writing
+
+What was already **better than or on par with** competitors (do not break these while chasing
+the gaps):
+
+1. **Open source + one-command self-hosting** (`docker compose up`) — something neither
+   TestRail (expensive server) nor Qase (none at all) offers. This is the main differentiator.
+2. **Fast run execution**: 7 statuses, `P/F/B/S/R` keyboard shortcuts + `J/K` navigation,
+   automatic timer, rerun failed only — on par with or more ergonomic than TestRail.
+3. **Framework-agnostic JUnit ingest + annotation auto-matching** — simpler to use than
+   TestRail's API.
+4. **Built-in flaky detection, free** — a paid-tier feature in Qase.
+5. **API v1 with an OpenAPI spec** (`/api/v1/openapi`) — even TestRail has no official OpenAPI.
+6. **Tidy security basics**: hashed and scoped API keys, HMAC webhooks, lockout, audit log +
+   export.
+7. **EN/ID i18n** — almost no competitor offers Indonesian.
+8. **CSV import with preview & validation** + per-step expected export.
+
+---
+
+### 7. Gap Analysis → TODO features
+
+> Priority: **P1** = the gaps most often cited as reasons a team rejects a TCM (compared to
+> Qase/TestRail); **P2** = important competitive differentiators; **P3** = nice-to-have /
+> niche segments.
+> This checklist is the feature backlog — mark ✅ on release.
+
+#### P1 — Foundations TestRail/Qase users consider mandatory
+
+- [x] **Attachments & inline images** — upload files/screenshots on test cases, steps, and run
+      results (drag-drop + paste from clipboard); local storage (Docker volume) with an
+      abstraction so it can be S3-compatible. *The most frequently asked-about gap; every
+      competitor has it.* *(Done 2026-07-08 — upload/dedupe/limit/purge live; inline images in
+      descriptions waited on F-02 markdown.)*
+- [x] *(Done 2026-07-09 — 9 field types for cases & results; table columns/filters followed)*
+      **Custom fields** — per-project field definitions (types: text, dropdown, multi-select,
+      checkbox, URL, user, date) for test cases and run results; shown in forms, tables,
+      filters, CSV import/export, and the API.
+- [x] *(Done 2026-07-10)* **Shared steps** — reusable steps across cases (e.g. "log in as
+      admin"); edit once, updated in every case that uses it; counted correctly in exports and
+      the run view.
+- [x] *(Done 2026-07-10)* **Test case history & versioning** — store a revision on every change
+      (who, when, per-field/per-step diff), show it on a History tab, allow restoring a version;
+      run results store a snapshot of the case version as executed (like TestLink).
+- [x] *(Done 2026-07-10)* **Test plans + configurations** — a Test Plan entity containing many
+      runs; configurations (e.g. Browser: Chrome/Firefox × OS: Win/macOS) produce one run per
+      combination; aggregate progress per plan. *TestRail's main differentiating feature.*
+- [x] **Rich text (markdown)** for description/preconditions/steps + safe (sanitized) rendering
+      and inline images from attachments. *(Done 2026-07-08 — GFM + rehype-sanitize, a
+      Write/Preview editor, paste screenshot → attach + embed.)*
+- [x] *(Done 2026-07-10)* **Jira integration** (then GitHub/GitLab Issues) — not just a URL
+      string: create an issue from a FAILED result with an automatic template (repro from
+      steps), two-way linking, live issue status shown on the case/run, per-project
+      configuration. *(A Jira-side plugin showing test results inside the issue does not exist
+      yet.)*
+- [x] *(Done 2026-07-10)* **Slack/Discord/Teams + email notifications** — run finished, failed
+      results, case assigned; built on top of the existing webhook system.
+- [x] *(Done 2026-07-09)* **Global search** — one search box (⌘K) across cases/runs/suites/
+      milestones with full-text search on title/description/steps.
+- [x] *(Done 2026-07-09 for cases; runs followed)* **Saved filters / views** — save a
+      combination of case & run table filters (per user and shared per project), and set it as
+      the default view.
+
+#### P2 — Competitive differentiators (on par with Qase/TestRail business plans)
+
+- [x] *(Done 2026-07-11)* **Additional automation result formats** — TRX (MSTest), NUnit3,
+      xUnit v2, Cucumber JSON, and Mocha JSON parsers on a generic `/api/v1/results` endpoint
+      (JUnit keeps working through `/api/v1/junit`); Allure not yet.
+- [x] *(Done 2026-07-13)* **Official per-framework reporters** — npm packages
+      `testforge-playwright-reporter`, `testforge-cypress-reporter`, pip `pytest-testforge`
+      streaming results in real time (not just an XML upload at the end), + a **`testforge-cli`
+      CLI** for CI. Publishing to npm/PyPI is still manual. See F-12.
+- [x] *(Done 2026-07-12)* **Parameterisation / datasets** — `{{param}}` variables in steps + a
+      per-case dataset table; a run executes one dataset row as one result.
+- [x] *(Done 2026-07-12)* **Custom result statuses & custom roles** — admins can add/change
+      result statuses (colour, pass/fail meaning) and create roles with granular permissions.
+      See F-14.
+- [x] *(Done 2026-07-12)* **Case review workflow** — a `DRAFT → IN_REVIEW → APPROVED` flow with
+      reviewers, review comments, and a "needs review" filter (like Qase). See F-15.
+- [x] *(Done 2026-07-12)* **Comments & @mentions** — comments on cases and run results; mentions
+      trigger a notification/email. The attachment uploader in the comment composer was deferred
+      (it needs a two-phase draft-id flow). See F-16.
+- [x] *(Done 2026-07-13)* **Dashboards & report builder** — composable widgets (pass rate,
+      coverage, defects, velocity) per project; **run/milestone comparison**; **scheduled email
+      reports**; a **public read-only share link** for run reports. **Dashboard PDF export was
+      NOT built** (share links were considered sufficient); PDF for the case catalogue & run
+      report is available via the browser print dialog in F-35. See F-17.
+- [x] *(Done 2026-07-13)* **Requirement management & traceability** — a Requirement entity, N:M
+      links to cases, a requirement→case→latest-result coverage matrix (filling the vacuum left
+      by TestLink). Import via CSV paste; the reverse picker on case detail was deferred.
+      See F-18.
+- [x] *(Done 2026-07-12)* **Environments** — a per-project list of environments (staging/prod/…),
+      selected when creating a run, and a filter dimension in reports.
+- [x] *(Done 2026-07-16)* **SSO OIDC + 2FA (TOTP)** — generic OIDC (covering Google
+      Workspace/Azure AD/Keycloak) + TOTP 2FA with recovery codes. **SAML & SCIM are
+      deliberately out of scope** and were not built. LDAP/AD followed in F-34. See F-20.
+- [x] *(Done 2026-07-12)* **Mute/quarantine tests** — mark an automation case as muted; its
+      results are recorded but do not fail the pass rate; report long-muted tests.
+- [x] *(Done 2026-07-12)* **Import from TestRail/Qase/TestLink** — TestRail XML, Qase JSON
+      export, and TestLink XML importers (not just CSV) to lower migration cost.
+- [x] *(Done 2026-07-12)* **Estimates & forecast** — a per-case estimate field, aggregated per
+      run/plan, forecasting remaining time from the tester's actual pace. See F-23.
+- [x] *(Done 2026-07-11)* **Bulk move/copy across suites & projects** + drag-and-drop case
+      reordering within a suite. Moving between suites via drag-drop turned out to have existed
+      for a long time; only Copy-to-project and drag-reorder were newly added.
+
+#### P3 — Nice-to-have / niche segments
+
+- [x] *(Done 2026-07-17)* **Exploratory / session-based testing** — a Session entity (charter,
+      timebox, timestamped notes, attachments) producing new bugs/cases (the Test IO/Testmo
+      lesson). See F-25.
+- [x] *(Done 2026-07-17)* **Built-in defect entity** — an internal defect list for teams without
+      an issue tracker (like Qase), still linkable to an external tracker. See F-26.
+- [x] *(Done 2026-07-17)* **BDD/Gherkin** — a Gherkin case template, `.feature` import/export,
+      synchronised with Cucumber JSON results. See F-27.
+- [x] *(Done 2026-07-17)* **Baselines** — suite snapshots supporting several parallel release
+      versions (the TestRail concept). See F-28.
+- [x] *(Done 2026-07-18)* **AI assist (BYO key)** — generate draft test cases from a feature
+      description/PRD, suggest edge-case steps, and detect similar cases (local trigram, no key
+      required) — the answer to Qase AIDEN. An Anthropic-compatible endpoint + a per-org
+      encrypted key; opt-in per click, fully off when unconfigured (F-29).
+- [x] *(Done 2026-07-17)* **XLSX & JSON export** (besides CSV), import templates with saved
+      column mappings. See F-30.
+- [x] *(Done 2026-07-17)* **Todos / personal work queue** — an "assigned to me" page across
+      projects (run results + assigned cases, + reviews requested) like TestRail Todos.
+      See F-31.
+- [x] *(Done 2026-07-17)* **Case dependencies** — mark cases that depend on other cases; the run
+      suggests (does not automatically apply) BLOCK on dependents when a prerequisite fails.
+      See F-32.
+- [x] *(Done 2026-07-18)* **Public API v2** — full coverage (milestones, members, webhooks,
+      custom fields, attachments), per-project tokens, per-key rate limits, plus a
+      `packages/api-client` package generated from the spec. v1 keeps running and is frozen.
+      See F-33.
+- [x] **LDAP/Active Directory** for self-hosted enterprise (feature parity with TestLink/Kiwi).
+- [x] *(Done 2026-07-18)* **Print-friendly view** of test cases & runs for audit/compliance — a
+      dedicated `/print/*` route (case catalogue + run report), PDF via the browser print
+      dialog, with no server-side dependency (F-35).
+- [x] *(Done 2026-07-18)* **PWA/mobile execution view** — an installable PWA (manifest + icons +
+      offline-fallback service worker), a single-card thumb-zone executor on phones, and an
+      **offline result queue** (record without signal, auto-sync when online, last-write-wins
+      conflicts reported) for physical device testing (F-36).
+- [x] *(Done 2026-07-11)* **In-app docs/help center** — `/docs/help`, per-feature-area how-to
+      guides for end users (separate from `/docs/api`, which is for developers). See F-37.
+- [x] *(Done 2026-07-16)* **Live quality badge** — a public shields.io-style SVG per project
+      (`/badge/<token>.svg`, pass rate / automation / case count), revocable token; no competitor
+      has this. See L-01.
+- [x] *(Done 2026-07-16)* **Real-time collaborative run execution** — TestRail/Qase runs are
+      single-player with a refresh; TestForge is multiplayer: presence avatars, live results via
+      SSE, soft claim, last-write-wins conflicts + Undo. See L-04.
+- [x] *(Done 2026-07-16)* **CI quality gates** — TestRail/Qase require scripting; TestForge does
+      it in one call: a per-project policy (pass rate, new failures, untested, required tags) +
+      `testforge-cli gate` with an exit code. See L-02.
+- [x] *(Done 2026-07-16)* **Test cases as code (GitOps sync)** — unique, no TCM competitor has
+      it: a `tests/` YAML folder in the user's repo synced two ways (`cases pull|status|push`),
+      3-way merge via `.testforge.lock`, conflicts exit 1 with a per-field report (it never
+      silently overwrites). See L-03 & `docs/CASES-AS-CODE.md`.
+
+#### Implementation notes
+
+- The suggested order within P1: **attachments → rich text → custom fields → Jira → test
+  plans/configurations** (attachments & rich text are UX prerequisites for the rest).
+- The existing HMAC webhook is the foundation for Slack/Teams notifications (P1) and tracker
+  integration (P1) — build them as internal webhook consumers, not as a new system.
+- The current schema stores `tags`, `linkedIssues`, and `events` as comma-separated strings;
+  when working on custom fields/integrations, consider normalising them into relational tables
+  at the same time (a Prisma migration), especially before moving to PostgreSQL in production.
+## Part IV — Feature Work Orders
+
+*Source document: `docs/TODO-FEATURES.md`. Reproduced verbatim; original title: "TestForge — Feature TODO Specifications (Implementation Work Orders)".*
 
 > **Purpose.** This document is the executable backlog for TestForge. Every feature below is
 > written as a **self-contained work order**: exact data model, exact file paths, function
@@ -7,14 +763,14 @@
 > asking questions.
 >
 > **Origin.** Gap analysis vs TestRail, Qase, TestLink, Test IO and others — see
-> [FEATURE-COMPARISON.md](FEATURE-COMPARISON.md). The **Leapfrog** section (L-01…L-05)
+> [Part III — Competitive Comparison](#part-iii--competitive-comparison). The **Leapfrog** section (L-01…L-05)
 > contains features designed to make TestForge *better* than every competitor, not just equal.
 >
 > Created: 2026-07-08. Status legend: `[ ]` not started · `[x]` shipped.
 
 ---
 
-## Table of contents
+### Table of contents
 
 - [0. Read this first: repo conventions every feature MUST follow](#0-read-this-first-repo-conventions-every-feature-must-follow)
 - [1. Definition of Done (applies to every feature)](#1-definition-of-done-applies-to-every-feature)
@@ -26,11 +782,11 @@
 
 ---
 
-## 0. Read this first: repo conventions every feature MUST follow
+### 0. Read this first: repo conventions every feature MUST follow
 
 The implementer must copy these existing patterns, not invent new ones.
 
-### 0.1 Stack & layout
+#### 0.1 Stack & layout
 
 | Thing | Where / What |
 |---|---|
@@ -45,7 +801,7 @@ The implementer must copy these existing patterns, not invent new ones.
 | E2E tests | Playwright in `e2e/*.spec.ts` (see `e2e/smoke.spec.ts`) |
 | Seed/demo data | `prisma/seed.mjs` |
 
-### 0.2 Mandatory server-action pattern
+#### 0.2 Mandatory server-action pattern
 
 Copy the shape of `src/app/actions/cases.ts`:
 
@@ -65,7 +821,7 @@ export async function doThing(_prev: { error?: string } | undefined, formData: F
 
 Audit `action` naming is always `entity.verb` lowercase: `case.create`, `run.complete`, `attachment.upload`.
 
-### 0.3 Mandatory API v1 pattern
+#### 0.3 Mandatory API v1 pattern
 
 Copy the shape of existing routes in `src/app/api/v1/projects/[slug]/...`:
 
@@ -80,31 +836,31 @@ Copy the shape of existing routes in `src/app/api/v1/projects/[slug]/...`:
 - **Every new/changed endpoint must be added to the OpenAPI spec** in `src/lib/openapi.ts`
   (served at `/api/v1/openapi`) and to the human docs page `src/app/docs/api`.
 
-### 0.4 Webhooks
+#### 0.4 Webhooks
 
 New entity mutations should fire webhooks: add event names to `WEBHOOK_EVENTS` in
 `src/lib/webhooks.ts` (format `entity.verb`), call `dispatchWebhook(projectId, event, data)`
 after the DB write. Delivery is fire-and-forget; never await it in a way that blocks the response.
 
-### 0.5 i18n
+#### 0.5 i18n
 
 Public pages (landing/auth) are translated via `src/lib/i18n.ts` (cookie `tf_lang`, `en`/`id`).
 **The internal app UI is English-only for now** — write all new app UI strings in English
 directly; do not add app strings to `i18n.ts` unless the feature is on a public page.
 
-### 0.6 Git & delivery rules (from README, non-negotiable)
+#### 0.6 Git & delivery rules (from README, non-negotiable)
 
 - Never commit/push to `main`. Branch `feat/<slug>` → PR → CI green → merge (auto-deploys prod).
 - Never commit `.env`, secrets, `*.db`. Minimal diff — do not refactor unrelated code.
 - One feature (one `F-xx`) per branch/PR unless stated otherwise.
 
-### 0.7 Environment variables
+#### 0.7 Environment variables
 
 New env vars must: have a safe default for `docker compose up` zero-config startup, be added to
 `docker-compose.yml` + `docker-compose.prod.yml` (commented), and be documented in `README.md`
 and `docs/SELF-HOSTED-MIGRATION.md` if they affect data location.
 
-### 0.8 Which model to use (for AI implementers)
+#### 0.8 Which model to use (for AI implementers)
 
 Every feature in §2 carries a **Model** recommendation. The rule of thumb: features that
 introduce a *new architectural concept* get the strongest model; features that follow patterns
@@ -133,7 +889,7 @@ boundaries: a mid-section switch invalidates the prompt cache and re-reads the w
 
 ---
 
-## 1. Definition of Done (applies to every feature)
+### 1. Definition of Done (applies to every feature)
 
 A feature is **done** only when all boxes below are checked:
 
@@ -151,7 +907,7 @@ A feature is **done** only when all boxes below are checked:
 
 ---
 
-## 2. Recommended build order & dependencies
+### 2. Recommended build order & dependencies
 
 Model column per §0.8 — check the running model before starting a row, and ask the user to
 switch if it does not match.
@@ -175,11 +931,11 @@ switch if it does not match.
 
 ---
 
-## 3. P1 features
+### 3. P1 features
 
 ---
 
-### F-01 — Attachments & file uploads `[x]`
+#### F-01 — Attachments & file uploads `[x]`
 
 > **Status: DONE** (2026-07-08, branch `feat/attachments`). Implemented as specified, with
 > these deliberate deviations:
@@ -196,7 +952,7 @@ switch if it does not match.
 **Goal.** Upload files (screenshots, logs, any file) onto test cases and run results; view/download
 them; images render as thumbnails. This is the single most-cited missing feature vs every competitor.
 
-#### Data model (add to `prisma/schema.prisma`)
+##### Data model (add to `prisma/schema.prisma`)
 
 ```prisma
 model Attachment {
@@ -221,7 +977,7 @@ model Attachment {
 
 Add the back-relations `attachments Attachment[]` on `Project` and `User`.
 
-#### Storage abstraction — new file `src/lib/storage.ts`
+##### Storage abstraction — new file `src/lib/storage.ts`
 
 ```ts
 export interface StorageDriver {
@@ -237,7 +993,7 @@ export function getStorage(): StorageDriver; // returns LocalDriver today
   (reject at write time). Keep the interface S3-ready but implement **local only** now.
 - Add `./data` as a Docker volume in both compose files.
 
-#### Rules & limits
+##### Rules & limits
 
 - Max size: `TF_MAX_UPLOAD_MB` env, default **10**. Reject larger with HTTP 413 (API) or
   form error (action).
@@ -251,7 +1007,7 @@ export function getStorage(): StorageDriver; // returns LocalDriver today
 - Access control on download: requester must be a member of `attachment.projectId`
   (session or API key user). Return 404 (not 403) for non-members to avoid existence leaks.
 
-#### Endpoints
+##### Endpoints
 
 | Method & path | Auth | Behavior |
 |---|---|---|
@@ -261,12 +1017,12 @@ export function getStorage(): StorageDriver; // returns LocalDriver today
 
 `serializeAttachment` (add to `src/lib/api.ts`): `{ id, filename, mimeType, sizeBytes, entityType, entityId, uploaderId, url: "/api/attachments/"+id, createdAt }`.
 
-#### Server actions — new file `src/app/actions/attachments.ts`
+##### Server actions — new file `src/app/actions/attachments.ts`
 
 `uploadAttachment(formData)` and `deleteAttachment(formData)` following §0.2. Audit actions:
 `attachment.upload` (detail = filename), `attachment.delete`.
 
-#### UI
+##### UI
 
 - New component `src/components/AttachmentUploader.tsx` (`"use client"`):
   - Props: `{ entityType, entityId, projectId, attachments: SerializedAttachment[] }`.
@@ -278,13 +1034,13 @@ export function getStorage(): StorageDriver; // returns LocalDriver today
 - Mount it: case detail page (below steps), `RunExecutor.tsx` (inside the per-result comment
   area — attach evidence to a result while executing).
 
-#### Cleanup
+##### Cleanup
 
 Extend the existing purge cron (`src/app/api/cron/purge` + `src/lib/cases-purge.ts`): when a
 soft-deleted case is purged, delete its attachments' rows **and files**. Also add an orphan
 sweep: attachments whose `entityId` no longer resolves → delete (log count to console).
 
-#### Acceptance criteria
+##### Acceptance criteria
 
 1. Given a MEMBER on a case page, when they drop a 2 MB PNG, then it appears as a thumbnail
    without page reload, and `GET /api/attachments/[id]` returns it inline.
@@ -294,7 +1050,7 @@ sweep: attachments whose `entityId` no longer resolves → delete (log count to 
 5. Given a VIEWER, the uploader UI is hidden and the POST endpoint returns 403.
 6. Purging a deleted case removes its attachment files from disk.
 
-#### Test plan
+##### Test plan
 
 - e2e `e2e/attachments.spec.ts`: login → open seeded case → upload fixture PNG → assert thumbnail
   → download URL returns 200 → delete → assert gone.
@@ -302,7 +1058,7 @@ sweep: attachments whose `entityId` no longer resolves → delete (log count to 
 
 ---
 
-### F-02 — Markdown rich text with inline images `[x]`
+#### F-02 — Markdown rich text with inline images `[x]`
 
 > **Status: DONE** (2026-07-08, branch `feat/markdown`). Implemented as specified, with
 > these notes:
@@ -324,13 +1080,13 @@ sweep: attachments whose `entityId` no longer resolves → delete (log count to 
 Markdown (GFM) with inline images pasted from clipboard. Competitors have WYSIWYG; Markdown +
 paste-to-upload is simpler and beats them for engineer-heavy teams.
 
-#### Dependencies (add to `package.json`)
+##### Dependencies (add to `package.json`)
 
 `react-markdown`, `remark-gfm`, `rehype-sanitize`. **No raw HTML pass-through** — the default
 sanitize schema, plus allow `img` with `src` restricted to `/api/attachments/` prefix or
 `https:` URLs (implement via a custom `urlTransform` that returns `""` for anything else).
 
-#### Implementation
+##### Implementation
 
 1. New component `src/components/Markdown.tsx`:
    ```tsx
@@ -352,7 +1108,7 @@ sanitize schema, plus allow `img` with `src` restricted to `/api/attachments/` p
 4. Replace read-side plain-text rendering on: case detail page, run executor case panel,
    run result comments, milestone/plan descriptions (when they exist).
 
-#### Acceptance criteria
+##### Acceptance criteria
 
 1. `**bold**`, tables, task lists, fenced code render correctly on the case detail page.
 2. `<script>alert(1)</script>` in a description renders as inert text (sanitized), never executes.
@@ -361,14 +1117,14 @@ sanitize schema, plus allow `img` with `src` restricted to `/api/attachments/` p
 4. Existing plain-text cases render unchanged (plain text is valid Markdown).
 5. An image ref `![x](javascript:alert(1))` renders with empty/blocked src.
 
-#### Test plan
+##### Test plan
 
 e2e `e2e/markdown.spec.ts`: create case with GFM + XSS payload → assert rendered `<strong>`
 exists and no dialog opened; screenshot-paste covered by a direct API insert + render assert.
 
 ---
 
-### F-03 — Custom fields `[x]`
+#### F-03 — Custom fields `[x]`
 
 > **Status: DONE** (2026-07-09, branch `feat/custom-fields`), with these notes:
 > - All 9 types shipped (TEXT/TEXTAREA/NUMBER/CHECKBOX/DATE/URL/USER/DROPDOWN/MULTISELECT);
@@ -389,7 +1145,7 @@ exists and no dialog opened; screenshot-paste covered by a direct API insert + r
 **Goal.** Project admins define extra fields on test cases and run results; fields appear in
 forms, tables, filters, CSV, and API. TestRail's #1 stickiness feature.
 
-#### Data model
+##### Data model
 
 ```prisma
 model CustomFieldDef {
@@ -414,7 +1170,7 @@ add `customJson String @default("{}")` to both `TestCase` and `TestRunResult`.
 Shape: `{ [key]: value }` where value is `string | number | boolean | string[]` per type
 (`DATE` = `"YYYY-MM-DD"`, `USER` = userId).
 
-#### Validation — new file `src/lib/custom-fields.ts`
+##### Validation — new file `src/lib/custom-fields.ts`
 
 ```ts
 export function validateCustomValues(defs: CustomFieldDef[], input: Record<string, unknown>):
@@ -425,7 +1181,7 @@ Rules: unknown keys rejected; required + active must be present and non-empty; t
 `URL` must parse with http/https, `USER` must be a project member id). Inactive defs: values
 preserved but not editable/required.
 
-#### Wiring (each is a small, mechanical change)
+##### Wiring (each is a small, mechanical change)
 
 1. **Settings UI**: new tab "Fields" on the project page (follow `ProjectTabs.tsx` pattern) →
    `src/components/CustomFieldsManager.tsx`: list, create, edit, reorder (up/down buttons are
@@ -445,7 +1201,7 @@ preserved but not editable/required.
    failure. New endpoints `GET/POST /api/v1/projects/[slug]/fields`,
    `PATCH /api/v1/projects/[slug]/fields/[id]`.
 
-#### Acceptance criteria
+##### Acceptance criteria
 
 1. Admin creates required DROPDOWN "Component" [api, web, mobile]; creating a case without it
    fails with a field error; with `Component=web` succeeds and shows in table + CSV export as `cf_component`.
@@ -455,14 +1211,14 @@ preserved but not editable/required.
 4. Defs are project-scoped: another project neither sees nor validates them.
 5. VIEWER cannot open the Fields tab actions (server-side rejected too).
 
-#### Test plan
+##### Test plan
 
 e2e `e2e/custom-fields.spec.ts`: admin creates field → case form shows it → required validation
 → value visible in detail + table → CSV export contains header/value.
 
 ---
 
-### F-04 — Shared steps `[x]`
+#### F-04 — Shared steps `[x]`
 
 > **Status: DONE** (2026-07-10, branch `feat/shared-steps`), with these notes:
 > - `TestStep` became the union `InlineStep | {shared: <groupId>}` — old data is inline-only,
@@ -483,7 +1239,7 @@ e2e `e2e/custom-fields.spec.ts`: admin creates field → case form shows it → 
 **Goal.** Reusable step groups (e.g. "Login as admin") referenced by many cases; edit once,
 updated everywhere. Parity with TestRail/Qase.
 
-#### Data model
+##### Data model
 
 ```prisma
 model SharedStepGroup {
@@ -509,7 +1265,7 @@ export type TestStep =
 
 Backward compatibility is automatic: old data contains only inline items.
 
-#### Expansion helper — add to `src/lib/constants.ts` (or new `src/lib/steps.ts`)
+##### Expansion helper — add to `src/lib/constants.ts` (or new `src/lib/steps.ts`)
 
 ```ts
 // Replaces {shared} items with the group's inline steps, flagging their origin.
@@ -523,7 +1279,7 @@ cell is acceptable), JUnit/report views, F-05 revision snapshots (**store expand
 snapshots so history is immutable), API `serializeCase` (returns both `steps` raw and
 `stepsExpanded`).
 
-#### Behavior rules
+##### Behavior rules
 
 - Deleting a group that is referenced by ≥1 non-deleted case is **blocked** with a message
   listing up to 5 case display IDs (`caseDisplayId`) + count.
@@ -532,7 +1288,7 @@ snapshots so history is immutable), API `serializeCase` (returns both `steps` ra
 - Usage count = number of non-deleted cases whose `stepsJson` contains `"shared":"<id>"`
   (SQLite `LIKE '%"shared":"<id>"%'` is acceptable at this scale).
 
-#### UI
+##### UI
 
 1. New page `src/app/(app)/projects/[slug]/cases/shared-steps/page.tsx`: table of groups
    (title, step count, usage count, updated) + create/edit form reusing the step editor UI from
@@ -546,7 +1302,7 @@ Actions: `src/app/actions/shared-steps.ts` (`create/update/delete`), audit `shar
 API: `GET/POST /api/v1/projects/[slug]/shared-steps`, `PATCH/DELETE .../shared-steps/[id]`
 (DELETE → 409 `conflict` when referenced).
 
-#### Acceptance criteria
+##### Acceptance criteria
 
 1. Create group "Login" with 3 steps; insert into 2 cases; run executor shows 3 expanded steps
    with badge in both.
@@ -555,13 +1311,13 @@ API: `GET/POST /api/v1/projects/[slug]/shared-steps`, `PATCH/DELETE .../shared-s
 4. CSV export of a case with a shared ref contains the expanded steps.
 5. Old cases (inline-only) behave exactly as before.
 
-#### Test plan
+##### Test plan
 
 e2e `e2e/shared-steps.spec.ts` covering AC 1–3.
 
 ---
 
-### F-05 — Test case history & versioning `[x]`
+#### F-05 — Test case history & versioning `[x]`
 
 > **Status: DONE** (2026-07-10, branch `feat/case-history`). Implemented as specified, with
 > these deliberate deviations:
@@ -579,7 +1335,7 @@ e2e `e2e/shared-steps.spec.ts` covering AC 1–3.
 diff; any revision can be restored; run results remember which revision they executed.
 TestLink-grade traceability with modern UX.
 
-#### Data model
+##### Data model
 
 ```prisma
 model TestCaseRevision {
@@ -604,7 +1360,7 @@ description, preconditions, steps (EXPANDED via F-04), expectedResult, priority,
 automationStatus, tags, suiteId, assigneeId, linkedIssues, custom` — i.e., everything a human
 would diff. Snapshots are immutable.
 
-#### Write points (all in `src/app/actions/cases.ts` + API case create/update + CSV import)
+##### Write points (all in `src/app/actions/cases.ts` + API case create/update + CSV import)
 
 Create a single helper `src/lib/case-revisions.ts`:
 
@@ -618,7 +1374,7 @@ Call after **every** case create (rev 1, summary "created"), update, restore-fro
 bulk edit (one revision per affected case), CSV import update, API update. When a run is
 created, copy each case's current `rev` into `TestRunResult.caseRev`.
 
-#### UI
+##### UI
 
 - Case detail page gets tabs `Details | History`. History tab
   (`src/components/CaseHistory.tsx`): list of revisions (rev #, author, time, changeSummary);
@@ -634,7 +1390,7 @@ created, copy each case's current `rev` into `TestRunResult.caseRev`.
 API: `GET /api/v1/projects/[slug]/cases/[caseId]/revisions` (list, newest first, cursor).
 Audit: `case.restore_revision`.
 
-#### Acceptance criteria
+##### Acceptance criteria
 
 1. Editing title then steps produces rev 2 ("title") and rev 3 ("steps"); History shows correct diffs.
 2. No-op save (submit without changes) does not create a revision.
@@ -642,13 +1398,13 @@ Audit: `case.restore_revision`.
 4. A run created at rev 2 keeps `caseRev = 2`; after case edits, the run row shows the stale-rev chip.
 5. Bulk-editing priority on 10 cases creates exactly 10 revisions.
 
-#### Test plan
+##### Test plan
 
 e2e `e2e/case-history.spec.ts` for AC 1–3.
 
 ---
 
-### F-06 — Test plans & configurations `[x]`
+#### F-06 — Test plans & configurations `[x]`
 
 > **Status: DONE** (2026-07-10, branch `feat/test-plans`). Implemented as specified, with
 > these deliberate deviations:
@@ -673,7 +1429,7 @@ e2e `e2e/case-history.spec.ts` for AC 1–3.
 matrix (e.g. Browser {Chrome, Firefox} × OS {Windows, macOS} → 4 runs), with aggregate
 progress. TestRail's flagship feature; Qase has a lighter version.
 
-#### Data model
+##### Data model
 
 ```prisma
 model ConfigGroup {
@@ -716,7 +1472,7 @@ Add to `TestRun`: `planId String?` (+ relation) and `configJson String?`
 (e.g. `{"Browser":"Chrome","OS":"Windows"}`; `null` for standalone runs — **all existing
 run behavior must keep working for standalone runs**).
 
-#### Creation flow
+##### Creation flow
 
 New page `projects/[slug]/plans/new`:
 1. Name/description/milestone.
@@ -730,7 +1486,7 @@ New page `projects/[slug]/plans/new`:
    results for the selected cases (same as run creation today). Cap: reject > 50 combinations
    with a form error.
 
-#### Plan pages
+##### Plan pages
 
 - `projects/[slug]/plans` — list with per-plan aggregate progress bar (sum of all child-run
   result statuses, same color coding as runs list).
@@ -749,7 +1505,7 @@ with stats), `GET/POST .../config-groups`. `serializeRun` gains `planId` and `co
 Webhooks: `plan.created`, `plan.completed`. Audit: `plan.create|complete`.
 Reports page: when runs share a `planId`, the trend chart tooltip shows config names.
 
-#### Acceptance criteria
+##### Acceptance criteria
 
 1. Plan with 2×2 config selection creates exactly 4 runs, each seeded with the selected cases,
    each named with its combo, plan page shows 4 rows + aggregate bar.
@@ -758,13 +1514,13 @@ Reports page: when runs share a `planId`, the trend chart tooltip shows config n
 4. 51+ combinations rejected with a clear form error.
 5. Complete-plan completes all child runs and sets `completedAt`.
 
-#### Test plan
+##### Test plan
 
 e2e `e2e/plans.spec.ts` for AC 1, 3, 5.
 
 ---
 
-### F-07 — Issue tracker integration: Jira, GitHub, GitLab `[x]`
+#### F-07 — Issue tracker integration: Jira, GitHub, GitLab `[x]`
 
 > **Status: DONE** (2026-07-10, branch `feat/issue-integrations`). Implemented as specified,
 > with these deliberate deviations:
@@ -791,7 +1547,7 @@ e2e `e2e/plans.spec.ts` for AC 1, 3, 5.
 **Goal.** Replace URL-string linking with real integration: create an issue from a failed
 result with one click (pre-filled repro), link issues both ways, and show live issue status.
 
-#### Data model
+##### Data model
 
 ```prisma
 model Integration {
@@ -824,7 +1580,7 @@ model IssueLink {
 }
 ```
 
-#### Secret encryption — new file `src/lib/crypto.ts`
+##### Secret encryption — new file `src/lib/crypto.ts`
 
 AES-256-GCM `encrypt(plaintext): string` / `decrypt(payload): string` using key derived
 (scrypt) from `process.env.TF_SECRET` (already-existing app secret if present; otherwise add
@@ -832,7 +1588,7 @@ AES-256-GCM `encrypt(plaintext): string` / `decrypt(payload): string` using key 
 `v1:<iv b64>:<tag b64>:<cipher b64>`. **Never log decrypted tokens; never return `authEnc`
 or decrypted values from any API/serializer.**
 
-#### Provider clients — new file `src/lib/issue-providers.ts`
+##### Provider clients — new file `src/lib/issue-providers.ts`
 
 One interface, three tiny implementations (plain `fetch`, no SDK deps):
 
@@ -850,7 +1606,7 @@ export interface IssueProvider {
 - GitLab: `POST {baseUrl}/api/v4/projects/{urlencoded path}/issues`, `GET` same.
 - All calls: 10 s timeout, surface provider error text in thrown message (truncate 300 chars).
 
-#### Flows
+##### Flows
 
 1. **Settings** — project "Integrations" tab (`src/components/IntegrationsManager.tsx`):
    configure per provider (form fields per provider type), "Test connection" button
@@ -872,7 +1628,7 @@ export interface IssueProvider {
 API: `GET /api/v1/projects/[slug]/issues?entityType=&entityId=` (list links),
 `POST` (link by key), `DELETE .../issues/[id]`. Webhook event: `issue.created`.
 
-#### Acceptance criteria
+##### Acceptance criteria
 
 1. Configured GitHub integration + failed result → Create issue → real issue exists with steps
    in body and backlink; result shows `#42` badge; `defectUrl` filled.
@@ -881,7 +1637,7 @@ API: `GET /api/v1/projects/[slug]/issues?entityType=&entityId=` (list links),
 4. `authEnc` never appears in any API response, page HTML, or audit detail (grep-level check).
 5. Projects without integrations show the old plain-URL fields unchanged.
 
-#### Test plan
+##### Test plan
 
 Unit-style e2e against a mock: add a tiny mock provider route under `e2e/` fixtures (Playwright
 `route()` interception of `api.github.com`) exercising flow 2 end-to-end. Encryption
@@ -890,7 +1646,7 @@ a plain node script under `scripts/`).
 
 ---
 
-### F-08 — Notifications: Slack, Discord, Teams, email `[x]`
+#### F-08 — Notifications: Slack, Discord, Teams, email `[x]`
 
 > **Status: DONE** (2026-07-10, branch `feat/notifications`). Implemented as specified, with
 > these deliberate deviations:
@@ -912,7 +1668,7 @@ a plain node script under `scripts/`).
 **Goal.** Push run/case events to team chat and email. Builds directly on the existing webhook
 dispatcher.
 
-#### Data model
+##### Data model
 
 ```prisma
 model NotificationChannel {
@@ -931,7 +1687,7 @@ model NotificationChannel {
 Extend `WEBHOOK_EVENTS` (F-08 also benefits external webhooks): add `"run.created"`,
 `"result.failed"`, `"case.assigned"`, `"milestone.completed"`.
 
-#### Dispatcher — new file `src/lib/notifications.ts`
+##### Dispatcher — new file `src/lib/notifications.ts`
 
 ```ts
 export async function notify(projectId: string, event: WebhookEvent, data: NotifyData): Promise<void>
@@ -955,13 +1711,13 @@ failures in that window are aggregated into the next message as "…and N more f
 (in-memory map keyed `channelId:runId` is acceptable; document that multi-instance deploys
 may occasionally double-send).
 
-#### UI
+##### UI
 
 Project settings → "Notifications" tab: `src/components/NotificationChannelsManager.tsx` —
 list/create/edit/toggle channels, event checkboxes, "Send test message" button.
 OWNER/ADMIN only. Audit: `notification.create|update|delete|test`.
 
-#### Acceptance criteria
+##### Acceptance criteria
 
 1. Slack channel subscribed to `run.completed` receives a formatted block message with a
    working link when a run completes; unsubscribed events send nothing.
@@ -973,14 +1729,14 @@ OWNER/ADMIN only. Audit: `notification.create|update|delete|test`.
    `TF_ALLOW_ANY_WEBHOOK_HOST=1` for self-hosters with proxies).
 5. A dead webhook URL never delays or fails the originating user action.
 
-#### Test plan
+##### Test plan
 
 e2e with Playwright `route()` intercepting the Slack URL: create channel → complete run →
 assert intercepted payload shape. Formatter unit checks via a script in `scripts/`.
 
 ---
 
-### F-09 — Global search (⌘K command palette) `[x]`
+#### F-09 — Global search (⌘K command palette) `[x]`
 
 > **Status: DONE** (2026-07-09, branch `feat/global-search`). Implemented as specified,
 > with these notes:
@@ -996,7 +1752,7 @@ assert intercepted payload shape. Formatter unit checks via a script in `scripts
 **Goal.** One keystroke, search everything you can access: cases, runs, suites, milestones,
 plans. Faster than TestRail's search, matching Qase.
 
-#### Endpoint — `src/app/api/search/route.ts` (internal, session-only)
+##### Endpoint — `src/app/api/search/route.ts` (internal, session-only)
 
 `GET /api/search?q=<term>&project=<slug optional>` →
 ```json
@@ -1008,7 +1764,7 @@ security boundary, test it), SQLite `contains` (LIKE) on: case title/description
 `displayId` match (parse `TC-<slug>-<num>` → seq lookup), run name, suite name, milestone
 name. Soft-deleted cases excluded. Order: displayId exact match first, then `updatedAt` desc.
 
-#### UI — `src/components/CommandPalette.tsx` (`"use client"`, no new deps)
+##### UI — `src/components/CommandPalette.tsx` (`"use client"`, no new deps)
 
 - Global keydown listener: `⌘K` / `Ctrl+K` opens; `Esc` closes; mounted once in the app layout
   `src/app/(app)/layout.tsx`.
@@ -1017,7 +1773,7 @@ name. Soft-deleted cases excluded. Order: displayId exact match first, then `upd
 - Recent selections in `localStorage` (`tf_recent_search`, max 5) shown when input is empty.
 - Also add a search button in the app header so the feature is discoverable without the shortcut.
 
-#### Acceptance criteria
+##### Acceptance criteria
 
 1. `⌘K` → typing a case title fragment shows the case within ~300 ms; Enter navigates to it.
 2. Typing an exact display ID (`TC-WEB-001`) shows that case first.
@@ -1025,13 +1781,13 @@ name. Soft-deleted cases excluded. Order: displayId exact match first, then `upd
 4. 1-char input shows hint, no request fired.
 5. Works from every app page (layout-mounted).
 
-#### Test plan
+##### Test plan
 
 e2e `e2e/search.spec.ts`: AC 1–3 (create second user for AC 3 via seed).
 
 ---
 
-### F-10 — Saved filters / views `[x]`
+#### F-10 — Saved filters / views `[x]`
 
 > **Status: DONE for CASES** (2026-07-09, branch `feat/saved-views`). Deviations/notes:
 > - Schema keeps `userId` as the owner on every view plus a `shared Boolean`, instead of
@@ -1052,7 +1808,7 @@ e2e `e2e/search.spec.ts`: AC 1–3 (create second user for AC 3 via seed).
 **Goal.** Save the current cases/runs table filter combination as a named view; personal or
 shared with the project; optional default.
 
-#### Data model
+##### Data model
 
 ```prisma
 model SavedView {
@@ -1069,7 +1825,7 @@ model SavedView {
 }
 ```
 
-#### Implementation
+##### Implementation
 
 1. `CasesTable.tsx` (and the runs list filter bar) must first centralize filter state into one
    serializable object `{ search, suiteId, priority[], type[], status[], automationStatus[], tags[], assigneeId, customFields{} }`
@@ -1082,7 +1838,7 @@ model SavedView {
 4. Actions `src/app/actions/saved-views.ts`; audit `view.create|delete`. Unknown/stale keys
    inside `filtersJson` (e.g. removed custom field) are ignored silently on apply.
 
-#### Acceptance criteria
+##### Acceptance criteria
 
 1. Filter Priority=CRITICAL + tag=smoke → save as "Critical smoke" → reload → select view →
    same rows and URL params restored.
@@ -1091,18 +1847,18 @@ model SavedView {
 3. Shared view visible to another member; personal view is not.
 4. Deleting a custom field referenced by a view doesn't break applying it.
 
-#### Test plan
+##### Test plan
 
 e2e `e2e/saved-views.spec.ts`: AC 1–2.
 
 ---
 
-## 4. P2 features
+### 4. P2 features
 
 Compact work orders — same conventions (§0, §1) apply. Each is still a single PR-sized unit
 unless marked (large).
 
-### F-11 — Additional automation result formats `[x]`
+#### F-11 — Additional automation result formats `[x]`
 
 > **Status: DONE** (2026-07-11, branch `feat/result-formats`). Implemented as specified, with
 > these deviations:
@@ -1133,7 +1889,7 @@ unless marked (large).
 - AC: one fixture file per format under `e2e/fixtures/results/` uploads successfully and
   produces a run with correctly mapped statuses; malformed file → 422 with row/parse error message.
 
-### F-12 — Official reporters + CLI (large) `[x]`
+#### F-12 — Official reporters + CLI (large) `[x]`
 
 > **Status: DONE** (2026-07-13, branch `feat/reporters-cli`). Implemented as specified, with
 > these notes:
@@ -1172,7 +1928,7 @@ unless marked (large).
 - AC: running the repo's own Playwright e2e with the reporter against a local TestForge
   creates a live-updating run.
 
-### F-13 — Parameters / datasets `[x]`
+#### F-13 — Parameters / datasets `[x]`
 
 > **Status: DONE** (2026-07-12, branch `feat/parameters-datasets`). Implemented close to spec,
 > with these deviations:
@@ -1217,7 +1973,7 @@ unless marked (large).
   `⚠ {{var}}`); reports count each row as a separate executed test.
 - CSV export: one row per dataset row with a `dataset` column. AC mirrors the above.
 
-### F-14 — Custom result statuses & custom roles `[x]`
+#### F-14 — Custom result statuses & custom roles `[x]`
 
 > **Status: DONE** (2026-07-12, branch `feat/custom-statuses-roles`, Fable 5). Implemented to
 > spec with these decisions/deviations:
@@ -1253,7 +2009,7 @@ unless marked (large).
 >   executor button + K shortcut + legend + CSV; role "Executor" (run.execute) → submits
 >   results, blocked from case edits in the UI action AND the v1 API (403). Suite 50/50.
 
-### F-15 — Case review workflow `[x]`
+#### F-15 — Case review workflow `[x]`
 
 > **Status: DONE** (2026-07-12, branch `feat/case-review`, Opus 4.8). Implemented to spec:
 > - `TestCase.status` now `DRAFT | IN_REVIEW | APPROVED | ACTIVE | DEPRECATED`; `ACTIVE` stays the
@@ -1279,7 +2035,7 @@ unless marked (large).
 > - e2e `review.spec.ts` 3/3 (approve loop + author≠reviewer/VIEWER guards + history; request-changes
 >   → DRAFT + note; run warning); full suite 48/48. Fixture gained a MEMBER `reviewer@testforge.local`.
 
-### F-16 — Comments & @mentions `[x]`
+#### F-16 — Comments & @mentions `[x]`
 
 > **Status: DONE** (2026-07-12, branch `feat/comments-mentions`, Opus 4.8). Implemented to spec:
 > - `Comment` model (`{projectId, entityType CASE|RUN|RESULT, entityId, authorId, bodyMd,
@@ -1309,7 +2065,7 @@ unless marked (large).
 > - e2e `comments.spec.ts` 3/3 (lifecycle+XSS-inert, mention chip + notification deep link,
 >   VIEWER can comment); full suite 45/45.
 
-### F-17 — Dashboards, run comparison, PDF & scheduled reports, public share links (large) `[x]`
+#### F-17 — Dashboards, run comparison, PDF & scheduled reports, public share links (large) `[x]`
 
 > **Status: DONE** (2026-07-13, four stacked PRs: `feat/run-comparison` #73 →
 > `feat/dashboard-builder` #74 → `feat/share-links` #75 →
@@ -1348,7 +2104,7 @@ Split into 4 sequential PRs:
 4. **Scheduled email reports**: `ReportSchedule { projectId, cron: "WEEKLY_MON"|"DAILY", recipientsJson, kind: "SUMMARY" }`
    sent by extending the existing cron route pattern; email = KPI table + top failures + link.
 
-### F-18 — Requirements & traceability matrix `[x]`
+#### F-18 — Requirements & traceability matrix `[x]`
 
 > **Status: DONE** (2026-07-13, branch `feat/requirements`). Implemented as specified, with
 > these notes:
@@ -1379,7 +2135,7 @@ Split into 4 sequential PRs:
   export as CSV. "COVERED" auto-derives: ≥1 linked, non-deleted, non-deprecated case.
 - This fills TestLink's niche that modern SaaS tools skip — key differentiator for regulated teams.
 
-### F-19 — Environments `[x]`
+#### F-19 — Environments `[x]`
 
 > **Status: DONE** (2026-07-12, branch `feat/environments`). Implemented as specified, with
 > these notes:
@@ -1410,7 +2166,7 @@ Split into 4 sequential PRs:
   flag-guarded by project setting `autoCreateEnvs`, default on).
 - Filter chip on runs list + reports (trend lines per environment when a filter is active).
 
-### F-20 — SSO (OIDC first), 2FA, SCIM (large) `[x]`
+#### F-20 — SSO (OIDC first), 2FA, SCIM (large) `[x]`
 
 > **Status: DONE** (2026-07-13, branch `feat/sso-2fa`, built by Opus 4.8 from the Fable
 > work order below). Implemented as specified, with these notes:
@@ -1446,7 +2202,7 @@ Split into 4 sequential PRs:
 > even if the code "works". SAML and SCIM are explicitly **out of scope** (README notes that
 > OIDC covers Google Workspace / Azure AD / Okta / Keycloak).
 
-#### 1. Threat model (what this feature must survive)
+##### 1. Threat model (what this feature must survive)
 
 | Threat | Countermeasure (built below) |
 |---|---|
@@ -1458,7 +2214,7 @@ Split into 4 sequential PRs:
 | Recovery-code reuse | single-use rows, sha256-hashed like `ApiKey.keyHash` (`src/lib/auth.ts:verifyApiKey` pattern) |
 | Secret leakage | `totpSecretEnc` encrypted with `src/lib/crypto.ts` (F-07 AES-256-GCM); never serialized, never logged, never in audit detail |
 
-#### 2. Data model (add to `prisma/schema.prisma`)
+##### 2. Data model (add to `prisma/schema.prisma`)
 
 ```prisma
 // F-20: on User —
@@ -1478,7 +2234,7 @@ model TwoFactorRecoveryCode {
 
 No enum, no Json — §0.1 rules apply.
 
-#### 3. OIDC (generic provider, env-configured)
+##### 3. OIDC (generic provider, env-configured)
 
 **Files.** `src/app/api/auth/oidc/route.ts` (start) and
 `src/app/api/auth/oidc/callback/route.ts`. Copy the cookie-state mechanics of
@@ -1522,7 +2278,7 @@ that file; Google/GitHub social login keeps working unchanged.
 `/api/auth/oidc`) above the password form, separated by the existing "or" divider used for
 social buttons.
 
-#### 4. 2FA (TOTP, RFC 6238 — no new crypto deps)
+##### 4. 2FA (TOTP, RFC 6238 — no new crypto deps)
 
 **`src/lib/totp.ts`** (new, ~60 lines, node `crypto` only — no `otplib`):
 `generateSecret()` (20 random bytes → base32), `totp(secret, t = Date.now())` (HMAC-SHA1,
@@ -1554,7 +2310,7 @@ passes — mark it used, audit `auth.2fa_recovery_used`, and when ≤ 2 remain u
 banner prompting regeneration. Success → delete `tf_2fa` cookie, `createSession`, audit
 `auth.login` detail `"password+totp"`.
 
-#### 5. `TF_DISABLE_PASSWORD_LOGIN=1` (MUSTs)
+##### 5. `TF_DISABLE_PASSWORD_LOGIN=1` (MUSTs)
 
 Server-side rejects (not just hidden UI) in: `login`, `register`, `forgotPassword`,
 `resetPassword` — each returns `{ error: "Password login is disabled on this instance." }`.
@@ -1562,13 +2318,13 @@ Server-side rejects (not just hidden UI) in: `login`, `register`, `forgotPasswor
 if set while `TF_OIDC_ISSUER` is missing (would lock everyone out — warn, don't crash;
 social OAuth may still be configured).
 
-#### 6. Serializer & API guarantees
+##### 6. Serializer & API guarantees
 
 `totpSecretEnc`, recovery hashes, and the `tf_2fa` token never appear in any serializer, API
 response, page prop, or audit `detail` (grep-level check, same bar as F-07 AC 4). No API-v1
 surface is added — 2FA/SSO are session concerns; API keys are unaffected.
 
-#### 7. Acceptance criteria
+##### 7. Acceptance criteria
 
 1. Keycloak dev realm: SSO button → IdP login → TestForge session; second login reuses the
    user (no duplicate). Tampered `state` or `nonce` → generic login error, no session.
@@ -1581,7 +2337,7 @@ surface is added — 2FA/SSO are session concerns; API keys are unaffected.
 5. `scripts/totp-selftest.mjs` passes the RFC 6238 vectors.
 6. Fresh `docker compose up` with none of the new env vars behaves exactly as today.
 
-#### 8. Test plan
+##### 8. Test plan
 
 e2e `e2e/two-factor.spec.ts`: enroll (read the base32 from the UI, compute codes in-test with
 a tiny TOTP helper duplicated in the spec), verify login second step, recovery-code path,
@@ -1592,7 +2348,7 @@ back with a code, and a `token_endpoint` returning a signed id_token — asserts
 and the bad-nonce rejection. Reuses `TF_ALLOW_INSECURE_INTEGRATION_URL`-style env:
 `TF_OIDC_ISSUER=http://127.0.0.1:<port>` must be allowed when `NODE_ENV !== "production"`.
 
-### F-21 — Mute / quarantine flaky tests `[x]`
+#### F-21 — Mute / quarantine flaky tests `[x]`
 
 > **Status: DONE** (2026-07-12, branch `feat/mute-flaky`). Implemented as specified, with these
 > notes:
@@ -1634,7 +2390,7 @@ and the bad-nonce rejection. Reuses `TF_ALLOW_INSECURE_INTEGRATION_URL`-style en
 - AC: muting a failing automated case flips a red run to green pass-rate while still showing
   the muted failure in the run detail.
 
-### F-22 — Importers: TestRail, Qase, TestLink `[x]`
+#### F-22 — Importers: TestRail, Qase, TestLink `[x]`
 
 > **Status: DONE** (2026-07-12, branch `feat/importers`). Implemented close to spec, with these
 > deliberate deviations:
@@ -1682,7 +2438,7 @@ and the bad-nonce rejection. Reuses `TF_ALLOW_INSECURE_INTEGRATION_URL`-style en
 - Fixture files for each tool under `e2e/fixtures/import/` + e2e per tool. This feature is
   the **adoption funnel** — treat error messages as first-class UX.
 
-### F-23 — Estimates & forecast `[x]`
+#### F-23 — Estimates & forecast `[x]`
 
 > **Status: DONE** (2026-07-12, branch `feat/estimates-forecast`). Implemented close to spec,
 > with these deviations:
@@ -1705,7 +2461,7 @@ and the bad-nonce rejection. Reuses `TF_ALLOW_INSECURE_INTEGRATION_URL`-style en
 >   duration string, e.g. `"1m 30s"`); API v1 (`POST`/`PATCH` cases, batch create) takes/returns
 >   `estimateSeconds` as a plain integer. e2e `estimates-forecast.spec.ts` 3/3, full suite 42/42.
 
-### F-24 — Bulk move/copy & drag reorder `[x]`
+#### F-24 — Bulk move/copy & drag reorder `[x]`
 
 > **Status: DONE** (2026-07-11, branch `feat/bulk-copy-reorder`). "Move to suite…" turned out to
 > already exist — multi-select + drag onto the sidebar suite tree (`moveCases()`, shipped with
@@ -1732,12 +2488,12 @@ and the bad-nonce rejection. Reuses `TF_ALLOW_INSECURE_INTEGRATION_URL`-style en
 
 ---
 
-## 5. P3 features
+### 5. P3 features
 
 Scoped briefs — expand into full work orders when picked up. **Exception:** F-35 and F-36
 are already full work orders (Fable 5 design handoff, 2026-07-13 — see also appendix §7).
 
-### F-25 — Exploratory / session-based testing `[x]`
+#### F-25 — Exploratory / session-based testing `[x]`
 
 > **Status: DONE** (2026-07-17, branch `feat/exploratory-sessions`, Sonnet 5). Session is
 > single-player (only the tester who started it may add notes / end it / convert its notes,
@@ -1751,7 +2507,7 @@ running timer, quick-add note hotkeys (N/B/Q/I), attachments per note (F-01), en
 summary that can convert BUG notes → issues (F-07) and IDEA notes → draft cases. Lesson from
 Test IO/Testmo; almost no OSS tool has this.
 
-### F-26 — Built-in defects `[x]`
+#### F-26 — Built-in defects `[x]`
 
 > **Status: DONE** (2026-07-17, branch `feat/defects`, Sonnet 5). Board (columns by
 > `DEFECT_STATUSES`) is the primary view; each card has an inline status `<select>` (client
@@ -1765,7 +2521,7 @@ Test IO/Testmo; almost no OSS tool has this.
 linkable from results (complements, not replaces, F-07). Defects list + board (columns by
 status). For teams without any external tracker (Qase parity).
 
-### F-27 — BDD / Gherkin `[x]`
+#### F-27 — BDD / Gherkin `[x]`
 
 > **Status: DONE** (2026-07-17, branch `feat/gherkin`, Sonnet 5). No schema change — a Gherkin
 > case is detected purely by its `stepsJson` shape (`isGherkinCaseSteps` in `lib/steps.ts`),
@@ -1784,7 +2540,7 @@ status). For teams without any external tracker (Qase parity).
 > (F-05 revision restore, F-24 copy-to-project) were fixed to preserve the `{gherkin}` shape
 > instead of silently flattening it into a lossy single inline step.
 
-### F-28 — Suite baselines `[x]`
+#### F-28 — Suite baselines `[x]`
 
 > **Status: DONE** (2026-07-17, branch `feat/baselines`, Sonnet 5). `SuiteBaseline` +
 > `BaselineEntry` (pin: `caseId` + `caseRev` + a denormalized `suitePath` so the tree survives
@@ -1801,7 +2557,7 @@ Snapshot an entire suite tree + case revisions (F-05) as a named baseline; runs 
 "from baseline" pinning `caseRev`s; compare baseline vs current. TestRail Enterprise feature —
 in OSS it's a headline.
 
-### F-29 — AI assist (BYO key) `[x]`
+#### F-29 — AI assist (BYO key) `[x]`
 
 > **Status: DONE** (2026-07-18, branch `feat/ai-assist`, Opus 4.8). Org-level config on
 > `Organization` (`aiEndpoint`/`aiModel`/`aiApiKeyEnc`, key AES-256-GCM via F-07 crypto);
@@ -1822,7 +2578,7 @@ detector (embeddings optional — v1 may use title trigram similarity locally, n
 All AI actions are opt-in per click, never automatic; degrade cleanly when no key configured.
 Default model when the org uses Anthropic: `claude-sonnet-5`.
 
-### F-30 — XLSX & JSON export, saved import mappings `[x]`
+#### F-30 — XLSX & JSON export, saved import mappings `[x]`
 
 > **Status: DONE** (2026-07-17, branch `feat/export-xlsx-json`, Sonnet 5). Export: `cases-xlsx`/
 > `run-xlsx` reuse the exact same row-building logic as the existing CSV routes, just piped
@@ -1841,7 +2597,7 @@ Default model when the org uses Anthropic: `claude-sonnet-5`.
 Export cases/runs as `.xlsx` (dependency `exceljs`) and `.json` (full fidelity incl. custom
 fields, revisions optional flag); CSV import column-mapping step persists mapping per project.
 
-### F-31 — "My work" page `[x]`
+#### F-31 — "My work" page `[x]`
 
 > **Status: DONE** (2026-07-17, branch `feat/my-work`, Sonnet 5). No schema change — pure
 > cross-project read aggregation (`lib/my-work.ts`), every query scoped the same way the
@@ -1856,7 +2612,7 @@ fields, revisions optional flag); CSV import column-mapping step persists mappin
 `/my-work`: cross-project list of (a) results assigned to me in active runs, (b) cases assigned
 to me, (c) reviews requested from me (F-15) — each with deep links and counts in the sidebar.
 
-### F-32 — Case dependencies `[x]`
+#### F-32 — Case dependencies `[x]`
 
 > **Status: DONE** (2026-07-17, branch `feat/case-dependencies`, Sonnet 5). `CaseDependency`
 > (`caseId` requires `dependsOnCaseId` to pass first). Cycle rejection is a plain DFS from
@@ -1873,7 +2629,7 @@ to me, (c) reviews requested from me (F-15) — each with deep links and counts 
 when a prerequisite's result is FAILED/BLOCKED, dependents auto-suggest BLOCKED (one-click
 accept, never silent).
 
-### F-33 — API v2 `[x]`
+#### F-33 — API v2 `[x]`
 Full-coverage REST (`/api/v2`): milestones, members, webhooks, fields, attachments, plans,
 environments; project-scoped tokens; per-key rate limits; typed OpenAPI with generated client
 (`packages/api-client`). v1 stays frozen + supported.
@@ -1911,11 +2667,11 @@ groups (not a map) and plan creation must filter `deletedAt: null`; the webhook 
 is comma-separated, not JSON; and `Milestone` has only id/name/dueDate/status — no description
 or completedAt — so don't serialize fields that aren't there.
 
-### F-34 — LDAP / Active Directory `[x]`
+#### F-34 — LDAP / Active Directory `[x]`
 Self-hosted-only login backend via env (`TF_LDAP_URL`, bind DN, user filter); maps to org
 members. Parity with TestLink/Kiwi for enterprises that lack OIDC.
 
-### F-35 — Print & PDF-friendly case/run views `[x]`
+#### F-35 — Print & PDF-friendly case/run views `[x]`
 
 > **Full work order — written 2026-07-13 by Fable 5 as a design handoff.** Fable was the
 > assigned model for this feature; this spec encodes every design decision at implementation
@@ -1933,7 +2689,7 @@ truncation, virtualized-ish lists, and hover-revealed controls. Hiding all of th
 CSS is a losing whack-a-mole; auditors also want a *document*, not a screenshot of an app.
 So: a separate route group with its own minimal layout, sharing the same server loaders.
 
-#### 1. Routes & files
+##### 1. Routes & files
 
 | File | Purpose |
 |---|---|
@@ -1956,7 +2712,7 @@ So: a separate route group with its own minimal layout, sharing the same server 
      one-case document (same template, cover block collapses to a slim header).
   3. Run detail page header (next to Share, F-17).
 
-#### 2. Document anatomy (cases catalog)
+##### 2. Document anatomy (cases catalog)
 
 Top-to-bottom, exactly:
 
@@ -1990,7 +2746,7 @@ Top-to-bottom, exactly:
    `Generated by TestForge — <absolute URL of the live page>` so paper always points back
    to the living system.
 
-#### 3. Document anatomy (run report)
+##### 3. Document anatomy (run report)
 
 Same skeleton, with:
 
@@ -2013,7 +2769,7 @@ Same skeleton, with:
    annotate each FAILED-kind result that passed previously with `↓ regression` in the meta
    line (reuses the F-17 comparison query — it already exists, `RunCompare` imports it).
 
-#### 4. Print CSS — exact rules (`src/app/print/print.css`)
+##### 4. Print CSS — exact rules (`src/app/print/print.css`)
 
 The design intent: **ink on paper, brand carried by typography and structure, not color.**
 Screen preview of the print route should look like the paper output (white page, centered
@@ -2063,7 +2819,7 @@ Before calling `window.print()` set `document.title` to
 `<project-slug> — <doc name> — TestForge` — that string becomes the default PDF filename in
 every browser; it's the cheapest professional touch in this whole feature.
 
-#### 5. Implementation order & AC
+##### 5. Implementation order & AC
 
 1. Icon + layout + toolbar + print.css skeleton.
 2. Cases document (reuse the cases page server query + F-04 expansion loader — extract to
@@ -2085,7 +2841,7 @@ every browser; it's the cheapest professional touch in this whole feature.
 - [ ] Docker note: everything here is routes + a CSS import → bundles into `.next`;
       **no `public/` needed, no Dockerfile change** (contrast with F-36, which needs one).
 
-### F-36 — Mobile execution PWA `[x]`
+#### F-36 — Mobile execution PWA `[x]`
 
 > **Status: DONE** (2026-07-18, branch `feat/mobile-pwa`, all four parts in one PR). Built as
 > written. Notes/deviations: (1) `PwaRegistrar` + a responsive **`AppShell`** wrapper were added
@@ -2106,7 +2862,7 @@ every browser; it's the cheapest professional touch in this whole feature.
 > solves well. Four independent parts — **build and PR them in this order** (A and B are
 > shippable alone; C depends on nothing but is riskier; D is pure UI):
 
-#### Part A — Installability (manifest + icons + viewport)
+##### Part A — Installability (manifest + icons + viewport)
 
 - `src/app/manifest.ts` (Next Metadata route, bundles into `.next` — no static file):
   `{ name: "TestForge", short_name: "TestForge", start_url: "/dashboard",
@@ -2128,7 +2884,7 @@ every browser; it's the cheapest professional touch in this whole feature.
 - AC: `GET /manifest.webmanifest` 200 in the production Docker image; Lighthouse PWA
   "installable" passes; Add-to-Home-Screen opens standalone at /dashboard.
 
-#### Part B — Service worker (hand-rolled, ~80 lines, no workbox/next-pwa dependency)
+##### Part B — Service worker (hand-rolled, ~80 lines, no workbox/next-pwa dependency)
 
 - `public/sw.js`. Strategy — deliberately minimal, an SW bug can brick every client until
   its cache version rotates, so the SW does only three things:
@@ -2149,7 +2905,7 @@ every browser; it's the cheapest professional touch in this whole feature.
 - AC: prod build → DevTools offline → navigating anywhere renders `/offline`; static assets
   served from cache; API requests visible in network tab (not from SW cache).
 
-#### Part C — Offline result queue
+##### Part C — Offline result queue
 
 **The core constraint that shapes everything:** result submission today is the server action
 `submitResult` (`src/app/actions/runs.ts:97`). Server-action POSTs are keyed by build-scoped
@@ -2198,7 +2954,7 @@ endpoint, and to avoid two drifting validation paths:
   surfaces the toast with their name; 403 (permission revoked mid-queue) drops the item with
   an error toast instead of retrying forever.
 
-#### Part D — Mobile executor layout (`RunExecutor.tsx`, breakpoint `md` = 768px)
+##### Part D — Mobile executor layout (`RunExecutor.tsx`, breakpoint `md` = 768px)
 
 Today's executor is a two-pane desktop layout (case list rail + detail card). On `<md`:
 
@@ -2239,7 +2995,7 @@ skip SW registration testing in dev (Part B's AC is a manual prod-image check, n
 the PR description). Reminder from the repo's e2e conventions: reporters run via subprocess
 (root `type: commonjs`), Prisma force-reset needs the consent env.
 
-### F-37 — In-app user docs / help center `[x]`
+#### F-37 — In-app user docs / help center `[x]`
 
 > **Status: DONE** (2026-07-11, branch `feat/help-center`). Implemented as specified, with one
 > deviation: content lives in `src/content/help/*.ts` (TS modules exporting a markdown string),
@@ -2254,11 +3010,11 @@ the PR description). Reminder from the repo's e2e conventions: reporters run via
 
 ---
 
-## 6. Leapfrog features
+### 6. Leapfrog features
 
 These make TestForge **better than** TestRail/Qase/TestLink — not just equal. All are small-to-medium and highly marketable.
 
-### L-01 — Live quality badge (shields.io-style SVG) `[x]`
+#### L-01 — Live quality badge (shields.io-style SVG) `[x]`
 
 **No competitor has this.** A public, cacheable SVG badge showing a project's latest pass rate —
 embeddable in README/wiki like a CI badge.
@@ -2285,7 +3041,7 @@ embeddable in README/wiki like a CI badge.
 - AC: badge renders in a GitHub README; revoking the token → 404; number matches the latest
   completed run's pass rate (muted tests excluded per F-21).
 
-### L-02 — CI quality gates `[x]`
+#### L-02 — CI quality gates `[x]`
 
 **TestRail/Qase make you script this; TestForge makes it one call.**
 
@@ -2293,7 +3049,7 @@ embeddable in README/wiki like a CI badge.
 > part of this feature is not code volume but *definition precision* — every check is pinned
 > down here so CI verdicts are deterministic and disputes point at the doc, not the code.
 
-#### 1. Policy storage & UI
+##### 1. Policy storage & UI
 
 Add `gatePolicyJson String?` to `Project` (null = no gate configured → endpoint returns 404
 `notFoundError("No gate policy configured")`). Shape (validated by
@@ -2313,7 +3069,7 @@ OWNER/ADMIN, action `src/app/actions/gate.ts:saveGatePolicy`, audit `project.gat
 Four labeled inputs + an inline preview of the current latest-run verdict (server-rendered,
 reuses `evaluateGate`). Empty form ⇒ `gatePolicyJson = null`.
 
-#### 2. Semantics (`src/lib/gate.ts:evaluateGate(projectId, runId)` — single source of truth)
+##### 2. Semantics (`src/lib/gate.ts:evaluateGate(projectId, runId)` — single source of truth)
 
 All math is **kind-based** (F-14: `statusMeta(...).kind ∈ PASS|FAIL|BLOCKED|NEUTRAL`) and
 **mute-aware** (F-21: muted cases excluded everywhere, same as `lib/mute.ts` bucket rules):
@@ -2335,7 +3091,7 @@ All math is **kind-based** (F-14: `statusMeta(...).kind ∈ PASS|FAIL|BLOCKED|NE
 - Checks only run for keys present in the policy. Response:
   `{ pass: boolean, run: { id, name, status, completedAt }, checks: [{ name, expected, actual, pass, note? }] }`.
 
-#### 3. Endpoint
+##### 3. Endpoint
 
 `GET /api/v1/projects/[slug]/gate?run=<id|latest>` — §0.3 pattern, `guard(req)` (read scope;
 gates are consumed by CI which should hold read keys). `run=latest` (default) = newest run of
@@ -2344,7 +3100,7 @@ an ACTIVE run evaluates against current results and the response's `run.status` 
 HTTP 200 whether passing or failing (the `pass` field decides; non-200 is reserved for real
 errors). Add to `src/lib/openapi.ts` + docs page. No webhook (CI polls; nothing mutates).
 
-#### 4. CLI (`packages/cli/bin/testforge.js` — extend, same zero-dep style)
+##### 4. CLI (`packages/cli/bin/testforge.js` — extend, same zero-dep style)
 
 `testforge gate --project <slug> [--run <id|latest>] [--wait <seconds>] [--url] [--token]`
 1. `--wait N` (default 0): poll every 5 s until `run.status === "COMPLETED"` or N seconds
@@ -2354,7 +3110,7 @@ errors). Add to `src/lib/openapi.ts` + docs page. No webhook (CI polls; nothing 
 3. Exit 0 iff `pass === true`. Any HTTP/parse error → stderr + exit 1 (a broken gate must
    block, not wave through).
 
-#### 5. Docs & example
+##### 5. Docs & example
 
 Help center (`src/content/help/`): extend the automation topic with a "CI quality gates"
 section containing this exact GitHub Actions step (verified against seed data in the e2e):
@@ -2367,7 +3123,7 @@ section containing this exact GitHub Actions step (verified against seed data in
     TESTFORGE_TOKEN: ${{ secrets.TESTFORGE_TOKEN }}
 ```
 
-#### 6. Acceptance criteria
+##### 6. Acceptance criteria
 
 1. Seeded project + policy `{minPassRate: 95}`: the seeded run (has failures) gates FAIL with
    `actual` matching the reports page pass rate to one decimal; muting the failing case flips
@@ -2380,14 +3136,14 @@ section containing this exact GitHub Actions step (verified against seed data in
    reporter e2e uses — root `package.json` is commonjs, spawn with `node`).
 5. No policy configured → 404; policy saved by a MEMBER → server-side rejected.
 
-#### 7. Test plan
+##### 7. Test plan
 
 e2e `e2e/gate.spec.ts`: seeds two runs via the results API (baseline + regressed), saves a
 policy as admin through the UI, asserts endpoint JSON for AC 1–3, then spawns the CLI for
 AC 4. `scripts/`-level unit coverage is unnecessary — `evaluateGate` is exercised through the
 endpoint.
 
-### L-03 — Test cases as code (GitOps sync) `[x]`
+#### L-03 — Test cases as code (GitOps sync) `[x]`
 
 **Unique among all TCM tools.** Two-way sync between a `tests/` folder of YAML files in the
 user's repo and TestForge — cases reviewed in PRs like code.
@@ -2419,7 +3175,7 @@ user's repo and TestForge — cases reviewed in PRs like code.
 > corruption; every decision below exists to make the failure mode "exit 1 with a report",
 > never "silently overwrote". Build the CLI merge logic exactly as specified.
 
-#### 1. Canonical YAML (documented in `docs/CASES-AS-CODE.md`, written as part of this feature)
+##### 1. Canonical YAML (documented in `docs/CASES-AS-CODE.md`, written as part of this feature)
 
 One case per file, path = `<dir>/<suite path slugified>/<display id>.yaml` (new cases:
 `<slug of title>.yaml` until the first push assigns an id, after which the CLI renames the
@@ -2431,7 +3187,7 @@ datasets, shared-step references (a case using shared steps pulls **expanded** w
 `# shared: <title>` comment and pushes back as inline — the doc warns editing those files
 breaks the link).
 
-#### 2. CLI commands (`packages/cli` — new dependency `yaml`, the only one; keep node ≥18)
+##### 2. CLI commands (`packages/cli` — new dependency `yaml`, the only one; keep node ≥18)
 
 State file `.testforge.lock` (JSON, committed to the user's repo) = the **base** snapshot:
 `{ project, url, pulledAt, cases: { [displayId]: { hash: <sha256 of canonical YAML>, rev } } }`.
@@ -2450,7 +3206,7 @@ State file `.testforge.lock` (JSON, committed to the user's repo) = the **base**
   never auto-delete local. After a successful push, update the lock with returned revs and
   write back assigned ids into the YAML files.
 
-#### 3. Server endpoint (the only new server surface)
+##### 3. Server endpoint (the only new server surface)
 
 `POST /api/v1/projects/[slug]/cases/sync` — `guard(req, { write: true })`, §0.3. Body
 `{ upserts: [{ displayId?: string, baseRev?: number, fields: {...} }] }`, max 500 per call.
@@ -2463,7 +3219,7 @@ edited in the UI. Response items: `{ displayId, id, rev, status: "created"|"upda
 ("unchanged" when the payload equals current state — no revision spam from repeated pushes).
 Add to OpenAPI + docs.
 
-#### 4. Acceptance criteria (expands the brief's three)
+##### 4. Acceptance criteria (expands the brief's three)
 
 1. pull → push with no edits → server records **zero** new revisions ("unchanged" path).
 2. pull → edit title locally → push → pull is idempotent (second pull rewrites nothing).
@@ -2473,13 +3229,13 @@ Add to OpenAPI + docs.
 5. A batch with 1 conflicting + 4 clean items applies the 4 and reports the 1 (item-level
    atomicity, not all-or-nothing — CI-friendly).
 
-#### 5. Test plan
+##### 5. Test plan
 
 e2e `e2e/cases-as-code.spec.ts` drives the CLI as a subprocess (F-12 e2e technique) in a temp
 dir against the seeded project: pull → assert deterministic bytes (pull twice, diff empty) →
 AC 2, 3, 4 flows via API-injected server edits.
 
-### L-04 — Real-time collaborative run execution `[x]`
+#### L-04 — Real-time collaborative run execution `[x]`
 
 **TestRail/Qase runs are single-player with refresh.** Make TestForge runs multiplayer.
 
@@ -2500,7 +3256,7 @@ AC 2, 3, 4 flows via API-injected server edits.
 > survive implementation: **the executor must be byte-identical in behavior when the stream
 > is absent** — realtime is an overlay, never a dependency.
 
-#### 1. Event bus — `src/lib/run-events.ts`
+##### 1. Event bus — `src/lib/run-events.ts`
 
 Module-scope `EventEmitter` stored on `globalThis.__tfRunEvents` (survives dev HMR; same trick
 as Prisma's client singleton in `src/lib/db.ts`), `setMaxListeners(0)`, channel key = runId.
@@ -2522,7 +3278,7 @@ Presence state lives in the same module: `Map<runId, Map<userId, {name, caseId, 
 A 30 s `setInterval` sweep drops entries with `lastSeen > 60 s` and publishes a fresh
 `presence` snapshot for affected runs (also lazily on each heartbeat).
 
-#### 2. HTTP surface (internal, not API-v1 — session auth only, like `/api/attachments`)
+##### 2. HTTP surface (internal, not API-v1 — session auth only, like `/api/attachments`)
 
 | Route | Behavior |
 |---|---|
@@ -2534,7 +3290,7 @@ write + audit, `publishRunEvent(...)` with the writer's session identity. Fire-a
 same discipline as `dispatchWebhook` (§0.4). Also publish from the API results-upsert route
 and JUnit ingest (`by` = the API key's user) so automation uploads appear live too.
 
-#### 3. `RunExecutor.tsx` client behavior
+##### 3. `RunExecutor.tsx` client behavior
 
 New hook `useRunChannel(runId)` encapsulating `EventSource` + heartbeat; the component renders
 identically when it reports `connected: false` (initial render, SSE error, or
@@ -2555,13 +3311,13 @@ give up after 5 failures (silent — no banner; degradation must be invisible, p
   mirror toast; symmetric, converges because humans stop). Toast auto-dismisses in 8 s;
   no queue — newest wins.
 
-#### 4. Non-goals (pinned so nobody builds them)
+##### 4. Non-goals (pinned so nobody builds them)
 
 No hard locks, no operational-transform/CRDT, no offline queue (that's F-36 D), no
 cross-run global presence, no persistence of presence (restart = empty map, clients
 repopulate on next heartbeat).
 
-#### 5. Acceptance criteria (expands the brief's)
+##### 5. Acceptance criteria (expands the brief's)
 
 1. Two sessions, one run: A submits PASS → B's row updates + flashes within 2 s without
    refresh; B's presence avatar shows in A within 20 s of B opening the run.
@@ -2573,13 +3329,13 @@ repopulate on next heartbeat).
 5. Non-member GET of the events URL → 404. Automation upload to the run appears live (AC 1
    path with the API as the writer).
 
-#### 6. Test plan
+##### 6. Test plan
 
 e2e `e2e/realtime-run.spec.ts` with **two Playwright contexts** (two logged-in users, same
 run) covering AC 1–4; AC 5 via a raw `request` call. SSE in Playwright needs no special
 handling (it's just fetch); assert on DOM effects, not the wire format.
 
-### L-05 — One-file portable backup & restore `[x]`
+#### L-05 — One-file portable backup & restore `[x]`
 
 > **Status: DONE** (2026-07-16, branch `feat/backup-restore`). Built from the Fable work order
 > below. Five deviations, each in service of the work order's own goals — recorded here so the
@@ -2637,7 +3393,7 @@ handling (it's just fetch); assert on DOM effects, not the wire format.
 > (synchronous, in-memory; fine at this app's scale — attachment dedupe (F-01) keeps archives
 > small; a size guard makes the limit explicit rather than discovered via OOM).
 
-#### 1. Archive format (`.tfbackup` = zip)
+##### 1. Archive format (`.tfbackup` = zip)
 
 ```
 manifest.json   { formatVersion: 1, appVersion, prismaSchemaHash, createdAt,
@@ -2657,7 +3413,7 @@ uploads/<storageKey...>   every file under TF_UPLOAD_DIR
   script embeds a static `DATE_FIELDS` map generated by reading the schema — keep it next to
   `MODEL_ORDER` so schema PRs update both or fail the row-count self-check).
 
-#### 2. Export — `src/lib/backup.ts` + `GET /api/admin/backup`
+##### 2. Export — `src/lib/backup.ts` + `GET /api/admin/backup`
 
 `buildBackup(): Promise<Buffer>` iterates `MODEL_ORDER` (FK-safe, the single constant both
 sides import): `Organization, RoleDef, User, VerificationToken, Invitation, TwoFactorRecoveryCode?…,
@@ -2674,7 +3430,7 @@ Route: org-ADMIN session only, streams the buffer as
 UI: "Backup & restore" card in org settings — download button + "Restore" explainer linking
 `docs/SELF-HOSTED-MIGRATION.md` (both ways per the brief).
 
-#### 3. Restore — `scripts/restore.mjs <file> [--yes]` + first-run UI path
+##### 3. Restore — `scripts/restore.mjs <file> [--yes]` + first-run UI path
 
 Shared logic in `src/lib/backup.ts:restoreBackup(zip, opts)` so the script and the UI path
 cannot drift:
@@ -2696,7 +3452,7 @@ cannot drift:
 form only while the freshness predicate holds. Upload cap `TF_MAX_RESTORE_MB` (default 512,
 §0.7 rules). Audit `org.restore` on success.
 
-#### 4. Acceptance criteria (expands the brief's)
+##### 4. Acceptance criteria (expands the brief's)
 
 1. Round trip A→B: login works (password hashes carried), attachments download byte-identical
    (sha256 spot-check in the e2e), badge tokens (L-01) still serve, run/report numbers match.
@@ -2709,7 +3465,7 @@ form only while the freshness predicate holds. Upload cap `TF_MAX_RESTORE_MB` (d
 5. Adding a Prisma model without updating `MODEL_ORDER` fails the self-check (unit script
    `scripts/backup-selfcheck.mjs`, run in CI before build).
 
-#### 5. Test plan
+##### 5. Test plan
 
 e2e `e2e/backup-restore.spec.ts`: seed → download backup via authed request → reset DB
 (existing force-reset consent env) → restore via `scripts/restore.mjs --yes` subprocess →
@@ -2717,14 +3473,14 @@ assert AC 1 spot checks. AC 4 with a deliberately truncated copy of the same arc
 
 ---
 
-## 7. Appendix — Fable design handoff (written 2026-07-13)
+### 7. Appendix — Fable design handoff (written 2026-07-13)
 
 Fable 5 was the assigned model for the presentation-heavy work (F-35, F-36, L-01 visuals,
 and Leapfrog polish). This appendix freezes the design system's *working vocabulary* so any
 model can produce UI that is indistinguishable from the existing app. It documents what the
 code already does — when in doubt, grep for the pattern and copy it.
 
-### 7.1 Tokens (source of truth: `tailwind.config.ts` + `src/app/globals.css`)
+#### 7.1 Tokens (source of truth: `tailwind.config.ts` + `src/app/globals.css`)
 
 | Token | Value | Use |
 |---|---|---|
@@ -2737,7 +3493,7 @@ code already does — when in doubt, grep for the pattern and copy it.
 | Shell | `bg-slate-900 text-slate-300`, `w-60` fixed sidebar | Also PWA `theme_color` |
 | Warning recipe | `bg-amber-50/-100` + `text-amber-800/900` | Preconditions box, stale-rev + queued chips |
 
-### 7.2 Typography (loaded in `src/app/layout.tsx` via next/font CSS variables)
+#### 7.2 Typography (loaded in `src/app/layout.tsx` via next/font CSS variables)
 
 - **Space Grotesk** = `--font-display` / `font-display`: h1–h3 only (globals.css applies it
   globally to headings with `letter-spacing: -0.01em`). Never for body.
@@ -2748,7 +3504,7 @@ code already does — when in doubt, grep for the pattern and copy it.
   code, tiny uppercase meta labels.
 - Print scale is its own thing — see F-35 §4 (10.5pt body, nothing lighter than slate-600).
 
-### 7.3 Component idioms (grep-and-copy patterns)
+#### 7.3 Component idioms (grep-and-copy patterns)
 
 - **Chips/badges**: `rounded-full px-2 py-0.5 text-xs font-medium` + a pastel bg/text pair
   (`bg-amber-100 text-amber-800`, `bg-indigo-100 text-indigo-700`) or dynamic
@@ -2765,7 +3521,7 @@ code already does — when in doubt, grep for the pattern and copy it.
 - **Testability**: interactive/statesful elements get `data-testid` kebab-case names
   (`queued-chip`, `dataset-chip`) — the e2e suite depends on them.
 
-### 7.4 Design judgment rules (the taste, encoded)
+#### 7.4 Design judgment rules (the taste, encoded)
 
 1. **Dense, quiet, functional.** No gradients, no shadows heavier than the browser default,
    no decorative illustration inside the app. The brand lives in the two typefaces, the one
@@ -2781,7 +3537,7 @@ code already does — when in doubt, grep for the pattern and copy it.
 6. **Copy tone**: short, concrete, names the actor ("Overwrote Ana's …"), reassures during
    uncertainty ("queued — will sync when online"). No exclamation marks in the app.
 
-### 7.5 Handoff status
+#### 7.5 Handoff status
 
 With F-35 and F-36 now specified to implementation depth and this appendix in place, the
 formerly-Fable backlog (F-35, F-36, L-01) is **executable by Opus 4.8** — the remaining
@@ -2799,4 +3555,4 @@ non-obvious about them.
 ---
 
 *End of document. When a feature ships: tick its checkbox here, flip the cell in
-[FEATURE-COMPARISON.md](FEATURE-COMPARISON.md), and add the README line (§1 DoD).*
+[Part III — Competitive Comparison](#part-iii--competitive-comparison), and add the README line (§1 DoD).*

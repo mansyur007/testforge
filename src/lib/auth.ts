@@ -31,7 +31,7 @@ export function hasUsablePassword(passwordHash: string) {
 }
 
 // PRD §12.6.1: "Remember me" = 30 hari, default 1 hari.
-// AU-010 (refresh token rotation) masuk backlog — lihat AUDIT-PRD.md.
+// AU-010 (refresh token rotation) masuk backlog — lihat docs/DOCUMENTATION.md (Part II — PRD Audit).
 export async function createSession(
   user: { id: string; email: string; name: string; role: string },
   rememberMe = false
