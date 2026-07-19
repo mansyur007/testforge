@@ -22,7 +22,7 @@ dependencies = []
 test = ["pytest>=7.0"]
 
 [project.urls]
-Homepage = "https://github.com/mansyur007/test-forge"
+Homepage = "https://github.com/mansyur007/testforge"
 
 # Register the plugin with pytest's plugin system.
 [project.entry-points.pytest11]

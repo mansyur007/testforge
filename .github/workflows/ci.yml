@@ -28,5 +28,5 @@ jobs:
       - name: Build
         env:
           NEXT_PUBLIC_BASE_URL: https://testforge.emha.space
-          NEXT_PUBLIC_GITHUB_REPO: mansyur007/test-forge
+          NEXT_PUBLIC_GITHUB_REPO: mansyur007/testforge
         run: npm run build

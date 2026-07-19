@@ -1,7 +1,7 @@
 # testforge-playwright-reporter
 
 A [Playwright](https://playwright.dev) reporter that streams results to
-[TestForge](https://github.com/mansyur007/test-forge) live: it opens a run when
+[TestForge](https://github.com/mansyur007/testforge) live: it opens a run when
 the suite starts, posts each test result as it finishes, and completes the run
 at the end.
 

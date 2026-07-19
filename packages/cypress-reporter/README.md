@@ -1,7 +1,7 @@
 # testforge-cypress-reporter
 
 A [Cypress](https://cypress.io) integration that streams results to
-[TestForge](https://github.com/mansyur007/test-forge).
+[TestForge](https://github.com/mansyur007/testforge).
 
 It is a **`setupNodeEvents` plugin**, not a Mocha reporter — so it runs once per
 `cypress run` in the Node process, reliably: it opens a run at `before:run`,
