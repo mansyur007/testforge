@@ -10,6 +10,7 @@ import { ProjectTabs } from "@/components/ProjectTabs";
 import { NewSuiteForm } from "@/components/NewSuiteForm";
 import { CasesTable } from "@/components/CasesTable";
 import { SuiteTree, type SuiteNode } from "@/components/SuiteTree";
+import { SuiteFolderGrid } from "@/components/SuiteFolderGrid";
 import { SavedViewsMenu } from "@/components/SavedViewsMenu";
 import { ExportMenu } from "@/components/ExportMenu";
 import { sanitizeCaseFilters, viewHref } from "@/lib/saved-views";
@@ -161,6 +162,36 @@ export default async function ProjectPage({
     ]);
 
   const suiteTree = buildTree(null);
+
+  // Grid folder ala Drive di atas tabel case: isi folder yang sedang dibuka.
+  // Node aktif dicari di tree yang sudah dibangun supaya guard siklus & batas
+  // kedalaman berlaku sama seperti di sidebar.
+  const findNode = (nodes: SuiteNode[], id: string): SuiteNode | null => {
+    for (const n of nodes) {
+      if (n.id === id) return n;
+      const hit = findNode(n.children, id);
+      if (hit) return hit;
+    }
+    return null;
+  };
+  const openFolder = searchParams.suite
+    ? findNode(suiteTree, searchParams.suite)
+    : null;
+  const folderHref = (suiteId: string) => {
+    const p = new URLSearchParams();
+    Object.entries({ ...searchParams, suite: suiteId }).forEach(
+      ([k, v]) => v && p.set(k, String(v))
+    );
+    const s = p.toString();
+    return `/projects/${project.slug}${s ? `?${s}` : ""}`;
+  };
+  const folders = (openFolder ? openFolder.children : suiteTree).map((n) => ({
+    id: n.id,
+    name: n.name,
+    href: folderHref(n.id),
+    caseCount: n.caseCount,
+    childCount: n.children.length,
+  }));
 
   return (
     <div className="space-y-6">
@@ -320,6 +351,8 @@ export default async function ProjectPage({
               </Link>
             )}
           </div>
+
+          <SuiteFolderGrid folders={folders} />
 
           <CasesTable
             projectSlug={project.slug}

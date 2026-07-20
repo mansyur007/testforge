@@ -85,18 +85,28 @@ export function SuiteTree({
     } catch {
       // abaikan storage rusak/tidak tersedia
     }
-    if (activeSuite) {
-      const path = ancestorsOf(roots, activeSuite);
-      if (path?.length) {
-        next = next ?? new Set(idsWithChildren(roots));
-        path.forEach((id) => next!.delete(id));
-      }
-    }
     if (next) setCollapsed(next);
     setHydrated(true);
     // Sengaja hanya sekali saat mount: ini memulihkan state, bukan mengikutinya.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageKey]);
+
+  // Membuka suite = membuka foldernya: cabang menuju suite aktif dan suite
+  // aktif itu sendiri ikut terbuka, supaya sidebar cocok dengan grid folder di
+  // panel kanan. Bergantung pada `activeSuite` (bukan cuma mount) karena
+  // navigasi client-side — kartu folder, tombol back — tidak me-remount ini.
+  useEffect(() => {
+    if (!activeSuite) return;
+    const path = ancestorsOf(roots, activeSuite);
+    if (!path) return;
+    setCollapsed((prev) => {
+      const opening = [...path, activeSuite].filter((id) => prev.has(id));
+      if (!opening.length) return prev;
+      const next = new Set(prev);
+      opening.forEach((id) => next.delete(id));
+      return next;
+    });
+  }, [activeSuite, roots]);
 
   // Persist setelah hydrate supaya default tidak menimpa state tersimpan.
   useEffect(() => {
@@ -124,6 +134,16 @@ export function SuiteTree({
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
+      return next;
+    });
+
+  // Membuka suite = membuka foldernya. Navigasi client-side tidak me-remount
+  // komponen ini, jadi efek auto-expand saat mount tidak menanganinya.
+  const expand = (id: string) =>
+    setCollapsed((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.delete(id);
       return next;
     });
 
@@ -200,6 +220,7 @@ export function SuiteTree({
               <Link
                 href={buildHref(node.id)}
                 data-testid={`suite-link-${node.id}`}
+                onClick={() => hasChildren && expand(node.id)}
                 className={`flex min-w-0 flex-1 items-center gap-1.5 rounded px-1.5 py-1.5 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
                   active ? "bg-indigo-50 font-medium text-indigo-700" : "text-slate-700"
                 }`}
