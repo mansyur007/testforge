@@ -157,6 +157,65 @@ test.describe("suite folder tree", () => {
     await expect(page.getByTestId(`suite-link-${t.level3}`)).toBeVisible();
   });
 
+  test("grid folder menampilkan isi folder yang sedang dibuka", async ({
+    page,
+  }) => {
+    const grid = page.getByTestId("suite-folder-grid");
+
+    // Tanpa suite aktif: grid berisi suite root.
+    await expect(grid.getByTestId(`suite-folder-card-${t.root}`)).toBeVisible();
+    await expect(
+      grid.getByTestId(`suite-folder-card-${t.level2}`)
+    ).toHaveCount(0);
+
+    // Di dalam suite: grid berisi anak langsungnya, bukan cucunya.
+    await page.goto(`/projects/${t.slug}?suite=${t.root}`);
+    await expect(grid.getByTestId(`suite-folder-card-${t.level2}`)).toBeVisible();
+    await expect(
+      grid.getByTestId(`suite-folder-card-${t.level3}`)
+    ).toHaveCount(0);
+
+    // Suite daun tidak punya folder — grid tidak dirender sama sekali.
+    await page.goto(`/projects/${t.slug}?suite=${t.level4}`);
+    await expect(grid).toHaveCount(0);
+  });
+
+  test("klik kartu folder drill-in dan ikut membuka sidebar", async ({
+    page,
+  }) => {
+    await page.getByRole("button", { name: "Collapse all" }).click();
+    await expect(page.getByTestId(`suite-link-${t.level2}`)).toBeHidden();
+
+    await page.getByTestId(`suite-folder-card-${t.root}`).click();
+    await page.getByTestId(`suite-folder-card-${t.level2}`).click();
+
+    // Grid turun satu tingkat…
+    await expect(
+      page.getByTestId("suite-folder-grid").getByTestId(
+        `suite-folder-card-${t.level3}`
+      )
+    ).toBeVisible();
+    // …dan sidebar membuka jalur ke folder itu berikut isinya.
+    await expect(page.getByTestId(`suite-link-${t.level3}`)).toBeVisible();
+    await expect(page.getByTestId(`suite-toggle-${t.level2}`)).toHaveAttribute(
+      "aria-expanded",
+      "true"
+    );
+  });
+
+  test("klik suite di sidebar ikut meng-expand suite itu", async ({ page }) => {
+    await page.getByRole("button", { name: "Collapse all" }).click();
+    await expect(page.getByTestId(`suite-link-${t.level2}`)).toBeHidden();
+
+    await page.getByTestId(`suite-link-${t.root}`).click();
+
+    await expect(page.getByTestId(`suite-toggle-${t.root}`)).toHaveAttribute(
+      "aria-expanded",
+      "true"
+    );
+    await expect(page.getByTestId(`suite-link-${t.level2}`)).toBeVisible();
+  });
+
   test("dropdown parent menawarkan suite di semua kedalaman", async ({
     page,
   }) => {
