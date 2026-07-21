@@ -66,10 +66,10 @@ const ICONS: Record<string, string> = {
   review: `<path d="M3 12 c2.4 -4.6 5.9 -6.8 9 -6.8 s6.6 2.2 9 6.8 c-2.4 4.6 -5.9 6.8 -9 6.8 s-6.6 -2.2 -9 -6.8 z"/><circle class="tf-acf" cx="12" cy="12" r="2.6"/>`,
   // 13. Back navigation
   "chevron-left": `<path d="M15 5.5 L8.5 12 l6.5 6.5"/>`,
-  // Settings gear — body circle + 8 radiating teeth + accent hole, distinct
-  // from "nav-keys" (used for API Keys) so the Settings trigger reads as its
-  // own thing rather than a re-skinned key icon.
-  gear: `<circle cx="12" cy="12" r="7"/><path class="tf-ac" d="M19.10 12.00 L21.60 12.00 M17.02 17.02 L18.79 18.79 M12.00 19.10 L12.00 21.60 M6.98 17.02 L5.21 18.79 M4.90 12.00 L2.40 12.00 M6.98 6.98 L5.21 5.21 M12.00 4.90 L12.00 2.40 M17.02 6.98 L18.79 5.21"/><circle class="tf-acf" cx="12" cy="12" r="1.9"/>`,
+  // Settings cog — one continuous 7-tooth silhouette with an accent-soft hub,
+  // matching the fill-plus-outline idiom of the other nav icons. Distinct from
+  // "nav-keys" (API Keys) so the Settings trigger reads as its own thing.
+  gear: `<path class="tf-acf" d="M9.86 2.74 L14.14 2.74 L14.62 5.18 L15.70 5.71 L17.90 4.56 L20.57 7.90 L18.96 9.80 L19.23 10.97 L21.50 11.98 L20.55 16.14 L18.06 16.07 L17.31 17.01 L17.94 19.41 L14.09 21.27 L12.60 19.28 L11.40 19.28 L9.91 21.27 L6.06 19.41 L6.69 17.01 L5.94 16.07 L3.45 16.14 L2.50 11.98 L4.77 10.97 L5.04 9.80 L3.43 7.90 L6.10 4.56 L8.30 5.71 L9.38 5.18 Z"/><circle cx="12" cy="12" r="3.1" fill="#fff"/>`,
   // 12. Success
   celebrate: `<path class="tf-acf" d="M4 20 L8.6 8.4 a1 1 0 0 1 1.6 -.35 l5.7 5.7 a1 1 0 0 1 -.35 1.6 z"/><path class="tf-ac" d="M16.5 4 v2.4 M19.8 7.2 l-1.7 1.7 M20.5 11.5 h-2.4"/><circle class="tf-ac" cx="13.5" cy="5.5" r="0.6"/><circle class="tf-ac" cx="19.5" cy="13" r="0.6"/>`,
 };

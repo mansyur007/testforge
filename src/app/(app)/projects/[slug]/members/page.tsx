@@ -1,81 +1,24 @@
-import { notFound } from "next/navigation";
-import { db } from "@/lib/db";
-import { requireSession } from "@/lib/auth";
-import { memberScope } from "@/lib/projects";
-import { loadPerms } from "@/lib/permissions";
 import { ProjectTabs } from "@/components/ProjectTabs";
-import { ProjectMembersManager } from "@/components/ProjectMembersManager";
+import { MembersSection } from "@/components/settings/MembersSection";
+import { loadSettingsProject } from "@/lib/settings-sections";
 
 export const dynamic = "force-dynamic";
 
+// Standalone permalink for the "members" settings section. The same section
+// also renders inside the settings modal (/projects/<slug>/settings/members);
+// this route keeps the project tab bar around it so a direct link still lands
+// somewhere navigable.
 export default async function ProjectMembersPage({
   params,
 }: {
   params: { slug: string };
 }) {
-  const session = await requireSession();
-  const project = await db.project.findFirst({
-    where: { slug: params.slug, ...memberScope(session.userId) },
-    select: { id: true, slug: true, name: true },
-  });
-  if (!project) notFound();
-
-  // F-14: central permission check (covers custom roles too).
-  const perms = await loadPerms(session.userId, project.id);
-  const canManage = perms.has("members.manage");
-
-  const members = await db.projectMember.findMany({
-    where: { projectId: project.id },
-    include: { user: { select: { id: true, name: true, email: true } } },
-    orderBy: { role: "asc" },
-  });
-
-  // Kandidat yang bisa ditambahkan: anggota organisasi yang sama & belum jadi
-  // anggota project. Hanya relevan jika pengelola punya organisasi.
-  const me = await db.user.findUnique({
-    where: { id: session.userId },
-    select: { organizationId: true },
-  });
-  const memberIds = new Set(members.map((m) => m.userId));
-  const addable =
-    canManage && me?.organizationId
-      ? (
-          await db.user.findMany({
-            where: { organizationId: me.organizationId },
-            select: { id: true, name: true, email: true },
-            orderBy: { name: "asc" },
-          })
-        ).filter((u) => !memberIds.has(u.id))
-      : [];
-
-  // F-14: custom role names are assignable alongside the built-ins.
-  const customRoles = me?.organizationId
-    ? (
-        await db.roleDef.findMany({
-          where: { organizationId: me.organizationId },
-          select: { name: true },
-          orderBy: { name: "asc" },
-        })
-      ).map((r) => r.name)
-    : [];
+  const project = await loadSettingsProject(params.slug);
 
   return (
     <div className="space-y-6">
       <ProjectTabs slug={project.slug} name={project.name} active="members" />
-      <ProjectMembersManager
-        projectId={project.id}
-        canManage={canManage}
-        currentUserId={session.userId}
-        members={members.map((m) => ({
-          userId: m.userId,
-          name: m.user.name,
-          email: m.user.email,
-          role: m.role,
-        }))}
-        addable={addable}
-        hasOrg={!!me?.organizationId}
-        customRoles={customRoles}
-      />
+      <MembersSection params={params} searchParams={{}} />
     </div>
   );
 }
