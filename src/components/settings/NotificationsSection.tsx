@@ -8,6 +8,7 @@ import {
   NotificationChannelsManager,
   type ChannelView,
 } from "@/components/NotificationChannelsManager";
+import type { SectionProps } from "@/lib/settings-nav";
 import { SCHEDULE_CRONS, parseRecipients } from "@/lib/report-schedules";
 import {
   createReportSchedule,
@@ -33,11 +34,7 @@ function targetSummary(type: string, config: { webhookUrl?: string; to?: string[
 
 export async function NotificationsSection({
   params,
-}: {
-  params: { slug: string };
-  /** Unused here; kept so every section shares one call signature. */
-  searchParams?: Record<string, string | undefined>;
-}) {
+}: SectionProps) {
   const session = await requireSession();
   const project = await db.project.findFirst({
     where: { slug: params.slug, ...memberScope(session.userId) },

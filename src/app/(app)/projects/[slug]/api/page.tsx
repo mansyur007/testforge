@@ -18,7 +18,11 @@ export default async function ApiPage({
   return (
     <div className="space-y-6">
       <ProjectTabs slug={project.slug} name={project.name} active="api" />
-      <ApiSection params={params} searchParams={{}} />
+      <ApiSection
+        params={params}
+        searchParams={{}}
+        basePath={`/projects/${project.slug}/api`}
+      />
     </div>
   );
 }

@@ -18,7 +18,11 @@ export default async function FieldsPage({
   return (
     <div className="space-y-6">
       <ProjectTabs slug={project.slug} name={project.name} active="fields" />
-      <FieldsSection params={params} searchParams={{}} />
+      <FieldsSection
+        params={params}
+        searchParams={{}}
+        basePath={`/projects/${project.slug}/fields`}
+      />
     </div>
   );
 }

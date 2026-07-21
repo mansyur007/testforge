@@ -2,7 +2,11 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/auth";
 import { memberScope } from "@/lib/projects";
-import { SETTINGS_NAV, type SettingsKey } from "@/lib/settings-nav";
+import {
+  SETTINGS_NAV,
+  type SettingsKey,
+  type SectionProps,
+} from "@/lib/settings-nav";
 import { ImportSection } from "@/components/settings/ImportSection";
 import { FieldsSection } from "@/components/settings/FieldsSection";
 import { ApiSection } from "@/components/settings/ApiSection";
@@ -19,10 +23,7 @@ import { MembersSection } from "@/components/settings/MembersSection";
 //
 // SERVER ONLY. Client components must import lib/settings-nav instead.
 
-type SectionRenderer = (props: {
-  params: { slug: string };
-  searchParams: Record<string, string | undefined>;
-}) => Promise<JSX.Element> | JSX.Element;
+type SectionRenderer = (props: SectionProps) => Promise<JSX.Element> | JSX.Element;
 
 const RENDERERS: Record<SettingsKey, SectionRenderer> = {
   import: ImportSection,

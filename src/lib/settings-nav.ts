@@ -31,8 +31,9 @@ export const SETTINGS_NAV: SettingsNavItem[] = [
   { key: "members", label: "Members", icon: "nav-team" },
 ];
 
-/** The section the Settings control opens by default. */
-export const DEFAULT_SETTINGS_KEY: SettingsKey = "fields";
+/** The section the Settings control opens by default — the top of the list,
+ * so "what you land on" always matches "what's highlighted first". */
+export const DEFAULT_SETTINGS_KEY: SettingsKey = SETTINGS_NAV[0].key;
 
 export function settingsHref(
   slug: string,
@@ -44,3 +45,16 @@ export function settingsHref(
 export function isSettingsKey(key: string): key is SettingsKey {
   return SETTINGS_NAV.some((s) => s.key === key);
 }
+
+// Every section component takes this same prop shape, whether it's rendered
+// standalone (basePath = /projects/<slug>/<key>) or inside the settings modal
+// (basePath = /projects/<slug>/settings/<key>). A section with its own
+// internal sub-navigation (tabs, wizard steps) must build those links off
+// `basePath` rather than hardcoding a route — hardcoding it means clicking a
+// tab while inside the modal navigates to the standalone page instead of
+// switching tabs in place.
+export type SectionProps = {
+  params: { slug: string };
+  searchParams: Record<string, string | undefined>;
+  basePath: string;
+};

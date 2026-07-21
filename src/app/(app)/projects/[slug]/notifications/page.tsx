@@ -18,7 +18,11 @@ export default async function NotificationsPage({
   return (
     <div className="space-y-6">
       <ProjectTabs slug={project.slug} name={project.name} active="notifications" />
-      <NotificationsSection params={params} searchParams={{}} />
+      <NotificationsSection
+        params={params}
+        searchParams={{}}
+        basePath={`/projects/${project.slug}/notifications`}
+      />
     </div>
   );
 }

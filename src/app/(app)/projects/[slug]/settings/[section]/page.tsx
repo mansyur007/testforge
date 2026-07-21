@@ -16,5 +16,9 @@ export default async function SettingsSectionPage({
   const render = findSectionRenderer(params.section);
   if (!render) notFound();
 
-  return render({ params: { slug: params.slug }, searchParams });
+  return render({
+    params: { slug: params.slug },
+    searchParams,
+    basePath: `/projects/${params.slug}/settings/${params.section}`,
+  });
 }

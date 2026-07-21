@@ -12,15 +12,12 @@ import {
   disablePublicShare,
   updatePublicShare,
 } from "@/app/actions/public-share";
+import type { SectionProps } from "@/lib/settings-nav";
 
 // F-38: owner-facing controls for public "portfolio mode" sharing.
 export async function SharingSection({
   params,
-}: {
-  params: { slug: string };
-  /** Unused here; kept so every section shares one call signature. */
-  searchParams?: Record<string, string | undefined>;
-}) {
+}: SectionProps) {
   const session = await requireSession();
   const project = await db.project.findFirst({
     where: { slug: params.slug, ...memberScope(session.userId) },

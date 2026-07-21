@@ -13,15 +13,12 @@ import { loadStatusDefs } from "@/lib/result-status-defs";
 import { loadPerms } from "@/lib/permissions";
 import { evaluateGate, parseGatePolicy, type GatePolicy, type GateVerdict } from "@/lib/gate";
 import { saveGatePolicy } from "@/app/actions/gate";
+import type { SectionProps } from "@/lib/settings-nav";
 
 // F-03: per-project custom field definitions.
 export async function FieldsSection({
   params,
-}: {
-  params: { slug: string };
-  /** Unused here; kept so every section shares one call signature. */
-  searchParams?: Record<string, string | undefined>;
-}) {
+}: SectionProps) {
   const session = await requireSession();
   const project = await db.project.findFirst({
     where: { slug: params.slug, ...memberScope(session.userId) },
