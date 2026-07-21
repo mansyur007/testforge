@@ -20,6 +20,7 @@ type TabKey =
   | "api"
   | "integrations"
   | "notifications"
+  | "sharing"
   | "members";
 
 type Tab = { key: TabKey; label: string; href: string };
@@ -146,6 +147,11 @@ export function ProjectTabs({
       key: "notifications",
       label: "Notifications",
       href: `/projects/${slug}/notifications`,
+    },
+    {
+      key: "sharing",
+      label: "Public sharing",
+      href: `/projects/${slug}/sharing`,
     },
     { key: "members", label: "Members", href: `/projects/${slug}/members` },
   ];

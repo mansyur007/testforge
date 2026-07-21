@@ -110,6 +110,11 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 - **Public share links** — hand a stakeholder a read-only run or dashboard
   report at `/share/<token>` — no sign-in, no way back into the app, `noindex`;
   create with an optional expiry, copy, or revoke from the run/dashboard page
+- **Public project sharing (portfolio mode)** — publish a whole project
+  read-only at `/public/<project-slug>`: overview, suite folders and every test
+  case, no sign-in, no way back into the app. Toggle the Test Cases section and
+  search-engine indexing (`noindex` by default) from Settings → Public sharing
+  (F-38)
 - **Scheduled reports** — email a KPI summary (pass rate, executions, top
   failures, link to the full report) daily or weekly to a list of recipients;
   managed under Notifications, sent by the `/api/cron/send-reports` job
