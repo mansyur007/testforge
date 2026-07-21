@@ -65,6 +65,7 @@ export const MODEL_ORDER = [
   "DashboardWidget",
   "ShareLink",
   "BadgeToken",
+  "PublicShare",
   "ReportSchedule",
   "Requirement",
   "RequirementCase",

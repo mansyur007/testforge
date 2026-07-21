@@ -52,6 +52,7 @@ model User {
   assignedDefects Defect[]          @relation("DefectAssignee")
   createdDefects  Defect[]          @relation("DefectCreator")
   createdBaselines SuiteBaseline[]  @relation("BaselineCreator")
+  publicShares    PublicShare[]     @relation("PublicShareCreator")
 }
 
 // F-20: single-use TOTP recovery codes. codeHash is the sha256 hex of the raw
@@ -109,6 +110,25 @@ model Project {
   baselines    SuiteBaseline[]
   importMapping ImportColumnMapping?
   apiKeys      ApiKey[] // F-33: keys scoped to this project only
+  publicShare  PublicShare? // F-38: portfolio mode
+}
+
+// F-38: public read-only project sharing ("portfolio mode"). One row per
+// project; presence + enabled=true is what makes /public/<slug> resolve.
+// Overview is always visible when enabled; other sections are per-column
+// toggles so future sections are additive columns, not a JSON blob.
+model PublicShare {
+  id          String   @id @default(cuid())
+  projectId   String   @unique
+  enabled     Boolean  @default(true)
+  showCases   Boolean  @default(true) // Test Cases browser + case detail
+  indexable   Boolean  @default(false) // false => robots noindex
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy User    @relation("PublicShareCreator", fields: [createdById], references: [id])
 }
 
 // F-30: the CSV case-import column mapping a project settled on, so repeat

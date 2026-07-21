@@ -21,7 +21,8 @@
 | P2 — competitive differentiators | F-11 … F-24 | 14 | ✅ all shipped |
 | P3 — nice-to-have / niche segments | F-25 … F-37 | 13 | ✅ all shipped |
 | Leapfrog — features no competitor has | L-01 … L-05 | 5 | ✅ all shipped |
-| **Total** | | **42** | **✅ 42 / 42 complete** |
+| Post-backlog additions | F-38 | 1 | ✅ shipped |
+| **Total** | | **43** | **✅ 43 / 43 complete** |
 
 Each work order in [Part IV](#part-iv--feature-work-orders) carries a `[x]` marker and, in most
 cases, its completion date and any deliberately deferred sub-scope. Deliberate exclusions are
@@ -779,6 +780,8 @@ the gaps):
 - [4. P2 features (F-11 … F-24) — compact work orders](#4-p2-features)
 - [5. P3 features (F-25 … F-36) — scoped briefs](#5-p3-features)
 - [6. Leapfrog features (L-01 … L-05) — beat the competition](#6-leapfrog-features)
+- [7. Appendix — Fable design handoff](#7-appendix--fable-design-handoff-written-2026-07-13)
+- [8. Post-backlog features (F-38 …)](#8-post-backlog-features)
 
 ---
 
@@ -3551,6 +3554,56 @@ suggestion: F-20 and L-04 first (highest user value), L-02 + L-03 next (they sha
 plumbing), L-05 and the P3 briefs as capacity allows. P3 briefs (F-25…F-34) stay briefs by
 design — they follow established repo patterns and §0/§7 already encode everything
 non-obvious about them.
+
+---
+
+### 8. Post-backlog features
+
+Features specified after the original 42-item backlog was closed. Same Definition of Done, same
+repo conventions; numbering continues from F-37.
+
+#### F-38 — Public project sharing / portfolio mode `[x]`
+
+> **Status: DONE** (2026-07-21, branch `feat/public-project-sharing`). Implemented as specified.
+
+Make a whole project publicly viewable, read-only, without login — a public GitHub repo for test
+design. Primary use case: a QA engineer showing their work to recruiters or clients. Distinct
+from F-17 `ShareLink` (one entity behind an unguessable token) and L-01 `BadgeToken` (a single
+number): this shares the **project**, under its **slug**, at `/public/<project-slug>`.
+
+- `PublicShare { projectId @unique, enabled, showCases, indexable, createdById }` — one row per
+  project (the `BadgeToken` shape). Overview is implicit when `enabled`; every other section is
+  its own boolean column so future sections are additive columns, not a JSON blob.
+- Routes live in their own group, **not** under `(app)`: `src/app/public/[slug]/{layout,page}.tsx`,
+  `cases/page.tsx`, `cases/[caseId]/page.tsx`. No `requireSession()`, no `loadPerms()`, no server
+  actions imported, no mutation of any kind, and no link into the app except the footer
+  "Built with TestForge" CTA to `/login`.
+- **One gate helper** is the security choke point: `src/lib/public-share.ts` —
+  `requirePublicProject(slug)` (404s unless a row exists with `enabled`), `requireSection(project,
+  "cases")` (404s when the toggle is off), `publicMetadata()`. A disabled share is
+  indistinguishable from a project that never existed. The case detail query is always re-scoped
+  with `projectId`, so a case id from another project 404s rather than leaking.
+- Overview shows name, description, case/suite counts, last-updated, and the L-01 quality badge
+  when the project has an active one. Cases list reuses the presentation-only `SuiteFolderGrid`
+  and renders its own lean table (`CasesTable` is a client component wired to the bulk-edit
+  server actions), with `?suite=`, `?q=`, and server-side `?page=`/`?per=` pagination.
+- **Never exposed on any public page:** comments, attachments, custom fields, members, runs and
+  results, defects, requirements, milestones, sessions, integrations, webhooks, audit log,
+  revision history, automation/CI config, saved views, AI features.
+- SEO: `generateMetadata` per page with OpenGraph tags so the link unfurls on LinkedIn/X;
+  `robots: noindex, nofollow` **by default**, flipped only by the per-project `indexable` toggle.
+- Owner UI: Settings → **Public sharing** (`/projects/<slug>/sharing`) — master toggle with an
+  explicit "the URL is your slug, therefore guessable" warning, the Test Cases section toggle,
+  the indexing toggle, the copy-able public URL and a preview link. Actions in
+  `src/app/actions/public-share.ts` all re-check `project.admin` server-side and write an
+  `AuditLog` entry on enable, disable, section change, and indexable change. They also
+  `revalidatePath('/public/<slug>', 'layout')` — the public pages are ISR-cached
+  (`revalidate = 60`), so turning sharing off has to purge them.
+- e2e `e2e/public-share.spec.ts` (TC-E2E-80) drives the whole thing from a genuinely
+  unauthenticated `browser.newContext()`.
+- **Deferred, deliberately:** unlisted (token) mode alongside the slug, public
+  Runs/Reports/Requirements sections, a separate public README field, a sitemap for indexable
+  projects, per-suite partial sharing, and rate limiting on the public routes.
 
 ---
 
