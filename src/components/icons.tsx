@@ -66,6 +66,10 @@ const ICONS: Record<string, string> = {
   review: `<path d="M3 12 c2.4 -4.6 5.9 -6.8 9 -6.8 s6.6 2.2 9 6.8 c-2.4 4.6 -5.9 6.8 -9 6.8 s-6.6 -2.2 -9 -6.8 z"/><circle class="tf-acf" cx="12" cy="12" r="2.6"/>`,
   // 13. Back navigation
   "chevron-left": `<path d="M15 5.5 L8.5 12 l6.5 6.5"/>`,
+  // Settings gear — body circle + 8 radiating teeth + accent hole, distinct
+  // from "nav-keys" (used for API Keys) so the Settings trigger reads as its
+  // own thing rather than a re-skinned key icon.
+  gear: `<circle cx="12" cy="12" r="7"/><path class="tf-ac" d="M19.10 12.00 L21.60 12.00 M17.02 17.02 L18.79 18.79 M12.00 19.10 L12.00 21.60 M6.98 17.02 L5.21 18.79 M4.90 12.00 L2.40 12.00 M6.98 6.98 L5.21 5.21 M12.00 4.90 L12.00 2.40 M17.02 6.98 L18.79 5.21"/><circle class="tf-acf" cx="12" cy="12" r="1.9"/>`,
   // 12. Success
   celebrate: `<path class="tf-acf" d="M4 20 L8.6 8.4 a1 1 0 0 1 1.6 -.35 l5.7 5.7 a1 1 0 0 1 -.35 1.6 z"/><path class="tf-ac" d="M16.5 4 v2.4 M19.8 7.2 l-1.7 1.7 M20.5 11.5 h-2.4"/><circle class="tf-ac" cx="13.5" cy="5.5" r="0.6"/><circle class="tf-ac" cx="19.5" cy="13" r="0.6"/>`,
 };
