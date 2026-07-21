@@ -18,7 +18,11 @@ export default async function ProjectMembersPage({
   return (
     <div className="space-y-6">
       <ProjectTabs slug={project.slug} name={project.name} active="members" />
-      <MembersSection params={params} searchParams={{}} />
+      <MembersSection
+        params={params}
+        searchParams={{}}
+        basePath={`/projects/${project.slug}/members`}
+      />
     </div>
   );
 }

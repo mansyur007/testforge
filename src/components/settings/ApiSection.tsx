@@ -8,6 +8,7 @@ import { CodeBlock } from "@/components/CodeBlock";
 import { WebhookManager } from "@/components/WebhookManager";
 import { WEBHOOK_EVENTS } from "@/lib/webhooks";
 import { enableBadge, revokeBadge } from "@/app/actions/badge";
+import type { SectionProps } from "@/lib/settings-nav";
 
 const FRAMEWORKS = [
   { id: "cypress", name: "Cypress" },
@@ -20,11 +21,7 @@ const FRAMEWORKS = [
 
 export async function ApiSection({
   params,
-}: {
-  params: { slug: string };
-  /** Unused here; kept so every section shares one call signature. */
-  searchParams?: Record<string, string | undefined>;
-}) {
+}: SectionProps) {
   const session = await requireSession();
   const project = await db.project.findFirst({
     where: { slug: params.slug, ...memberScope(session.userId) },

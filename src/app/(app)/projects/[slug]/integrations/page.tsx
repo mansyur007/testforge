@@ -18,7 +18,11 @@ export default async function IntegrationsPage({
   return (
     <div className="space-y-6">
       <ProjectTabs slug={project.slug} name={project.name} active="integrations" />
-      <IntegrationsSection params={params} searchParams={{}} />
+      <IntegrationsSection
+        params={params}
+        searchParams={{}}
+        basePath={`/projects/${project.slug}/integrations`}
+      />
     </div>
   );
 }

@@ -20,7 +20,11 @@ export default async function ImportPage({
   return (
     <div className="space-y-6">
       <ProjectTabs slug={project.slug} name={project.name} active="import" />
-      <ImportSection params={params} searchParams={searchParams} />
+      <ImportSection
+        params={params}
+        searchParams={searchParams}
+        basePath={`/projects/${project.slug}/import`}
+      />
     </div>
   );
 }

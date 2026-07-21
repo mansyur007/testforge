@@ -4,14 +4,11 @@ import { requireSession } from "@/lib/auth";
 import { memberScope } from "@/lib/projects";
 import { loadPerms } from "@/lib/permissions";
 import { ProjectMembersManager } from "@/components/ProjectMembersManager";
+import type { SectionProps } from "@/lib/settings-nav";
 
 export async function MembersSection({
   params,
-}: {
-  params: { slug: string };
-  /** Unused here; kept so every section shares one call signature. */
-  searchParams?: Record<string, string | undefined>;
-}) {
+}: SectionProps) {
   const session = await requireSession();
   const project = await db.project.findFirst({
     where: { slug: params.slug, ...memberScope(session.userId) },

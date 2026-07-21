@@ -6,14 +6,11 @@ import {
   IntegrationsManager,
   type IntegrationView,
 } from "@/components/IntegrationsManager";
+import type { SectionProps } from "@/lib/settings-nav";
 
 export async function IntegrationsSection({
   params,
-}: {
-  params: { slug: string };
-  /** Unused here; kept so every section shares one call signature. */
-  searchParams?: Record<string, string | undefined>;
-}) {
+}: SectionProps) {
   const session = await requireSession();
   const project = await db.project.findFirst({
     where: { slug: params.slug, ...memberScope(session.userId) },

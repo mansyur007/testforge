@@ -18,7 +18,11 @@ export default async function SharingPage({
   return (
     <div className="space-y-6">
       <ProjectTabs slug={project.slug} name={project.name} active="sharing" />
-      <SharingSection params={params} searchParams={{}} />
+      <SharingSection
+        params={params}
+        searchParams={{}}
+        basePath={`/projects/${project.slug}/sharing`}
+      />
     </div>
   );
 }

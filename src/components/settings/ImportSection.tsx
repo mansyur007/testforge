@@ -6,6 +6,7 @@ import { requireSession } from "@/lib/auth";
 import { memberScope } from "@/lib/projects";
 import { CsvImporter } from "@/components/CsvImporter";
 import { ToolImporter } from "@/components/ToolImporter";
+import type { SectionProps } from "@/lib/settings-nav";
 
 const STEPS = [
   {
@@ -45,10 +46,8 @@ const TABS = [
 export async function ImportSection({
   params,
   searchParams,
-}: {
-  params: { slug: string };
-  searchParams: Record<string, string | undefined>;
-}) {
+  basePath,
+}: SectionProps) {
   const session = await requireSession();
   const project = await db.project.findFirst({
     where: { slug: params.slug, ...memberScope(session.userId) },
@@ -65,7 +64,7 @@ export async function ImportSection({
         {TABS.map(([key, label]) => (
           <Link
             key={key}
-            href={`/projects/${project.slug}/import${key === "csv" ? "" : `?tab=${key}`}`}
+            href={`${basePath}${key === "csv" ? "" : `?tab=${key}`}`}
             data-testid={`import-tab-${key}`}
             className={`-mb-px border-b-2 px-4 py-2 font-medium ${
               tab === key
