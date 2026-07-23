@@ -231,14 +231,18 @@ export async function ApiSection({
             <p className="mt-1 text-xs text-slate-400">
               Anything that emits JUnit XML.
             </p>
-            <div className="mt-4 grid grid-cols-2 gap-2">
+            <div className="mt-4 space-y-1.5">
               {FRAMEWORKS.map((f) => (
                 <div
                   key={f.id}
-                  className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2"
+                  className="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-2"
                 >
-                  <BrandIcon name={f.id} className="h-5 w-5" />
-                  <span className="text-sm text-slate-600">{f.name}</span>
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center">
+                    <BrandIcon name={f.id} className="h-5 w-5" />
+                  </span>
+                  <span className="truncate text-sm text-slate-600">
+                    {f.name}
+                  </span>
                 </div>
               ))}
             </div>
