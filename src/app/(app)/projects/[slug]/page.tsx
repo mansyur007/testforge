@@ -177,7 +177,7 @@ export default async function ProjectPage({
   const openFolder = searchParams.suite
     ? findNode(suiteTree, searchParams.suite)
     : null;
-  const folderHref = (suiteId: string) => {
+  const folderHref = (suiteId?: string) => {
     const p = new URLSearchParams();
     Object.entries({ ...searchParams, suite: suiteId }).forEach(
       ([k, v]) => v && p.set(k, String(v))
@@ -192,6 +192,17 @@ export default async function ProjectPage({
     caseCount: n.caseCount,
     childCount: n.children.length,
   }));
+
+  // Breadcrumb from the open folder back to the root, so users can navigate
+  // back up — the folder grid itself only ever drills further in.
+  const crumbs: { id: string; name: string }[] = [];
+  for (let id: string | null = openFolder?.id ?? null; id; ) {
+    const suite = project.suites.find((s) => s.id === id);
+    if (!suite) break;
+    crumbs.unshift({ id: suite.id, name: suite.name });
+    id = suite.parentId ?? null;
+    if (crumbs.length > MAX_TREE_DEPTH) break;
+  }
 
   return (
     <div className="space-y-6">
@@ -351,6 +362,33 @@ export default async function ProjectPage({
               </Link>
             )}
           </div>
+
+          {openFolder && (
+            <div
+              data-testid="suite-breadcrumb"
+              className="flex flex-wrap items-center gap-2 text-sm text-slate-400"
+            >
+              <Link
+                href={folderHref()}
+                data-testid="suite-breadcrumb-root"
+                className="hover:text-slate-600"
+              >
+                All suites
+              </Link>
+              {crumbs.map((c) => (
+                <span key={c.id} className="flex items-center gap-2">
+                  <span>/</span>
+                  <Link
+                    href={folderHref(c.id)}
+                    data-testid={`suite-breadcrumb-${c.id}`}
+                    className="text-slate-600 hover:text-slate-800"
+                  >
+                    {c.name}
+                  </Link>
+                </span>
+              ))}
+            </div>
+          )}
 
           <SuiteFolderGrid folders={folders} />
 
