@@ -175,9 +175,11 @@ test.describe("suite folder tree", () => {
       grid.getByTestId(`suite-folder-card-${t.level3}`)
     ).toHaveCount(0);
 
-    // Suite daun tidak punya folder — grid tidak dirender sama sekali.
+    // Suite daun tidak punya subfolder, tapi folder-nya sedang dibuka — section
+    // tetap tampil dengan empty state, bukan hilang total.
     await page.goto(`/projects/${t.slug}?suite=${t.level4}`);
-    await expect(grid).toHaveCount(0);
+    await expect(grid).toBeVisible();
+    await expect(grid.getByTestId("suite-folder-grid-empty")).toBeVisible();
   });
 
   test("klik kartu folder drill-in dan ikut membuka sidebar", async ({

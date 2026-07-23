@@ -390,7 +390,7 @@ export default async function ProjectPage({
             </div>
           )}
 
-          <SuiteFolderGrid folders={folders} />
+          <SuiteFolderGrid folders={folders} open={!!openFolder} />
 
           <CasesTable
             projectSlug={project.slug}
