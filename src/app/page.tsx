@@ -17,6 +17,14 @@ export const metadata: Metadata = {
       "Manual + automation testing in one platform. Free forever, unlimited users.",
     type: "website",
   },
+  // Gambarnya datang dari src/app/opengraph-image.tsx (konvensi file Next);
+  // X/Twitter memakai og:image itu selama card-nya besar.
+  twitter: {
+    card: "summary_large_image",
+    title: "TestForge — Open Source Test Case Management",
+    description:
+      "Manual + automation testing in one platform. Free forever, unlimited users.",
+  },
 };
 
 const GITHUB_REPO = process.env.NEXT_PUBLIC_GITHUB_REPO ?? "mansyur007/testforge";
