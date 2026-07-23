@@ -21,6 +21,13 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
+  // Tanpa metadataBase, Next menulis og:image/twitter:image sebagai
+  // http://localhost:3000/... — scraper LinkedIn/WhatsApp/Slack tidak bisa
+  // mengambilnya. NEXT_PUBLIC_BASE_URL di-bake saat build Docker
+  // (docker-compose.prod.yml → build.args).
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000",
+  ),
   title: "TestForge — Test Case Management",
   description:
     "Open source test case management platform — the free alternative to TestRail, Qase.io, and Zephyr.",
