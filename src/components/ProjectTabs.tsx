@@ -152,13 +152,15 @@ export function ProjectTabs({
 
   return (
     <div>
-      <div className="mb-1 flex items-center gap-2 text-sm text-slate-400">
-        <Link href="/projects" className={`hover:text-slate-600 ${FOCUS_RING}`}>
-          Projects
-        </Link>
-        <span>/</span>
+      <div className="flex items-baseline gap-2">
+        <div className="flex items-center gap-2 text-sm text-slate-400">
+          <Link href="/projects" className={`hover:text-slate-600 ${FOCUS_RING}`}>
+            Projects
+          </Link>
+          <span>/</span>
+        </div>
+        <h1 className="text-2xl font-bold">{name}</h1>
       </div>
-      <h1 className="text-2xl font-bold">{name}</h1>
       <div className="mt-4 flex items-stretch gap-1 border-b border-slate-200">
         <div className="flex gap-1 overflow-x-auto">
           {primary.map((t) => (
