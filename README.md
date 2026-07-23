@@ -4,7 +4,31 @@ Open source test case management platform — a free alternative to TestRail,
 Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 [docs/DOCUMENTATION.md Part II](docs/DOCUMENTATION.md#part-ii--prd-audit) for the audit of that document).
 
+![Test case table — suite tree, TC-* ids, priority and tags](docs/images/cases.png)
+
+![Run executor — executing a run with colour-coded result statuses](docs/images/run.png)
+
+![Reports — pass rate trend, flaky tests and automation coverage](docs/images/reports.png)
+
+## What it does
+
+- **Test case management** — suite → section → case hierarchy with steps,
+  tags, custom fields, shared steps, versioning and full-text search.
+- **Test runs** — build a run from a filter, execute it with keyboard
+  shortcuts and a live timer, rerun only what failed, compare two runs.
+- **Automation integration** — upload JUnit/TRX/NUnit/xUnit/Cucumber/Mocha
+  results, or stream live runs from Playwright, Cypress, pytest and the CLI.
+- **CI quality gates** — a per-project pass-rate policy your pipeline can
+  block on, plus an embeddable live quality badge.
+- **Cases as code** — sync a `tests/` folder of YAML with the server so test
+  cases get reviewed in pull requests like the rest of your code.
+- **Self-hosted and free** — one `docker compose up`, SQLite or PostgreSQL,
+  unlimited users, no per-seat pricing, MIT licensed.
+
 ## MVP Features (v0.1)
+
+<details>
+<summary><b>Full feature list (45)</b></summary>
 
 - **Multi-project workspace** — create, archive, namespace tests per project
 - **Test case management** — all standard PRD §4.2.1 fields, dynamic steps,
@@ -165,6 +189,8 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   cases (the duplicate detector is a local title match and needs no key). Every
   AI action is opt-in per click and the features stay hidden until a key is
   configured (F-29)
+
+</details>
 
 ## Running
 
