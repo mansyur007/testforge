@@ -1,5 +1,8 @@
 # ⚒️ TestForge
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![test cases](https://testforge.emha.space/badge/36687b44c804d5e71ab96c7337132e75367e5d2c5ea44493.svg?metric=cases)](https://testforge.emha.space/public/tkpdd)
+
 Open source test case management platform — a free alternative to TestRail,
 Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 [docs/DOCUMENTATION.md Part II](docs/DOCUMENTATION.md#part-ii--prd-audit) for the audit of that document).
