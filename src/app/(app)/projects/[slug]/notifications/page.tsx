@@ -1,6 +1,6 @@
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { NotificationsSection } from "@/components/settings/NotificationsSection";
-import { loadSettingsProject } from "@/lib/settings-sections";
+import { loadProjectChrome } from "@/lib/project-chrome";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +13,7 @@ export default async function NotificationsPage({
 }: {
   params: { slug: string };
 }) {
-  const project = await loadSettingsProject(params.slug);
+  const project = await loadProjectChrome(params.slug);
 
   return (
     <div className="space-y-6">

@@ -1,13 +1,14 @@
 import { loadProjectChrome } from "@/lib/project-chrome";
-import { SETTINGS_NAV, settingsHref } from "@/lib/settings-nav";
+import { TRACKING_NAV, trackingHref } from "@/lib/tracking-nav";
 import { SectionModalShell } from "@/components/SectionModalShell";
 
 export const dynamic = "force-dynamic";
 
-// The settings modal is a route, not client-only state: every section is a
+// The tracking modal is a route, not client-only state: every section is a
 // server-rendered child route, so it deep-links, reloads, and gets its data
-// the same way the standalone permalink pages do.
-export default async function SettingsLayout({
+// the same way the standalone permalink pages do. Same shape as the settings
+// hub next to it in the tab bar.
+export default async function TrackingLayout({
   children,
   params,
 }: {
@@ -18,16 +19,16 @@ export default async function SettingsLayout({
 
   return (
     <SectionModalShell
-      title={`${project.name} · Settings`}
-      icon="gear"
-      ariaLabel="Project settings"
-      testIdPrefix="project-settings"
+      title={`${project.name} · Tracking`}
+      icon="checklist"
+      ariaLabel="Project tracking"
+      testIdPrefix="project-tracking"
       closeHref={`/projects/${project.slug}`}
-      sections={SETTINGS_NAV.map((s) => ({
+      sections={TRACKING_NAV.map((s) => ({
         key: s.key,
         label: s.label,
         icon: s.icon,
-        href: settingsHref(project.slug, s.key),
+        href: trackingHref(project.slug, s.key),
       }))}
     >
       {children}

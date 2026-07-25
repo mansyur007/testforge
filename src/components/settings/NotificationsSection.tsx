@@ -8,7 +8,7 @@ import {
   NotificationChannelsManager,
   type ChannelView,
 } from "@/components/NotificationChannelsManager";
-import type { SectionProps } from "@/lib/settings-nav";
+import type { SectionProps } from "@/lib/section-props";
 import { SCHEDULE_CRONS, parseRecipients } from "@/lib/report-schedules";
 import {
   createReportSchedule,

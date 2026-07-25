@@ -6,7 +6,7 @@ import { requireSession } from "@/lib/auth";
 import { memberScope } from "@/lib/projects";
 import { CsvImporter } from "@/components/CsvImporter";
 import { ToolImporter } from "@/components/ToolImporter";
-import type { SectionProps } from "@/lib/settings-nav";
+import type { SectionProps } from "@/lib/section-props";
 
 const STEPS = [
   {

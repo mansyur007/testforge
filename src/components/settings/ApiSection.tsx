@@ -8,7 +8,7 @@ import { CodeBlock } from "@/components/CodeBlock";
 import { WebhookManager } from "@/components/WebhookManager";
 import { WEBHOOK_EVENTS } from "@/lib/webhooks";
 import { enableBadge, revokeBadge } from "@/app/actions/badge";
-import type { SectionProps } from "@/lib/settings-nav";
+import type { SectionProps } from "@/lib/section-props";
 
 const FRAMEWORKS = [
   { id: "cypress", name: "Cypress" },

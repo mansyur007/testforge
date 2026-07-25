@@ -13,7 +13,7 @@ import { loadStatusDefs } from "@/lib/result-status-defs";
 import { loadPerms } from "@/lib/permissions";
 import { evaluateGate, parseGatePolicy, type GatePolicy, type GateVerdict } from "@/lib/gate";
 import { saveGatePolicy } from "@/app/actions/gate";
-import type { SectionProps } from "@/lib/settings-nav";
+import type { SectionProps } from "@/lib/section-props";
 
 // F-03: per-project custom field definitions.
 export async function FieldsSection({
