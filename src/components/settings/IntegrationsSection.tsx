@@ -6,7 +6,7 @@ import {
   IntegrationsManager,
   type IntegrationView,
 } from "@/components/IntegrationsManager";
-import type { SectionProps } from "@/lib/settings-nav";
+import type { SectionProps } from "@/lib/section-props";
 
 export async function IntegrationsSection({
   params,

@@ -1,6 +1,6 @@
 import { ProjectTabs } from "@/components/ProjectTabs";
 import { ImportSection } from "@/components/settings/ImportSection";
-import { loadSettingsProject } from "@/lib/settings-sections";
+import { loadProjectChrome } from "@/lib/project-chrome";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,7 @@ export default async function ImportPage({
   params: { slug: string };
   searchParams: Record<string, string | undefined>;
 }) {
-  const project = await loadSettingsProject(params.slug);
+  const project = await loadProjectChrome(params.slug);
 
   return (
     <div className="space-y-6">

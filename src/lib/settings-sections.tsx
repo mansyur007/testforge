@@ -1,12 +1,5 @@
-import { notFound } from "next/navigation";
-import { db } from "@/lib/db";
-import { requireSession } from "@/lib/auth";
-import { memberScope } from "@/lib/projects";
-import {
-  SETTINGS_NAV,
-  type SettingsKey,
-  type SectionProps,
-} from "@/lib/settings-nav";
+import { SETTINGS_NAV, type SettingsKey } from "@/lib/settings-nav";
+import type { SectionProps } from "@/lib/section-props";
 import { ImportSection } from "@/components/settings/ImportSection";
 import { FieldsSection } from "@/components/settings/FieldsSection";
 import { ApiSection } from "@/components/settings/ApiSection";
@@ -39,18 +32,4 @@ export function findSectionRenderer(key: string): SectionRenderer | undefined {
   return SETTINGS_NAV.some((s) => s.key === key)
     ? RENDERERS[key as SettingsKey]
     : undefined;
-}
-
-/**
- * Project header data for the settings chrome. Also the membership gate: a
- * non-member (or unknown slug) 404s here before any section renders.
- */
-export async function loadSettingsProject(slug: string) {
-  const session = await requireSession();
-  const project = await db.project.findFirst({
-    where: { slug, ...memberScope(session.userId) },
-    select: { id: true, slug: true, name: true },
-  });
-  if (!project) notFound();
-  return project;
 }

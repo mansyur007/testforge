@@ -4,7 +4,7 @@ import { requireSession } from "@/lib/auth";
 import { memberScope } from "@/lib/projects";
 import { loadPerms } from "@/lib/permissions";
 import { ProjectMembersManager } from "@/components/ProjectMembersManager";
-import type { SectionProps } from "@/lib/settings-nav";
+import type { SectionProps } from "@/lib/section-props";
 
 export async function MembersSection({
   params,

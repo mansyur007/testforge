@@ -12,7 +12,7 @@ import {
   disablePublicShare,
   updatePublicShare,
 } from "@/app/actions/public-share";
-import type { SectionProps } from "@/lib/settings-nav";
+import type { SectionProps } from "@/lib/section-props";
 
 // F-38: owner-facing controls for public "portfolio mode" sharing.
 export async function SharingSection({
