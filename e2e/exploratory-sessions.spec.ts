@@ -8,6 +8,18 @@ import { E2E } from "./global-setup";
 // (graceful degrade, not a silent failure).
 const TC = (process.env.TF_PROJECT ?? "e2e").toUpperCase();
 
+// The quick-add hotkeys are a window-level keydown handler that deliberately
+// stands down while the target is an input/textarea. To exercise them the test
+// has to hand focus back to the document — the composer re-focuses its textarea
+// after every added note. This used to be `page.locator("body").click()`, which
+// clicks the *centre of the page*: once the project header lost a row the
+// centre drifted into the note textarea, so the click focused the very field
+// that suppresses the hotkey and the suite went red. Blur explicitly instead —
+// it says what it means and doesn't move with the layout.
+async function blurActiveElement(page: Page) {
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+}
+
 async function login(page: Page) {
   await page.goto("/login");
   await page.fill('input[name="email"]', E2E.email);
@@ -33,7 +45,7 @@ test(`TC-${TC}-64 Exploratory sessions: hotkey notes, IDEA→draft case, end ses
   await expect(page.locator('[data-testid="session-timer"]')).toBeVisible();
 
   // 2. Hotkey "b" selects BUG, then submit a note.
-  await page.locator("body").click(); // ensure focus isn't inside an input
+  await blurActiveElement(page);
   await page.keyboard.press("b");
   await expect(page.locator('[data-testid="session-kind-BUG"]')).toHaveClass(/bg-red-100/);
   await page.fill(
@@ -46,7 +58,7 @@ test(`TC-${TC}-64 Exploratory sessions: hotkey notes, IDEA→draft case, end ses
   );
 
   // 3. Hotkey "i" selects IDEA, then submit a note.
-  await page.locator("body").click();
+  await blurActiveElement(page);
   await page.keyboard.press("i");
   await expect(page.locator('[data-testid="session-kind-IDEA"]')).toHaveClass(/bg-indigo-100/);
   const ideaText = `Add a case for filtering by multiple tags at once ${ts}`;
