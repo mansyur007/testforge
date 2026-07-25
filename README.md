@@ -4,6 +4,8 @@ Open source test case management platform — a free alternative to TestRail,
 Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
 [docs/DOCUMENTATION.md Part II](docs/DOCUMENTATION.md#part-ii--prd-audit) for the audit of that document).
 
+**▶ [See it live — a real project, no sign-up](https://testforge.emha.space/public/tkpdd)** · 116 test cases across 52 suites, read-only.
+
 ![Test case table — suite tree, TC-* ids, priority and tags](docs/images/cases.png)
 
 ![Run executor — executing a run with colour-coded result statuses](docs/images/run.png)
