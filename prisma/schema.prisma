@@ -122,6 +122,11 @@ model PublicShare {
   projectId   String   @unique
   enabled     Boolean  @default(true)
   showCases   Boolean  @default(true) // Test Cases browser + case detail
+  // Runs/Reports default OFF: they are added after shares already existed, and
+  // a schema default of true would publish execution history on every project
+  // that is already public without its owner ever choosing to.
+  showRuns    Boolean  @default(false) // run list — names + status tallies only
+  showReports Boolean  @default(false) // aggregate quality metrics only
   indexable   Boolean  @default(false) // false => robots noindex
   createdById String
   createdAt   DateTime @default(now())

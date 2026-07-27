@@ -16,11 +16,17 @@ const TC = (process.env.TF_PROJECT ?? "e2e").toUpperCase();
 const db = new PrismaClient();
 
 const CASE_TITLE = "Checkout rejects an expired card";
+const RUN_NAME = "Regression 2026-07";
+// Planted in the seeded run's result. Neither string may appear anywhere under
+// /public once Runs and Reports are on — they stand in for the tester notes and
+// tracker links that make execution data more sensitive than case design.
+const SECRET_COMMENT = "INTERNAL staging creds are in the vault";
+const SECRET_DEFECT_URL = "https://jira.internal.example/browse/SEC-1";
 
 async function seedProject() {
   const admin = await db.user.findUniqueOrThrow({
     where: { email: E2E.email },
-    select: { id: true },
+    select: { id: true, name: true },
   });
   const slug = `share-${Date.now()}`;
   const project = await db.project.create({
@@ -52,7 +58,34 @@ async function seedProject() {
     },
     select: { id: true },
   });
-  return { slug, caseId: testCase.id, suiteId: project.suites[0].id };
+  const run = await db.testRun.create({
+    data: {
+      projectId: project.id,
+      name: RUN_NAME,
+      description: "Internal scope notes for the release",
+      status: "COMPLETED",
+      origin: "CI · GitHub Actions (Linux)",
+      createdById: admin.id,
+      completedAt: new Date(),
+      results: {
+        create: {
+          caseId: testCase.id,
+          status: "PASSED",
+          assigneeId: admin.id,
+          comment: SECRET_COMMENT,
+          defectUrl: SECRET_DEFECT_URL,
+        },
+      },
+    },
+    select: { id: true },
+  });
+  return {
+    slug,
+    caseId: testCase.id,
+    suiteId: project.suites[0].id,
+    runId: run.id,
+    adminName: admin.name,
+  };
 }
 
 async function login(page: Page) {
@@ -107,6 +140,16 @@ test(`TC-${TC}-80 Public sharing: anonymous portfolio view, section + index togg
   await expect(
     page.locator('[data-testid="public-share-indexable-toggle"]')
   ).not.toBeChecked();
+  // Runs and Reports are opt-in: publishing a project never publishes its
+  // execution history by itself.
+  await expect(
+    page.locator('[data-testid="public-share-runs-toggle"]')
+  ).not.toBeChecked();
+  await expect(
+    page.locator('[data-testid="public-share-reports-toggle"]')
+  ).not.toBeChecked();
+  await expectStatus(anon, `/public/${project.slug}/runs`, 404);
+  await expectStatus(anon, `/public/${project.slug}/reports`, 404);
 
   // 2. Overview renders with NO session at all.
   await anonPage.goto(`/public/${project.slug}`);
@@ -163,7 +206,47 @@ test(`TC-${TC}-80 Public sharing: anonymous portfolio view, section + index togg
   );
   expect(await anonPage.locator("form").count()).toBe(0);
 
-  // 4. Turning indexing on flips the robots meta.
+  // 4. Runs + Reports: turning them on publishes the shape of the execution
+  // history and nothing that sits inside a result.
+  await page.check('[data-testid="public-share-runs-toggle"]');
+  await page.check('[data-testid="public-share-reports-toggle"]');
+  await page.click('[data-testid="public-share-save"]');
+  await expect(
+    page.locator('[data-testid="public-share-runs-toggle"]')
+  ).toBeChecked();
+
+  await expectStatus(anon, `/public/${project.slug}/runs`, 200);
+  await anonPage.goto(`/public/${project.slug}/runs`);
+  await expect(
+    anonPage.locator(`[data-testid="public-run-${project.runId}"]`)
+  ).toContainText(RUN_NAME);
+
+  await anonPage.goto(`/public/${project.slug}/reports`);
+  await expect(
+    anonPage.locator('[data-testid="public-report-pass-rate"] p').last()
+  ).toHaveText("100%");
+  await expect(
+    anonPage.locator('[data-testid="public-report-executions"] p').last()
+  ).toHaveText("1");
+
+  // The whole reason these toggles are separate: what a result carries must
+  // not ride along with the tally it contributes to.
+  for (const path of [`/runs`, `/reports`]) {
+    const res = await anon.request.get(`/public/${project.slug}${path}`);
+    const body = await res.text();
+    for (const secret of [
+      SECRET_COMMENT,
+      SECRET_DEFECT_URL,
+      project.adminName,
+      E2E.email,
+      "CI · GitHub Actions",
+      "Internal scope notes",
+    ])
+      expect(body, `${path} must not leak "${secret}"`).not.toContain(secret);
+    expect(body).not.toContain("/projects/");
+  }
+
+  // 5. Turning indexing on flips the robots meta.
   await page.check('[data-testid="public-share-indexable-toggle"]');
   await page.click('[data-testid="public-share-save"]');
   await expect(

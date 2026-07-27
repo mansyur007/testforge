@@ -14,6 +14,30 @@ export default async function PublicLayout({
 }) {
   const project = await requirePublicProject(params.slug);
 
+  // One entry per section the owner enabled. Overview is implicit, so with
+  // every section off the nav disappears entirely rather than rendering a lone
+  // link back to the page you are already on.
+  const tabs = [
+    {
+      on: project.share.showCases,
+      href: `/public/${project.slug}/cases`,
+      label: "Test Cases",
+      testid: "public-cases-link",
+    },
+    {
+      on: project.share.showRuns,
+      href: `/public/${project.slug}/runs`,
+      label: "Test Runs",
+      testid: "public-runs-link",
+    },
+    {
+      on: project.share.showReports,
+      href: `/public/${project.slug}/reports`,
+      label: "Reports",
+      testid: "public-reports-link",
+    },
+  ].filter((t) => t.on);
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="border-b border-slate-200 bg-white">
@@ -34,7 +58,7 @@ export default async function PublicLayout({
           >
             Public · read-only
           </span>
-          {project.share.showCases && (
+          {tabs.length > 0 && (
             <nav className="ml-auto flex items-center gap-1 text-sm">
               <Link
                 href={`/public/${project.slug}`}
@@ -42,13 +66,16 @@ export default async function PublicLayout({
               >
                 Overview
               </Link>
-              <Link
-                href={`/public/${project.slug}/cases`}
-                data-testid="public-cases-link"
-                className="rounded-lg px-3 py-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
-              >
-                Test Cases
-              </Link>
+              {tabs.map((t) => (
+                <Link
+                  key={t.href}
+                  href={t.href}
+                  data-testid={t.testid}
+                  className="rounded-lg px-3 py-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                >
+                  {t.label}
+                </Link>
+              ))}
             </nav>
           )}
         </div>
