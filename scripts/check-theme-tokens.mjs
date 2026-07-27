@@ -14,7 +14,10 @@ const UTILITY =
 const RULES = [
   { re: new RegExp(`\\b(${UTILITY})-(${PALETTE})-\\d{2,3}\\b`, "g"), label: "raw palette colour" },
   { re: /\bbg-white\b/g, label: "bg-white" },
-  { re: /\bdark:/g, label: "dark: variant" },
+  // Tailwind's `dark:` modifier is always glued directly to a utility, no
+  // space (`dark:bg-white`) — require that shape so a plain object key like
+  // `{ dark: "moon" }` (see ThemeSwitcher's ICON/LABEL maps) isn't flagged.
+  { re: /\bdark:(?=\S)/g, label: "dark: variant" },
 ];
 
 // Exact paths only — each entry documents why it is exempt.
