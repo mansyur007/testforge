@@ -21,7 +21,7 @@ export default async function AiSettingsPage() {
     <div className="max-w-2xl space-y-8">
       <div>
         <h1 className="text-2xl font-bold">AI assist</h1>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-content-muted">
           Bring your own key for an Anthropic-compatible endpoint. AI features
           (draft cases from a requirement, suggest edge-case steps) are opt-in
           per click and stay off until a key is saved. The key is stored
@@ -30,7 +30,7 @@ export default async function AiSettingsPage() {
       </div>
 
       {!isAdmin ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
+        <div className="rounded-xl border border-hairline bg-surface p-6 text-sm text-content-muted">
           {config.configured
             ? "AI assist is configured for your organization."
             : "AI assist is not configured."}{" "}

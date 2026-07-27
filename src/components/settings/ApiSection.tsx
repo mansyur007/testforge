@@ -77,29 +77,29 @@ export async function ApiSection({
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-          <section className="rounded-xl border border-slate-200 bg-white p-6">
+          <section className="rounded-xl border border-hairline bg-surface p-6">
             <h3 className="flex items-center gap-2 font-semibold">
               <TFIcon name="cicd" className="h-5 w-5" /> Upload automation results
             </h3>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-content-muted">
               Push a JUnit XML report from any CI pipeline. Results become a new
               test run, with tests matched to cases by a{" "}
-              <code className="rounded bg-slate-100 px-1 text-xs">
+              <code className="rounded bg-surface-muted px-1 text-xs">
                 TC-{slug.toUpperCase()}-XXX
               </code>{" "}
               annotation in the test name, or by an identical title.
             </p>
 
-            <ol className="mt-4 space-y-2.5 text-sm text-slate-600">
+            <ol className="mt-4 space-y-2.5 text-sm text-content">
               <li className="flex gap-3">
-                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-indigo-100 text-[11px] font-bold text-indigo-700">
+                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent-soft text-[11px] font-bold text-accent-soft-fg">
                   1
                 </span>
                 <span>
                   Create an API key in{" "}
                   <Link
                     href="/settings/api-keys"
-                    className="font-medium text-indigo-600 hover:underline"
+                    className="font-medium text-accent-text hover:underline"
                   >
                     Settings → API Keys
                   </Link>
@@ -107,7 +107,7 @@ export async function ApiSection({
                 </span>
               </li>
               <li className="flex gap-3">
-                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-indigo-100 text-[11px] font-bold text-indigo-700">
+                <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-accent-soft text-[11px] font-bold text-accent-soft-fg">
                   2
                 </span>
                 <span>Add this step to your CI pipeline:</span>
@@ -119,11 +119,11 @@ export async function ApiSection({
             </div>
           </section>
 
-          <section className="rounded-xl border border-slate-200 bg-white p-6">
+          <section className="rounded-xl border border-hairline bg-surface p-6">
             <h3 className="flex items-center gap-2 font-semibold">
               <TFIcon name="frameworks" className="h-5 w-5" /> REST endpoints
             </h3>
-            <div className="mt-4 divide-y divide-slate-100">
+            <div className="mt-4 divide-y divide-hairline-subtle">
               {endpoints.map((e) => (
                 <div
                   key={e.method + e.path}
@@ -132,29 +132,29 @@ export async function ApiSection({
                   <span
                     className={`mt-0.5 w-12 shrink-0 rounded-md py-0.5 text-center text-[10px] font-bold ${
                       e.method === "GET"
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-indigo-100 text-indigo-700"
+                        ? "bg-success-soft text-success-soft-fg"
+                        : "bg-accent-soft text-accent-soft-fg"
                     }`}
                   >
                     {e.method}
                   </span>
                   <div className="min-w-0">
-                    <code className="block truncate font-mono text-xs text-slate-700">
+                    <code className="block truncate font-mono text-xs text-content">
                       {e.path}
                     </code>
-                    <p className="text-xs text-slate-400">{e.desc}</p>
+                    <p className="text-xs text-content-subtle">{e.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
           </section>
 
-          <section className="rounded-xl border border-slate-200 bg-white p-6">
+          <section className="rounded-xl border border-hairline bg-surface p-6">
             <h3 className="flex items-center gap-2 font-semibold">
               <TFIcon name="cicd" className="h-5 w-5" /> Webhooks
             </h3>
-            <p className="mt-1 text-sm text-slate-500">
-              Get a signed <code className="rounded bg-slate-100 px-1 text-xs">POST</code>{" "}
+            <p className="mt-1 text-sm text-content-muted">
+              Get a signed <code className="rounded bg-surface-muted px-1 text-xs">POST</code>{" "}
               when cases change or a run completes.
             </p>
             <div className="mt-4">
@@ -166,11 +166,11 @@ export async function ApiSection({
             </div>
           </section>
 
-          <section className="rounded-xl border border-slate-200 bg-white p-6">
+          <section className="rounded-xl border border-hairline bg-surface p-6">
             <h3 className="flex items-center gap-2 font-semibold">
               <TFIcon name="trend" className="h-5 w-5" /> Quality badge
             </h3>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-content-muted">
               A public shields.io-style SVG showing this project&apos;s latest
               pass rate — embed it in a README or wiki. The URL token is the
               only auth; revoke it anytime.
@@ -188,22 +188,22 @@ export async function ApiSection({
                 <CodeBlock
                   code={`![pass rate](${baseUrl}/badge/${badgeToken.token}.svg)`}
                 />
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-content-subtle">
                   Variants:{" "}
-                  <code className="rounded bg-slate-100 px-1">?metric=automation</code>{" "}
+                  <code className="rounded bg-surface-muted px-1">?metric=automation</code>{" "}
                   (automation coverage),{" "}
-                  <code className="rounded bg-slate-100 px-1">?metric=cases</code>{" "}
+                  <code className="rounded bg-surface-muted px-1">?metric=cases</code>{" "}
                   (case count),{" "}
-                  <code className="rounded bg-slate-100 px-1">&amp;label=…</code>{" "}
+                  <code className="rounded bg-surface-muted px-1">&amp;label=…</code>{" "}
                   (custom label);{" "}
-                  <code className="rounded bg-slate-100 px-1">.json</code> serves
+                  <code className="rounded bg-surface-muted px-1">.json</code> serves
                   the shields.io endpoint schema.
                 </p>
                 <form action={revokeBadge}>
                   <input type="hidden" name="projectId" value={project.id} />
                   <button
                     data-testid="badge-revoke-button"
-                    className="rounded-lg border border-rose-200 px-4 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50"
+                    className="rounded-lg border border-danger-border px-4 py-2 text-sm font-medium text-danger hover:bg-danger-soft"
                   >
                     Revoke badge
                   </button>
@@ -214,7 +214,7 @@ export async function ApiSection({
                 <input type="hidden" name="projectId" value={project.id} />
                 <button
                   data-testid="badge-enable-button"
-                  className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                  className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
                 >
                   Enable badge
                 </button>
@@ -224,23 +224,23 @@ export async function ApiSection({
         </div>
 
         <aside className="space-y-6">
-          <section className="rounded-xl border border-slate-200 bg-white p-6">
-            <h4 className="text-sm font-semibold text-slate-700">
+          <section className="rounded-xl border border-hairline bg-surface p-6">
+            <h4 className="text-sm font-semibold text-content">
               Supported frameworks
             </h4>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-content-subtle">
               Anything that emits JUnit XML.
             </p>
             <div className="mt-4 space-y-1.5">
               {FRAMEWORKS.map((f) => (
                 <div
                   key={f.id}
-                  className="flex items-center gap-3 rounded-lg border border-slate-200 px-3 py-2"
+                  className="flex items-center gap-3 rounded-lg border border-hairline px-3 py-2"
                 >
                   <span className="flex h-6 w-6 shrink-0 items-center justify-center">
                     <BrandIcon name={f.id} className="h-5 w-5" />
                   </span>
-                  <span className="truncate text-sm text-slate-600">
+                  <span className="truncate text-sm text-content">
                     {f.name}
                   </span>
                 </div>
@@ -248,18 +248,18 @@ export async function ApiSection({
             </div>
           </section>
 
-          <section className="rounded-xl border border-indigo-100 bg-indigo-50/60 p-6">
-            <h4 className="flex items-center gap-2 text-sm font-semibold text-indigo-900">
+          <section className="rounded-xl border border-accent-ring bg-accent-soft/60 p-6">
+            <h4 className="flex items-center gap-2 text-sm font-semibold text-accent-soft-fg">
               <TFIcon name="nav-keys" className="h-5 w-5" /> Authentication
             </h4>
-            <p className="mt-2 text-xs leading-relaxed text-indigo-900/70">
+            <p className="mt-2 text-xs leading-relaxed text-accent-soft-fg/70">
               Every endpoint expects a{" "}
-              <code className="rounded bg-white/70 px-1">Bearer</code> API key.
+              <code className="rounded bg-surface/70 px-1">Bearer</code> API key.
               Keys are project-scoped and can be revoked at any time.
             </p>
             <Link
               href="/settings/api-keys"
-              className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:underline"
+              className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-accent-text hover:underline"
             >
               Manage API keys →
             </Link>

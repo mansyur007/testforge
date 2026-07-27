@@ -68,7 +68,7 @@ export function ReviewPanel({
       {/* Changes-requested note carries over into DRAFT so the author sees it. */}
       {reviewNote && !inReview && (
         <div
-          className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800"
+          className="rounded-lg bg-warning-soft px-3 py-2 text-sm text-warning-soft-fg"
           data-testid="review-note"
         >
           <span className="font-semibold">Changes requested</span>
@@ -77,7 +77,7 @@ export function ReviewPanel({
       )}
 
       {inReview && (
-        <p className="text-sm text-slate-600" data-testid="review-status">
+        <p className="text-sm text-content" data-testid="review-status">
           {isReviewer ? (
             <>Awaiting <b>your</b> review.</>
           ) : (
@@ -89,7 +89,7 @@ export function ReviewPanel({
       )}
 
       {status === "APPROVED" && (
-        <p className="text-sm text-green-700" data-testid="review-approved">
+        <p className="text-sm text-success-soft-fg" data-testid="review-approved">
           Approved{reviewerName ? ` by ${reviewerName}` : ""}
           {reviewedAt ? ` on ${new Date(reviewedAt).toLocaleDateString("en-US")}` : ""}.
         </p>
@@ -103,7 +103,7 @@ export function ReviewPanel({
             disabled={pending}
             onClick={() => submit(approveCase)}
             data-testid="review-approve"
-            className="rounded-lg bg-green-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+            className="rounded-lg bg-success px-4 py-1.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
           >
             ✓ Approve
           </button>
@@ -112,7 +112,7 @@ export function ReviewPanel({
             disabled={pending}
             onClick={() => setChanging(true)}
             data-testid="review-request-changes-open"
-            className="rounded-lg border border-amber-300 px-4 py-1.5 text-sm font-medium text-amber-700 hover:bg-amber-50 disabled:opacity-50"
+            className="rounded-lg border border-warning-border px-4 py-1.5 text-sm font-medium text-warning-soft-fg hover:bg-warning-soft disabled:opacity-50"
           >
             ↩ Request changes
           </button>
@@ -127,7 +127,7 @@ export function ReviewPanel({
             rows={3}
             placeholder="What needs to change? (required)"
             data-testid="review-changes-note"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
           />
           <div className="flex gap-2">
             <button
@@ -135,7 +135,7 @@ export function ReviewPanel({
               disabled={pending}
               onClick={() => submit(requestChanges, { note })}
               data-testid="review-changes-submit"
-              className="rounded-lg bg-amber-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+              className="rounded-lg bg-warning px-4 py-1.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
             >
               Send back to author
             </button>
@@ -145,7 +145,7 @@ export function ReviewPanel({
                 setChanging(false);
                 setNote("");
               }}
-              className="text-sm text-slate-500 hover:text-slate-700"
+              className="text-sm text-content-muted hover:text-content"
             >
               Cancel
             </button>
@@ -160,7 +160,7 @@ export function ReviewPanel({
             value={reviewerPick}
             onChange={(e) => setReviewerPick(e.target.value)}
             data-testid="review-reviewer-select"
-            className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
+            className="rounded-lg border border-hairline-strong px-2 py-1.5 text-sm"
           >
             <option value="">Pick a reviewer…</option>
             {others.map((m) => (
@@ -174,12 +174,12 @@ export function ReviewPanel({
             disabled={pending || !reviewerPick}
             onClick={() => submit(requestReview, { reviewerId: reviewerPick })}
             data-testid="review-request"
-            className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
           >
             Request review
           </button>
           {others.length === 0 && (
-            <span className="text-xs text-slate-400">
+            <span className="text-xs text-content-subtle">
               Invite a teammate to request a review.
             </span>
           )}
@@ -187,7 +187,7 @@ export function ReviewPanel({
       )}
 
       {error && (
-        <p className="text-xs text-red-600" data-testid="review-error">
+        <p className="text-xs text-danger" data-testid="review-error">
           {error}
         </p>
       )}

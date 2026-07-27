@@ -30,13 +30,13 @@ export function SuiteFolderGrid({
 
   return (
     <section data-testid="suite-folder-grid" className="space-y-2">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-content-subtle">
         Folders
       </h3>
       {folders.length === 0 ? (
         <p
           data-testid="suite-folder-grid-empty"
-          className="rounded-xl border border-dashed border-slate-200 px-3 py-4 text-sm text-slate-400"
+          className="rounded-xl border border-dashed border-hairline px-3 py-4 text-sm text-content-subtle"
         >
           No subfolders here.
         </p>
@@ -48,17 +48,17 @@ export function SuiteFolderGrid({
                 href={f.href}
                 data-testid={`suite-folder-card-${f.id}`}
                 title={f.name}
-                className="flex h-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5 hover:border-indigo-300 hover:bg-indigo-50/40"
+                className="flex h-full items-center gap-3 rounded-xl border border-hairline bg-surface px-3 py-2.5 hover:border-accent-ring hover:bg-accent-soft/40"
               >
                 <TFIcon
                   name="folder"
-                  className="h-8 w-8 shrink-0 text-slate-400"
+                  className="h-8 w-8 shrink-0 text-content-subtle"
                 />
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-medium text-slate-800">
+                  <span className="block truncate text-sm font-medium text-content-strong">
                     {f.name}
                   </span>
-                  <span className="block truncate text-xs text-slate-500">
+                  <span className="block truncate text-xs text-content-muted">
                     {f.caseCount} {f.caseCount === 1 ? "case" : "cases"}
                     {f.childCount > 0 &&
                       ` · ${f.childCount} ${f.childCount === 1 ? "subfolder" : "subfolders"}`}

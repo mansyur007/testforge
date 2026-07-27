@@ -7,7 +7,7 @@ export default function PrivacyPage() {
     <main className="mx-auto max-w-3xl px-4 py-12">
       <BackLink href="/">Back to home</BackLink>
       <h1 className="mt-4 text-3xl font-bold">Privacy Policy</h1>
-      <div className="mt-6 space-y-4 text-sm text-slate-600">
+      <div className="mt-6 space-y-4 text-sm text-content">
         <p>
           Account data (name, email) is used only for authentication and
           team collaboration. Passwords are hashed with bcrypt and are never
@@ -17,7 +17,7 @@ export default function PrivacyPage() {
           On self-hosted deployments, all data stays on your own server —
           no data is sent to third parties. Telemetry is opt-in and anonymous.
         </p>
-        <p className="text-slate-400">
+        <p className="text-content-subtle">
           This document is an MVP placeholder — complete it with legal review
           before public launch.
         </p>

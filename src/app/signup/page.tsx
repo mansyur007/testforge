@@ -19,20 +19,20 @@ export default function SignupPage() {
   const t = dict[lang].auth.signup;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10">
+    <main className="flex min-h-screen items-center justify-center bg-canvas px-4 py-10">
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
           <Logo size="lg" />
-          <p className="mt-2 text-sm text-slate-500">{t.headline}</p>
+          <p className="mt-2 text-sm text-content-muted">{t.headline}</p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="rounded-xl border border-hairline bg-surface p-6 shadow-sm sm:p-8">
           <SignupForm lang={lang} />
         </div>
 
-        <p className="mt-4 text-center text-sm text-slate-500">
+        <p className="mt-4 text-center text-sm text-content-muted">
           {t.haveAccount}{" "}
-          <Link href="/login" className="font-medium text-indigo-600 hover:underline">
+          <Link href="/login" className="font-medium text-accent-text hover:underline">
             {t.loginLink}
           </Link>
         </p>

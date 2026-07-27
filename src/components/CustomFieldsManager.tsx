@@ -22,8 +22,8 @@ export type FieldDefItem = {
 };
 
 const inputCls =
-  "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500";
-const labelCls = "mb-1 block text-sm font-medium text-slate-700";
+  "w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring";
+const labelCls = "mb-1 block text-sm font-medium text-content";
 
 function EditRowForm({ def, onDone }: { def: FieldDefItem; onDone: () => void }) {
   const [state, action] = useFormState(updateFieldDef, undefined);
@@ -32,7 +32,7 @@ function EditRowForm({ def, onDone }: { def: FieldDefItem; onDone: () => void })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
   return (
-    <form action={action} className="mt-2 space-y-2 rounded-lg bg-slate-50 p-3">
+    <form action={action} className="mt-2 space-y-2 rounded-lg bg-canvas p-3">
       <input type="hidden" name="fieldId" value={def.id} />
       <div className="flex flex-wrap items-end gap-2">
         <div>
@@ -48,15 +48,15 @@ function EditRowForm({ def, onDone }: { def: FieldDefItem; onDone: () => void })
         <label className="flex items-center gap-1.5 pb-2 text-sm">
           <input type="checkbox" name="required" defaultChecked={def.required} /> Required
         </label>
-        <button className="rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+        <button className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover">
           Save
         </button>
-        <button type="button" onClick={onDone} className="px-2 py-2 text-sm text-slate-500">
+        <button type="button" onClick={onDone} className="px-2 py-2 text-sm text-content-muted">
           Cancel
         </button>
       </div>
       {state && "error" in state && state.error && (
-        <p className="text-xs text-red-600">{state.error}</p>
+        <p className="text-xs text-danger">{state.error}</p>
       )}
     </form>
   );
@@ -65,38 +65,38 @@ function EditRowForm({ def, onDone }: { def: FieldDefItem; onDone: () => void })
 function DefRow({ def, canManage }: { def: FieldDefItem; canManage: boolean }) {
   const [editing, setEditing] = useState(false);
   return (
-    <li className={`rounded-lg border border-slate-200 px-4 py-3 ${def.active ? "" : "opacity-60"}`}>
+    <li className={`rounded-lg border border-hairline px-4 py-3 ${def.active ? "" : "opacity-60"}`}>
       <div className="flex flex-wrap items-center gap-2">
         <span className="font-medium">{def.label}</span>
-        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">{def.key}</code>
-        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
+        <code className="rounded bg-surface-muted px-1.5 py-0.5 text-xs text-content">{def.key}</code>
+        <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs text-content">
           {def.type}
         </span>
         {def.required && (
-          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800">required</span>
+          <span className="rounded-full bg-warning-soft px-2 py-0.5 text-xs text-warning-soft-fg">required</span>
         )}
         {!def.active && (
-          <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs text-slate-600">disabled</span>
+          <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs text-content">disabled</span>
         )}
         {def.options.length > 0 && (
-          <span className="truncate text-xs text-slate-400">[{def.options.join(", ")}]</span>
+          <span className="truncate text-xs text-content-subtle">[{def.options.join(", ")}]</span>
         )}
         {canManage && (
           <span className="ml-auto flex items-center gap-1">
             <form action={moveFieldDef}>
               <input type="hidden" name="fieldId" value={def.id} />
               <input type="hidden" name="dir" value="up" />
-              <button title="Move up" className="rounded border border-slate-200 px-1.5 py-0.5 text-xs text-slate-500 hover:bg-slate-100">↑</button>
+              <button title="Move up" className="rounded border border-hairline px-1.5 py-0.5 text-xs text-content-muted hover:bg-surface-muted">↑</button>
             </form>
             <form action={moveFieldDef}>
               <input type="hidden" name="fieldId" value={def.id} />
               <input type="hidden" name="dir" value="down" />
-              <button title="Move down" className="rounded border border-slate-200 px-1.5 py-0.5 text-xs text-slate-500 hover:bg-slate-100">↓</button>
+              <button title="Move down" className="rounded border border-hairline px-1.5 py-0.5 text-xs text-content-muted hover:bg-surface-muted">↓</button>
             </form>
             <button
               type="button"
               onClick={() => setEditing((e) => !e)}
-              className="rounded border border-slate-200 px-2 py-0.5 text-xs text-slate-500 hover:bg-slate-100"
+              className="rounded border border-hairline px-2 py-0.5 text-xs text-content-muted hover:bg-surface-muted"
             >
               Edit
             </button>
@@ -104,7 +104,7 @@ function DefRow({ def, canManage }: { def: FieldDefItem; canManage: boolean }) {
               <input type="hidden" name="fieldId" value={def.id} />
               <button
                 data-testid={`field-toggle-${def.key}`}
-                className="rounded border border-slate-200 px-2 py-0.5 text-xs text-slate-500 hover:bg-slate-100"
+                className="rounded border border-hairline px-2 py-0.5 text-xs text-content-muted hover:bg-surface-muted"
               >
                 {def.active ? "Disable" : "Enable"}
               </button>
@@ -133,11 +133,11 @@ export function CustomFieldsManager({
   const section = (entity: "CASE" | "RESULT", title: string, hint: string) => {
     const list = defs.filter((d) => d.entity === entity);
     return (
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
+      <section className="rounded-xl border border-hairline bg-surface p-6">
         <h3 className="font-semibold">{title}</h3>
-        <p className="mb-4 text-sm text-slate-400">{hint}</p>
+        <p className="mb-4 text-sm text-content-subtle">{hint}</p>
         {list.length === 0 ? (
-          <p className="text-sm text-slate-400">No custom fields yet.</p>
+          <p className="text-sm text-content-subtle">No custom fields yet.</p>
         ) : (
           <ul className="space-y-2">
             {list.map((d) => (
@@ -155,7 +155,7 @@ export function CustomFieldsManager({
       {section("RESULT", "Run result fields", "Shown in the run executor when recording a result.")}
 
       {canManage && (
-        <section className="rounded-xl border border-slate-200 bg-white p-6">
+        <section className="rounded-xl border border-hairline bg-surface p-6">
           <h3 className="mb-4 font-semibold">Add field</h3>
           <form action={action} className="grid gap-4 md:grid-cols-2">
             <input type="hidden" name="projectId" value={projectId} />
@@ -199,11 +199,11 @@ export function CustomFieldsManager({
             </label>
             <div className="md:col-span-2">
               {state && "error" in state && state.error && (
-                <p className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{state.error}</p>
+                <p className="mb-2 rounded-lg bg-danger-soft px-3 py-2 text-sm text-danger-soft-fg">{state.error}</p>
               )}
               <button
                 data-testid="field-create"
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
               >
                 Create field
               </button>

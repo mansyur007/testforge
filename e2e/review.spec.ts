@@ -50,7 +50,7 @@ test(`TC-${TC}-37 Review loop: request → approve, with author≠reviewer guard
   await loginAs(page, E2E.reviewerEmail, E2E.reviewerPassword);
   await page.goto(`/projects/${E2E.projectSlug}?review=mine`);
   await expect(page.locator('[data-testid="review-filter-chip"]')).toHaveClass(
-    /amber/
+    /warning/
   );
   await expect(page.getByText(`Review approve ${ts}`)).toBeVisible();
 

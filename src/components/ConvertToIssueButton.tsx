@@ -14,7 +14,7 @@ function Submit() {
       type="submit"
       disabled={pending}
       data-testid="session-note-convert-issue"
-      className="rounded-lg border border-red-200 px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+      className="rounded-lg border border-danger-border px-2.5 py-1 text-xs font-medium text-danger-soft-fg hover:bg-danger-soft disabled:opacity-50"
     >
       {pending ? "Filing…" : "File as issue"}
     </button>
@@ -28,7 +28,7 @@ export function ConvertToIssueButton({ noteId }: { noteId: string }) {
       <input type="hidden" name="noteId" value={noteId} />
       <Submit />
       {state?.error && (
-        <p data-testid="session-note-convert-issue-error" className="text-xs text-red-600">
+        <p data-testid="session-note-convert-issue-error" className="text-xs text-danger">
           {state.error}
         </p>
       )}

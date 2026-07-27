@@ -15,7 +15,7 @@ export function LanguageSwitcher({ current }: { current: Lang }) {
 
   return (
     <div
-      className="flex items-center overflow-hidden rounded-lg border border-slate-200 text-xs font-medium dark:border-slate-700"
+      className="flex items-center overflow-hidden rounded-lg border border-hairline text-xs font-medium"
       role="group"
       aria-label="Language"
     >
@@ -26,8 +26,8 @@ export function LanguageSwitcher({ current }: { current: Lang }) {
           aria-pressed={current === lang}
           className={`px-2.5 py-1.5 uppercase ${
             current === lang
-              ? "bg-indigo-600 text-white"
-              : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+              ? "bg-accent text-white"
+              : "text-content-muted hover:bg-surface-muted"
           }`}
         >
           {lang}

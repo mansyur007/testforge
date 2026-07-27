@@ -16,8 +16,8 @@ export type CustomDefItem = {
 export type MemberOption = { id: string; name: string };
 
 const inputCls =
-  "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500";
-const labelCls = "mb-1 block text-sm font-medium text-slate-700";
+  "w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring";
+const labelCls = "mb-1 block text-sm font-medium text-content";
 
 export function CustomFieldInputs({
   defs,
@@ -34,7 +34,7 @@ export function CustomFieldInputs({
       {defs.map((def) => {
         const name = `custom_${def.key}`;
         const v = values[def.key];
-        const req = def.required ? <span className="text-red-500"> *</span> : null;
+        const req = def.required ? <span className="text-danger"> *</span> : null;
         const testId = `custom-${def.key}`;
         switch (def.type) {
           case "TEXTAREA":
@@ -93,7 +93,7 @@ export function CustomFieldInputs({
             return (
               <div key={def.key} className="md:col-span-2">
                 <label className={labelCls}>{def.label}{req}</label>
-                <div className="flex flex-wrap gap-3 rounded-lg border border-slate-200 px-3 py-2" data-testid={testId}>
+                <div className="flex flex-wrap gap-3 rounded-lg border border-hairline px-3 py-2" data-testid={testId}>
                   {def.options.map((o) => (
                     <label key={o} className="flex items-center gap-1.5 text-sm">
                       <input type="checkbox" name={name} value={o} defaultChecked={selected.has(o)} /> {o}

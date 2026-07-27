@@ -53,21 +53,32 @@ export function statusMeta(defs: StatusDefLite[]) {
   };
 }
 
-/** Inline style for a pastel status badge from an arbitrary hex; very light
- * colors (e.g. UNTESTED's gray) get readable slate text + a border. */
+/** Shared hex→relative-luminance arithmetic for badgeStyle and onColorOf. */
+function relativeLuminance(color: string): number {
+  const hex = color.replace("#", "");
+  const n = parseInt(hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex, 16);
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+}
+
+/** Inline style for a pastel status badge from an arbitrary hex.
+ * F-39: mixes against the live surface/text tokens (via color-mix) instead of
+ * assuming a white background, so the same computed chip is legible in light
+ * and dark. Very light colours (UNTESTED's gray) additionally get a border so
+ * the chip still has an edge — §7.4.3, state must survive without colour. */
 export function badgeStyle(color: string): {
   backgroundColor: string;
   color: string;
   border?: string;
 } {
-  const hex = color.replace("#", "");
-  const n = parseInt(hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex, 16);
-  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  const luminance = relativeLuminance(color);
   return {
-    backgroundColor: `${color}26`, // ~15% alpha
-    color: luminance > 0.72 ? "#64748b" : color,
-    ...(luminance > 0.72 ? { border: "1px solid #e2e8f0" } : {}),
+    backgroundColor: `color-mix(in srgb, ${color} 16%, rgb(var(--tf-surface)))`,
+    color:
+      luminance > 0.72
+        ? "rgb(var(--tf-text-muted))"
+        : `color-mix(in srgb, ${color} 78%, rgb(var(--tf-text-strong)))`,
+    ...(luminance > 0.72 ? { border: "1px solid rgb(var(--tf-border))" } : {}),
   };
 }
 
@@ -75,14 +86,7 @@ export function badgeStyle(color: string): {
  * — the mobile executor's thumb-zone buttons are solid at full opacity, unlike
  * the pastel desktop chips, so sunlight on a lab floor needs real contrast. */
 export function onColorOf(color: string): string {
-  const hex = color.replace("#", "");
-  const n = parseInt(
-    hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex,
-    16
-  );
-  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.6 ? "#1b1a22" : "#ffffff";
+  return relativeLuminance(color) > 0.6 ? "#1b1a22" : "#ffffff";
 }
 
 /** Keyboard shortcuts for executor buttons: first letter of the label; when

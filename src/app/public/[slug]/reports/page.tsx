@@ -60,18 +60,18 @@ export default async function PublicReportsPage({
           <div
             key={t.label}
             data-testid={t.testid}
-            className="rounded-xl border border-slate-200 bg-white p-5"
+            className="rounded-xl border border-hairline bg-surface p-5"
           >
-            <p className="text-sm text-slate-500">{t.label}</p>
+            <p className="text-sm text-content-muted">{t.label}</p>
             <p className="mt-1 text-3xl font-bold">{t.value}</p>
           </div>
         ))}
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
+      <section className="rounded-xl border border-hairline bg-surface p-6">
         <h2 className="mb-4 font-semibold">Pass rate per run</h2>
         {report.trend.length === 0 ? (
-          <p className="text-sm text-slate-400">No run data yet.</p>
+          <p className="text-sm text-content-subtle">No run data yet.</p>
         ) : (
           <div className="flex h-44 items-end gap-2" data-testid="public-report-trend">
             {report.trend.map((t) => {
@@ -84,21 +84,21 @@ export default async function PublicReportsPage({
                   key={t.id}
                   className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1"
                 >
-                  <span className="text-xs font-medium text-slate-600">
+                  <span className="text-xs font-medium text-content">
                     {t.passRate === null ? "—" : `${rate}%`}
                   </span>
                   <div
                     className={`w-full rounded-t ${
                       rate >= 80
-                        ? "bg-green-400"
+                        ? "bg-success"
                         : rate >= 50
-                          ? "bg-yellow-400"
-                          : "bg-red-400"
+                          ? "bg-warning"
+                          : "bg-danger"
                     }`}
                     style={{ height: `${Math.max(rate, 3)}%` }}
                     title={`${t.name}: ${t.passRate === null ? "not executed" : `${rate}% (${t.executed} executed)`}`}
                   />
-                  <span className="w-full truncate text-center text-[10px] text-slate-400">
+                  <span className="w-full truncate text-center text-[10px] text-content-subtle">
                     {t.name}
                   </span>
                 </div>
@@ -108,19 +108,19 @@ export default async function PublicReportsPage({
         )}
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
+      <section className="rounded-xl border border-hairline bg-surface p-6">
         <h2 className="mb-1 font-semibold">Flaky tests</h2>
-        <p className="mb-3 text-xs text-slate-400">
+        <p className="mb-3 text-xs text-content-subtle">
           Test cases whose pass/fail outcome flips between runs (≥2 changes).
         </p>
         {report.flaky.length === 0 ? (
-          <p className="text-sm text-slate-400" data-testid="public-report-flaky-empty">
+          <p className="text-sm text-content-subtle" data-testid="public-report-flaky-empty">
             No flaky tests detected.
           </p>
         ) : !report.namesCases ? (
           // The Test Cases section is off, so this project's case titles stay
           // private — the report publishes the count, not the catalogue.
-          <p className="text-sm text-slate-500" data-testid="public-report-flaky-count">
+          <p className="text-sm text-content-muted" data-testid="public-report-flaky-count">
             {report.flaky.length} flaky{" "}
             {report.flaky.length === 1 ? "test case" : "test cases"} detected.
           </p>
@@ -130,14 +130,14 @@ export default async function PublicReportsPage({
               <li key={f.caseId} className="flex items-center justify-between gap-3">
                 <Link
                   href={`/public/${project.slug}/cases/${f.caseId}`}
-                  className="min-w-0 truncate text-slate-700 hover:text-indigo-700"
+                  className="min-w-0 truncate text-content hover:text-accent-soft-fg"
                 >
-                  <span className="font-mono text-xs text-slate-400">
+                  <span className="font-mono text-xs text-content-subtle">
                     {f.testCase && caseDisplayId(project.slug, f.testCase.seq)}
                   </span>{" "}
                   {f.testCase?.title}
                 </Link>
-                <span className="shrink-0 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+                <span className="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-soft-fg">
                   {f.flips} flip / {f.total} run
                 </span>
               </li>

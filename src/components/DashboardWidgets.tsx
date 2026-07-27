@@ -23,7 +23,7 @@ type WidgetRow = {
 };
 
 const Empty = ({ children }: { children: string }) => (
-  <p className="text-sm text-slate-400">{children}</p>
+  <p className="text-sm text-content-subtle">{children}</p>
 );
 
 function PassRateTrendWidget({ data }: { data: ReportData }) {
@@ -36,11 +36,11 @@ function PassRateTrendWidget({ data }: { data: ReportData }) {
           key={i}
           className="flex h-full flex-1 flex-col items-center justify-end gap-0.5"
         >
-          <span className="text-[10px] font-medium text-slate-600">
+          <span className="text-[10px] font-medium text-content">
             {t.rate}%
           </span>
           <div
-            className={`w-full rounded-t ${t.rate >= 80 ? "bg-green-400" : t.rate >= 50 ? "bg-yellow-400" : "bg-red-400"}`}
+            className={`w-full rounded-t ${t.rate >= 80 ? "bg-success" : t.rate >= 50 ? "bg-warning" : "bg-danger"}`}
             style={{ height: `${Math.max(t.rate, 3)}%` }}
             title={`${t.name}: ${t.rate}% (${t.executed} executed)`}
           />
@@ -64,7 +64,7 @@ function StatusPieWidget({ data }: { data: ReportData }) {
   return (
     <div className="flex items-center gap-4">
       <div
-        className="h-24 w-24 shrink-0 rounded-full border border-slate-100"
+        className="h-24 w-24 shrink-0 rounded-full border border-hairline-subtle"
         style={{ background: `conic-gradient(${stops.join(", ")})` }}
         role="img"
         aria-label="Status distribution pie"
@@ -77,7 +77,7 @@ function StatusPieWidget({ data }: { data: ReportData }) {
               style={{ backgroundColor: d.color }}
             />
             {d.label} <b>{d.count}</b>
-            <span className="text-slate-400">
+            <span className="text-content-subtle">
               ({Math.round((d.count / total) * 100)}%)
             </span>
           </li>
@@ -92,12 +92,12 @@ function CoverageBarWidget({ data }: { data: ReportData }) {
   return (
     <div>
       <p className="text-3xl font-bold">{cov.pct}%</p>
-      <p className="mt-0.5 text-xs text-slate-400">
+      <p className="mt-0.5 text-xs text-content-subtle">
         {cov.automated} of {cov.total} cases automated
       </p>
-      <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-gray-100">
+      <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-surface-muted">
         <div
-          className="h-full rounded-full bg-indigo-500"
+          className="h-full rounded-full bg-accent"
           style={{ width: `${cov.pct}%` }}
         />
       </div>
@@ -121,7 +121,7 @@ function FlakyListWidget({
       {flaky.map((f) => {
         const label = (
           <>
-            <span className="font-mono text-xs text-slate-400">
+            <span className="font-mono text-xs text-content-subtle">
               {caseDisplayId(slug, f.testCase!.seq)}
             </span>{" "}
             {f.testCase!.title}
@@ -130,16 +130,16 @@ function FlakyListWidget({
         return (
         <li key={f.testCase!.id} className="flex items-center justify-between gap-2">
           {noLinks ? (
-            <span className="min-w-0 truncate text-slate-700">{label}</span>
+            <span className="min-w-0 truncate text-content">{label}</span>
           ) : (
             <Link
               href={`/projects/${slug}/cases/${f.testCase!.id}`}
-              className="min-w-0 truncate text-slate-700 hover:text-indigo-600"
+              className="min-w-0 truncate text-content hover:text-accent-text"
             >
               {label}
             </Link>
           )}
-          <span className="shrink-0 rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+          <span className="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-soft-fg">
             {f.flips} flip
           </span>
         </li>
@@ -159,15 +159,15 @@ function RunVelocityWidget({ data }: { data: ReportData }) {
           key={i}
           className="flex h-full flex-1 flex-col items-center justify-end gap-0.5"
         >
-          <span className="text-[10px] font-medium text-slate-600">
+          <span className="text-[10px] font-medium text-content">
             {w.count}
           </span>
           <div
-            className="w-full rounded-t bg-indigo-400"
+            className="w-full rounded-t bg-accent"
             style={{ height: `${Math.max((w.count / max) * 100, 3)}%` }}
             title={`Week of ${w.label}: ${w.count} runs`}
           />
-          <span className="text-[10px] text-slate-400">{w.label}</span>
+          <span className="text-[10px] text-content-subtle">{w.label}</span>
         </div>
       ))}
     </div>

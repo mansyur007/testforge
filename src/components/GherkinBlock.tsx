@@ -5,13 +5,13 @@ import { tokenizeGherkinLine, type GherkinLineType } from "@/lib/gherkin";
 // a stored `{gherkin}` step needs to render nicely instead of a plain blob.
 
 const LINE_CLASS: Record<GherkinLineType, string> = {
-  feature: "text-indigo-700 font-semibold",
-  scenario: "text-slate-800 font-semibold",
-  step: "text-slate-700",
-  tag: "text-emerald-600",
-  comment: "text-slate-400 italic",
-  table: "text-amber-700",
-  text: "text-slate-600",
+  feature: "text-accent-soft-fg font-semibold",
+  scenario: "text-content-strong font-semibold",
+  step: "text-content",
+  tag: "text-success",
+  comment: "text-content-subtle italic",
+  table: "text-warning-soft-fg",
+  text: "text-content",
 };
 
 export function GherkinBlock({ text }: { text: string }) {
@@ -19,7 +19,7 @@ export function GherkinBlock({ text }: { text: string }) {
   return (
     <pre
       data-testid="gherkin-block"
-      className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-slate-50 p-4 font-mono text-xs leading-relaxed"
+      className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-canvas p-4 font-mono text-xs leading-relaxed"
     >
       {lines.map((line, i) => {
         const token = tokenizeGherkinLine(line);
@@ -28,7 +28,7 @@ export function GherkinBlock({ text }: { text: string }) {
           <div key={i} className={LINE_CLASS[token.type]}>
             {token.keyword ? (
               <>
-                <span className="text-purple-700">{token.keyword}</span>
+                <span className="text-accent-soft-fg">{token.keyword}</span>
                 {isHeader ? (token.rest ? `: ${token.rest}` : ":") : ` ${token.rest}`}
               </>
             ) : (

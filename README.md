@@ -194,6 +194,10 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   cases (the duplicate detector is a local title match and needs no key). Every
   AI action is opt-in per click and the features stay hidden until a key is
   configured (F-29)
+- **Light / dark theme** — switch the whole app between Light, Dark, or
+  System (follows your device) from the sidebar footer, Settings → Account,
+  or the landing page header; the choice sticks via a cookie, applies before
+  first paint (no flash), and works logged-out too (F-39)
 
 </details>
 

@@ -166,7 +166,7 @@ export default async function RunDetailPage({
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
           <h2 className="text-xl font-bold">{run.name}</h2>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-content-subtle">
             {run.description}
             {run.milestone && <> · {run.milestone.name}</>}
             {run.environment && (
@@ -174,7 +174,7 @@ export default async function RunDetailPage({
                 {" "}
                 ·{" "}
                 <span
-                  className="rounded bg-teal-50 px-1.5 py-0.5 text-xs text-teal-700"
+                  className="rounded bg-info-soft px-1.5 py-0.5 text-xs text-info-soft-fg"
                   data-testid="run-detail-env-badge"
                 >
                   {run.environment.name}
@@ -186,7 +186,7 @@ export default async function RunDetailPage({
                 {" "}
                 ·{" "}
                 <span
-                  className="rounded bg-purple-50 px-1.5 py-0.5 text-xs text-purple-700"
+                  className="rounded bg-accent-soft px-1.5 py-0.5 text-xs text-accent-soft-fg"
                   data-testid="run-detail-baseline-badge"
                   title="Cases render the content pinned by this baseline, not their current content."
                 >
@@ -203,7 +203,7 @@ export default async function RunDetailPage({
             target="_blank"
             rel="noopener"
             data-testid="print-run-link"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-hairline-strong px-3 py-1.5 text-sm hover:bg-surface-muted"
           >
             <TFIcon name="print" className="h-4 w-4" /> Print view
           </Link>
@@ -217,7 +217,7 @@ export default async function RunDetailPage({
           {failedish > 0 && (
             <form action={rerunFailed}>
               <input type="hidden" name="runId" value={run.id} />
-              <button className="rounded-lg border border-purple-300 px-3 py-1.5 text-sm text-purple-700 hover:bg-purple-50">
+              <button className="rounded-lg border border-accent-ring px-3 py-1.5 text-sm text-accent-soft-fg hover:bg-accent-soft">
                 ↻ Rerun Failed ({failedish})
               </button>
             </form>
@@ -225,7 +225,7 @@ export default async function RunDetailPage({
           {run.status === "ACTIVE" && (
             <form action={completeRun}>
               <input type="hidden" name="runId" value={run.id} />
-              <button className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700">
+              <button className="rounded-lg bg-success px-3 py-1.5 text-sm font-medium text-white hover:opacity-90">
                 ✓ Mark Complete
               </button>
             </form>
@@ -234,8 +234,8 @@ export default async function RunDetailPage({
       </div>
 
       {/* Summary bar */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5">
-        <div className="flex h-3 overflow-hidden rounded-full bg-gray-100">
+      <div className="rounded-xl border border-hairline bg-surface p-5">
+        <div className="flex h-3 overflow-hidden rounded-full bg-surface-muted">
           {Object.entries(counts).map(([st, count]) => (
             <div
               key={st}
@@ -251,11 +251,11 @@ export default async function RunDetailPage({
             counts[st] ? (
               <span key={st} className="flex items-center gap-1.5">
                 <span
-                  className={`inline-block h-2.5 w-2.5 rounded-full ${st === "UNTESTED" ? "border border-gray-300" : ""}`}
+                  className={`inline-block h-2.5 w-2.5 rounded-full ${st === "UNTESTED" ? "border border-hairline-strong" : ""}`}
                   style={{ backgroundColor: colorOf(st) }}
                 />
                 {labelOf(st)} <b>{counts[st]}</b>
-                <span className="text-slate-400">
+                <span className="text-content-subtle">
                   ({Math.round((counts[st] / total) * 100)}%)
                 </span>
               </span>
@@ -265,7 +265,7 @@ export default async function RunDetailPage({
         {(estimates.totalEstimateSeconds > 0 ||
           estimates.actualElapsedSeconds > 0) && (
           <div
-            className="mt-3 flex flex-wrap gap-4 border-t border-slate-100 pt-3 text-sm text-slate-500"
+            className="mt-3 flex flex-wrap gap-4 border-t border-hairline-subtle pt-3 text-sm text-content-muted"
             data-testid="run-estimate-summary"
           >
             {estimates.totalEstimateSeconds > 0 && (
@@ -399,7 +399,7 @@ export default async function RunDetailPage({
       )}
 
       {/* F-16: run-level discussion thread. */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5">
+      <div className="rounded-xl border border-hairline bg-surface p-5">
         <CommentPanel entityType="RUN" entityId={run.id} projectSlug={run.project.slug} />
       </div>
     </div>

@@ -21,7 +21,7 @@ function SubmitSmall({ label }: { label: string }) {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+      className="rounded-lg bg-sidebar px-3 py-1.5 text-xs font-medium text-white hover:bg-sidebar-hover disabled:opacity-50"
     >
       {pending ? "…" : label}
     </button>
@@ -49,7 +49,7 @@ function StatusRow({ projectId, def }: { projectId: string; def: StatusDefLite }
               name="dir"
               value={dir}
               title={`Move ${dir}`}
-              className="leading-none text-slate-300 hover:text-indigo-600"
+              className="leading-none text-content-subtle hover:text-accent-text"
             >
               {dir === "up" ? "▴" : "▾"}
             </button>
@@ -61,19 +61,19 @@ function StatusRow({ projectId, def }: { projectId: string; def: StatusDefLite }
           name="color"
           defaultValue={def.color}
           title="Status color"
-          className="h-7 w-9 cursor-pointer rounded border border-slate-200"
+          className="bg-surface text-content-strong h-7 w-9 cursor-pointer rounded border border-hairline"
         />
         <input
           name="label"
           defaultValue={def.label}
-          className="w-36 rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+          className="bg-surface text-content-strong w-36 rounded-lg border border-hairline-strong px-2 py-1 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
         />
-        <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
+        <code className="rounded bg-surface-muted px-1.5 py-0.5 text-xs text-content-muted">
           {def.key}
         </code>
         {def.system ? (
           <span
-            className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500"
+            className="rounded-full bg-surface-muted px-2 py-0.5 text-xs text-content-muted"
             title="Built-in status — kind is fixed"
           >
             {def.kind} · system
@@ -82,7 +82,7 @@ function StatusRow({ projectId, def }: { projectId: string; def: StatusDefLite }
           <select
             name="kind"
             defaultValue={def.kind}
-            className="rounded-lg border border-slate-300 px-2 py-1 text-xs"
+            className="bg-surface text-content-strong rounded-lg border border-hairline-strong px-2 py-1 text-xs"
             title="Drives aggregation: PASS counts toward the pass rate, FAIL/BLOCKED toward failures, NEUTRAL toward neither"
           >
             {KINDS.map((k) => (
@@ -97,12 +97,12 @@ function StatusRow({ projectId, def }: { projectId: string; def: StatusDefLite }
           <button
             type="submit"
             formAction={toggleResultStatus}
-            className="text-xs text-slate-500 hover:text-indigo-600"
+            className="text-xs text-content-muted hover:text-accent-text"
           >
             {def.active ? "Deactivate" : "Activate"}
           </button>
         )}
-        {state?.error && <span className="text-xs text-red-600">{state.error}</span>}
+        {state?.error && <span className="text-xs text-danger">{state.error}</span>}
       </form>
     </li>
   );
@@ -126,14 +126,14 @@ export function ResultStatusesManager({
 
   if (!canManage)
     return (
-      <p className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">
+      <p className="rounded-xl border border-dashed border-hairline-strong p-6 text-center text-sm text-content-subtle">
         Only project owners and admins can manage result statuses.
       </p>
     );
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5">
-      <ul className="mb-4 divide-y divide-slate-100">
+    <div className="rounded-xl border border-hairline bg-surface p-5">
+      <ul className="mb-4 divide-y divide-hairline-subtle">
         {defs.map((d) => (
           <StatusRow key={d.key} projectId={projectId} def={d} />
         ))}
@@ -147,7 +147,7 @@ export function ResultStatusesManager({
             name="color"
             defaultValue="#a855f7"
             title="Status color"
-            className="h-8 w-10 cursor-pointer rounded border border-slate-200"
+            className="bg-surface text-content-strong h-8 w-10 cursor-pointer rounded border border-hairline"
             data-testid="status-color-input"
           />
           <input
@@ -155,13 +155,13 @@ export function ResultStatusesManager({
             required
             placeholder='e.g. "Known Issue"'
             data-testid="status-label-input"
-            className="w-44 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="bg-surface text-content-strong w-44 rounded-lg border border-hairline-strong px-3 py-1.5 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
           />
           <select
             name="kind"
             defaultValue="NEUTRAL"
             data-testid="status-kind-select"
-            className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
+            className="bg-surface text-content-strong rounded-lg border border-hairline-strong px-2 py-1.5 text-sm"
           >
             {KINDS.map((k) => (
               <option key={k}>{k}</option>
@@ -169,13 +169,13 @@ export function ResultStatusesManager({
           </select>
           <SubmitSmall label="+ Status" />
         </div>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-content-subtle">
           Kind drives the math: PASS counts toward the pass rate, FAIL/BLOCKED
           toward failures, NEUTRAL toward neither. Executor shortcut = first
           letter of the label (earlier statuses win conflicts).
         </p>
         {state?.error && (
-          <p className="text-xs text-red-600" data-testid="status-form-error">
+          <p className="text-xs text-danger" data-testid="status-form-error">
             {state.error}
           </p>
         )}

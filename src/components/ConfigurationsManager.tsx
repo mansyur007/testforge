@@ -25,7 +25,7 @@ function SubmitSmall({ label }: { label: string }) {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+      className="rounded-lg bg-sidebar px-3 py-1.5 text-xs font-medium text-white hover:bg-sidebar-hover disabled:opacity-50"
     >
       {pending ? "…" : label}
     </button>
@@ -67,11 +67,11 @@ function InlineForm({
           required
           placeholder={placeholder}
           data-testid={testId}
-          className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+          className="bg-surface text-content-strong flex-1 rounded-lg border border-hairline-strong px-3 py-1.5 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
         />
         <SubmitSmall label={label} />
       </div>
-      {state?.error && <p className="text-xs text-red-600">{state.error}</p>}
+      {state?.error && <p className="text-xs text-danger">{state.error}</p>}
     </form>
   );
 }
@@ -87,7 +87,7 @@ export function ConfigurationsManager({
 }) {
   if (!canManage)
     return (
-      <p className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">
+      <p className="rounded-xl border border-dashed border-hairline-strong p-6 text-center text-sm text-content-subtle">
         Only project owners and admins can manage configurations.
       </p>
     );
@@ -98,7 +98,7 @@ export function ConfigurationsManager({
         {groups.map((g) => (
           <div
             key={g.id}
-            className="rounded-xl border border-slate-200 bg-white p-5"
+            className="rounded-xl border border-hairline bg-surface p-5"
             data-testid={`config-group-${g.name}`}
           >
             <div className="mb-3 flex items-center justify-between">
@@ -117,7 +117,7 @@ export function ConfigurationsManager({
                 <input type="hidden" name="groupId" value={g.id} />
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-800"
+                  className="inline-flex items-center gap-1 text-xs text-danger hover:text-danger-soft-fg"
                 >
                   <TFIcon name="delete" className="h-3.5 w-3.5" /> Delete group
                 </button>
@@ -127,7 +127,7 @@ export function ConfigurationsManager({
               {g.options.map((o) => (
                 <span
                   key={o.id}
-                  className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs"
+                  className="inline-flex items-center gap-1 rounded-full bg-surface-muted px-2.5 py-0.5 text-xs"
                 >
                   {o.name}
                   <form action={deleteConfigOption}>
@@ -135,7 +135,7 @@ export function ConfigurationsManager({
                     <button
                       type="submit"
                       title="Remove option"
-                      className="text-slate-400 hover:text-red-600"
+                      className="text-content-subtle hover:text-danger"
                     >
                       ✕
                     </button>
@@ -143,7 +143,7 @@ export function ConfigurationsManager({
                 </span>
               ))}
               {g.options.length === 0 && (
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-content-subtle">
                   No options yet — add at least one to use this group in a plan.
                 </span>
               )}
@@ -159,8 +159,8 @@ export function ConfigurationsManager({
         ))}
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-5">
-        <h4 className="mb-2 text-sm font-semibold text-slate-700">New group</h4>
+      <div className="rounded-xl border border-hairline bg-surface p-5">
+        <h4 className="mb-2 text-sm font-semibold text-content">New group</h4>
         <InlineForm
           action={createConfigGroup}
           hidden={{ projectId }}

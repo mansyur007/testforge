@@ -23,9 +23,9 @@ export function AiSuggestSteps({ caseId }: { caseId: string }) {
     });
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-6" data-testid="ai-suggest-panel">
+    <section className="rounded-xl border border-hairline bg-surface p-6" data-testid="ai-suggest-panel">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold uppercase text-slate-400">
+        <h3 className="text-sm font-semibold uppercase text-content-subtle">
           AI edge-case suggestions
         </h3>
         <button
@@ -33,7 +33,7 @@ export function AiSuggestSteps({ caseId }: { caseId: string }) {
           onClick={run}
           disabled={busy}
           data-testid="ai-suggest-run"
-          className="rounded-lg border border-indigo-300 bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100 disabled:opacity-50"
+          className="rounded-lg border border-accent-ring bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent-soft-fg hover:bg-accent-soft disabled:opacity-50"
         >
           <span className="inline-flex items-center gap-1">
             <TFIcon name="ai" className="h-3.5 w-3.5" /> {busy ? "Thinking…" : "Suggest"}
@@ -41,12 +41,12 @@ export function AiSuggestSteps({ caseId }: { caseId: string }) {
         </button>
       </div>
       {error && (
-        <p className="text-sm text-red-600" data-testid="ai-suggest-error">
+        <p className="text-sm text-danger" data-testid="ai-suggest-error">
           {error}
         </p>
       )}
       {steps && steps.length === 0 && !error && (
-        <p className="text-sm text-slate-400" data-testid="ai-suggest-empty">
+        <p className="text-sm text-content-subtle" data-testid="ai-suggest-empty">
           No additional edge cases suggested — looks thorough.
         </p>
       )}
@@ -56,14 +56,14 @@ export function AiSuggestSteps({ caseId }: { caseId: string }) {
             <li key={i} className="text-sm">
               <span className="font-medium">{s.action}</span>
               {s.expected && (
-                <span className="text-slate-500"> ↳ {s.expected}</span>
+                <span className="text-content-muted"> ↳ {s.expected}</span>
               )}
             </li>
           ))}
         </ol>
       )}
       {!steps && !error && (
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-content-subtle">
           Ask the model for edge-case and negative-path steps this case may be
           missing.
         </p>

@@ -90,12 +90,12 @@ export default async function PublicOverviewPage({
 
   return (
     <>
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
+      <section className="rounded-xl border border-hairline bg-surface p-6">
         <h1 className="font-display text-2xl font-bold" data-testid="public-overview-title">
           {project.name}
         </h1>
         {project.description && (
-          <p className="mt-2 max-w-2xl text-sm text-slate-600">
+          <p className="mt-2 max-w-2xl text-sm text-content">
             {project.description}
           </p>
         )}
@@ -115,19 +115,19 @@ export default async function PublicOverviewPage({
           <div
             key={t.label}
             data-testid={t.testid}
-            className="rounded-xl border border-slate-200 bg-white p-5"
+            className="rounded-xl border border-hairline bg-surface p-5"
           >
-            <p className="text-xs font-semibold uppercase text-slate-400">
+            <p className="text-xs font-semibold uppercase text-content-subtle">
               {t.label}
             </p>
             <p className="mt-1 font-display text-2xl font-bold">{t.value}</p>
           </div>
         ))}
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <p className="text-xs font-semibold uppercase text-slate-400">
+        <div className="rounded-xl border border-hairline bg-surface p-5">
+          <p className="text-xs font-semibold uppercase text-content-subtle">
             Last updated
           </p>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-content">
             {stats.lastUpdated
               ? stats.lastUpdated.toLocaleDateString("en-US", {
                   year: "numeric",
@@ -144,7 +144,7 @@ export default async function PublicOverviewPage({
           key={s.href}
           href={s.href}
           data-testid={s.testid}
-          className="block rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-600 hover:border-indigo-300 hover:text-indigo-700"
+          className="block rounded-xl border border-hairline bg-surface p-5 text-sm text-content hover:border-accent-ring hover:text-accent-soft-fg"
         >
           {s.label}
         </Link>

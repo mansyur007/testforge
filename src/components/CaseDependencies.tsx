@@ -18,7 +18,7 @@ function AddSubmit() {
       type="submit"
       disabled={pending}
       data-testid="dependency-add-submit"
-      className="rounded-lg bg-slate-800 px-3 py-1.5 text-xs text-white hover:bg-slate-700 disabled:opacity-50"
+      className="rounded-lg bg-sidebar px-3 py-1.5 text-xs text-white hover:bg-sidebar-hover disabled:opacity-50"
     >
       {pending ? "Adding…" : "+ Add"}
     </button>
@@ -45,7 +45,7 @@ export function CaseDependencies({
   return (
     <div className="space-y-4">
       <div>
-        <h4 className="mb-2 text-xs font-semibold uppercase text-slate-400">
+        <h4 className="mb-2 text-xs font-semibold uppercase text-content-subtle">
           Depends on ({prerequisites.length})
         </h4>
         <ul className="space-y-1.5 text-sm" data-testid="dependency-prerequisites">
@@ -53,16 +53,16 @@ export function CaseDependencies({
             <li key={p.linkId} className="flex items-center justify-between gap-2">
               <Link
                 href={`/projects/${projectSlug}/cases/${p.case.id}`}
-                className="min-w-0 truncate text-slate-700 hover:text-indigo-600"
+                className="min-w-0 truncate text-content hover:text-accent-text"
               >
-                <span className="font-mono text-xs text-slate-400">{p.case.displayId}</span>{" "}
+                <span className="font-mono text-xs text-content-subtle">{p.case.displayId}</span>{" "}
                 {p.case.title}
               </Link>
               {canWrite && (
                 <form action={removeDependency}>
                   <input type="hidden" name="linkId" value={p.linkId} />
                   <button
-                    className="shrink-0 text-xs text-slate-400 hover:text-red-600"
+                    className="shrink-0 text-xs text-content-subtle hover:text-danger"
                     title="Remove"
                     data-testid={`dependency-remove-${p.linkId}`}
                   >
@@ -73,7 +73,7 @@ export function CaseDependencies({
             </li>
           ))}
           {prerequisites.length === 0 && (
-            <li className="text-xs text-slate-400">No prerequisites.</li>
+            <li className="text-xs text-content-subtle">No prerequisites.</li>
           )}
         </ul>
 
@@ -83,7 +83,7 @@ export function CaseDependencies({
             <select
               name="dependsOnCaseId"
               data-testid="dependency-add-select"
-              className="min-w-48 flex-1 rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
+              className="bg-surface text-content-strong min-w-48 flex-1 rounded-lg border border-hairline-strong px-2 py-1.5 text-xs"
             >
               {candidates.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -95,7 +95,7 @@ export function CaseDependencies({
           </form>
         )}
         {state?.error && (
-          <p data-testid="dependency-add-error" className="mt-1 text-xs text-red-600">
+          <p data-testid="dependency-add-error" className="mt-1 text-xs text-danger">
             {state.error}
           </p>
         )}
@@ -103,7 +103,7 @@ export function CaseDependencies({
 
       {dependents.length > 0 && (
         <div>
-          <h4 className="mb-2 text-xs font-semibold uppercase text-slate-400">
+          <h4 className="mb-2 text-xs font-semibold uppercase text-content-subtle">
             Required by ({dependents.length})
           </h4>
           <ul className="space-y-1.5 text-sm" data-testid="dependency-dependents">
@@ -111,9 +111,9 @@ export function CaseDependencies({
               <li key={d.linkId}>
                 <Link
                   href={`/projects/${projectSlug}/cases/${d.case.id}`}
-                  className="min-w-0 truncate text-slate-700 hover:text-indigo-600"
+                  className="min-w-0 truncate text-content hover:text-accent-text"
                 >
-                  <span className="font-mono text-xs text-slate-400">{d.case.displayId}</span>{" "}
+                  <span className="font-mono text-xs text-content-subtle">{d.case.displayId}</span>{" "}
                   {d.case.title}
                 </Link>
               </li>

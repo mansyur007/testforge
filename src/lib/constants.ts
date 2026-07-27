@@ -25,11 +25,11 @@ export const CASE_FORM_STATUSES = ["DRAFT", "ACTIVE", "DEPRECATED"] as const;
 export const RUNNABLE_CASE_STATUSES = ["APPROVED", "ACTIVE"] as const;
 
 export const STATUS_BADGES: Record<string, string> = {
-  DRAFT: "bg-slate-100 text-slate-600",
-  IN_REVIEW: "bg-amber-100 text-amber-800",
-  APPROVED: "bg-green-100 text-green-800",
-  ACTIVE: "bg-blue-100 text-blue-800",
-  DEPRECATED: "bg-gray-100 text-gray-500 line-through",
+  DRAFT: "bg-surface-muted text-content-muted",
+  IN_REVIEW: "bg-warning-soft text-warning-soft-fg",
+  APPROVED: "bg-success-soft text-success-soft-fg",
+  ACTIVE: "bg-info-soft text-info-soft-fg",
+  DEPRECATED: "bg-surface-muted text-content-subtle line-through",
 };
 export const AUTOMATION_STATUSES = [
   "NOT_AUTOMATED",
@@ -61,21 +61,21 @@ export const RESULT_COLORS: Record<string, string> = {
 };
 
 export const RESULT_BADGES: Record<string, string> = {
-  PASSED: "bg-green-100 text-green-800",
-  FAILED: "bg-red-100 text-red-800",
-  BLOCKED: "bg-orange-100 text-orange-800",
-  SKIPPED: "bg-gray-100 text-gray-600",
-  IN_PROGRESS: "bg-blue-100 text-blue-800",
-  UNTESTED: "bg-gray-50 text-gray-500 border border-gray-200",
-  RETEST: "bg-purple-100 text-purple-800",
-  MUTED: "bg-slate-100 text-slate-500",
+  PASSED: "bg-success-soft text-success-soft-fg",
+  FAILED: "bg-danger-soft text-danger-soft-fg",
+  BLOCKED: "bg-warning-soft text-warning-soft-fg",
+  SKIPPED: "bg-surface-muted text-content-muted",
+  IN_PROGRESS: "bg-info-soft text-info-soft-fg",
+  UNTESTED: "bg-surface-muted text-content-muted border border-hairline",
+  RETEST: "bg-accent-soft text-accent-soft-fg",
+  MUTED: "bg-surface-muted text-content-muted",
 };
 
 export const PRIORITY_BADGES: Record<string, string> = {
-  CRITICAL: "bg-red-100 text-red-800",
-  HIGH: "bg-orange-100 text-orange-800",
-  MEDIUM: "bg-yellow-100 text-yellow-800",
-  LOW: "bg-gray-100 text-gray-600",
+  CRITICAL: "bg-danger-soft text-danger-soft-fg",
+  HIGH: "bg-warning-soft text-warning-soft-fg",
+  MEDIUM: "bg-warning-soft text-warning-soft-fg",
+  LOW: "bg-surface-muted text-content-muted",
 };
 
 // F-04: a case's stepsJson array mixes inline steps with references to a
@@ -104,10 +104,10 @@ export const SESSION_NOTE_HOTKEYS: Record<string, SessionNoteKind> = {
   i: "IDEA",
 };
 export const SESSION_NOTE_BADGES: Record<SessionNoteKind, string> = {
-  NOTE: "bg-slate-100 text-slate-600",
-  BUG: "bg-red-100 text-red-800",
-  QUESTION: "bg-amber-100 text-amber-800",
-  IDEA: "bg-indigo-100 text-indigo-700",
+  NOTE: "bg-surface-muted text-content-muted",
+  BUG: "bg-danger-soft text-danger-soft-fg",
+  QUESTION: "bg-warning-soft text-warning-soft-fg",
+  IDEA: "bg-accent-soft text-accent-soft-fg",
 };
 
 export function parseTags(tags: string): string[] {

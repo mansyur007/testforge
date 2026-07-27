@@ -183,10 +183,10 @@ export default async function PublicCasesPage({
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2 text-sm text-slate-400">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-content-subtle">
           <Link
             href={href({ suite: undefined, page: undefined })}
-            className="hover:text-slate-600"
+            className="hover:text-content"
           >
             All suites
           </Link>
@@ -195,7 +195,7 @@ export default async function PublicCasesPage({
               <span>/</span>
               <Link
                 href={href({ suite: c.id, page: undefined })}
-                className="text-slate-600 hover:text-slate-800"
+                className="text-content hover:text-content-strong"
               >
                 {c.name}
               </Link>
@@ -215,9 +215,9 @@ export default async function PublicCasesPage({
             defaultValue={searchParams.q}
             placeholder="Search test cases..."
             data-testid="public-cases-search"
-            className="w-52 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="bg-surface text-content-strong w-52 rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
           />
-          <button className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm hover:bg-slate-100">
+          <button className="rounded-lg border border-hairline-strong bg-surface px-3 py-2 text-sm hover:bg-surface-muted">
             Search
           </button>
         </form>
@@ -226,12 +226,12 @@ export default async function PublicCasesPage({
       <SuiteFolderGrid folders={folders} />
 
       <div
-        className="overflow-x-auto rounded-xl border border-slate-200 bg-white"
+        className="overflow-x-auto rounded-xl border border-hairline bg-surface"
         data-testid="public-cases-table"
       >
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 text-left text-xs uppercase text-slate-400">
+            <tr className="border-b border-hairline text-left text-xs uppercase text-content-subtle">
               <th className="px-4 py-3">ID</th>
               <th className="px-4 py-3">Title</th>
               <th className="px-4 py-3">Suite</th>
@@ -244,16 +244,16 @@ export default async function PublicCasesPage({
             {cases.map((c) => (
               <tr
                 key={c.id}
-                className="border-b border-slate-100 last:border-0 hover:bg-slate-50"
+                className="border-b border-hairline-subtle last:border-0 hover:bg-canvas"
               >
-                <td className="whitespace-nowrap px-4 py-2.5 font-mono text-xs text-slate-400">
+                <td className="whitespace-nowrap px-4 py-2.5 font-mono text-xs text-content-subtle">
                   {caseDisplayId(project.slug, c.seq)}
                 </td>
                 <td className="px-4 py-2.5">
                   <Link
                     href={`/public/${project.slug}/cases/${c.id}`}
                     data-testid={`public-case-link-${c.id}`}
-                    className="font-medium text-slate-800 hover:text-indigo-700"
+                    className="font-medium text-content-strong hover:text-accent-soft-fg"
                   >
                     {c.title}
                   </Link>
@@ -262,7 +262,7 @@ export default async function PublicCasesPage({
                       {parseTags(c.tags).map((t) => (
                         <span
                           key={t}
-                          className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500"
+                          className="rounded bg-surface-muted px-1.5 py-0.5 text-xs text-content-muted"
                         >
                           {t}
                         </span>
@@ -270,20 +270,20 @@ export default async function PublicCasesPage({
                     </span>
                   )}
                 </td>
-                <td className="px-4 py-2.5 text-slate-500">
+                <td className="px-4 py-2.5 text-content-muted">
                   {c.suite?.name ?? "—"}
                 </td>
                 <td className="px-4 py-2.5">
                   <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${PRIORITY_BADGES[c.priority] ?? "bg-slate-100 text-slate-600"}`}
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${PRIORITY_BADGES[c.priority] ?? "bg-surface-muted text-content"}`}
                   >
                     {c.priority}
                   </span>
                 </td>
-                <td className="px-4 py-2.5 text-slate-500">{c.type}</td>
+                <td className="px-4 py-2.5 text-content-muted">{c.type}</td>
                 <td className="px-4 py-2.5">
                   <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGES[c.status] ?? "bg-slate-100 text-slate-600"}`}
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGES[c.status] ?? "bg-surface-muted text-content"}`}
                   >
                     {c.status.replace(/_/g, " ")}
                   </span>
@@ -294,7 +294,7 @@ export default async function PublicCasesPage({
               <tr>
                 <td
                   colSpan={6}
-                  className="px-4 py-10 text-center text-sm text-slate-400"
+                  className="px-4 py-10 text-center text-sm text-content-subtle"
                   data-testid="public-cases-empty"
                 >
                   No test cases here.
@@ -305,7 +305,7 @@ export default async function PublicCasesPage({
         </table>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-slate-400">
+      <div className="flex items-center justify-between text-xs text-content-subtle">
         <span data-testid="public-cases-count">
           {total} {total === 1 ? "case" : "cases"}
         </span>
@@ -315,7 +315,7 @@ export default async function PublicCasesPage({
               <Link
                 href={href({ page: String(page - 1) })}
                 data-testid="public-cases-prev"
-                className="rounded border border-slate-300 bg-white px-2 py-1 hover:bg-slate-100"
+                className="rounded border border-hairline-strong bg-surface px-2 py-1 hover:bg-surface-muted"
               >
                 ← Prev
               </Link>
@@ -327,7 +327,7 @@ export default async function PublicCasesPage({
               <Link
                 href={href({ page: String(page + 1) })}
                 data-testid="public-cases-next"
-                className="rounded border border-slate-300 bg-white px-2 py-1 hover:bg-slate-100"
+                className="rounded border border-hairline-strong bg-surface px-2 py-1 hover:bg-surface-muted"
               >
                 Next →
               </Link>

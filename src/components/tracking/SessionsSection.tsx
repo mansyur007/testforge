@@ -8,8 +8,8 @@ import { startSession } from "@/app/actions/sessions";
 import type { SectionProps } from "@/lib/section-props";
 
 const STATUS_BADGE: Record<string, string> = {
-  ACTIVE: "bg-green-100 text-green-800",
-  ENDED: "bg-slate-100 text-slate-500",
+  ACTIVE: "bg-success-soft text-success-soft-fg",
+  ENDED: "bg-surface-muted text-content-muted",
 };
 
 export async function SessionsSection({ params }: SectionProps) {
@@ -36,10 +36,10 @@ export async function SessionsSection({ params }: SectionProps) {
         <h2 className="text-lg font-semibold">Exploratory Sessions</h2>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-hairline bg-surface">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 text-left text-xs uppercase text-slate-400">
+            <tr className="border-b border-hairline text-left text-xs uppercase text-content-subtle">
               <th className="px-4 py-3">Charter</th>
               <th className="px-4 py-3">Tester</th>
               <th className="px-4 py-3">Timebox</th>
@@ -51,20 +51,20 @@ export async function SessionsSection({ params }: SectionProps) {
             {sessions.map((s) => (
               <tr
                 key={s.id}
-                className="border-b border-slate-100 last:border-0"
+                className="border-b border-hairline-subtle last:border-0"
                 data-testid={`session-row-${s.id}`}
               >
                 <td className="px-4 py-2.5">
                   <Link
                     href={`/projects/${project.slug}/sessions/${s.id}`}
-                    className="text-indigo-600 hover:underline"
+                    className="text-accent-text hover:underline"
                   >
                     {s.charter}
                   </Link>
                 </td>
-                <td className="px-4 py-2.5 text-slate-500">{s.tester.name}</td>
-                <td className="px-4 py-2.5 text-slate-500">{s.timeboxMinutes}m</td>
-                <td className="px-4 py-2.5 text-slate-500">{s._count.notes}</td>
+                <td className="px-4 py-2.5 text-content-muted">{s.tester.name}</td>
+                <td className="px-4 py-2.5 text-content-muted">{s.timeboxMinutes}m</td>
+                <td className="px-4 py-2.5 text-content-muted">{s._count.notes}</td>
                 <td className="px-4 py-2.5">
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_BADGE[s.status]}`}
@@ -76,7 +76,7 @@ export async function SessionsSection({ params }: SectionProps) {
             ))}
             {sessions.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-slate-400">
+                <td colSpan={5} className="px-4 py-10 text-center text-content-subtle">
                   No exploratory sessions yet.
                 </td>
               </tr>
@@ -86,7 +86,7 @@ export async function SessionsSection({ params }: SectionProps) {
       </div>
 
       {canStart && (
-        <section className="max-w-xl rounded-xl border border-slate-200 bg-white p-6">
+        <section className="max-w-xl rounded-xl border border-hairline bg-surface p-6">
           <h3 className="mb-3 font-semibold">Start a session</h3>
           <form action={startSession} className="space-y-2">
             <input type="hidden" name="projectId" value={project.id} />
@@ -96,10 +96,10 @@ export async function SessionsSection({ params }: SectionProps) {
               rows={2}
               placeholder="Charter — what are you exploring? e.g. Explore checkout on mobile Safari"
               data-testid="session-charter-input"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm"
             />
             <div className="flex items-center gap-2">
-              <label className="text-xs text-slate-500">Timebox</label>
+              <label className="text-xs text-content-muted">Timebox</label>
               <input
                 name="timeboxMinutes"
                 type="number"
@@ -107,12 +107,12 @@ export async function SessionsSection({ params }: SectionProps) {
                 max={240}
                 defaultValue={30}
                 data-testid="session-timebox-input"
-                className="w-24 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+                className="bg-surface text-content-strong w-24 rounded-lg border border-hairline-strong px-3 py-1.5 text-sm"
               />
-              <span className="text-xs text-slate-400">minutes</span>
+              <span className="text-xs text-content-subtle">minutes</span>
             </div>
             <button
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
               data-testid="session-start-button"
             >
               Start session

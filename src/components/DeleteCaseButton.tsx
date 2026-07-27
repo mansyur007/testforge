@@ -14,7 +14,7 @@ export function DeleteCaseButton({ caseId }: { caseId: string }) {
       }}
     >
       <input type="hidden" name="caseId" value={caseId} />
-      <button data-testid="case-delete" className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50">
+      <button data-testid="case-delete" className="inline-flex items-center gap-1.5 rounded-lg border border-danger-border px-3 py-1.5 text-sm text-danger hover:bg-danger-soft">
         <TFIcon name="delete" current className="h-4 w-4" /> Delete
       </button>
     </form>

@@ -99,12 +99,12 @@ export default async function CaseDetailPage({
   const renderCustom = (d: (typeof fieldDefs)[number]) => {
     const v = customValues[d.key];
     if (v === undefined || v === "" || (Array.isArray(v) && v.length === 0))
-      return <span className="text-slate-300">—</span>;
+      return <span className="text-content-subtle">—</span>;
     if (d.type === "CHECKBOX") return v ? "✓ yes" : "– no";
     if (d.type === "USER") return memberNames.get(String(v)) ?? String(v);
     if (d.type === "URL")
       return (
-        <a href={String(v)} target="_blank" rel="noreferrer" className="text-indigo-600 hover:underline">
+        <a href={String(v)} target="_blank" rel="noreferrer" className="text-accent-text hover:underline">
           {String(v)}
         </a>
       );
@@ -112,7 +112,7 @@ export default async function CaseDetailPage({
       return (
         <span className="flex flex-wrap gap-1">
           {v.map((x) => (
-            <span key={String(x)} className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">
+            <span key={String(x)} className="rounded bg-surface-muted px-1.5 py-0.5 text-xs">
               {String(x)}
             </span>
           ))}
@@ -214,38 +214,38 @@ export default async function CaseDetailPage({
 
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="font-mono text-sm text-slate-400">{displayId}</p>
+          <p className="font-mono text-sm text-content-subtle">{displayId}</p>
           <h2 className="text-xl font-bold">{testCase.title}</h2>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
             <span className={`rounded-full px-2 py-0.5 font-medium ${PRIORITY_BADGES[testCase.priority]}`}>
               {testCase.priority}
             </span>
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600">
+            <span className="rounded-full bg-surface-muted px-2 py-0.5 text-content">
               {testCase.type}
             </span>
             <span
-              className={`rounded-full px-2 py-0.5 font-medium ${STATUS_BADGES[testCase.status] ?? "bg-slate-100 text-slate-600"}`}
+              className={`rounded-full px-2 py-0.5 font-medium ${STATUS_BADGES[testCase.status] ?? "bg-surface-muted text-content"}`}
               data-testid="case-status-badge"
             >
               {testCase.status.replace(/_/g, " ")}
             </span>
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600">
+            <span className="rounded-full bg-surface-muted px-2 py-0.5 text-content">
               {testCase.automationStatus.replace(/_/g, " ")}
             </span>
             {testCase.estimateSeconds != null && (
               <span
-                className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600"
+                className="rounded-full bg-surface-muted px-2 py-0.5 text-content"
                 data-testid="case-estimate-badge"
               >
                 ⏱ {formatDuration(testCase.estimateSeconds)}
               </span>
             )}
             {testCase.suite && (
-              <span className="flex items-center gap-1 text-slate-400"><TFIcon name="nav-tree" className="h-4 w-4" /> {testCase.suite.name}</span>
+              <span className="flex items-center gap-1 text-content-subtle"><TFIcon name="nav-tree" className="h-4 w-4" /> {testCase.suite.name}</span>
             )}
             {testCase.mutedAt && (
               <span
-                className="flex items-center gap-1 rounded-full bg-slate-200 px-2 py-0.5 font-medium text-slate-600"
+                className="flex items-center gap-1 rounded-full bg-surface-muted px-2 py-0.5 font-medium text-content"
                 data-testid="case-muted-banner"
                 title={testCase.mutedReason ?? undefined}
               >
@@ -262,19 +262,19 @@ export default async function CaseDetailPage({
             target="_blank"
             rel="noopener"
             data-testid="print-case-link"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-hairline-strong px-3 py-1.5 text-sm hover:bg-surface-muted"
           >
             <TFIcon name="print" className="h-4 w-4" /> Print view
           </Link>
           <Link
             href={`/projects/${testCase.project.slug}/cases/${testCase.id}/edit`}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-hairline-strong px-3 py-1.5 text-sm hover:bg-surface-muted"
           >
             <TFIcon name="edit" className="h-4 w-4" /> Edit
           </Link>
           <form action={cloneCase}>
             <input type="hidden" name="caseId" value={testCase.id} />
-            <button className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100">
+            <button className="inline-flex items-center gap-1.5 rounded-lg border border-hairline-strong px-3 py-1.5 text-sm hover:bg-surface-muted">
               <TFIcon name="clone" className="h-4 w-4" /> Clone
             </button>
           </form>
@@ -283,7 +283,7 @@ export default async function CaseDetailPage({
       </div>
 
       {/* F-05: Details | History tabs */}
-      <div className="flex gap-1 border-b border-slate-200 text-sm">
+      <div className="flex gap-1 border-b border-hairline text-sm">
         {(
           [
             ["details", "Details", ""],
@@ -296,8 +296,8 @@ export default async function CaseDetailPage({
             data-testid={`case-tab-${key}`}
             className={`-mb-px border-b-2 px-4 py-2 font-medium ${
               tab === key
-                ? "border-indigo-600 text-indigo-700"
-                : "border-transparent text-slate-500 hover:text-slate-700"
+                ? "border-accent text-accent-soft-fg"
+                : "border-transparent text-content-muted hover:text-content"
             }`}
           >
             {label}
@@ -319,23 +319,23 @@ export default async function CaseDetailPage({
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
           {testCase.description && (
-            <section className="rounded-xl border border-slate-200 bg-white p-6">
-              <h3 className="mb-2 text-sm font-semibold uppercase text-slate-400">
+            <section className="rounded-xl border border-hairline bg-surface p-6">
+              <h3 className="mb-2 text-sm font-semibold uppercase text-content-subtle">
                 Description
               </h3>
               <Markdown>{testCase.description}</Markdown>
             </section>
           )}
           {testCase.preconditions && (
-            <section className="rounded-xl border border-slate-200 bg-white p-6">
-              <h3 className="mb-2 text-sm font-semibold uppercase text-slate-400">
+            <section className="rounded-xl border border-hairline bg-surface p-6">
+              <h3 className="mb-2 text-sm font-semibold uppercase text-content-subtle">
                 Preconditions
               </h3>
               <Markdown>{testCase.preconditions}</Markdown>
             </section>
           )}
-          <section className="rounded-xl border border-slate-200 bg-white p-6">
-            <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
+          <section className="rounded-xl border border-hairline bg-surface p-6">
+            <h3 className="mb-3 text-sm font-semibold uppercase text-content-subtle">
               {isGherkin ? "Scenario (Gherkin)" : "Steps to Reproduce"}
             </h3>
             {isGherkin ? (
@@ -343,19 +343,19 @@ export default async function CaseDetailPage({
             ) : (
               <>
                 {steps.length === 0 && (
-                  <p className="text-sm text-slate-400">No steps yet.</p>
+                  <p className="text-sm text-content-subtle">No steps yet.</p>
                 )}
                 <ol className="space-y-3">
                   {steps.map((step, i) => (
                     <li key={i} className="flex gap-3 text-sm">
-                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent-soft-fg">
                         {i + 1}
                       </span>
                       <div className="grid flex-1 gap-2 md:grid-cols-2">
                         <div className="min-w-0">
                           {step.fromShared && (
                             <span
-                              className="mr-1.5 rounded bg-indigo-50 px-1.5 py-0.5 align-middle text-[10px] font-medium text-indigo-600"
+                              className="mr-1.5 rounded bg-accent-soft px-1.5 py-0.5 align-middle text-[10px] font-medium text-accent-text"
                               title={`From shared steps: ${step.fromShared.title}`}
                               data-testid="shared-step-badge"
                             >
@@ -364,11 +364,11 @@ export default async function CaseDetailPage({
                           )}
                           <Markdown>{step.action}</Markdown>
                         </div>
-                        <div className="flex gap-1 text-slate-500">
+                        <div className="flex gap-1 text-content-muted">
                           {step.expected && (
                             <>
                               <span>↳</span>
-                              <Markdown className="text-slate-500">{step.expected}</Markdown>
+                              <Markdown className="text-content-muted">{step.expected}</Markdown>
                             </>
                           )}
                         </div>
@@ -379,17 +379,17 @@ export default async function CaseDetailPage({
               </>
             )}
             {testCase.expectedResult && (
-              <div className="mt-4 rounded-lg bg-green-50 p-3 text-sm">
-                <span className="font-medium text-green-800">Expected Result:</span>
-                <Markdown className="text-green-900">
+              <div className="mt-4 rounded-lg bg-success-soft p-3 text-sm">
+                <span className="font-medium text-success-soft-fg">Expected Result:</span>
+                <Markdown className="text-success-soft-fg">
                   {testCase.expectedResult}
                 </Markdown>
               </div>
             )}
           </section>
 
-          <section className="rounded-xl border border-slate-200 bg-white p-6">
-            <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
+          <section className="rounded-xl border border-hairline bg-surface p-6">
+            <h3 className="mb-3 text-sm font-semibold uppercase text-content-subtle">
               Attachments
             </h3>
             <AttachmentUploader
@@ -410,8 +410,8 @@ export default async function CaseDetailPage({
         </div>
 
         <div className="space-y-6">
-          <section className="rounded-xl border border-slate-200 bg-white p-6">
-            <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
+          <section className="rounded-xl border border-hairline bg-surface p-6">
+            <h3 className="mb-3 text-sm font-semibold uppercase text-content-subtle">
               Execution History
             </h3>
             {executed.length > 0 && (
@@ -420,7 +420,7 @@ export default async function CaseDetailPage({
                 <span className="font-bold">
                   {Math.round((passCount / executed.length) * 100)}%
                 </span>{" "}
-                <span className="text-slate-400">
+                <span className="text-content-subtle">
                   ({passCount}/{executed.length} executed)
                 </span>
               </p>
@@ -430,7 +430,7 @@ export default async function CaseDetailPage({
                 <li key={r.id} className="flex items-center justify-between text-sm">
                   <Link
                     href={`/projects/${testCase.project.slug}/runs/${r.runId}`}
-                    className="truncate text-slate-600 hover:text-indigo-600"
+                    className="truncate text-content hover:text-accent-text"
                   >
                     {r.run.name}
                   </Link>
@@ -443,7 +443,7 @@ export default async function CaseDetailPage({
                 </li>
               ))}
               {testCase.results.length === 0 && (
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-content-subtle">
                   Never executed in a test run.
                 </p>
               )}
@@ -451,17 +451,17 @@ export default async function CaseDetailPage({
           </section>
 
           {visibleDefs.length > 0 && (
-            <section className="rounded-xl border border-slate-200 bg-white p-6" data-testid="custom-fields-panel">
-              <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
+            <section className="rounded-xl border border-hairline bg-surface p-6" data-testid="custom-fields-panel">
+              <h3 className="mb-3 text-sm font-semibold uppercase text-content-subtle">
                 Custom Fields
               </h3>
               <dl className="space-y-2 text-sm">
                 {visibleDefs.map((d) => (
                   <div key={d.id} className="flex items-baseline justify-between gap-3">
-                    <dt className="text-slate-500">
+                    <dt className="text-content-muted">
                       {d.label}
                       {!d.active && (
-                        <span className="ml-1 text-xs text-slate-300">(disabled)</span>
+                        <span className="ml-1 text-xs text-content-subtle">(disabled)</span>
                       )}
                     </dt>
                     <dd className="text-right font-medium">{renderCustom(d)}</dd>
@@ -472,13 +472,13 @@ export default async function CaseDetailPage({
           )}
 
           {parseTags(testCase.tags).length > 0 && (
-            <section className="rounded-xl border border-slate-200 bg-white p-6">
-              <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
+            <section className="rounded-xl border border-hairline bg-surface p-6">
+              <h3 className="mb-3 text-sm font-semibold uppercase text-content-subtle">
                 Tags
               </h3>
               <div className="flex flex-wrap gap-1.5">
                 {parseTags(testCase.tags).map((t) => (
-                  <span key={t} className="rounded bg-slate-100 px-2 py-0.5 text-xs">
+                  <span key={t} className="rounded bg-surface-muted px-2 py-0.5 text-xs">
                     {t}
                   </span>
                 ))}
@@ -489,10 +489,10 @@ export default async function CaseDetailPage({
           {/* F-29: possible duplicates (local trigram match — no AI key). */}
           {nearDuplicates.length > 0 && (
             <section
-              className="rounded-xl border border-amber-200 bg-amber-50 p-6"
+              className="rounded-xl border border-warning-border bg-warning-soft p-6"
               data-testid="near-duplicates-panel"
             >
-              <h3 className="mb-3 text-sm font-semibold uppercase text-amber-800">
+              <h3 className="mb-3 text-sm font-semibold uppercase text-warning-soft-fg">
                 Possible duplicates
               </h3>
               <ul className="space-y-2 text-sm">
@@ -500,12 +500,12 @@ export default async function CaseDetailPage({
                   <li key={d.id} className="flex items-center justify-between gap-2">
                     <Link
                       href={`/projects/${testCase.project.slug}/cases/${d.id}`}
-                      className="min-w-0 truncate text-amber-900 hover:underline"
+                      className="min-w-0 truncate text-warning-soft-fg hover:underline"
                     >
-                      <span className="font-mono text-xs text-amber-700">{d.displayId}</span>{" "}
+                      <span className="font-mono text-xs text-warning-soft-fg">{d.displayId}</span>{" "}
                       {d.title}
                     </Link>
-                    <span className="shrink-0 text-xs text-amber-700">
+                    <span className="shrink-0 text-xs text-warning-soft-fg">
                       {Math.round(d.score * 100)}% similar
                     </span>
                   </li>
@@ -517,8 +517,8 @@ export default async function CaseDetailPage({
           {/* F-29: AI edge-case suggestions (only when a key is configured). */}
           {aiOn && <AiSuggestSteps caseId={testCase.id} />}
 
-          <section className="rounded-xl border border-slate-200 bg-white p-6" data-testid="case-dependencies-panel">
-            <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
+          <section className="rounded-xl border border-hairline bg-surface p-6" data-testid="case-dependencies-panel">
+            <h3 className="mb-3 text-sm font-semibold uppercase text-content-subtle">
               Dependencies
             </h3>
             <CaseDependencies
@@ -550,10 +550,10 @@ export default async function CaseDetailPage({
               section below is the whole story, exactly as before. */}
           {(hasIntegration || caseIssueLinks.length > 0) && (
             <section
-              className="rounded-xl border border-slate-200 bg-white p-6"
+              className="rounded-xl border border-hairline bg-surface p-6"
               data-testid="case-issues-panel"
             >
-              <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
+              <h3 className="mb-3 text-sm font-semibold uppercase text-content-subtle">
                 Issues
               </h3>
               <IssuePanel
@@ -574,8 +574,8 @@ export default async function CaseDetailPage({
           )}
 
           {testCase.linkedIssues && (
-            <section className="rounded-xl border border-slate-200 bg-white p-6">
-              <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
+            <section className="rounded-xl border border-hairline bg-surface p-6">
+              <h3 className="mb-3 text-sm font-semibold uppercase text-content-subtle">
                 Linked Issues
               </h3>
               <ul className="space-y-1 text-sm">
@@ -585,7 +585,7 @@ export default async function CaseDetailPage({
                       href={url.trim()}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="break-all text-indigo-600 hover:underline"
+                      className="break-all text-accent-text hover:underline"
                     >
                       {url.trim()}
                     </a>
@@ -596,8 +596,8 @@ export default async function CaseDetailPage({
           )}
 
           {/* F-15: review workflow — request review, approve, request changes. */}
-          <section className="rounded-xl border border-slate-200 bg-white p-6">
-            <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
+          <section className="rounded-xl border border-hairline bg-surface p-6">
+            <h3 className="mb-3 text-sm font-semibold uppercase text-content-subtle">
               Review
             </h3>
             <ReviewPanel
@@ -616,7 +616,7 @@ export default async function CaseDetailPage({
           </section>
 
           {/* F-16: discussion thread on this case. */}
-          <section className="rounded-xl border border-slate-200 bg-white p-6">
+          <section className="rounded-xl border border-hairline bg-surface p-6">
             <CommentPanel
               entityType="CASE"
               entityId={testCase.id}

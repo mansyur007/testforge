@@ -13,7 +13,7 @@ export default function HelpIndexPage() {
     <main className="mx-auto max-w-3xl px-4 py-12">
       <div className="mb-8 flex items-center justify-between">
         <Logo size="sm" />
-        <Link href="/dashboard" className="text-sm text-indigo-600 hover:underline">
+        <Link href="/dashboard" className="text-sm text-accent-text hover:underline">
           Back to app
         </Link>
       </div>
@@ -21,9 +21,9 @@ export default function HelpIndexPage() {
         <TFIcon name="nav-help" className="h-9 w-9" />
         Help
       </h1>
-      <p className="mt-3 text-slate-600">
+      <p className="mt-3 text-content">
         Guides for using TestForge day to day. Looking for the REST API instead? See the{" "}
-        <Link href="/docs/api" className="text-indigo-600 hover:underline">
+        <Link href="/docs/api" className="text-accent-text hover:underline">
           API reference
         </Link>
         .
@@ -35,10 +35,10 @@ export default function HelpIndexPage() {
             key={t.slug}
             href={`/docs/help/${t.slug}`}
             data-testid={`help-topic-${t.slug}`}
-            className="rounded-xl border border-slate-200 bg-white p-4 hover:border-indigo-300 hover:shadow-sm"
+            className="rounded-xl border border-hairline bg-surface p-4 hover:border-accent-ring hover:shadow-sm"
           >
-            <h2 className="font-semibold text-slate-900">{t.title}</h2>
-            <p className="mt-1 text-sm text-slate-500">{t.summary}</p>
+            <h2 className="font-semibold text-content-strong">{t.title}</h2>
+            <p className="mt-1 text-sm text-content-muted">{t.summary}</p>
           </Link>
         ))}
       </div>

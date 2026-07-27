@@ -13,8 +13,8 @@ function SubmitButton({ label, variant = "primary" }: { label: string; variant?:
   const { pending } = useFormStatus();
   const cls =
     variant === "danger"
-      ? "bg-red-600 hover:bg-red-700"
-      : "bg-indigo-600 hover:bg-indigo-700";
+      ? "bg-danger hover:opacity-90"
+      : "bg-accent hover:bg-accent-hover";
   return (
     <button
       type="submit"
@@ -28,16 +28,16 @@ function SubmitButton({ label, variant = "primary" }: { label: string; variant?:
 
 function RecoveryCodes({ codes }: { codes: string[] }) {
   return (
-    <div className="space-y-2 rounded-lg border border-amber-300 bg-amber-50 p-4">
-      <p className="text-sm font-medium text-amber-800">
+    <div className="space-y-2 rounded-lg border border-warning-border bg-warning-soft p-4">
+      <p className="text-sm font-medium text-warning-soft-fg">
         Save these recovery codes now — you will not see them again.
       </p>
-      <p className="text-xs text-amber-700">
+      <p className="text-xs text-warning-soft-fg">
         Each code works once if you lose access to your authenticator app.
       </p>
       <ul
         data-testid="recovery-codes"
-        className="grid grid-cols-2 gap-x-6 gap-y-1 font-mono text-sm text-slate-800"
+        className="grid grid-cols-2 gap-x-6 gap-y-1 font-mono text-sm text-content-strong"
       >
         {codes.map((c) => (
           <li key={c}>{c}</li>
@@ -46,7 +46,7 @@ function RecoveryCodes({ codes }: { codes: string[] }) {
       <button
         type="button"
         onClick={() => navigator.clipboard?.writeText(codes.join("\n"))}
-        className="rounded-lg border border-amber-400 bg-white px-3 py-1.5 text-xs font-medium text-amber-800 hover:bg-amber-100"
+        className="rounded-lg border border-warning-border bg-surface px-3 py-1.5 text-xs font-medium text-warning-soft-fg hover:bg-warning-soft"
       >
         Copy codes
       </button>
@@ -63,7 +63,7 @@ function CodeInput({ name = "code", placeholder = "123456" }: { name?: string; p
       required
       data-testid="totp-code"
       placeholder={placeholder}
-      className="w-40 rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm tracking-widest focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+      className="bg-surface text-content-strong w-40 rounded-lg border border-hairline-strong px-3 py-2 font-mono text-sm tracking-widest focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
     />
   );
 }
@@ -77,7 +77,7 @@ function EnrollFlow() {
   if (state?.codes) {
     return (
       <div className="space-y-4">
-        <p className="rounded-lg bg-green-50 px-4 py-2.5 text-sm text-green-700">
+        <p className="rounded-lg bg-success-soft px-4 py-2.5 text-sm text-success-soft-fg">
           Two-factor authentication is now on.
         </p>
         <RecoveryCodes codes={state.codes} />
@@ -89,7 +89,7 @@ function EnrollFlow() {
     return (
       <div className="space-y-3">
         {startErr && (
-          <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">{startErr}</p>
+          <p className="rounded-lg bg-danger-soft px-4 py-2.5 text-sm text-danger-soft-fg">{startErr}</p>
         )}
         <button
           type="button"
@@ -103,7 +103,7 @@ function EnrollFlow() {
               else setStartErr(res.error);
             })
           }
-          className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          className="rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
         >
           {starting ? "Preparing…" : "Enable two-factor authentication"}
         </button>
@@ -113,18 +113,18 @@ function EnrollFlow() {
 
   return (
     <div className="space-y-4">
-      <ol className="ml-4 list-decimal space-y-2 text-sm text-slate-600">
+      <ol className="ml-4 list-decimal space-y-2 text-sm text-content">
         <li>Scan this QR code with an authenticator app (Google Authenticator, Authy, 1Password…).</li>
         <li>Enter the 6-digit code it shows to finish.</li>
       </ol>
       <div className="flex flex-wrap items-start gap-6">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={enroll.qrDataUrl} alt="Two-factor QR code" width={200} height={200} className="rounded-lg border border-slate-200" />
+        <img src={enroll.qrDataUrl} alt="Two-factor QR code" width={200} height={200} className="rounded-lg border border-hairline" />
         <div className="space-y-1">
-          <p className="text-xs text-slate-500">Or enter this key manually:</p>
+          <p className="text-xs text-content-muted">Or enter this key manually:</p>
           <code
             data-testid="totp-secret"
-            className="block break-all rounded bg-slate-100 px-2 py-1 font-mono text-xs text-slate-700"
+            className="block break-all rounded bg-surface-muted px-2 py-1 font-mono text-xs text-content"
           >
             {enroll.secret}
           </code>
@@ -132,7 +132,7 @@ function EnrollFlow() {
       </div>
       <form action={formAction} className="space-y-3">
         {state?.error && (
-          <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">{state.error}</p>
+          <p className="rounded-lg bg-danger-soft px-4 py-2.5 text-sm text-danger-soft-fg">{state.error}</p>
         )}
         <div className="flex items-center gap-3">
           <CodeInput />
@@ -150,15 +150,15 @@ function DisableFlow({ lowRecovery }: { lowRecovery: boolean }) {
 
   return (
     <div className="space-y-4">
-      <p className="flex items-center gap-2 text-sm text-slate-700">
-        <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+      <p className="flex items-center gap-2 text-sm text-content">
+        <span className="rounded-full bg-success-soft px-2 py-0.5 text-xs font-medium text-success-soft-fg">
           On
         </span>
         Two-factor authentication is protecting your account.
       </p>
 
       {lowRecovery && (
-        <p className="rounded-lg bg-amber-50 px-4 py-2.5 text-sm text-amber-800">
+        <p className="rounded-lg bg-warning-soft px-4 py-2.5 text-sm text-warning-soft-fg">
           You have few recovery codes left. Regenerate a fresh set to be safe.
         </p>
       )}
@@ -166,13 +166,13 @@ function DisableFlow({ lowRecovery }: { lowRecovery: boolean }) {
       {regenState?.codes ? (
         <RecoveryCodes codes={regenState.codes} />
       ) : showRegen ? (
-        <form action={regenAction} className="space-y-2 rounded-lg border border-slate-200 p-4">
-          <p className="text-sm font-medium text-slate-700">Regenerate recovery codes</p>
-          <p className="text-xs text-slate-500">
+        <form action={regenAction} className="space-y-2 rounded-lg border border-hairline p-4">
+          <p className="text-sm font-medium text-content">Regenerate recovery codes</p>
+          <p className="text-xs text-content-muted">
             Enter a current authenticator code. This invalidates your old recovery codes.
           </p>
           {regenState?.error && (
-            <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">{regenState.error}</p>
+            <p className="rounded-lg bg-danger-soft px-4 py-2.5 text-sm text-danger-soft-fg">{regenState.error}</p>
           )}
           <div className="flex items-center gap-3">
             <CodeInput />
@@ -183,19 +183,19 @@ function DisableFlow({ lowRecovery }: { lowRecovery: boolean }) {
         <button
           type="button"
           onClick={() => setShowRegen(true)}
-          className="text-sm font-medium text-indigo-600 hover:underline"
+          className="text-sm font-medium text-accent-text hover:underline"
         >
           Regenerate recovery codes
         </button>
       )}
 
-      <form action={disableAction} className="space-y-2 rounded-lg border border-red-200 p-4">
-        <p className="text-sm font-medium text-slate-700">Turn off two-factor authentication</p>
-        <p className="text-xs text-slate-500">
+      <form action={disableAction} className="space-y-2 rounded-lg border border-danger-border p-4">
+        <p className="text-sm font-medium text-content">Turn off two-factor authentication</p>
+        <p className="text-xs text-content-muted">
           Enter a current authenticator code or an unused recovery code to confirm.
         </p>
         {disableState?.error && (
-          <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">{disableState.error}</p>
+          <p className="rounded-lg bg-danger-soft px-4 py-2.5 text-sm text-danger-soft-fg">{disableState.error}</p>
         )}
         <div className="flex items-center gap-3">
           <CodeInput placeholder="123456 or code" />

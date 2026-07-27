@@ -27,13 +27,13 @@ export function AppShell({
       <PwaRegistrar />
 
       {/* Mobile top bar: brand + hamburger. Hidden on desktop. */}
-      <div className="fixed inset-x-0 top-0 z-30 flex h-12 items-center gap-3 border-b border-slate-800 bg-slate-900 px-3 text-white md:hidden">
+      <div className="fixed inset-x-0 top-0 z-30 flex h-12 items-center gap-3 border-b border-sidebar-border bg-sidebar px-3 text-white md:hidden">
         <button
           type="button"
           onClick={() => setOpen(true)}
           data-testid="mobile-nav-toggle"
           aria-label="Open menu"
-          className={`grid h-9 w-9 place-items-center rounded-lg hover:bg-slate-800 ${FOCUS_RING_DARK}`}
+          className={`grid h-9 w-9 place-items-center rounded-lg hover:bg-sidebar-hover ${FOCUS_RING_DARK}`}
         >
           <TFIcon name="menu" current className="h-5 w-5" />
         </button>
@@ -50,7 +50,7 @@ export function AppShell({
       )}
 
       <aside
-        className={`fixed inset-y-0 z-50 flex w-60 flex-col border-r border-slate-800 bg-slate-900 text-slate-300 motion-safe:transition-transform motion-safe:duration-panel motion-safe:ease-tf-drawer md:z-auto md:translate-x-0 ${
+        className={`fixed inset-y-0 z-50 flex w-60 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-fg motion-safe:transition-transform motion-safe:duration-panel motion-safe:ease-tf-drawer md:z-auto md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
         data-testid="app-sidebar"

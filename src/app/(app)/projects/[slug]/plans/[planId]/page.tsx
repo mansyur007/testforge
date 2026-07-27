@@ -109,7 +109,7 @@ export default async function PlanDetailPage({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold">{plan.name}</h2>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-content-subtle">
             {plan.description}
             {plan.description && " · "}
             {plan.createdBy.name} · {plan.createdAt.toLocaleDateString("en-US")}
@@ -120,8 +120,8 @@ export default async function PlanDetailPage({
           <span
             className={`rounded-full px-2.5 py-1 text-xs font-medium ${
               plan.status === "COMPLETED"
-                ? "bg-green-100 text-green-700"
-                : "bg-blue-100 text-blue-700"
+                ? "bg-success-soft text-success-soft-fg"
+                : "bg-info-soft text-info-soft-fg"
             }`}
           >
             {plan.status === "COMPLETED" ? "Completed" : "Active"}
@@ -133,8 +133,8 @@ export default async function PlanDetailPage({
       </div>
 
       {/* Aggregate bar across every child run */}
-      <div className="rounded-xl border border-slate-200 bg-white p-5">
-        <div className="flex h-3 overflow-hidden rounded-full bg-gray-100">
+      <div className="rounded-xl border border-hairline bg-surface p-5">
+        <div className="flex h-3 overflow-hidden rounded-full bg-surface-muted">
           {Object.entries(counts).map(([st, count]) => (
             <div
               key={st}
@@ -150,24 +150,24 @@ export default async function PlanDetailPage({
             counts[st] ? (
               <span key={st} className="flex items-center gap-1.5">
                 <span
-                  className={`inline-block h-2.5 w-2.5 rounded-full ${st === "UNTESTED" ? "border border-gray-300" : ""}`}
+                  className={`inline-block h-2.5 w-2.5 rounded-full ${st === "UNTESTED" ? "border border-hairline-strong" : ""}`}
                   style={{ backgroundColor: colorOf(st) }}
                 />
                 {labelOf(st)} <b>{counts[st]}</b>
-                <span className="text-slate-400">
+                <span className="text-content-subtle">
                   ({Math.round((counts[st] / total) * 100)}%)
                 </span>
               </span>
             ) : null
           )}
           {totalRaw === 0 && (
-            <span className="text-slate-400">No results yet.</span>
+            <span className="text-content-subtle">No results yet.</span>
           )}
         </div>
         {(planEstimates.totalEstimateSeconds > 0 ||
           planEstimates.actualElapsedSeconds > 0) && (
           <div
-            className="mt-3 flex flex-wrap gap-4 border-t border-slate-100 pt-3 text-sm text-slate-500"
+            className="mt-3 flex flex-wrap gap-4 border-t border-hairline-subtle pt-3 text-sm text-content-muted"
             data-testid="plan-estimate-summary"
           >
             {planEstimates.totalEstimateSeconds > 0 && (
@@ -190,9 +190,9 @@ export default async function PlanDetailPage({
       </div>
 
       {/* Child runs */}
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <section className="overflow-hidden rounded-xl border border-hairline bg-surface">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
+          <thead className="bg-canvas text-left text-xs uppercase text-content-muted">
             <tr>
               <th className="px-4 py-3">Run</th>
               <th className="px-4 py-3">Configuration</th>
@@ -200,7 +200,7 @@ export default async function PlanDetailPage({
               <th className="px-4 py-3">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-hairline-subtle">
             {plan.runs.map((run) => {
               const runTotal = run.results.length || 1;
               const config = parseRunConfig(run.configJson);
@@ -209,7 +209,7 @@ export default async function PlanDetailPage({
                   <td className="px-4 py-3">
                     <Link
                       href={`/projects/${plan.project.slug}/runs/${run.id}`}
-                      className="font-medium text-indigo-600 hover:underline"
+                      className="font-medium text-accent-text hover:underline"
                     >
                       {run.name}
                     </Link>
@@ -221,18 +221,18 @@ export default async function PlanDetailPage({
                           <span
                             key={group}
                             title={group}
-                            className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700"
+                            className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-soft-fg"
                           >
                             {option}
                           </span>
                         ))}
                       </span>
                     ) : (
-                      <span className="text-xs text-slate-300">—</span>
+                      <span className="text-xs text-content-subtle">—</span>
                     )}
                   </td>
                   <td className="w-1/3 px-4 py-3">
-                    <div className="flex h-2 overflow-hidden rounded-full bg-gray-100">
+                    <div className="flex h-2 overflow-hidden rounded-full bg-surface-muted">
                       {barKeys.map((st) => {
                         const c = run.results.filter(
                           (r) => bucketStatus(r.status, isMuted(r.testCase?.mutedAt)) === st
@@ -254,8 +254,8 @@ export default async function PlanDetailPage({
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                         run.status === "COMPLETED"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-blue-100 text-blue-700"
+                          ? "bg-success-soft text-success-soft-fg"
+                          : "bg-info-soft text-info-soft-fg"
                       }`}
                     >
                       {run.status === "COMPLETED" ? "Completed" : "Active"}
@@ -272,22 +272,22 @@ export default async function PlanDetailPage({
           detail breakdown, not a pass-rate aggregate, so a muted case's real
           status stays visible here (same "still showing" principle as the
           run detail executor). */}
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <h3 className="mb-3 text-sm font-semibold uppercase text-slate-400">
+      <section className="rounded-xl border border-hairline bg-surface p-6">
+        <h3 className="mb-3 text-sm font-semibold uppercase text-content-subtle">
           Result Matrix
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm" data-testid="plan-matrix">
-            <thead className="text-left text-xs uppercase text-slate-500">
+            <thead className="text-left text-xs uppercase text-content-muted">
               <tr>
                 <th className="py-2 pr-4">Configuration</th>
-                <th className="px-3 py-2 text-center text-green-700">Passed</th>
-                <th className="px-3 py-2 text-center text-red-700">Failed</th>
-                <th className="px-3 py-2 text-center text-orange-700">Blocked</th>
-                <th className="px-3 py-2 text-center text-slate-500">Untested</th>
+                <th className="px-3 py-2 text-center text-success-soft-fg">Passed</th>
+                <th className="px-3 py-2 text-center text-danger-soft-fg">Failed</th>
+                <th className="px-3 py-2 text-center text-warning-soft-fg">Blocked</th>
+                <th className="px-3 py-2 text-center text-content-muted">Untested</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-hairline-subtle">
               {plan.runs.map((run) => {
                 const config = parseRunConfig(run.configJson);
                 return (
@@ -298,7 +298,7 @@ export default async function PlanDetailPage({
                     {MATRIX_COLS.map((col) => (
                       <td key={col} className="px-3 py-2 text-center">
                         {rowCount(run.results, col) || (
-                          <span className="text-slate-300">·</span>
+                          <span className="text-content-subtle">·</span>
                         )}
                       </td>
                     ))}

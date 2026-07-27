@@ -24,7 +24,7 @@ function SubmitButton({ combos, cases }: { combos: number; cases: number }) {
       type="submit"
       disabled={pending || blocked}
       data-testid="plan-form-submit"
-      className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+      className="rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
     >
       {pending
         ? "Creating..."
@@ -84,33 +84,33 @@ export function NewPlanForm({
       {state?.error && (
         <p
           data-testid="plan-form-error"
-          className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700"
+          className="rounded-lg bg-danger-soft px-4 py-2.5 text-sm text-danger-soft-fg"
         >
           {state.error}
         </p>
       )}
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6">
+      <div className="rounded-xl border border-hairline bg-surface p-6">
         <div className="grid gap-4 md:grid-cols-3">
           <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              Plan Name <span className="text-red-500">*</span>
+            <label className="mb-1 block text-sm font-medium text-content">
+              Plan Name <span className="text-danger">*</span>
             </label>
             <input
               name="name"
               required
               placeholder="e.g. Release 2.0 cross-browser"
               data-testid="plan-name-input"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label className="mb-1 block text-sm font-medium text-content">
               Milestone
             </label>
             <select
               name="milestoneId"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm"
             >
               <option value="">(no milestone)</option>
               {milestones.map((m) => (
@@ -121,35 +121,35 @@ export function NewPlanForm({
             </select>
           </div>
           <div className="md:col-span-3">
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label className="mb-1 block text-sm font-medium text-content">
               Description
             </label>
             <input
               name="description"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
             />
           </div>
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6">
+      <div className="rounded-xl border border-hairline bg-surface p-6">
         <h3 className="mb-1 font-semibold">Configurations</h3>
         {configGroups.length === 0 ? (
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-content-subtle">
             No configuration groups defined — the plan will create a single
             run. Define groups (e.g. Browser, OS) under Fields →
             Configurations.
           </p>
         ) : (
           <>
-            <p className="mb-3 text-sm text-slate-400">
+            <p className="mb-3 text-sm text-content-subtle">
               Pick options per axis; one run is created per combination.
               Leaving a group empty removes it as an axis.
             </p>
             <div className="grid gap-4 md:grid-cols-2">
               {configGroups.map((g) => (
                 <div key={g.id}>
-                  <p className="mb-1.5 text-xs font-semibold uppercase text-slate-400">
+                  <p className="mb-1.5 text-xs font-semibold uppercase text-content-subtle">
                     {g.name}
                   </p>
                   <div className="flex flex-wrap gap-3">
@@ -165,7 +165,7 @@ export function NewPlanForm({
                       </label>
                     ))}
                     {g.options.length === 0 && (
-                      <span className="text-xs text-slate-400">no options</span>
+                      <span className="text-xs text-content-subtle">no options</span>
                     )}
                   </div>
                 </div>
@@ -177,8 +177,8 @@ export function NewPlanForm({
         <p
           className={`mt-4 rounded-lg px-3 py-2 text-sm ${
             combos.length > MAX_COMBINATIONS
-              ? "bg-red-50 text-red-700"
-              : "bg-indigo-50 text-indigo-700"
+              ? "bg-danger-soft text-danger-soft-fg"
+              : "bg-accent-soft text-accent-soft-fg"
           }`}
           data-testid="plan-combo-preview"
         >
@@ -202,10 +202,10 @@ export function NewPlanForm({
         </p>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6">
+      <div className="rounded-xl border border-hairline bg-surface p-6">
         <h3 className="mb-3 font-semibold">
           Select Test Cases{" "}
-          <span className="font-normal text-slate-400">
+          <span className="font-normal text-content-subtle">
             ({selected.size} selected — seeded into every run)
           </span>
         </h3>

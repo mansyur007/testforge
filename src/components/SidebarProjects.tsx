@@ -12,7 +12,7 @@ export function SidebarProjects({ projects }: { projects: Project[] }) {
   if (projects.length === 0) return null;
 
   return (
-    <ul className="mb-1 ml-4 space-y-0.5 border-l border-slate-800 pl-2">
+    <ul className="mb-1 ml-4 space-y-0.5 border-l border-sidebar-border pl-2">
       {projects.map((p) => {
         const href = `/projects/${p.slug}`;
         const active = pathname === href || pathname.startsWith(`${href}/`);
@@ -22,8 +22,8 @@ export function SidebarProjects({ projects }: { projects: Project[] }) {
               href={href}
               className={`block truncate rounded-md px-3 py-1.5 text-sm ${
                 active
-                  ? "bg-slate-800 font-medium text-white"
-                  : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                  ? "bg-sidebar-hover font-medium text-white"
+                  : "text-sidebar-fg hover:bg-sidebar-hover hover:text-white"
               }`}
             >
               {p.name}

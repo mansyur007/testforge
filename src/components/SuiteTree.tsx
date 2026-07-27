@@ -174,7 +174,7 @@ export function SuiteTree({
                 key={level}
                 aria-hidden
                 className={`w-3 shrink-0 self-stretch ${
-                  cont && level > 0 ? "border-l border-slate-200" : ""
+                  cont && level > 0 ? "border-l border-hairline" : ""
                 }`}
               />
             ))}
@@ -183,11 +183,11 @@ export function SuiteTree({
             {depth > 0 && (
               <span aria-hidden className="relative w-3 shrink-0 self-stretch">
                 <span
-                  className={`absolute left-0 top-0 w-px bg-slate-200 ${
+                  className={`absolute left-0 top-0 w-px bg-surface-muted ${
                     last ? "h-1/2" : "h-full"
                   }`}
                 />
-                <span className="absolute left-0 top-1/2 h-px w-2 bg-slate-200" />
+                <span className="absolute left-0 top-1/2 h-px w-2 bg-surface-muted" />
               </span>
             )}
 
@@ -198,7 +198,7 @@ export function SuiteTree({
                 aria-label={open ? "Collapse" : "Expand"}
                 aria-expanded={open}
                 data-testid={`suite-toggle-${node.id}`}
-                className="grid h-8 w-4 shrink-0 place-items-center text-slate-400 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                className="grid h-8 w-4 shrink-0 place-items-center text-content-subtle hover:text-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2"
               >
                 <svg
                   viewBox="0 0 20 20"
@@ -221,13 +221,13 @@ export function SuiteTree({
                 href={buildHref(node.id)}
                 data-testid={`suite-link-${node.id}`}
                 onClick={() => hasChildren && expand(node.id)}
-                className={`flex min-w-0 flex-1 items-center gap-1.5 rounded px-1.5 py-1.5 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
-                  active ? "bg-indigo-50 font-medium text-indigo-700" : "text-slate-700"
+                className={`flex min-w-0 flex-1 items-center gap-1.5 rounded px-1.5 py-1.5 hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 ${
+                  active ? "bg-accent-soft font-medium text-accent-soft-fg" : "text-content"
                 }`}
               >
                 <TFIcon
                   name={open || active ? "folder-open" : "folder"}
-                  className={`h-4 w-4 shrink-0 ${active ? "text-indigo-600" : "text-slate-400"}`}
+                  className={`h-4 w-4 shrink-0 ${active ? "text-accent-text" : "text-content-subtle"}`}
                 />
                 <span className="min-w-0 flex-1 truncate">{node.name}</span>
                 {node.caseCount > 0 && (
@@ -235,8 +235,8 @@ export function SuiteTree({
                     data-testid={`suite-count-${node.id}`}
                     className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium tabular-nums ${
                       active
-                        ? "bg-indigo-100 text-indigo-700"
-                        : "bg-slate-100 text-slate-500"
+                        ? "bg-accent-soft text-accent-soft-fg"
+                        : "bg-surface-muted text-content-muted"
                     }`}
                   >
                     {node.caseCount}
@@ -271,22 +271,22 @@ export function SuiteTree({
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search suites…"
             data-testid="suite-search"
-            className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="w-full rounded-lg border border-hairline-strong px-2.5 py-1.5 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
           />
           {expandable.length > 0 && (
             <div className="flex items-center gap-2 text-xs">
               <button
                 type="button"
                 onClick={() => setCollapsed(new Set())}
-                className="text-slate-500 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                className="text-content-muted hover:text-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2"
               >
                 Expand all
               </button>
-              <span className="text-slate-300">·</span>
+              <span className="text-content-subtle">·</span>
               <button
                 type="button"
                 onClick={() => setCollapsed(new Set(expandable))}
-                className="text-slate-500 hover:text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                className="text-content-muted hover:text-accent-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2"
               >
                 Collapse all
               </button>
@@ -305,8 +305,8 @@ export function SuiteTree({
           <SuiteDropZone projectSlug={slug} suiteId={null}>
             <Link
               href={buildHref(undefined)}
-              className={`block rounded px-1.5 py-1.5 hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
-                !activeSuite ? "bg-indigo-50 font-medium text-indigo-700" : ""
+              className={`block rounded px-1.5 py-1.5 hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 ${
+                !activeSuite ? "bg-accent-soft font-medium text-accent-soft-fg" : ""
               }`}
             >
               All Test Cases
@@ -317,7 +317,7 @@ export function SuiteTree({
         {renderNodes(filtered, [])}
 
         {q && filtered.length === 0 && (
-          <li className="px-2 py-2 text-xs text-slate-400">No suites match.</li>
+          <li className="px-2 py-2 text-xs text-content-subtle">No suites match.</li>
         )}
       </ul>
     </div>

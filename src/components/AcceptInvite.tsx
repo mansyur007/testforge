@@ -9,7 +9,7 @@ function Submit() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+      className="w-full rounded-lg bg-accent px-4 py-2.5 font-medium text-white hover:bg-accent-hover disabled:opacity-50"
     >
       {pending ? "Processing..." : "Accept invitation"}
     </button>
@@ -22,7 +22,7 @@ export function AcceptInvite({ token }: { token: string }) {
     <form action={formAction} className="space-y-3">
       <input type="hidden" name="token" value={token} />
       {state?.error && (
-        <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
+        <p className="rounded-lg bg-danger-soft px-4 py-2.5 text-sm text-danger-soft-fg">
           {state.error}
         </p>
       )}

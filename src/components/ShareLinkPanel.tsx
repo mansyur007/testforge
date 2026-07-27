@@ -18,9 +18,9 @@ export async function ShareLinkPanel({
   });
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-5">
+    <section className="rounded-xl border border-hairline bg-surface p-5">
       <h3 className="mb-1 font-semibold">Public share links</h3>
-      <p className="mb-3 text-xs text-slate-400">
+      <p className="mb-3 text-xs text-content-subtle">
         Anyone with a link sees a read-only report — no sign-in, no edits.
       </p>
       <ul className="mb-4 space-y-2 text-sm">
@@ -33,10 +33,10 @@ export async function ShareLinkPanel({
               data-testid={`share-link-row-${l.id}`}
               data-token={l.token}
             >
-              <code className="max-w-56 truncate rounded bg-slate-50 px-2 py-0.5 text-xs text-slate-500">
+              <code className="max-w-56 truncate rounded bg-canvas px-2 py-0.5 text-xs text-content-muted">
                 /share/{l.token.slice(0, 10)}…
               </code>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-content-subtle">
                 {expired
                   ? "expired"
                   : l.expiresAt
@@ -47,7 +47,7 @@ export async function ShareLinkPanel({
               <form action={revokeShareLink} className="inline">
                 <input type="hidden" name="shareLinkId" value={l.id} />
                 <button
-                  className="rounded border border-red-200 px-2 py-0.5 text-xs text-red-600 hover:bg-red-50"
+                  className="rounded border border-danger-border px-2 py-0.5 text-xs text-danger hover:bg-danger-soft"
                   data-testid={`share-revoke-${l.id}`}
                 >
                   Revoke
@@ -57,7 +57,7 @@ export async function ShareLinkPanel({
           );
         })}
         {links.length === 0 && (
-          <li className="text-xs text-slate-400">No active links.</li>
+          <li className="text-xs text-content-subtle">No active links.</li>
         )}
       </ul>
       <form action={createShareLink} className="flex items-center gap-2">
@@ -65,7 +65,7 @@ export async function ShareLinkPanel({
         <input type="hidden" name="entityId" value={entityId} />
         <select
           name="expires"
-          className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
+          className="bg-surface text-content-strong rounded-lg border border-hairline-strong px-2 py-1.5 text-sm"
           data-testid="share-expiry-select"
         >
           <option value="never">No expiry</option>
@@ -73,7 +73,7 @@ export async function ShareLinkPanel({
           <option value="30">Expires in 30 days</option>
         </select>
         <button
-          className="rounded-lg bg-slate-800 px-3 py-1.5 text-sm text-white hover:bg-slate-700"
+          className="rounded-lg bg-sidebar px-3 py-1.5 text-sm text-white hover:bg-sidebar-hover"
           data-testid="share-create-button"
         >
           + Share link

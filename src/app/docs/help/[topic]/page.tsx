@@ -22,7 +22,7 @@ export default function HelpTopicPage({ params }: { params: { topic: string } })
     <main className="mx-auto max-w-5xl px-4 py-12">
       <div className="mb-8 flex items-center justify-between">
         <Logo size="sm" />
-        <Link href="/dashboard" className="text-sm text-indigo-600 hover:underline">
+        <Link href="/dashboard" className="text-sm text-accent-text hover:underline">
           Back to app
         </Link>
       </div>
@@ -31,7 +31,7 @@ export default function HelpTopicPage({ params }: { params: { topic: string } })
         <nav className="hidden w-52 shrink-0 space-y-1 md:block">
           <Link
             href="/docs/help"
-            className="mb-2 flex items-center gap-1.5 text-sm text-slate-500 hover:text-indigo-600"
+            className="mb-2 flex items-center gap-1.5 text-sm text-content-muted hover:text-accent-text"
           >
             <TFIcon name="nav-help" className="h-4 w-4" /> All topics
           </Link>
@@ -41,8 +41,8 @@ export default function HelpTopicPage({ params }: { params: { topic: string } })
               href={`/docs/help/${t.slug}`}
               className={`block rounded-lg px-3 py-1.5 text-sm ${
                 t.slug === topic.slug
-                  ? "bg-indigo-50 font-medium text-indigo-700"
-                  : "text-slate-600 hover:bg-slate-100"
+                  ? "bg-accent-soft font-medium text-accent-soft-fg"
+                  : "text-content hover:bg-surface-muted"
               }`}
             >
               {t.title}
@@ -52,7 +52,7 @@ export default function HelpTopicPage({ params }: { params: { topic: string } })
 
         <article className="min-w-0 flex-1">
           <h1 className="text-3xl font-bold">{topic.title}</h1>
-          <p className="mt-2 text-slate-500">{topic.summary}</p>
+          <p className="mt-2 text-content-muted">{topic.summary}</p>
           <Markdown className="mt-8 max-w-none text-base leading-relaxed">{topic.body}</Markdown>
         </article>
       </div>

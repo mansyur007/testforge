@@ -26,7 +26,7 @@ export function NewSuiteForm({
     <form
       ref={formRef}
       action={formAction}
-      className="mt-4 space-y-2 border-t border-slate-100 pt-3"
+      className="mt-4 space-y-2 border-t border-hairline-subtle pt-3"
     >
       <input type="hidden" name="projectId" value={projectId} />
       <input
@@ -34,11 +34,11 @@ export function NewSuiteForm({
         placeholder="New suite name..."
         required
         data-testid="suite-name-input"
-        className="w-full rounded border border-slate-200 px-2 py-1.5 text-xs focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+        className="bg-surface text-content-strong w-full rounded border border-hairline px-2 py-1.5 text-xs focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
       />
       <select
         name="parentId"
-        className="w-full rounded border border-slate-200 px-2 py-1.5 text-xs"
+        className="bg-surface text-content-strong w-full rounded border border-hairline px-2 py-1.5 text-xs"
       >
         <option value="">(root suite)</option>
         {suites.map((s) => (
@@ -52,7 +52,7 @@ export function NewSuiteForm({
       </select>
       <button
         data-testid="suite-add-submit"
-        className="w-full rounded bg-slate-800 px-2 py-1.5 text-xs text-white hover:bg-slate-700"
+        className="w-full rounded bg-sidebar px-2 py-1.5 text-xs text-white hover:bg-sidebar-hover"
       >
         + Add Suite
       </button>

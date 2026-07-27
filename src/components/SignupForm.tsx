@@ -8,7 +8,7 @@ import { OAuthButtons } from "@/components/OAuthButtons";
 import { dict, type Lang } from "@/lib/i18n";
 
 const inputCls =
-  "w-full rounded-lg border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus:border-indigo-500";
+  "w-full rounded-lg border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus:border-accent";
 
 function slugify(name: string) {
   return name
@@ -26,10 +26,10 @@ function passwordStrength(pw: string): { key: "weak" | "fair" | "strong" | "very
   if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
   if (/[0-9]/.test(pw)) score++;
   if (/[^A-Za-z0-9]/.test(pw)) score++;
-  if (score <= 1) return { key: "weak", score: 1, color: "bg-red-500" };
-  if (score === 2) return { key: "fair", score: 2, color: "bg-orange-400" };
-  if (score <= 4) return { key: "strong", score: 3, color: "bg-green-500" };
-  return { key: "veryStrong", score: 4, color: "bg-emerald-600" };
+  if (score <= 1) return { key: "weak", score: 1, color: "bg-danger" };
+  if (score === 2) return { key: "fair", score: 2, color: "bg-warning" };
+  if (score <= 4) return { key: "strong", score: 3, color: "bg-success" };
+  return { key: "veryStrong", score: 4, color: "bg-success" };
 }
 
 function EyeIcon({ open }: { open: boolean }) {
@@ -75,14 +75,14 @@ function PasswordInput({
         onChange={onChange}
         onBlur={onBlur}
         placeholder="••••••••"
-        className={`${className} pr-10`}
+        className={`bg-surface text-content-strong ${className} pr-10`}
       />
       <button
         type="button"
         onClick={() => setVisible((v) => !v)}
         aria-label={visible ? hideLabel : showLabel}
         tabIndex={-1}
-        className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400 hover:text-slate-600"
+        className="absolute inset-y-0 right-0 flex items-center px-3 text-content-subtle hover:text-content"
       >
         <EyeIcon open={visible} />
       </button>
@@ -104,7 +104,7 @@ function SubmitButton({
     <button
       type="submit"
       disabled={pending || disabled}
-      className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+      className="w-full rounded-lg bg-accent px-4 py-2.5 font-medium text-white hover:bg-accent-hover disabled:opacity-50"
     >
       {pending ? pendingLabel : label}
     </button>
@@ -174,29 +174,29 @@ export function SignupForm({ lang }: { lang: Lang }) {
   const blur = (f: string) => setTouched((prev) => ({ ...prev, [f]: true }));
   const fieldErr = (f: string) =>
     touched[f] && errors[f] ? (
-      <p className="mt-1 text-xs text-red-600">{errors[f]}</p>
+      <p className="mt-1 text-xs text-danger">{errors[f]}</p>
     ) : null;
   const border = (f: string) =>
-    touched[f] && errors[f] ? "border-red-400" : "border-slate-300";
+    touched[f] && errors[f] ? "border-danger-border" : "border-hairline-strong";
 
   return (
     <>
       <OAuthButtons mode="signup" lang={lang} />
-      <div className="my-5 flex items-center gap-3 text-xs text-slate-400">
-        <span className="h-px flex-1 bg-slate-200" />
+      <div className="my-5 flex items-center gap-3 text-xs text-content-subtle">
+        <span className="h-px flex-1 bg-surface-muted" />
         {t.orEmail}
-        <span className="h-px flex-1 bg-slate-200" />
+        <span className="h-px flex-1 bg-surface-muted" />
       </div>
       <form action={formAction} className="space-y-4">
         {state?.error && (
-          <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
+          <p className="rounded-lg bg-danger-soft px-4 py-2.5 text-sm text-danger-soft-fg">
             {state.error}
           </p>
         )}
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            {t.fullName} <span className="text-red-500">*</span>
+          <label className="mb-1 block text-sm font-medium text-content">
+            {t.fullName} <span className="text-danger">*</span>
           </label>
           <input
             name="name"
@@ -210,8 +210,8 @@ export function SignupForm({ lang }: { lang: Lang }) {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            {t.email} <span className="text-red-500">*</span>
+          <label className="mb-1 block text-sm font-medium text-content">
+            {t.email} <span className="text-danger">*</span>
           </label>
           <input
             name="email"
@@ -227,14 +227,14 @@ export function SignupForm({ lang }: { lang: Lang }) {
           />
           {fieldErr("email")}
           {emailAvailable && touched.email && !errors.email && (
-            <p className="mt-1 text-xs text-green-600">{t.emailAvailable}</p>
+            <p className="mt-1 text-xs text-success">{t.emailAvailable}</p>
           )}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              {t.password} <span className="text-red-500">*</span>
+            <label className="mb-1 block text-sm font-medium text-content">
+              {t.password} <span className="text-danger">*</span>
             </label>
             <PasswordInput
               name="password"
@@ -251,11 +251,11 @@ export function SignupForm({ lang }: { lang: Lang }) {
                   {[1, 2, 3, 4].map((i) => (
                     <div
                       key={i}
-                      className={`h-1 flex-1 rounded-full ${i <= strength.score ? strength.color : "bg-slate-200"}`}
+                      className={`h-1 flex-1 rounded-full ${i <= strength.score ? strength.color : "bg-surface-muted"}`}
                     />
                   ))}
                 </div>
-                <p className="mt-0.5 text-xs text-slate-500">
+                <p className="mt-0.5 text-xs text-content-muted">
                   {t.strength[strength.key]}
                 </p>
               </div>
@@ -263,8 +263,8 @@ export function SignupForm({ lang }: { lang: Lang }) {
             {fieldErr("password")}
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              {t.confirm} <span className="text-red-500">*</span>
+            <label className="mb-1 block text-sm font-medium text-content">
+              {t.confirm} <span className="text-danger">*</span>
             </label>
             <PasswordInput
               name="confirmPassword"
@@ -280,8 +280,8 @@ export function SignupForm({ lang }: { lang: Lang }) {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            {t.orgName} <span className="text-red-500">*</span>
+          <label className="mb-1 block text-sm font-medium text-content">
+            {t.orgName} <span className="text-danger">*</span>
           </label>
           <input
             name="orgName"
@@ -295,11 +295,11 @@ export function SignupForm({ lang }: { lang: Lang }) {
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
+          <label className="mb-1 block text-sm font-medium text-content">
             {t.workspaceUrl}
           </label>
           <div className="flex items-center gap-1">
-            <span className="text-sm text-slate-400">testforge.io/</span>
+            <span className="text-sm text-content-subtle">testforge.io/</span>
             <input
               name="orgSlug"
               value={effectiveSlug}
@@ -314,13 +314,13 @@ export function SignupForm({ lang }: { lang: Lang }) {
           </div>
           {fieldErr("orgSlug")}
           {slugAvailable && effectiveSlug && !errors.orgSlug && (
-            <p className="mt-1 text-xs text-green-600">
+            <p className="mt-1 text-xs text-success">
               ✓ testforge.io/{effectiveSlug} {t.slugAvailable}
             </p>
           )}
         </div>
 
-        <label className="flex items-start gap-2 text-sm text-slate-600">
+        <label className="flex items-start gap-2 text-sm text-content">
           <input
             type="checkbox"
             name="agreeTerms"
@@ -330,11 +330,11 @@ export function SignupForm({ lang }: { lang: Lang }) {
           />
           <span>
             {t.agreePre}{" "}
-            <Link href="/terms" className="text-indigo-600 hover:underline">
+            <Link href="/terms" className="text-accent-text hover:underline">
               {t.terms}
             </Link>{" "}
             {t.and}{" "}
-            <Link href="/privacy" className="text-indigo-600 hover:underline">
+            <Link href="/privacy" className="text-accent-text hover:underline">
               {t.privacy}
             </Link>
           </span>

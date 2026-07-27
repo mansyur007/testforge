@@ -494,7 +494,7 @@ export function RunExecutor({
 
   if (!results.length)
     return (
-      <p className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">
+      <p className="rounded-xl border border-dashed border-hairline-strong p-10 text-center text-sm text-content-subtle">
         This run has no test cases.
       </p>
     );
@@ -513,22 +513,22 @@ export function RunExecutor({
         setActiveIdx(i);
         onPick?.();
       }}
-      className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm motion-safe:transition-colors motion-safe:duration-fast motion-safe:ease-tf-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
+      className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm motion-safe:transition-colors motion-safe:duration-fast motion-safe:ease-tf-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2 ${
         flash[r.id]
-          ? "bg-amber-50"
+          ? "bg-warning-soft"
           : i === activeIdx
-            ? "bg-indigo-50 ring-1 ring-indigo-300"
-            : "hover:bg-slate-50"
+            ? "bg-accent-soft ring-1 ring-accent-ring"
+            : "hover:bg-canvas"
       }`}
     >
-      <span className="font-mono text-xs text-slate-400">{r.displayId}</span>
+      <span className="font-mono text-xs text-content-subtle">{r.displayId}</span>
       <span className="flex-1 truncate">{r.title}</span>
       {othersOnCase(r.caseId).map((u) => (
         <span
           key={u.id}
           data-testid="presence-dot"
           title={`${u.name} is viewing this case`}
-          className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-indigo-600 text-[8px] font-bold text-white"
+          className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-accent text-[8px] font-bold text-white"
         >
           {u.name[0]?.toUpperCase()}
         </span>
@@ -537,14 +537,14 @@ export function RunExecutor({
         <span
           data-testid="queued-chip"
           title="Queued — will sync when online"
-          className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
+          className="shrink-0 rounded-full bg-warning-soft px-2 py-0.5 text-xs font-medium text-warning-soft-fg"
         >
           ⟳ queued
         </span>
       )}
       {r.muted && (
         <span
-          className="shrink-0 rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-600"
+          className="shrink-0 rounded-full bg-surface-muted px-2 py-0.5 text-xs font-medium text-content"
           data-testid="muted-chip"
           title="Muted — excluded from pass-rate math"
         >
@@ -553,7 +553,7 @@ export function RunExecutor({
       )}
       {r.datasetName && (
         <span
-          className="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600"
+          className="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-text"
           data-testid="dataset-chip"
           title="Parameterized run (F-13)"
         >
@@ -562,7 +562,7 @@ export function RunExecutor({
       )}
       {r.caseRev != null && r.caseRev < r.currentRev && (
         <span
-          className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
+          className="shrink-0 rounded-full bg-warning-soft px-2 py-0.5 text-xs font-medium text-warning-soft-fg"
           title="Case has changed since this run"
           data-testid="stale-rev-chip"
         >
@@ -586,8 +586,8 @@ export function RunExecutor({
           data-testid="queue-pill"
           className={`mb-3 rounded-lg px-3 py-2 text-sm font-medium ${
             queuedCount > 0
-              ? "bg-amber-100 text-amber-800"
-              : "bg-green-100 text-green-800"
+              ? "bg-warning-soft text-warning-soft-fg"
+              : "bg-success-soft text-success-soft-fg"
           }`}
         >
           {queuedCount > 0
@@ -602,7 +602,7 @@ export function RunExecutor({
           className="mb-3 flex items-center justify-end gap-1"
           data-testid="presence-bar"
         >
-          <span className="mr-1 text-xs text-slate-400">Also here:</span>
+          <span className="mr-1 text-xs text-content-subtle">Also here:</span>
           {others.slice(0, 5).map((u) => (
             <span
               key={u.id}
@@ -614,7 +614,7 @@ export function RunExecutor({
                     }`
                   : ""
               }`}
-              className="grid h-6 w-6 place-items-center rounded-full bg-indigo-600 text-[10px] font-bold text-white ring-2 ring-white"
+              className="grid h-6 w-6 place-items-center rounded-full bg-accent text-[10px] font-bold text-white ring-2 ring-white"
             >
               {u.name
                 .split(/\s+/)
@@ -625,7 +625,7 @@ export function RunExecutor({
             </span>
           ))}
           {others.length > 5 && (
-            <span className="grid h-6 w-6 place-items-center rounded-full bg-slate-300 text-[10px] font-bold text-slate-700 ring-2 ring-white">
+            <span className="grid h-6 w-6 place-items-center rounded-full bg-surface-muted text-[10px] font-bold text-content ring-2 ring-surface">
               +{others.length - 5}
             </span>
           )}
@@ -633,7 +633,7 @@ export function RunExecutor({
       )}
 
       {/* F-36 Part D: mobile top bar — position, prev/next, progress strip. */}
-      <div className="sticky top-12 z-20 -mx-4 mb-3 bg-slate-900 text-white md:hidden">
+      <div className="sticky top-12 z-20 -mx-4 mb-3 bg-sidebar text-white md:hidden">
         <div className="flex items-center justify-between px-3 py-2">
           <BackLink href={`/projects/${projectSlug}/runs`} variant="dark">Runs</BackLink>
           <button
@@ -648,7 +648,7 @@ export function RunExecutor({
               onClick={() => setActiveIdx((i) => Math.max(0, i - 1))}
               data-testid="mobile-prev"
               aria-label="Previous case"
-              className="grid h-8 w-8 place-items-center rounded text-lg hover:bg-slate-800"
+              className="grid h-8 w-8 place-items-center rounded text-lg hover:bg-sidebar-hover"
             >
               ‹
             </button>
@@ -658,7 +658,7 @@ export function RunExecutor({
               }
               data-testid="mobile-next"
               aria-label="Next case"
-              className="grid h-8 w-8 place-items-center rounded text-lg hover:bg-slate-800"
+              className="grid h-8 w-8 place-items-center rounded text-lg hover:bg-sidebar-hover"
             >
               ›
             </button>
@@ -681,7 +681,7 @@ export function RunExecutor({
         {/* Case list — desktop rail (hidden on mobile; the bottom sheet is the
             mobile escape hatch). */}
         <div
-          className="hidden w-2/5 shrink-0 space-y-1 overflow-y-auto rounded-xl border border-slate-200 bg-white p-3 md:block"
+          className="hidden w-2/5 shrink-0 space-y-1 overflow-y-auto rounded-xl border border-hairline bg-surface p-3 md:block"
           style={{ maxHeight: "calc(100vh - 280px)" }}
         >
           {results.map((r, i) => caseRow(r, i))}
@@ -690,7 +690,7 @@ export function RunExecutor({
         {/* Active case detail + submission */}
         <div className="min-w-0 flex-1 space-y-4">
           <div
-            className={`rounded-xl border border-slate-200 bg-white p-6 ${
+            className={`rounded-xl border border-hairline bg-surface p-6 ${
               dragX
                 ? ""
                 : "motion-safe:transition-transform motion-safe:duration-panel motion-safe:ease-tf-out"
@@ -701,19 +701,19 @@ export function RunExecutor({
             onTouchEnd={onTouchEnd}
           >
             <div className="flex items-center justify-between">
-              <p className="font-mono text-xs text-slate-400">{active.displayId}</p>
+              <p className="font-mono text-xs text-content-subtle">{active.displayId}</p>
               <span className="flex items-center gap-2">
                 {queuedIds.has(active.id) && (
                   <span
                     data-testid="queued-chip-detail"
-                    className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
+                    className="rounded-full bg-warning-soft px-2 py-0.5 text-xs font-medium text-warning-soft-fg"
                   >
                     ⟳ queued
                   </span>
                 )}
                 {active.datasetName && (
                   <span
-                    className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-700"
+                    className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-soft-fg"
                     data-testid="dataset-chip-detail"
                   >
                     Dataset: {active.datasetName}
@@ -721,7 +721,7 @@ export function RunExecutor({
                 )}
                 {active.caseRev != null && active.caseRev < active.currentRev && (
                   <span
-                    className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
+                    className="rounded-full bg-warning-soft px-2 py-0.5 text-xs font-medium text-warning-soft-fg"
                     title="Case has changed since this run"
                   >
                     executed at rev {active.caseRev} (now rev {active.currentRev})
@@ -740,27 +740,27 @@ export function RunExecutor({
               <span
                 key={u.id}
                 data-testid="soft-claim-chip"
-                className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800"
+                className="mt-2 inline-flex items-center gap-1 rounded-full bg-warning-soft px-2 py-0.5 text-xs font-medium text-warning-soft-fg"
               >
                 {u.name} is on this case
               </span>
             ))}
             {active.preconditions && (
-              <div className="mt-3 rounded-lg bg-amber-50 p-3 text-sm">
-                <span className="font-medium text-amber-800">Preconditions:</span>
-                <Markdown className="text-amber-900">{active.preconditions}</Markdown>
+              <div className="mt-3 rounded-lg bg-warning-soft p-3 text-sm">
+                <span className="font-medium text-warning-soft-fg">Preconditions:</span>
+                <Markdown className="text-warning-soft-fg">{active.preconditions}</Markdown>
               </div>
             )}
             <ol className="mt-4 space-y-2">
               {active.steps.map((s, i) => (
                 <li key={i} className="flex gap-2 text-base md:text-sm">
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-surface-muted text-xs font-bold text-content">
                     {i + 1}
                   </span>
                   <div className="min-w-0">
                     {s.fromShared && (
                       <span
-                        className="mr-1.5 rounded bg-indigo-50 px-1.5 py-0.5 align-middle text-[10px] font-medium text-indigo-600"
+                        className="mr-1.5 rounded bg-accent-soft px-1.5 py-0.5 align-middle text-[10px] font-medium text-accent-text"
                         title={`From shared steps: ${s.fromShared.title}`}
                         data-testid="shared-step-badge"
                       >
@@ -769,9 +769,9 @@ export function RunExecutor({
                     )}
                     <Markdown className="text-base md:text-sm">{s.action}</Markdown>
                     {s.expected && (
-                      <div className="flex gap-1 text-xs text-slate-500">
+                      <div className="flex gap-1 text-xs text-content-muted">
                         <span>↳</span>
-                        <Markdown className="text-xs text-slate-500">{s.expected}</Markdown>
+                        <Markdown className="text-xs text-content-muted">{s.expected}</Markdown>
                       </div>
                     )}
                   </div>
@@ -779,13 +779,13 @@ export function RunExecutor({
               ))}
             </ol>
             {active.expectedResult && (
-              <div className="mt-4 rounded-lg bg-green-50 p-3 text-sm">
-                <span className="font-medium text-green-800">Expected:</span>
-                <Markdown className="text-green-900">{active.expectedResult}</Markdown>
+              <div className="mt-4 rounded-lg bg-success-soft p-3 text-sm">
+                <span className="font-medium text-success-soft-fg">Expected:</span>
+                <Markdown className="text-success-soft-fg">{active.expectedResult}</Markdown>
               </div>
             )}
             {view(active).assigneeName && (
-              <p className="mt-3 text-xs text-slate-400">
+              <p className="mt-3 text-xs text-content-subtle">
                 Last executed by {view(active).assigneeName}
                 {view(active).elapsedSeconds != null && (
                   <> · {view(active).elapsedSeconds}s</>
@@ -799,15 +799,15 @@ export function RunExecutor({
               type="button"
               onClick={() => setShowDetails((s) => !s)}
               data-testid="mobile-details-toggle"
-              className="mt-4 flex w-full items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 md:hidden"
+              className="mt-4 flex w-full items-center justify-between rounded-lg border border-hairline px-3 py-2 text-sm font-medium text-content md:hidden"
             >
               Details <span>{showDetails ? "▲" : "▼"}</span>
             </button>
 
             <div className={`${showDetails ? "block" : "hidden"} md:block`}>
               {/* F-01: evidence attachments per result. key remounts on switch. */}
-              <div className="mt-4 border-t border-slate-100 pt-4">
-                <p className="mb-2 text-xs font-semibold uppercase text-slate-400">
+              <div className="mt-4 border-t border-hairline-subtle pt-4">
+                <p className="mb-2 text-xs font-semibold uppercase text-content-subtle">
                   Evidence
                 </p>
                 <AttachmentUploader
@@ -823,8 +823,8 @@ export function RunExecutor({
 
               {/* F-07: issue links. Filing is offered only for a failed result. */}
               {(hasIntegration || active.issueLinks.length > 0) && (
-                <div className="mt-4 border-t border-slate-100 pt-4">
-                  <p className="mb-2 text-xs font-semibold uppercase text-slate-400">
+                <div className="mt-4 border-t border-hairline-subtle pt-4">
+                  <p className="mb-2 text-xs font-semibold uppercase text-content-subtle">
                     Issues
                   </p>
                   <IssuePanel
@@ -840,8 +840,8 @@ export function RunExecutor({
               )}
 
               {/* F-26: built-in defects — always available (no external config). */}
-              <div className="mt-4 border-t border-slate-100 pt-4">
-                <p className="mb-2 text-xs font-semibold uppercase text-slate-400">
+              <div className="mt-4 border-t border-hairline-subtle pt-4">
+                <p className="mb-2 text-xs font-semibold uppercase text-content-subtle">
                   Defects
                 </p>
                 <DefectPanel
@@ -856,7 +856,7 @@ export function RunExecutor({
               </div>
 
               {/* F-16: per-result discussion — remounts per case via key. */}
-              <div className="mt-4 border-t border-slate-100 pt-4">
+              <div className="mt-4 border-t border-hairline-subtle pt-4">
                 <CommentPanel
                   key={active.id}
                   entityType="RESULT"
@@ -868,7 +868,7 @@ export function RunExecutor({
           </div>
 
           {runStatus === "ACTIVE" ? (
-            <div className="md:rounded-xl md:border md:border-slate-200 md:bg-white md:p-6">
+            <div className="md:rounded-xl md:border md:border-hairline md:bg-surface md:p-6">
               {/* F-02 notes + defect URL + F-03 custom fields collapse with the
                   aux disclosure on mobile (desktop shows them inline). */}
               <div className={`${showDetails ? "block" : "hidden"} md:block`}>
@@ -886,7 +886,7 @@ export function RunExecutor({
                   value={defectUrl}
                   onChange={(e) => setDefectUrl(e.target.value)}
                   placeholder="Bug report URL if failed (Jira/GitHub Issue)..."
-                  className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                  className="mt-2 w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
                 />
                 {customDefs.length > 0 && (
                   <div
@@ -906,7 +906,7 @@ export function RunExecutor({
                   apply automatically. Accepting is the normal BLOCKED submit. */}
               {active.blockedSuggestion && (
                 <div
-                  className="mt-3 flex items-center justify-between gap-3 rounded-lg bg-orange-50 px-3 py-2 text-sm text-orange-800"
+                  className="mt-3 flex items-center justify-between gap-3 rounded-lg bg-warning-soft px-3 py-2 text-sm text-warning-soft-fg"
                   data-testid="blocked-suggestion"
                 >
                   <span>
@@ -918,7 +918,7 @@ export function RunExecutor({
                     onClick={() => submit("BLOCKED")}
                     disabled={busy}
                     data-testid="blocked-suggestion-accept"
-                    className="shrink-0 rounded-lg border border-orange-300 bg-white px-2.5 py-1 text-xs font-medium text-orange-700 hover:bg-orange-100 disabled:opacity-50"
+                    className="shrink-0 rounded-lg border border-warning-border bg-surface px-2.5 py-1 text-xs font-medium text-warning-soft-fg hover:bg-warning-soft disabled:opacity-50"
                   >
                     Accept — mark BLOCKED
                   </button>
@@ -950,7 +950,7 @@ export function RunExecutor({
                   );
                 })}
               </div>
-              <p className="mt-3 hidden text-xs text-slate-400 md:block">
+              <p className="mt-3 hidden text-xs text-content-subtle md:block">
                 ⌨️ Shortcuts:{" "}
                 {buttons
                   .filter((d) => shortcutOf(d.key))
@@ -960,7 +960,7 @@ export function RunExecutor({
               </p>
             </div>
           ) : (
-            <p className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center text-sm text-slate-500">
+            <p className="rounded-xl border border-hairline bg-canvas p-4 text-center text-sm text-content-muted">
               This run is complete — results are read-only.
             </p>
           )}
@@ -972,7 +972,7 @@ export function RunExecutor({
       {runStatus === "ACTIVE" && (
         <div
           data-testid="mobile-status-bar"
-          className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white p-2 md:hidden"
+          className="fixed inset-x-0 bottom-0 z-30 border-t border-hairline bg-surface p-2 md:hidden"
           style={{ paddingBottom: "calc(0.5rem + env(safe-area-inset-bottom))" }}
         >
           <div className="grid grid-cols-2 gap-2">
@@ -1005,12 +1005,12 @@ export function RunExecutor({
             onClick={() => setSheetOpen(false)}
             aria-hidden
           />
-          <div className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-2xl bg-white p-3 motion-safe:animate-tf-sheet-up">
+          <div className="absolute inset-x-0 bottom-0 max-h-[80vh] overflow-y-auto rounded-t-2xl bg-surface p-3 motion-safe:animate-tf-sheet-up">
             <div className="mb-2 flex items-center justify-between">
               <h3 className="text-sm font-semibold">Cases</h3>
               <button
                 onClick={() => setSheetOpen(false)}
-                className="text-sm text-slate-400"
+                className="text-sm text-content-subtle"
               >
                 Close
               </button>

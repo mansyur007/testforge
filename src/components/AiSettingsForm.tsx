@@ -14,7 +14,7 @@ function SaveButton() {
       type="submit"
       disabled={pending}
       data-testid="ai-save"
-      className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+      className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
     >
       {pending ? "Saving…" : "Save"}
     </button>
@@ -37,13 +37,13 @@ export function AiSettingsForm({
   const [testing, startTest] = useTransition();
 
   return (
-    <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+    <section className="space-y-4 rounded-xl border border-hairline bg-surface p-6">
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Provider</h2>
         <span
           data-testid="ai-status"
           className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-            configured ? "bg-green-100 text-green-800" : "bg-slate-100 text-slate-500"
+            configured ? "bg-success-soft text-success-soft-fg" : "bg-surface-muted text-content-muted"
           }`}
         >
           {configured ? "Configured" : "Not configured"}
@@ -52,7 +52,7 @@ export function AiSettingsForm({
 
       <form action={formAction} className="space-y-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
+          <label className="mb-1 block text-sm font-medium text-content">
             Endpoint
           </label>
           <input
@@ -60,16 +60,16 @@ export function AiSettingsForm({
             defaultValue={endpoint}
             placeholder="https://api.anthropic.com"
             data-testid="ai-endpoint"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
           />
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-content-subtle">
             Any Anthropic-compatible Messages API base URL. Leave as the default
             for Anthropic.
           </p>
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
+          <label className="mb-1 block text-sm font-medium text-content">
             Model
           </label>
           <input
@@ -77,12 +77,12 @@ export function AiSettingsForm({
             defaultValue={model}
             placeholder={defaultModel}
             data-testid="ai-model"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
           />
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
+          <label className="mb-1 block text-sm font-medium text-content">
             API key
           </label>
           <input
@@ -91,20 +91,20 @@ export function AiSettingsForm({
             autoComplete="off"
             placeholder={configured ? "•••••••• (leave blank to keep)" : "sk-ant-..."}
             data-testid="ai-key"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
           />
-          <p className="mt-1 text-xs text-slate-400">
+          <p className="mt-1 text-xs text-content-subtle">
             Stored encrypted; never displayed again.
           </p>
         </div>
 
         {state?.error && (
-          <p className="text-sm text-red-600" data-testid="ai-error">
+          <p className="text-sm text-danger" data-testid="ai-error">
             {state.error}
           </p>
         )}
         {state?.ok && (
-          <p className="text-sm text-green-600" data-testid="ai-saved">
+          <p className="text-sm text-success" data-testid="ai-saved">
             Settings saved.
           </p>
         )}
@@ -116,7 +116,7 @@ export function AiSettingsForm({
             disabled={testing || !configured}
             data-testid="ai-test"
             onClick={() => startTest(async () => setTest(await testAiConnection()))}
-            className="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-100 disabled:opacity-50"
+            className="rounded-lg border border-hairline-strong px-4 py-2 text-sm hover:bg-surface-muted disabled:opacity-50"
           >
             {testing ? "Testing…" : "Test connection"}
           </button>
@@ -126,7 +126,7 @@ export function AiSettingsForm({
               name="clearKey"
               value="1"
               data-testid="ai-clear"
-              className="rounded-lg border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+              className="rounded-lg border border-danger-border px-4 py-2 text-sm text-danger-soft-fg hover:bg-danger-soft"
             >
               Disable AI
             </button>
@@ -134,7 +134,7 @@ export function AiSettingsForm({
         </div>
         {test && (
           <p
-            className={`text-sm ${test.ok ? "text-green-600" : "text-red-600"}`}
+            className={`text-sm ${test.ok ? "text-success" : "text-danger"}`}
             data-testid="ai-test-result"
           >
             {test.message}

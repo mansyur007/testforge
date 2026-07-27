@@ -57,7 +57,7 @@ export default async function PlansPage({
         <Link
           href={`/projects/${project.slug}/plans/new`}
           data-testid="plan-new"
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
         >
           + New Test Plan
         </Link>
@@ -75,12 +75,12 @@ export default async function PlansPage({
             <Link
               key={plan.id}
               href={`/projects/${project.slug}/plans/${plan.id}`}
-              className="block rounded-xl border border-slate-200 bg-white p-5 hover:border-indigo-300"
+              className="block rounded-xl border border-hairline bg-surface p-5 hover:border-accent-ring"
             >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">{plan.name}</p>
-                  <p className="mt-0.5 text-xs text-slate-400">
+                  <p className="mt-0.5 text-xs text-content-subtle">
                     {plan.createdBy.name} ·{" "}
                     {plan.createdAt.toLocaleDateString("en-US")} ·{" "}
                     {plan.runs.length} run{plan.runs.length === 1 ? "" : "s"}
@@ -91,18 +91,18 @@ export default async function PlansPage({
                   <span
                     className={`rounded-full px-2.5 py-1 text-xs font-medium ${
                       plan.status === "COMPLETED"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-blue-100 text-blue-700"
+                        ? "bg-success-soft text-success-soft-fg"
+                        : "bg-info-soft text-info-soft-fg"
                     }`}
                   >
                     {plan.status === "COMPLETED" ? "Completed" : "Active"}
                   </span>
-                  <p className="mt-1 text-xs text-slate-400">
+                  <p className="mt-1 text-xs text-content-subtle">
                     {done}/{totalRaw} executed
                   </p>
                 </div>
               </div>
-              <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-gray-100">
+              <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-surface-muted">
                 {barKeys.map((st) =>
                   counts[st] ? (
                     <div
@@ -120,7 +120,7 @@ export default async function PlansPage({
           );
         })}
         {project.testPlans.length === 0 && (
-          <p className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">
+          <p className="rounded-xl border border-dashed border-hairline-strong p-10 text-center text-sm text-content-subtle">
             No test plans yet. A plan bundles runs generated from one case
             selection across a configuration matrix (e.g. Browser × OS).
           </p>

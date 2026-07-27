@@ -7,6 +7,7 @@ import { LogoutButton } from "@/components/LogoutButton";
 import { SidebarProjects } from "@/components/SidebarProjects";
 import { CommandPalette } from "@/components/CommandPalette";
 import { AppShell } from "@/components/AppShell";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { loadMyWorkCounts } from "@/lib/my-work";
 
 export default async function AppLayout({
@@ -52,20 +53,20 @@ export default async function AppLayout({
         <div className="mb-3 px-3">
           <CommandPalette />
         </div>
-        <nav className="flex-1 space-y-1 px-3">
+        <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3">
           {nav.map((item) => (
             <div key={item.href}>
               <Link
                 href={item.href}
                 data-testid={`nav-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-slate-800 hover:text-white"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm hover:bg-sidebar-hover hover:text-white"
               >
                 <TFIcon name={item.icon} current className="h-[19px] w-[19px]" />
                 {item.label}
                 {"badge" in item && item.badge! > 0 && (
                   <span
                     data-testid="my-work-nav-badge"
-                    className="ml-auto rounded-full bg-indigo-600 px-1.5 py-0.5 text-xs font-medium text-white"
+                    className="ml-auto rounded-full bg-accent px-1.5 py-0.5 text-xs font-medium text-white"
                   >
                     {item.badge}
                   </span>
@@ -77,13 +78,14 @@ export default async function AppLayout({
             </div>
           ))}
         </nav>
-        <div className="border-t border-slate-800 p-4">
+        <div className="border-t border-sidebar-border p-4">
           <p className="truncate text-sm font-medium text-white">
             {session.name}
           </p>
-          <p className="truncate text-xs text-slate-400">{session.email}</p>
-          <div className="mt-3">
+          <p className="truncate text-xs text-sidebar-fg">{session.email}</p>
+          <div className="mt-3 flex items-center justify-between gap-2">
             <LogoutButton />
+            <ThemeSwitcher tone="dark" />
           </div>
         </div>
         </>

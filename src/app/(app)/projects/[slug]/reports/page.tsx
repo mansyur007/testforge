@@ -158,8 +158,8 @@ export default async function ReportsPage({
             href={`/projects/${project.slug}/reports`}
             className={`rounded-full px-3 py-1 text-xs font-medium ${
               !activeEnv
-                ? "bg-indigo-600 text-white"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                ? "bg-accent text-white"
+                : "bg-surface-muted text-content hover:bg-surface-muted"
             }`}
           >
             All environments
@@ -171,8 +171,8 @@ export default async function ReportsPage({
               data-testid={`env-filter-${e.name}`}
               className={`rounded-full px-3 py-1 text-xs font-medium ${
                 activeEnv === e.id
-                  ? "bg-indigo-600 text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  ? "bg-accent text-white"
+                  : "bg-surface-muted text-content hover:bg-surface-muted"
               }`}
             >
               {e.name}
@@ -188,17 +188,17 @@ export default async function ReportsPage({
           { label: "Failed", value: failed },
           { label: "Automation Coverage", value: `${automationCoverage}%` },
         ].map((s) => (
-          <div key={s.label} className="rounded-xl border border-slate-200 bg-white p-5">
-            <p className="text-sm text-slate-500">{s.label}</p>
+          <div key={s.label} className="rounded-xl border border-hairline bg-surface p-5">
+            <p className="text-sm text-content-muted">{s.label}</p>
             <p className="mt-1 text-3xl font-bold">{s.value}</p>
           </div>
         ))}
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
+      <section className="rounded-xl border border-hairline bg-surface p-6">
         <h3 className="mb-4 flex items-center gap-2 font-semibold"><TFIcon name="trend" className="h-5 w-5" /> Pass Rate Trend per Run</h3>
         {trend.length === 0 ? (
-          <p className="text-sm text-slate-400">No run data yet.</p>
+          <p className="text-sm text-content-subtle">No run data yet.</p>
         ) : (
           <div className="flex h-44 items-end gap-2">
             {trend.map((t, i) => (
@@ -209,13 +209,13 @@ export default async function ReportsPage({
               // name below sets a floor the column can't shrink past and the chart
               // overflows its card once a project has more than a handful of runs.
               <div key={i} className="group flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1">
-                <span className="text-xs font-medium text-slate-600">{t.rate}%</span>
+                <span className="text-xs font-medium text-content">{t.rate}%</span>
                 <div
-                  className={`w-full rounded-t ${t.rate >= 80 ? "bg-green-400" : t.rate >= 50 ? "bg-yellow-400" : "bg-red-400"}`}
+                  className={`w-full rounded-t ${t.rate >= 80 ? "bg-success" : t.rate >= 50 ? "bg-warning" : "bg-danger"}`}
                   style={{ height: `${Math.max(t.rate, 3)}%` }}
                   title={`${t.name}${t.config ? ` [${t.config}]` : ""}: ${t.rate}% (${t.executed} executed)`}
                 />
-                <span className="w-full truncate text-center text-[10px] text-slate-400">
+                <span className="w-full truncate text-center text-[10px] text-content-subtle">
                   {t.name}
                 </span>
               </div>
@@ -225,28 +225,28 @@ export default async function ReportsPage({
       </section>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-xl border border-slate-200 bg-white p-6">
+        <section className="rounded-xl border border-hairline bg-surface p-6">
           <h3 className="mb-4 flex items-center gap-2 font-semibold"><TFIcon name="flaky" className="h-5 w-5" /> Flaky Tests</h3>
-          <p className="mb-3 text-xs text-slate-400">
+          <p className="mb-3 text-xs text-content-subtle">
             Test cases whose pass/fail status flips between runs (≥2 changes).
           </p>
           {flakyCases.length === 0 ? (
-            <p className="text-sm text-slate-400">No flaky tests detected. 🎉</p>
+            <p className="text-sm text-content-subtle">No flaky tests detected. 🎉</p>
           ) : (
             <ul className="space-y-2 text-sm">
               {flakyCases.map((f) => (
                 <li key={f.caseId} className="flex items-center justify-between">
                   <Link
                     href={`/projects/${project.slug}/cases/${f.caseId}`}
-                    className="min-w-0 truncate text-slate-700 hover:text-indigo-600"
+                    className="min-w-0 truncate text-content hover:text-accent-text"
                   >
-                    <span className="font-mono text-xs text-slate-400">
+                    <span className="font-mono text-xs text-content-subtle">
                       {f.testCase && caseDisplayId(project.slug, f.testCase.seq)}
                     </span>{" "}
                     {f.testCase?.title}
                   </Link>
                   <span className="flex shrink-0 items-center">
-                    <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+                    <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-soft-fg">
                       {f.flips} flip / {f.total} run
                     </span>
                     <MuteButton caseId={f.caseId} />
@@ -257,24 +257,24 @@ export default async function ReportsPage({
           )}
         </section>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-6">
+        <section className="rounded-xl border border-hairline bg-surface p-6">
           <h3 className="mb-4 flex items-center gap-2 font-semibold"><TFIcon name="bug" className="h-5 w-5" /> Bug Correlation</h3>
-          <p className="mb-3 text-xs text-slate-400">
+          <p className="mb-3 text-xs text-content-subtle">
             Test cases that most often produce bug reports.
           </p>
           {buggy.length === 0 ? (
-            <p className="text-sm text-slate-400">No defects recorded yet.</p>
+            <p className="text-sm text-content-subtle">No defects recorded yet.</p>
           ) : (
             <ul className="space-y-2 text-sm">
               {buggy.map((b, i) => (
                 <li key={i} className="flex items-center justify-between">
                   <Link
                     href={`/projects/${project.slug}/cases/${b.testCase?.id}`}
-                    className="truncate text-slate-700 hover:text-indigo-600"
+                    className="truncate text-content hover:text-accent-text"
                   >
                     {b.testCase?.title}
                   </Link>
-                  <span className="ml-2 shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                  <span className="ml-2 shrink-0 rounded-full bg-danger-soft px-2 py-0.5 text-xs font-medium text-danger-soft-fg">
                     {b.count} defect
                   </span>
                 </li>
@@ -285,15 +285,15 @@ export default async function ReportsPage({
       </div>
 
       {/* F-21: muted/quarantined cases — excluded from every pass-rate above. */}
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
+      <section className="rounded-xl border border-hairline bg-surface p-6">
         <h3 className="mb-4 flex items-center gap-2 font-semibold">
           <TFIcon name="flaky" className="h-5 w-5" /> Muted Tests
         </h3>
-        <p className="mb-3 text-xs text-slate-400">
+        <p className="mb-3 text-xs text-content-subtle">
           Quarantined cases — results still recorded, but excluded from pass-rate math everywhere.
         </p>
         {mutedCases.length === 0 ? (
-          <p className="text-sm text-slate-400">No muted tests.</p>
+          <p className="text-sm text-content-subtle">No muted tests.</p>
         ) : (
           <ul className="space-y-3 text-sm">
             {mutedCases.map((c) => (
@@ -301,14 +301,14 @@ export default async function ReportsPage({
                 <div className="min-w-0 flex-1">
                   <Link
                     href={`/projects/${project.slug}/cases/${c.id}`}
-                    className="truncate text-slate-700 hover:text-indigo-600"
+                    className="truncate text-content hover:text-accent-text"
                   >
-                    <span className="font-mono text-xs text-slate-400">
+                    <span className="font-mono text-xs text-content-subtle">
                       {caseDisplayId(project.slug, c.seq)}
                     </span>{" "}
                     {c.title}
                   </Link>
-                  <p className="mt-0.5 truncate text-xs text-slate-400">
+                  <p className="mt-0.5 truncate text-xs text-content-subtle">
                     {c.mutedReason} · muted {c.daysMuted}d ago
                   </p>
                 </div>
@@ -317,7 +317,7 @@ export default async function ReportsPage({
                     {c.last10.map((kind, i) => (
                       <span
                         key={i}
-                        className={`h-3 w-1.5 rounded-sm ${kind === "PASS" ? "bg-green-400" : "bg-red-400"}`}
+                        className={`h-3 w-1.5 rounded-sm ${kind === "PASS" ? "bg-success" : "bg-danger"}`}
                       />
                     ))}
                   </div>
@@ -329,17 +329,17 @@ export default async function ReportsPage({
         )}
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
+      <section className="rounded-xl border border-hairline bg-surface p-6">
         <h3 className="mb-4 flex items-center gap-2 font-semibold"><TFIcon name="breakdown" className="h-5 w-5" /> Breakdown per Run</h3>
         <table className="w-full text-sm">
-          <thead className="text-left text-xs uppercase text-slate-500">
+          <thead className="text-left text-xs uppercase text-content-muted">
             <tr>
               <th className="py-2">Run</th>
               <th className="py-2">Progress</th>
               <th className="py-2 text-right">Pass Rate</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-hairline-subtle">
             {project.runs.map((run) => {
               const total = run.results.length || 1;
               const ex = run.results.filter(
@@ -351,18 +351,18 @@ export default async function ReportsPage({
                   <td className="py-2">
                     <Link
                       href={`/projects/${project.slug}/runs/${run.id}`}
-                      className="text-indigo-600 hover:underline"
+                      className="text-accent-text hover:underline"
                     >
                       {run.name}
                     </Link>
                     {run.origin && (
-                      <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
+                      <span className="ml-2 rounded bg-surface-muted px-1.5 py-0.5 text-xs text-content">
                         {run.origin}
                       </span>
                     )}
                   </td>
                   <td className="w-1/2 py-2">
-                    <div className="flex h-2 overflow-hidden rounded-full bg-gray-100">
+                    <div className="flex h-2 overflow-hidden rounded-full bg-surface-muted">
                       {Object.entries(
                         run.results.reduce<Record<string, number>>((acc, r) => {
                           const b = bucket(r);

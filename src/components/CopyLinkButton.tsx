@@ -13,7 +13,7 @@ export function CopyLinkButton({ path }: { path: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
       }}
-      className="rounded border border-slate-300 px-2 py-0.5 text-xs hover:bg-slate-100"
+      className="rounded border border-hairline-strong px-2 py-0.5 text-xs hover:bg-surface-muted"
       data-testid="share-copy-button"
     >
       {copied ? "Copied!" : "Copy link"}

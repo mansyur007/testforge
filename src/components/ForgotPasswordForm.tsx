@@ -11,7 +11,7 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
     <button
       type="submit"
       disabled={pending}
-      className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+      className="w-full rounded-lg bg-accent px-4 py-2.5 font-medium text-white hover:bg-accent-hover disabled:opacity-50"
     >
       {pending ? pendingLabel : label}
     </button>
@@ -26,20 +26,20 @@ export function ForgotPasswordForm({ lang }: { lang: Lang }) {
   return (
     <form
       action={formAction}
-      className="space-y-4 rounded-xl border border-slate-200 bg-white p-8 shadow-sm"
+      className="space-y-4 rounded-xl border border-hairline bg-surface p-8 shadow-sm"
     >
       {state?.error && (
-        <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
+        <p className="rounded-lg bg-danger-soft px-4 py-2.5 text-sm text-danger-soft-fg">
           {state.error}
         </p>
       )}
       {state?.ok && (
-        <p className="rounded-lg bg-green-50 px-4 py-2.5 text-sm text-green-700">
+        <p className="rounded-lg bg-success-soft px-4 py-2.5 text-sm text-success-soft-fg">
           {state.ok}
         </p>
       )}
       {state?.devLink && (
-        <div className="rounded-lg bg-amber-50 p-3 text-xs text-amber-800">
+        <div className="rounded-lg bg-warning-soft p-3 text-xs text-warning-soft-fg">
           <p className="font-medium">{t.devMode}</p>
           <a href={state.devLink} className="break-all underline">
             {state.devLink}
@@ -47,7 +47,7 @@ export function ForgotPasswordForm({ lang }: { lang: Lang }) {
         </div>
       )}
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">
+        <label className="mb-1 block text-sm font-medium text-content">
           {t.email}
         </label>
         <input
@@ -55,11 +55,11 @@ export function ForgotPasswordForm({ lang }: { lang: Lang }) {
           type="email"
           required
           placeholder="you@company.com"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+          className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
         />
       </div>
       <SubmitButton label={t.submit} pendingLabel={t.submitting} />
-      <p className="flex justify-center text-sm text-slate-500">
+      <p className="flex justify-center text-sm text-content-muted">
         <BackLink href="/login" className="font-medium">{t.back}</BackLink>
       </p>
     </form>

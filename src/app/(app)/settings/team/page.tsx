@@ -16,7 +16,7 @@ export default async function TeamPage() {
     return (
       <div className="max-w-2xl space-y-2">
         <h1 className="text-2xl font-bold">Team</h1>
-        <p className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-500">
+        <p className="rounded-xl border border-hairline bg-surface p-6 text-sm text-content-muted">
           You are not part of an organization yet. Create a project to set one
           up, then come back here to invite your team.
         </p>

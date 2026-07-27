@@ -55,10 +55,10 @@ export async function DefectsSection({ params }: SectionProps) {
 
       <div className="grid grid-cols-1 gap-4 overflow-x-auto sm:grid-cols-2 lg:grid-cols-5">
         {DEFECT_STATUSES.map((status) => (
-          <div key={status} className="min-w-[220px] rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <h3 className="mb-3 flex items-center justify-between text-xs font-semibold uppercase text-slate-500">
+          <div key={status} className="min-w-[220px] rounded-xl border border-hairline bg-canvas p-3">
+            <h3 className="mb-3 flex items-center justify-between text-xs font-semibold uppercase text-content-muted">
               {COLUMN_LABELS[status]}
-              <span className="rounded-full bg-white px-2 py-0.5 text-slate-400">
+              <span className="rounded-full bg-surface px-2 py-0.5 text-content-subtle">
                 {byStatus.get(status)?.length ?? 0}
               </span>
             </h3>
@@ -66,16 +66,16 @@ export async function DefectsSection({ params }: SectionProps) {
               {(byStatus.get(status) ?? []).map((d) => (
                 <div
                   key={d.id}
-                  className="rounded-lg border border-slate-200 bg-white p-3 text-sm"
+                  className="rounded-lg border border-hairline bg-surface p-3 text-sm"
                   data-testid={`defect-card-${defectDisplayId(project.slug, d.seq)}`}
                 >
                   <Link
                     href={`/projects/${project.slug}/defects/${d.id}`}
-                    className="font-medium text-indigo-600 hover:underline"
+                    className="font-medium text-accent-text hover:underline"
                   >
                     {defectDisplayId(project.slug, d.seq)}
                   </Link>
-                  <p className="mt-1 line-clamp-2 text-slate-700">{d.title}</p>
+                  <p className="mt-1 line-clamp-2 text-content">{d.title}</p>
                   <div className="mt-2 flex items-center justify-between gap-2">
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-medium ${DEFECT_SEVERITY_BADGES[d.severity as DefectSeverity] ?? DEFECT_SEVERITY_BADGES.MEDIUM}`}
@@ -83,7 +83,7 @@ export async function DefectsSection({ params }: SectionProps) {
                       {d.severity}
                     </span>
                     {d.assignee && (
-                      <span className="truncate text-xs text-slate-400">{d.assignee.name}</span>
+                      <span className="truncate text-xs text-content-subtle">{d.assignee.name}</span>
                     )}
                   </div>
                   {canEdit && (
@@ -96,7 +96,7 @@ export async function DefectsSection({ params }: SectionProps) {
                 </div>
               ))}
               {(byStatus.get(status) ?? []).length === 0 && (
-                <p className="text-xs text-slate-400">No defects.</p>
+                <p className="text-xs text-content-subtle">No defects.</p>
               )}
             </div>
           </div>
@@ -104,7 +104,7 @@ export async function DefectsSection({ params }: SectionProps) {
       </div>
 
       {canEdit && (
-        <section className="max-w-xl rounded-xl border border-slate-200 bg-white p-6">
+        <section className="max-w-xl rounded-xl border border-hairline bg-surface p-6">
           <h3 className="mb-3 font-semibold">Report a defect</h3>
           <form action={createDefect} className="space-y-2">
             <input type="hidden" name="projectId" value={project.id} />
@@ -113,14 +113,14 @@ export async function DefectsSection({ params }: SectionProps) {
               required
               placeholder="Defect title"
               data-testid="defect-title-input"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm"
             />
             <div className="flex gap-2">
               <select
                 name="severity"
                 defaultValue="MEDIUM"
                 data-testid="defect-severity-input"
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="bg-surface text-content-strong rounded-lg border border-hairline-strong px-3 py-2 text-sm"
               >
                 <option value="CRITICAL">Critical</option>
                 <option value="HIGH">High</option>
@@ -130,7 +130,7 @@ export async function DefectsSection({ params }: SectionProps) {
               <select
                 name="assigneeId"
                 defaultValue=""
-                className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="bg-surface text-content-strong flex-1 rounded-lg border border-hairline-strong px-3 py-2 text-sm"
               >
                 <option value="">Unassigned</option>
                 {members.map((m) => (
@@ -144,10 +144,10 @@ export async function DefectsSection({ params }: SectionProps) {
               name="bodyMd"
               placeholder="Description (Markdown, optional)"
               rows={3}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm"
             />
             <button
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
               data-testid="defect-create-button"
             >
               + Defect

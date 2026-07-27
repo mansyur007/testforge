@@ -63,26 +63,26 @@ export function SectionModalShell({
         aria-modal="true"
         aria-label={ariaLabel}
         data-testid={`${testIdPrefix}-modal`}
-        className="flex h-[min(46rem,calc(100vh-2rem))] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl motion-safe:animate-tf-pop-in"
+        className="flex h-[min(46rem,calc(100vh-2rem))] w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-surface shadow-2xl motion-safe:animate-tf-pop-in"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-5 py-3.5">
-          <h2 className="flex min-w-0 items-center gap-2 font-semibold text-slate-800">
-            <TFIcon name={icon} className="h-5 w-5 shrink-0 text-slate-500" />
+        <div className="flex shrink-0 items-center justify-between border-b border-hairline px-5 py-3.5">
+          <h2 className="flex min-w-0 items-center gap-2 font-semibold text-content-strong">
+            <TFIcon name={icon} className="h-5 w-5 shrink-0 text-content-muted" />
             <span className="truncate">{title}</span>
           </h2>
           <Link
             href={closeHref}
             aria-label={`Close ${ariaLabel.toLowerCase()}`}
             data-testid={`${testIdPrefix}-modal-close`}
-            className={`rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 ${FOCUS_RING}`}
+            className={`rounded-lg p-1.5 text-content-subtle hover:bg-surface-muted hover:text-content ${FOCUS_RING}`}
           >
             ✕
           </Link>
         </div>
 
         <div className="flex min-h-0 flex-1">
-          <nav className="w-52 shrink-0 overflow-y-auto border-r border-slate-100 bg-slate-50/60 p-2">
+          <nav className="w-52 shrink-0 overflow-y-auto border-r border-hairline-subtle bg-canvas/60 p-2">
             {sections.map((s) => (
               <Link
                 key={s.key}
@@ -91,8 +91,8 @@ export function SectionModalShell({
                 aria-current={s.key === active ? "page" : undefined}
                 className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${FOCUS_RING} ${
                   s.key === active
-                    ? "bg-indigo-50 font-medium text-indigo-700"
-                    : "text-slate-600 hover:bg-white"
+                    ? "bg-accent-soft font-medium text-accent-soft-fg"
+                    : "text-content hover:bg-surface"
                 }`}
               >
                 <TFIcon name={s.icon} className="h-4 w-4 shrink-0" />

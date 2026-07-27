@@ -46,10 +46,10 @@ export default async function SharePage({
   if (!body) notFound();
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-canvas">
       <div className="mx-auto max-w-5xl space-y-6 px-4 py-10">
         {body}
-        <footer className="border-t border-slate-200 pt-4 text-center text-xs text-slate-400">
+        <footer className="border-t border-hairline pt-4 text-center text-xs text-content-subtle">
           Powered by TestForge
         </footer>
       </div>
@@ -92,11 +92,11 @@ async function runReport(runId: string) {
   return (
     <>
       <header>
-        <p className="text-xs font-semibold uppercase text-slate-400">
+        <p className="text-xs font-semibold uppercase text-content-subtle">
           {run.project.name} · Test run report
         </p>
         <h1 className="text-2xl font-bold">{run.name}</h1>
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-1 text-sm text-content-subtle">
           {run.createdAt.toLocaleDateString("en-US")}
           {run.environment && <> · {run.environment.name}</>}
           {" · "}
@@ -104,8 +104,8 @@ async function runReport(runId: string) {
         </p>
       </header>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-5">
-        <div className="flex h-3 overflow-hidden rounded-full bg-gray-100">
+      <div className="rounded-xl border border-hairline bg-surface p-5">
+        <div className="flex h-3 overflow-hidden rounded-full bg-surface-muted">
           {Object.entries(counts).map(([st, count]) => (
             <div
               key={st}
@@ -125,7 +125,7 @@ async function runReport(runId: string) {
                   style={{ backgroundColor: colorOf(st) }}
                 />
                 {labelOf(st)} <b>{counts[st]}</b>
-                <span className="text-slate-400">
+                <span className="text-content-subtle">
                   ({Math.round((counts[st] / total) * 100)}%)
                 </span>
               </span>
@@ -134,10 +134,10 @@ async function runReport(runId: string) {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-hairline bg-surface">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 text-left text-xs uppercase text-slate-400">
+            <tr className="border-b border-hairline text-left text-xs uppercase text-content-subtle">
               <th className="px-4 py-3">Case</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Comment</th>
@@ -145,19 +145,19 @@ async function runReport(runId: string) {
           </thead>
           <tbody>
             {run.results.map((r) => (
-              <tr key={r.id} className="border-b border-slate-100 last:border-0">
+              <tr key={r.id} className="border-b border-hairline-subtle last:border-0">
                 <td className="px-4 py-2.5">
-                  <span className="font-mono text-xs text-slate-400">
+                  <span className="font-mono text-xs text-content-subtle">
                     {caseDisplayId(run.project.slug, r.testCase.seq)}
                   </span>{" "}
                   {r.testCase.title}
                   {r.datasetName && (
-                    <span className="ml-1 rounded bg-indigo-50 px-1.5 py-0.5 text-xs text-indigo-700">
+                    <span className="ml-1 rounded bg-accent-soft px-1.5 py-0.5 text-xs text-accent-soft-fg">
                       {r.datasetName}
                     </span>
                   )}
                   {isMuted(r.testCase.mutedAt) && (
-                    <span className="ml-1 rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
+                    <span className="ml-1 rounded bg-surface-muted px-1.5 py-0.5 text-xs text-content-muted">
                       muted
                     </span>
                   )}
@@ -170,7 +170,7 @@ async function runReport(runId: string) {
                     {labelOf(r.status)}
                   </span>
                 </td>
-                <td className="max-w-64 truncate px-4 py-2.5 text-xs text-slate-500">
+                <td className="max-w-64 truncate px-4 py-2.5 text-xs text-content-muted">
                   {r.comment}
                 </td>
               </tr>
@@ -196,7 +196,7 @@ async function dashboardReport(dashboardId: string) {
   return (
     <>
       <header>
-        <p className="text-xs font-semibold uppercase text-slate-400">
+        <p className="text-xs font-semibold uppercase text-content-subtle">
           {dashboard.project.name} · Dashboard
         </p>
         <h1 className="text-2xl font-bold">{dashboard.name}</h1>
@@ -208,7 +208,7 @@ async function dashboardReport(dashboardId: string) {
         {dashboard.widgets.map((w) => (
           <section
             key={w.id}
-            className="rounded-xl border border-slate-200 bg-white p-5"
+            className="rounded-xl border border-hairline bg-surface p-5"
             style={{
               gridColumn: `${w.x + 1} / span ${Math.min(w.w, GRID_COLS - w.x)}`,
               gridRow: `${w.y + 1} / span ${w.h}`,

@@ -77,7 +77,7 @@ test(`TC-${TC}-66 Gherkin: import .feature, syntax-highlighted detail, create/ed
 
   // 4. Edit it — the form must reopen already in Gherkin mode with the body intact.
   await page.goto(`${newCaseUrl}/edit`);
-  await expect(page.locator('[data-testid="case-format-gherkin"]')).toHaveClass(/bg-indigo-600/);
+  await expect(page.locator('[data-testid="case-format-gherkin"]')).toHaveClass(/bg-accent\b/);
   await expect(page.locator('[data-testid="case-gherkin-input"]')).toHaveValue(gherkinBody);
 
   // 5. Export .feature — both scenario titles show up in the downloaded text.

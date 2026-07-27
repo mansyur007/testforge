@@ -42,18 +42,18 @@ export default async function DashboardsPage({
           <Link
             key={d.id}
             href={`/projects/${project.slug}/dashboards/${d.id}`}
-            className="rounded-xl border border-slate-200 bg-white p-5 hover:border-indigo-300"
+            className="rounded-xl border border-hairline bg-surface p-5 hover:border-accent-ring"
             data-testid={`dashboard-card-${d.name}`}
           >
             <p className="font-medium">{d.name}</p>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-content-subtle">
               {d.widgets.length} widget{d.widgets.length === 1 ? "" : "s"} ·{" "}
               {d.createdBy.name} · {d.createdAt.toLocaleDateString("en-US")}
             </p>
           </Link>
         ))}
         {project.dashboards.length === 0 && (
-          <p className="col-span-full rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">
+          <p className="col-span-full rounded-xl border border-dashed border-hairline-strong p-10 text-center text-sm text-content-subtle">
             No dashboards yet. Create one and add widgets from the report
             catalog.
           </p>
@@ -68,9 +68,9 @@ export default async function DashboardsPage({
             required
             placeholder="Dashboard name, e.g. Release Health"
             data-testid="dashboard-name-input"
-            className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="bg-surface text-content-strong flex-1 rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
           />
-          <button className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700">
+          <button className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover">
             + Dashboard
           </button>
         </form>

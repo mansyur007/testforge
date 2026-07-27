@@ -30,18 +30,18 @@ export default function SelfHostingPage() {
         <TFIcon name="docker-setup" className="h-9 w-9" />
         {t.title}
       </h1>
-      <p className="mt-3 text-slate-600">{t.intro}</p>
+      <p className="mt-3 text-content">{t.intro}</p>
 
       <h2 className="mt-10 text-xl font-semibold">{t.step1}</h2>
-      <pre className="mt-3 overflow-x-auto rounded-lg bg-slate-900 p-4 font-mono text-sm text-slate-100">
+      <pre className="mt-3 overflow-x-auto rounded-lg bg-sidebar p-4 font-mono text-sm text-sidebar-fg">
 {`git clone https://github.com/${GITHUB_REPO}.git
 cd testforge
 docker compose up -d`}
       </pre>
-      <p className="mt-2 text-sm text-slate-500">{t.step1Note}</p>
+      <p className="mt-2 text-sm text-content-muted">{t.step1Note}</p>
 
       <h2 className="mt-10 text-xl font-semibold">{t.step2}</h2>
-      <pre className="mt-3 overflow-x-auto rounded-lg bg-slate-900 p-4 font-mono text-sm text-slate-100">
+      <pre className="mt-3 overflow-x-auto rounded-lg bg-sidebar p-4 font-mono text-sm text-sidebar-fg">
 {`AUTH_SECRET=long-random-secret               # ${c.secret}
 DATABASE_URL=file:/data/testforge.db          # ${c.db}
 NEXT_PUBLIC_BASE_URL=https://testforge.company.com
@@ -52,13 +52,13 @@ GITHUB_CLIENT_ID=...                          # ${c.github}`}
       </pre>
 
       <h2 className="mt-10 text-xl font-semibold">{t.step3}</h2>
-      <p className="mt-2 text-sm text-slate-600">{t.step3Body}</p>
+      <p className="mt-2 text-sm text-content">{t.step3Body}</p>
 
-      <div className="mt-10 rounded-xl border border-indigo-200 bg-indigo-50 p-6 text-center">
+      <div className="mt-10 rounded-xl border border-accent-ring bg-accent-soft p-6 text-center">
         <p className="font-medium">{t.ctaTitle}</p>
         <Link
           href="/signup"
-          className="mt-3 inline-block rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
+          className="mt-3 inline-block rounded-lg bg-accent px-6 py-2.5 text-sm font-medium text-white hover:bg-accent-hover"
         >
           {t.cta}
         </Link>

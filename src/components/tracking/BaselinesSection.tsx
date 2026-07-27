@@ -32,16 +32,16 @@ export async function BaselinesSection({ params }: SectionProps) {
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Suite Baselines</h2>
       </div>
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-content-muted">
         Snapshot a suite tree (with each case&apos;s current revision) as a named baseline —
         test an older release in parallel with current work, and see exactly what changed
         since.
       </p>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-hairline bg-surface">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 text-left text-xs uppercase text-slate-400">
+            <tr className="border-b border-hairline text-left text-xs uppercase text-content-subtle">
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Scope</th>
               <th className="px-4 py-3">Cases</th>
@@ -53,28 +53,28 @@ export async function BaselinesSection({ params }: SectionProps) {
             {baselines.map((b) => (
               <tr
                 key={b.id}
-                className="border-b border-slate-100 last:border-0"
+                className="border-b border-hairline-subtle last:border-0"
                 data-testid={`baseline-row-${b.name}`}
               >
                 <td className="px-4 py-2.5">
                   <Link
                     href={`/projects/${project.slug}/baselines/${b.id}`}
-                    className="text-indigo-600 hover:underline"
+                    className="text-accent-text hover:underline"
                   >
                     {b.name}
                   </Link>
                 </td>
-                <td className="px-4 py-2.5 text-slate-500">
+                <td className="px-4 py-2.5 text-content-muted">
                   {b.suiteId ? pathOf.get(b.suiteId) ?? "(deleted suite)" : "Whole project"}
                 </td>
-                <td className="px-4 py-2.5 text-slate-500">{b._count.entries}</td>
-                <td className="px-4 py-2.5 text-slate-500">{b._count.runs}</td>
-                <td className="px-4 py-2.5 text-slate-500">{b.createdBy.name}</td>
+                <td className="px-4 py-2.5 text-content-muted">{b._count.entries}</td>
+                <td className="px-4 py-2.5 text-content-muted">{b._count.runs}</td>
+                <td className="px-4 py-2.5 text-content-muted">{b.createdBy.name}</td>
               </tr>
             ))}
             {baselines.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-slate-400">
+                <td colSpan={5} className="px-4 py-10 text-center text-content-subtle">
                   No baselines yet.
                 </td>
               </tr>
@@ -84,7 +84,7 @@ export async function BaselinesSection({ params }: SectionProps) {
       </div>
 
       {canEdit && (
-        <section className="max-w-xl rounded-xl border border-slate-200 bg-white p-6">
+        <section className="max-w-xl rounded-xl border border-hairline bg-surface p-6">
           <h3 className="mb-3 font-semibold">Create baseline</h3>
           <form action={createBaselineAction} className="space-y-2">
             <input type="hidden" name="projectId" value={project.id} />
@@ -93,13 +93,13 @@ export async function BaselinesSection({ params }: SectionProps) {
               required
               placeholder="e.g. Release 2.3"
               data-testid="baseline-name-input"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm"
             />
             <select
               name="suiteId"
               defaultValue=""
               data-testid="baseline-suite-select"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm"
             >
               <option value="">Whole project</option>
               {suites
@@ -118,7 +118,7 @@ export async function BaselinesSection({ params }: SectionProps) {
                 ))}
             </select>
             <button
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
               data-testid="baseline-create-button"
             >
               + Baseline

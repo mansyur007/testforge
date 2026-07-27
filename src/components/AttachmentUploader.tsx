@@ -93,14 +93,14 @@ export function AttachmentUploader({
             <li
               key={item.id}
               data-testid="attachment-item"
-              className="group relative rounded-lg border border-slate-200"
+              className="group relative rounded-lg border border-hairline"
             >
               {canWrite && (
                 <button
                   type="button"
                   aria-label={`Delete ${item.filename}`}
                   onClick={() => remove(item)}
-                  className="absolute -right-2 -top-2 z-10 hidden h-5 w-5 items-center justify-center rounded-full bg-slate-600 text-xs text-white hover:bg-red-600 group-hover:flex"
+                  className="absolute -right-2 -top-2 z-10 hidden h-5 w-5 items-center justify-center rounded-full bg-content-muted text-xs text-white hover:bg-danger group-hover:flex"
                 >
                   ×
                 </button>
@@ -119,13 +119,13 @@ export function AttachmentUploader({
               ) : (
                 <a
                   href={item.url}
-                  className="flex h-20 w-32 flex-col justify-center gap-1 px-3 text-xs hover:bg-slate-50"
+                  className="flex h-20 w-32 flex-col justify-center gap-1 px-3 text-xs hover:bg-canvas"
                   title={item.filename}
                 >
-                  <span className="truncate font-medium text-slate-700">
+                  <span className="truncate font-medium text-content">
                     📎 {item.filename}
                   </span>
-                  <span className="text-slate-400">{formatSize(item.sizeBytes)}</span>
+                  <span className="text-content-subtle">{formatSize(item.sizeBytes)}</span>
                 </a>
               )}
             </li>
@@ -153,8 +153,8 @@ export function AttachmentUploader({
           onClick={() => inputRef.current?.click()}
           className={`cursor-pointer rounded-lg border-2 border-dashed px-4 py-3 text-center text-xs motion-safe:transition-colors motion-safe:duration-fast motion-safe:ease-tf-out ${
             dragOver
-              ? "border-indigo-400 bg-indigo-50 text-indigo-600"
-              : "border-slate-300 text-slate-400 hover:border-indigo-300 hover:text-slate-500"
+              ? "border-accent bg-accent-soft text-accent-text"
+              : "border-hairline-strong text-content-subtle hover:border-accent-ring hover:text-content-muted"
           }`}
         >
           {busy
@@ -175,9 +175,9 @@ export function AttachmentUploader({
       )}
 
       {!canWrite && items.length === 0 && (
-        <p className="text-sm text-slate-400">No attachments.</p>
+        <p className="text-sm text-content-subtle">No attachments.</p>
       )}
-      {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-2 text-xs text-danger">{error}</p>}
     </div>
   );
 }

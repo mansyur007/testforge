@@ -63,7 +63,7 @@ test(`TC-${TC}-48 Realtime: presence + live results across two sessions`, async 
     .locator("button", { hasText: "Valid login redirects to dashboard" })
     .first();
   await page.click('[data-testid="submit-status-PASSED"]');
-  await expect(rowB).toHaveClass(/bg-amber-50/, { timeout: 3000 }); // flash
+  await expect(rowB).toHaveClass(/bg-warning-soft/, { timeout: 3000 }); // flash
   await expect(rowB).toContainText("PASSED", { timeout: 2000 });
 
   // B leaves (navigation fires the leave beacon) → avatar gone from A fast.

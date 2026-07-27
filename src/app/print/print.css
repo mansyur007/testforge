@@ -4,6 +4,27 @@
    route should already look like the paper output (white page, centered
    column) so "what you see is what prints". */
 
+/* F-39: paper is always white. Re-declare the light token values on the print
+   document root so a user reading in dark mode still prints (and previews) a
+   light page. Scoped to .tf-print-doc, not @media print, because the /print
+   route is also read on screen before printing. */
+.tf-print-doc {
+  color-scheme: light;
+  --tf-canvas: 255 255 255;
+  --tf-surface: 255 255 255;
+  --tf-surface-muted: 241 245 249;
+  --tf-surface-raised: 255 255 255;
+  --tf-text-strong: 15 23 42;
+  --tf-text: 51 65 85;
+  --tf-text-muted: 100 116 139;
+  --tf-text-subtle: 148 163 184;
+  --tf-border-subtle: 241 245 249;
+  --tf-border: 226 232 240;
+  --tf-border-strong: 203 213 225;
+  --tf-accent: 79 70 229;
+  --tf-accent-text: 79 70 229;
+}
+
 /* Page geometry */
 @page { size: A4; margin: 18mm 16mm 20mm; }
 /* Chrome ignores @page margin-box content (page numbers) — accepted limitation.

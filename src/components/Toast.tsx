@@ -52,7 +52,7 @@ export function Toast({
       role="status"
       aria-live="polite"
       data-testid="toast"
-      className={`fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-lg bg-slate-900 px-4 py-2.5 text-sm text-white shadow-lg transition-[opacity,transform] duration-panel ease-tf-out ${
+      className={`fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-lg bg-sidebar px-4 py-2.5 text-sm text-white shadow-lg transition-[opacity,transform] duration-panel ease-tf-out ${
         visible
           ? "opacity-100 motion-safe:translate-y-0"
           : "opacity-0 motion-safe:translate-y-2"
@@ -63,7 +63,7 @@ export function Toast({
         <button
           onClick={onAction}
           data-testid="toast-action"
-          className="rounded bg-white/15 px-2 py-0.5 font-medium hover:bg-white/25"
+          className="rounded bg-surface/15 px-2 py-0.5 font-medium hover:bg-surface/25"
         >
           {actionLabel}
         </button>

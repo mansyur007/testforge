@@ -20,7 +20,7 @@ function AddButton() {
       type="submit"
       disabled={pending}
       data-testid="webhook-create-submit"
-      className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+      className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
     >
       {pending ? "Adding…" : "+ Add Webhook"}
     </button>
@@ -33,7 +33,7 @@ function SecretCell({ secret }: { secret: string }) {
     <button
       type="button"
       onClick={() => setShow((s) => !s)}
-      className="font-mono text-xs text-slate-500 hover:text-slate-700"
+      className="font-mono text-xs text-content-muted hover:text-content"
       title={show ? "Hide" : "Reveal"}
     >
       {show ? secret : `${secret.slice(0, 9)}••••••••`}
@@ -56,11 +56,11 @@ export function WebhookManager({
     <div className="space-y-4">
       <form
         action={formAction}
-        className="space-y-3 rounded-xl border border-slate-200 bg-white p-5"
+        className="space-y-3 rounded-xl border border-hairline bg-surface p-5"
       >
         <input type="hidden" name="projectId" value={projectId} />
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">
+          <label className="mb-1 block text-xs font-medium text-content-muted">
             Payload URL
           </label>
           <input
@@ -68,11 +68,11 @@ export function WebhookManager({
             required
             placeholder="https://example.com/hooks/testforge"
             data-testid="webhook-url-input"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
           />
         </div>
         <div>
-          <span className="mb-1 block text-xs font-medium text-slate-500">
+          <span className="mb-1 block text-xs font-medium text-content-muted">
             Events
           </span>
           <div className="flex flex-wrap gap-3">
@@ -85,13 +85,13 @@ export function WebhookManager({
           </div>
         </div>
         <AddButton />
-        {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
+        {state?.error && <p className="text-sm text-danger">{state.error}</p>}
       </form>
 
       {webhooks.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-xl border border-hairline bg-surface">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
+            <thead className="bg-canvas text-left text-xs uppercase text-content-muted">
               <tr>
                 <th className="px-4 py-3">URL</th>
                 <th className="px-4 py-3">Events</th>
@@ -99,13 +99,13 @@ export function WebhookManager({
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-hairline-subtle">
               {webhooks.map((h) => (
                 <tr key={h.id}>
                   <td className="max-w-xs truncate px-4 py-3 font-mono text-xs">
                     {h.url}
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-600">
+                  <td className="px-4 py-3 text-xs text-content">
                     {h.events.split(",").join(", ")}
                   </td>
                   <td className="px-4 py-3">
@@ -116,7 +116,7 @@ export function WebhookManager({
                       <input type="hidden" name="webhookId" value={h.id} />
                       <button
                         type="submit"
-                        className="inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-800"
+                        className="inline-flex items-center gap-1 text-xs text-danger hover:text-danger-soft-fg"
                       >
                         <TFIcon name="delete" className="h-3.5 w-3.5" /> Delete
                       </button>
@@ -128,7 +128,7 @@ export function WebhookManager({
           </table>
         </div>
       )}
-      <p className="text-xs text-slate-400">
+      <p className="text-xs text-content-subtle">
         Deliveries are POSTed as JSON and signed with HMAC-SHA256 in the{" "}
         <code>X-TestForge-Signature</code> header (<code>sha256=…</code>). Verify
         it against the secret above.

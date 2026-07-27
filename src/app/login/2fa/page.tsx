@@ -11,13 +11,13 @@ export default async function TwoFactorLoginPage() {
   if (!pending) redirect("/login");
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+    <main className="flex min-h-screen items-center justify-center bg-canvas px-4">
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
           <Logo size="lg" />
-          <p className="mt-2 text-sm text-slate-500">Two-step verification</p>
+          <p className="mt-2 text-sm text-content-muted">Two-step verification</p>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div className="rounded-xl border border-hairline bg-surface p-8 shadow-sm">
           <TwoFactorLoginForm />
         </div>
       </div>

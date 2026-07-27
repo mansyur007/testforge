@@ -84,7 +84,7 @@ function StepsDiff({ prev, next }: { prev: SnapshotStep[]; next: SnapshotStep[] 
       s.expected ? `${s.action} ↳ ${s.expected}` : s.action;
     if (a && b && text(a) === text(b)) {
       rows.push(
-        <li key={i} className="text-slate-500">
+        <li key={i} className="text-content-muted">
           {i + 1}. {text(b)}
         </li>
       );
@@ -92,12 +92,12 @@ function StepsDiff({ prev, next }: { prev: SnapshotStep[]; next: SnapshotStep[] 
       rows.push(
         <li key={i} className="space-y-0.5">
           {a && (
-            <span className="block rounded bg-red-50 px-1.5 py-0.5 text-red-700 line-through">
+            <span className="block rounded bg-danger-soft px-1.5 py-0.5 text-danger-soft-fg line-through">
               {i + 1}. {text(a)}
             </span>
           )}
           {b && (
-            <span className="block rounded bg-green-50 px-1.5 py-0.5 text-green-800">
+            <span className="block rounded bg-success-soft px-1.5 py-0.5 text-success-soft-fg">
               {i + 1}. {text(b)}
             </span>
           )}
@@ -114,7 +114,7 @@ function RestoreButton() {
     <button
       data-testid="revision-restore"
       disabled={pending}
-      className="rounded-lg border border-indigo-300 px-3 py-1.5 text-sm text-indigo-700 hover:bg-indigo-50 disabled:opacity-50"
+      className="rounded-lg border border-accent-ring px-3 py-1.5 text-sm text-accent-soft-fg hover:bg-accent-soft disabled:opacity-50"
     >
       {pending ? "Restoring…" : "Restore this revision"}
     </button>
@@ -142,7 +142,7 @@ export function CaseHistory({
 
   if (!revisions.length)
     return (
-      <p className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">
+      <p className="rounded-xl border border-dashed border-hairline-strong p-10 text-center text-sm text-content-subtle">
         No history yet — revisions are recorded from the first edit onward.
       </p>
     );
@@ -150,7 +150,7 @@ export function CaseHistory({
   return (
     <div className="space-y-3">
       {state && "error" in state && state.error && (
-        <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+        <p className="rounded-lg bg-danger-soft p-3 text-sm text-danger-soft-fg">
           {state.error}
         </p>
       )}
@@ -169,14 +169,14 @@ export function CaseHistory({
         return (
           <div
             key={r.id}
-            className="rounded-xl border border-slate-200 bg-white"
+            className="rounded-xl border border-hairline bg-surface"
             data-testid={`revision-${r.rev}`}
           >
             <button
               onClick={() => setOpenRev(isOpen ? null : r.rev)}
-              className="flex w-full items-center gap-3 px-5 py-3 text-left text-sm hover:bg-slate-50"
+              className="flex w-full items-center gap-3 px-5 py-3 text-left text-sm hover:bg-canvas"
             >
-              <span className="rounded-full bg-indigo-100 px-2 py-0.5 font-mono text-xs font-bold text-indigo-700">
+              <span className="rounded-full bg-accent-soft px-2 py-0.5 font-mono text-xs font-bold text-accent-soft-fg">
                 rev {r.rev}
               </span>
               <span
@@ -185,17 +185,17 @@ export function CaseHistory({
               >
                 {r.changeSummary}
               </span>
-              <span className="shrink-0 text-slate-400">
+              <span className="shrink-0 text-content-subtle">
                 {r.authorName ?? "—"} ·{" "}
                 {new Date(r.createdAt).toLocaleString()}
               </span>
-              <span className="text-slate-300">{isOpen ? "▾" : "▸"}</span>
+              <span className="text-content-subtle">{isOpen ? "▾" : "▸"}</span>
             </button>
 
             {isOpen && (
-              <div className="space-y-3 border-t border-slate-100 px-5 py-4">
+              <div className="space-y-3 border-t border-hairline-subtle px-5 py-4">
                 {!prev && (
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-content-subtle">
                     First recorded revision — no previous version to compare.
                   </p>
                 )}
@@ -213,7 +213,7 @@ export function CaseHistory({
                     return null;
                   return (
                     <div key={key} className="text-sm">
-                      <p className="mb-1 text-xs font-semibold uppercase text-slate-400">
+                      <p className="mb-1 text-xs font-semibold uppercase text-content-subtle">
                         {label}
                       </p>
                       {key === "steps" ? (
@@ -223,15 +223,15 @@ export function CaseHistory({
                         />
                       ) : prev ? (
                         <div className="space-y-0.5">
-                          <span className="block rounded bg-red-50 px-1.5 py-0.5 text-red-700 line-through">
+                          <span className="block rounded bg-danger-soft px-1.5 py-0.5 text-danger-soft-fg line-through">
                             {scalarText(key, prev.snapshot[key], lookups)}
                           </span>
-                          <span className="block rounded bg-green-50 px-1.5 py-0.5 text-green-800">
+                          <span className="block rounded bg-success-soft px-1.5 py-0.5 text-success-soft-fg">
                             {scalarText(key, nextVal, lookups)}
                           </span>
                         </div>
                       ) : (
-                        <p className="text-slate-600">
+                        <p className="text-content">
                           {scalarText(key, nextVal, lookups)}
                         </p>
                       )}
@@ -239,7 +239,7 @@ export function CaseHistory({
                   );
                 })}
                 {prev && changed.size === 0 && (
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-content-subtle">
                     Snapshot identical to rev {prev.rev} (restored copy).
                   </p>
                 )}

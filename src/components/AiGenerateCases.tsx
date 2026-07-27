@@ -57,7 +57,7 @@ export function AiGenerateCases({ projectId }: { projectId: string }) {
         type="button"
         onClick={() => setOpen(true)}
         data-testid="ai-generate-open"
-        className="rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-sm text-indigo-700 hover:bg-indigo-100"
+        className="rounded-lg border border-accent-ring bg-accent-soft px-3 py-2 text-sm text-accent-soft-fg hover:bg-accent-soft"
       >
         <span className="inline-flex items-center gap-1.5">
           <TFIcon name="ai" className="h-4 w-4" /> Generate with AI
@@ -67,7 +67,7 @@ export function AiGenerateCases({ projectId }: { projectId: string }) {
       {open && (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 sm:p-8 motion-safe:animate-tf-fade-in">
           <div
-            className="w-full max-w-2xl rounded-xl border border-slate-200 bg-white p-6 shadow-xl motion-safe:animate-tf-pop-in"
+            className="w-full max-w-2xl rounded-xl border border-hairline bg-surface p-6 shadow-xl motion-safe:animate-tf-pop-in"
             data-testid="ai-generate-modal"
           >
             <div className="mb-3 flex items-center justify-between">
@@ -77,7 +77,7 @@ export function AiGenerateCases({ projectId }: { projectId: string }) {
                   setOpen(false);
                   reset();
                 }}
-                className="text-sm text-slate-400 hover:text-slate-600"
+                className="text-sm text-content-subtle hover:text-content"
               >
                 Close
               </button>
@@ -85,7 +85,7 @@ export function AiGenerateCases({ projectId }: { projectId: string }) {
 
             {!cases ? (
               <>
-                <p className="mb-2 text-sm text-slate-500">
+                <p className="mb-2 text-sm text-content-muted">
                   Paste a requirement or PRD excerpt. Proposed cases are inserted
                   as DRAFT for you to review.
                 </p>
@@ -95,10 +95,10 @@ export function AiGenerateCases({ projectId }: { projectId: string }) {
                   rows={8}
                   placeholder="As a user, I want to reset my password so that…"
                   data-testid="ai-generate-input"
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                  className="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
                 />
                 {error && (
-                  <p className="mt-2 text-sm text-red-600" data-testid="ai-generate-error">
+                  <p className="mt-2 text-sm text-danger" data-testid="ai-generate-error">
                     {error}
                   </p>
                 )}
@@ -107,7 +107,7 @@ export function AiGenerateCases({ projectId }: { projectId: string }) {
                     onClick={generate}
                     disabled={busy || !text.trim()}
                     data-testid="ai-generate-submit"
-                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                    className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
                   >
                     {busy ? "Generating…" : "Generate"}
                   </button>
@@ -115,7 +115,7 @@ export function AiGenerateCases({ projectId }: { projectId: string }) {
               </>
             ) : (
               <>
-                <p className="mb-2 text-sm text-slate-500">
+                <p className="mb-2 text-sm text-content-muted">
                   {selected.size} of {cases.length} selected. Selected cases are
                   inserted as DRAFT.
                 </p>
@@ -123,7 +123,7 @@ export function AiGenerateCases({ projectId }: { projectId: string }) {
                   {cases.map((c, i) => (
                     <li
                       key={i}
-                      className="flex items-start gap-2 rounded-lg border border-slate-200 p-3"
+                      className="flex items-start gap-2 rounded-lg border border-hairline p-3"
                     >
                       <input
                         type="checkbox"
@@ -139,7 +139,7 @@ export function AiGenerateCases({ projectId }: { projectId: string }) {
                       />
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium">{c.title}</p>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-content-subtle">
                           {c.priority} · {c.type} · {c.steps.length} step
                           {c.steps.length === 1 ? "" : "s"}
                         </p>
@@ -148,14 +148,14 @@ export function AiGenerateCases({ projectId }: { projectId: string }) {
                   ))}
                 </ul>
                 {error && (
-                  <p className="mt-2 text-sm text-red-600" data-testid="ai-generate-error">
+                  <p className="mt-2 text-sm text-danger" data-testid="ai-generate-error">
                     {error}
                   </p>
                 )}
                 <div className="mt-3 flex justify-between">
                   <button
                     onClick={reset}
-                    className="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-100"
+                    className="inline-flex items-center gap-1 rounded-lg border border-hairline-strong px-3 py-2 text-sm text-content hover:bg-surface-muted"
                   >
                     <TFIcon name="chevron-left" className="h-4 w-4" />
                     Start over
@@ -164,7 +164,7 @@ export function AiGenerateCases({ projectId }: { projectId: string }) {
                     onClick={insert}
                     disabled={busy || selected.size === 0}
                     data-testid="ai-generate-insert"
-                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                    className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
                   >
                     {busy ? "Inserting…" : `Insert ${selected.size} as DRAFT`}
                   </button>

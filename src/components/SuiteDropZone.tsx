@@ -73,7 +73,7 @@ export function SuiteDropZone({
       }}
       className={`${className} rounded motion-safe:transition-[background-color,box-shadow] motion-safe:duration-fast motion-safe:ease-tf-out ${
         over
-          ? "bg-indigo-50 shadow-[0_0_0_2px_theme(colors.indigo.400)]"
+          ? "bg-accent-soft shadow-[0_0_0_2px_theme(colors.indigo.400)]"
           : "shadow-[0_0_0_0_transparent]"
       } ${pending ? "opacity-60" : ""}`}
     >

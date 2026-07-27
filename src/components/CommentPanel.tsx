@@ -95,7 +95,7 @@ function CommentBody({
 }
 
 const inputCls =
-  "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500";
+  "w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring";
 
 // The composer is shared by the new-comment box and inline editing.
 function Composer({
@@ -237,12 +237,12 @@ function Composer({
         autoFocus={autoFocus}
         data-testid="comment-input"
         placeholder="Write a comment… use @ to mention a teammate. Markdown supported."
-        className={`${inputCls} resize-y`}
+        className={`bg-surface text-content-strong ${inputCls} resize-y`}
       />
       {suggests.length > 0 && (
         <ul
           data-testid="mention-suggestions"
-          className="absolute z-20 max-h-52 w-72 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 text-sm shadow-lg"
+          className="absolute z-20 max-h-52 w-72 overflow-y-auto rounded-lg border border-hairline bg-surface py-1 text-sm shadow-lg"
         >
           {suggests.map((m, i) => (
             <li key={m.id}>
@@ -253,25 +253,25 @@ function Composer({
                   pick(m);
                 }}
                 data-testid={`mention-option-${m.name}`}
-                className={`flex w-full flex-col px-3 py-1.5 text-left hover:bg-indigo-50 ${
-                  i === active ? "bg-indigo-50" : ""
+                className={`flex w-full flex-col px-3 py-1.5 text-left hover:bg-accent-soft ${
+                  i === active ? "bg-accent-soft" : ""
                 }`}
               >
-                <span className="font-medium text-slate-700">{m.name}</span>
-                <span className="text-xs text-slate-400">{m.email}</span>
+                <span className="font-medium text-content">{m.name}</span>
+                <span className="text-xs text-content-subtle">{m.email}</span>
               </button>
             </li>
           ))}
         </ul>
       )}
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-danger">{error}</p>}
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={submit}
           disabled={pending}
           data-testid="comment-submit"
-          className="rounded-lg bg-indigo-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          className="rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
         >
           {pending ? "Saving…" : submitLabel}
         </button>
@@ -279,7 +279,7 @@ function Composer({
           <button
             type="button"
             onClick={onCancel}
-            className="text-sm text-slate-500 hover:text-slate-700"
+            className="text-sm text-content-muted hover:text-content"
           >
             Cancel
           </button>
@@ -342,33 +342,33 @@ export function CommentPanel({
 
   return (
     <section className="space-y-4" data-testid="comment-panel">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-content-subtle">
         Comments{count > 0 ? ` (${count})` : ""}
       </h3>
 
       {comments === null ? (
-        <p className="text-sm text-slate-400">Loading comments…</p>
+        <p className="text-sm text-content-subtle">Loading comments…</p>
       ) : comments.length === 0 ? (
-        <p className="text-sm text-slate-400">No comments yet.</p>
+        <p className="text-sm text-content-subtle">No comments yet.</p>
       ) : (
         <ul className="space-y-4">
           {comments.map((c) => (
             <li key={c.id} data-testid="comment-item" className="flex gap-3">
-              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700">
+              <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent-soft-fg">
                 {c.authorName.slice(0, 2).toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-sm font-semibold text-slate-700">
+                  <span className="text-sm font-semibold text-content">
                     {c.authorName}
                   </span>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-content-subtle">
                     {relativeTime(c.createdAt)}
                     {c.edited && " · edited"}
                   </span>
                 </div>
                 {c.deleted ? (
-                  <p className="text-sm italic text-slate-400">
+                  <p className="text-sm italic text-content-subtle">
                     This comment was deleted.
                   </p>
                 ) : editingId === c.id ? (
@@ -386,12 +386,12 @@ export function CommentPanel({
                   <>
                     <CommentBody bodyMd={c.bodyMd} mentionNames={c.mentionNames} />
                     {(c.canEdit || c.canDelete) && (
-                      <div className="mt-1 flex gap-3 text-xs text-slate-400">
+                      <div className="mt-1 flex gap-3 text-xs text-content-subtle">
                         {c.canEdit && (
                           <button
                             type="button"
                             onClick={() => setEditingId(c.id)}
-                            className="hover:text-indigo-600"
+                            className="hover:text-accent-text"
                           >
                             Edit
                           </button>
@@ -401,7 +401,7 @@ export function CommentPanel({
                             type="button"
                             onClick={() => onDelete(c.id)}
                             data-testid="comment-delete"
-                            className="hover:text-red-600"
+                            className="hover:text-danger"
                           >
                             Delete
                           </button>

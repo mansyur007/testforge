@@ -153,7 +153,7 @@ export function CasesTable({
       const badge = document.createElement("div");
       badge.textContent = `${ids.length} test cases`;
       badge.style.cssText =
-        "position:absolute;top:-1000px;left:-1000px;padding:4px 10px;border-radius:9999px;background:#4f46e5;color:#fff;font:500 12px sans-serif";
+        "position:absolute;top:-1000px;left:-1000px;padding:4px 10px;border-radius:9999px;background:rgb(var(--tf-accent));color:#fff;font:500 12px sans-serif";
       document.body.appendChild(badge);
       e.dataTransfer.setDragImage(badge, 0, 0);
       setTimeout(() => badge.remove(), 0);
@@ -315,18 +315,18 @@ export function CasesTable({
   return (
     <div className="space-y-4">
       {canWrite && selected.size > 0 && (
-        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm">
-          <span className="font-medium text-indigo-700">
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-accent-ring bg-accent-soft px-4 py-2 text-sm">
+          <span className="font-medium text-accent-soft-fg">
             {selected.size} selected
           </span>
           <button
             type="button"
             onClick={clear}
-            className="text-xs text-slate-500 hover:text-slate-700"
+            className="text-xs text-content-muted hover:text-content"
           >
             Clear
           </button>
-          <span className="text-slate-300">|</span>
+          <span className="text-content-subtle">|</span>
           <span>Change</span>
           <select
             value={bulkField}
@@ -334,7 +334,7 @@ export function CasesTable({
               setBulkField(e.target.value);
               setBulkValue(optionsFor(e.target.value)[0]);
             }}
-            className="rounded border border-slate-300 px-2 py-1 text-xs"
+            className="rounded border border-hairline-strong px-2 py-1 text-xs"
           >
             <option value="priority">Priority</option>
             <option value="type">Type</option>
@@ -345,7 +345,7 @@ export function CasesTable({
           <select
             value={bulkValue}
             onChange={(e) => setBulkValue(e.target.value)}
-            className="rounded border border-slate-300 px-2 py-1 text-xs"
+            className="rounded border border-hairline-strong px-2 py-1 text-xs"
           >
             {bulkOptions.map((o) => (
               <option key={o} value={o}>
@@ -357,13 +357,13 @@ export function CasesTable({
             type="button"
             onClick={applyBulkEdit}
             disabled={pending}
-            className="rounded bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded bg-accent px-3 py-1 text-xs font-medium text-white hover:bg-accent-hover disabled:opacity-50"
           >
             Apply
           </button>
           {otherProjects.length > 0 && (
             <>
-              <span className="text-slate-300">|</span>
+              <span className="text-content-subtle">|</span>
               <button
                 type="button"
                 onClick={() => {
@@ -373,13 +373,13 @@ export function CasesTable({
                 }}
                 disabled={pending}
                 data-testid="cases-bulk-copy"
-                className="inline-flex items-center gap-1 rounded border border-slate-300 bg-white px-3 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                className="inline-flex items-center gap-1 rounded border border-hairline-strong bg-surface px-3 py-1 text-xs font-medium text-content hover:bg-canvas disabled:opacity-50"
               >
                 Copy to project…
               </button>
             </>
           )}
-          <span className="text-slate-300">|</span>
+          <span className="text-content-subtle">|</span>
           <button
             type="button"
             onClick={() => {
@@ -389,7 +389,7 @@ export function CasesTable({
             }}
             disabled={pending}
             data-testid="cases-bulk-delete"
-            className="inline-flex items-center gap-1 rounded bg-red-600 px-3 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded bg-danger px-3 py-1 text-xs font-medium text-white hover:opacity-90 disabled:opacity-50"
           >
             <TFIcon name="delete" className="h-3.5 w-3.5" /> Delete ({selected.size})
           </button>
@@ -397,7 +397,7 @@ export function CasesTable({
       )}
 
       {copyDone && (
-        <div className="flex items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-800">
+        <div className="flex items-center justify-between gap-2 rounded-lg border border-success-border bg-success-soft px-4 py-2 text-sm text-success-soft-fg">
           <span>
             Copied {copyDone.copied} test case{copyDone.copied === 1 ? "" : "s"} to{" "}
             <Link href={`/projects/${copyDone.targetSlug}`} className="underline">
@@ -408,16 +408,16 @@ export function CasesTable({
           <button
             type="button"
             onClick={() => setCopyDone(null)}
-            className="text-emerald-700 hover:text-emerald-900"
+            className="text-success-soft-fg hover:opacity-80"
           >
             Dismiss
           </button>
         </div>
       )}
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="overflow-hidden rounded-xl border border-hairline bg-surface">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
+          <thead className="bg-canvas text-left text-xs uppercase text-content-muted">
             <tr>
               {canWrite && (
                 <th className="w-8 px-3 py-3">
@@ -439,7 +439,7 @@ export function CasesTable({
               <th className="px-3 py-3">Tags</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-hairline-subtle">
             {pageRows.map((c) => {
               const isSel = selected.has(c.id);
               return (
@@ -455,7 +455,7 @@ export function CasesTable({
                   }
                   onDrop={canWrite ? (e) => onRowDrop(e, c.id) : undefined}
                   data-testid={`case-row-${c.id}`}
-                  className={`${isSel ? "bg-indigo-50/60" : "hover:bg-slate-50"} ${canWrite ? "cursor-grab active:cursor-grabbing" : ""} ${dragOverId === c.id ? "ring-2 ring-inset ring-indigo-400" : ""}`}
+                  className={`${isSel ? "bg-accent-soft/60" : "hover:bg-canvas"} ${canWrite ? "cursor-grab active:cursor-grabbing" : ""} ${dragOverId === c.id ? "ring-2 ring-inset ring-accent-ring" : ""}`}
                 >
                   {canWrite && (
                     <td className="px-3 py-2.5">
@@ -468,14 +468,14 @@ export function CasesTable({
                       />
                     </td>
                   )}
-                  <td className="whitespace-nowrap px-3 py-2.5 font-mono text-xs text-slate-500">
+                  <td className="whitespace-nowrap px-3 py-2.5 font-mono text-xs text-content-muted">
                     {caseDisplayId(projectSlug, c.seq)}
                   </td>
                   <td className="px-3 py-2.5">
                     <span className="inline-flex items-center gap-1.5">
                       <Link
                         href={`/projects/${projectSlug}/cases/${c.id}`}
-                        className="font-medium text-slate-800 hover:text-indigo-600"
+                        className="font-medium text-content-strong hover:text-accent-text"
                       >
                         {c.title}
                       </Link>
@@ -483,7 +483,7 @@ export function CasesTable({
                           (the common runnable state) stays unlabeled. */}
                       {c.status && c.status !== "ACTIVE" && (
                         <span
-                          className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${STATUS_BADGES[c.status] ?? "bg-slate-100 text-slate-600"}`}
+                          className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${STATUS_BADGES[c.status] ?? "bg-surface-muted text-content"}`}
                           data-testid={`case-row-status-${c.id}`}
                         >
                           {c.status.replace(/_/g, " ")}
@@ -491,7 +491,7 @@ export function CasesTable({
                       )}
                     </span>
                     {c.suiteName && (
-                      <p className="text-xs text-slate-400">{c.suiteName}</p>
+                      <p className="text-xs text-content-subtle">{c.suiteName}</p>
                     )}
                   </td>
                   <td className="px-3 py-2.5">
@@ -504,7 +504,7 @@ export function CasesTable({
                         onChange={(e) =>
                           inlineUpdate(c.id, "priority", e.target.value)
                         }
-                        className={`cursor-pointer rounded-full border-0 px-2 py-0.5 text-xs font-medium focus:ring-2 focus:ring-indigo-400 disabled:opacity-50 ${PRIORITY_BADGES[c.priority]}`}
+                        className={`cursor-pointer rounded-full border-0 px-2 py-0.5 text-xs font-medium focus:ring-2 focus:ring-accent-ring disabled:opacity-50 ${PRIORITY_BADGES[c.priority]}`}
                       >
                         {PRIORITIES.map((p) => (
                           <option key={p} value={p}>
@@ -520,8 +520,8 @@ export function CasesTable({
                       </span>
                     )}
                   </td>
-                  <td className="px-3 py-2.5 text-xs text-slate-600">{c.type}</td>
-                  <td className="px-3 py-2.5 text-xs text-slate-600">
+                  <td className="px-3 py-2.5 text-xs text-content">{c.type}</td>
+                  <td className="px-3 py-2.5 text-xs text-content">
                     {canWrite ? (
                       <select
                         value={c.automationStatus}
@@ -531,7 +531,7 @@ export function CasesTable({
                         onChange={(e) =>
                           inlineUpdate(c.id, "automationStatus", e.target.value)
                         }
-                        className="cursor-pointer rounded border border-slate-300 bg-white px-1.5 py-0.5 text-xs text-slate-600 focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50"
+                        className="cursor-pointer rounded border border-hairline-strong bg-surface px-1.5 py-0.5 text-xs text-content focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring disabled:opacity-50"
                       >
                         {AUTOMATION_STATUSES.map((a) => (
                           <option key={a} value={a}>
@@ -553,7 +553,7 @@ export function CasesTable({
                         <Link
                           key={tag}
                           href={buildHref({ tag })}
-                          className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600 hover:bg-indigo-100"
+                          className="rounded bg-surface-muted px-1.5 py-0.5 text-xs text-content hover:bg-accent-soft"
                         >
                           {tag}
                         </Link>
@@ -567,10 +567,10 @@ export function CasesTable({
               <tr>
                 <td
                   colSpan={canWrite ? 7 : 6}
-                  className="px-3 py-10 text-center text-slate-400"
+                  className="px-3 py-10 text-center text-content-subtle"
                 >
                   No test cases. Create one, import from CSV, or{" "}
-                  <Link href="/docs/help/test-cases" className="text-indigo-600 hover:underline">
+                  <Link href="/docs/help/test-cases" className="text-accent-text hover:underline">
                     learn how test cases work
                   </Link>
                   .
@@ -581,7 +581,7 @@ export function CasesTable({
         </table>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-400">
+      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-content-subtle">
         <span>
           {cases.length === 0
             ? "0 test cases"
@@ -599,7 +599,7 @@ export function CasesTable({
                 setPage(1);
               }}
               data-testid="cases-page-size"
-              className="rounded border border-slate-300 px-1.5 py-1 text-xs text-slate-600"
+              className="rounded border border-hairline-strong px-1.5 py-1 text-xs text-content"
             >
               {[10, 25, 50, 100].map((n) => (
                 <option key={n} value={n}>
@@ -614,7 +614,7 @@ export function CasesTable({
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={currentPage <= 1}
               data-testid="cases-prev-page"
-              className="rounded border border-slate-300 px-2 py-1 text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+              className="rounded border border-hairline-strong px-2 py-1 text-content hover:bg-surface-muted disabled:opacity-40"
             >
               Prev
             </button>
@@ -626,7 +626,7 @@ export function CasesTable({
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage >= totalPages}
               data-testid="cases-next-page"
-              className="rounded border border-slate-300 px-2 py-1 text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+              className="rounded border border-hairline-strong px-2 py-1 text-content hover:bg-surface-muted disabled:opacity-40"
             >
               Next
             </button>
@@ -635,15 +635,15 @@ export function CasesTable({
       </div>
 
       {showDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 motion-safe:animate-tf-fade-in">
-          <div className="w-full max-w-md space-y-4 rounded-xl bg-white p-6 shadow-xl motion-safe:animate-tf-pop-in">
-            <h3 className="text-lg font-semibold text-slate-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 motion-safe:animate-tf-fade-in">
+          <div className="w-full max-w-md space-y-4 rounded-xl bg-surface p-6 shadow-xl motion-safe:animate-tf-pop-in">
+            <h3 className="text-lg font-semibold text-content-strong">
               Delete {selected.size} test case{selected.size === 1 ? "" : "s"}?
             </h3>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-content-muted">
               They&apos;ll be removed from this project and permanently deleted
               after 15 days. To confirm, type the project name{" "}
-              <span className="font-semibold text-slate-700">{projectName}</span>{" "}
+              <span className="font-semibold text-content">{projectName}</span>{" "}
               below.
             </p>
             <input
@@ -652,14 +652,14 @@ export function CasesTable({
               onChange={(e) => setConfirmText(e.target.value)}
               placeholder={projectName}
               data-testid="cases-bulk-delete-confirm-input"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
             />
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-danger">{error}</p>}
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setShowDelete(false)}
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-100"
+                className="rounded-lg border border-hairline-strong px-4 py-2 text-sm hover:bg-surface-muted"
               >
                 Cancel
               </button>
@@ -668,7 +668,7 @@ export function CasesTable({
                 onClick={confirmDelete}
                 disabled={pending || confirmText.trim() !== projectName}
                 data-testid="cases-bulk-delete-confirm"
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                className="rounded-lg bg-danger px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
               >
                 {pending ? "Deleting…" : "Delete"}
               </button>
@@ -678,14 +678,14 @@ export function CasesTable({
       )}
 
       {showCopy && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 motion-safe:animate-tf-fade-in">
-          <div className="w-full max-w-md space-y-4 rounded-xl bg-white p-6 shadow-xl motion-safe:animate-tf-pop-in">
-            <h3 className="text-lg font-semibold text-slate-900">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 motion-safe:animate-tf-fade-in">
+          <div className="w-full max-w-md space-y-4 rounded-xl bg-surface p-6 shadow-xl motion-safe:animate-tf-pop-in">
+            <h3 className="text-lg font-semibold text-content-strong">
               Copy {selected.size} test case{selected.size === 1 ? "" : "s"} to another project
             </h3>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-content-muted">
               Copies get a fresh ID in the target project, start as{" "}
-              <span className="font-medium text-slate-700">Draft</span>, and any
+              <span className="font-medium text-content">Draft</span>, and any
               shared steps are flattened into plain steps (shared-step groups
               don&apos;t cross projects). Attachments are duplicated as new files.
             </p>
@@ -694,7 +694,7 @@ export function CasesTable({
               value={copyTarget}
               onChange={(e) => setCopyTarget(e.target.value)}
               data-testid="cases-copy-target"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
             >
               {otherProjects.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -702,12 +702,12 @@ export function CasesTable({
                 </option>
               ))}
             </select>
-            {copyError && <p className="text-sm text-red-600">{copyError}</p>}
+            {copyError && <p className="text-sm text-danger">{copyError}</p>}
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setShowCopy(false)}
-                className="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-100"
+                className="rounded-lg border border-hairline-strong px-4 py-2 text-sm hover:bg-surface-muted"
               >
                 Cancel
               </button>
@@ -716,7 +716,7 @@ export function CasesTable({
                 onClick={submitCopy}
                 disabled={pending}
                 data-testid="cases-copy-confirm"
-                className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
               >
                 {pending ? "Copying…" : "Copy"}
               </button>

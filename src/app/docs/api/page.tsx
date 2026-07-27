@@ -25,12 +25,12 @@ export default function ApiDocsPage({
 
   return (
     <>
-      <nav className="flex flex-wrap items-center gap-3 border-b border-slate-200 bg-white px-6 py-3">
-        <Link href="/dashboard" className="text-sm text-indigo-600 hover:underline">
+      <nav className="flex flex-wrap items-center gap-3 border-b border-hairline bg-surface px-6 py-3">
+        <Link href="/dashboard" className="text-sm text-accent-text hover:underline">
           Back to app
         </Link>
-        <span className="h-4 w-px bg-slate-200" aria-hidden="true" />
-        <span className="text-xs font-medium uppercase tracking-wide text-slate-500">
+        <span className="h-4 w-px bg-surface-muted" aria-hidden="true" />
+        <span className="text-xs font-medium uppercase tracking-wide text-content-muted">
           API version
         </span>
         {VERSIONS.map((v) => (
@@ -40,14 +40,14 @@ export default function ApiDocsPage({
             aria-current={v.id === active.id ? "page" : undefined}
             className={`rounded-full px-3 py-1 text-sm font-medium motion-safe:transition-colors motion-safe:duration-fast motion-safe:ease-tf-out ${
               v.id === active.id
-                ? "bg-indigo-600 text-white"
-                : "text-slate-600 hover:bg-slate-100"
+                ? "bg-accent text-white"
+                : "text-content hover:bg-surface-muted"
             }`}
           >
             {v.label}
           </Link>
         ))}
-        <span className="text-xs text-slate-400">
+        <span className="text-xs text-content-subtle">
           {active.id === "v1"
             ? "Frozen and supported — not deprecated."
             : "Current. Adds milestones, members, webhooks, pagination and project-scoped keys."}

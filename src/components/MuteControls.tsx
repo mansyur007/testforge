@@ -24,7 +24,7 @@ export function MuteButton({ caseId }: { caseId: string }) {
           await muteCase(fd);
         });
       }}
-      className="ml-2 shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600 hover:bg-slate-200 disabled:opacity-50"
+      className="ml-2 shrink-0 rounded-full bg-surface-muted px-2 py-0.5 text-xs font-medium text-content hover:bg-surface-muted disabled:opacity-50"
     >
       {isPending ? "…" : "Mute"}
     </button>
@@ -45,7 +45,7 @@ export function UnmuteButton({ caseId }: { caseId: string }) {
           await unmuteCase(fd);
         });
       }}
-      className="shrink-0 rounded-full bg-slate-800 px-2 py-0.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+      className="shrink-0 rounded-full bg-sidebar px-2 py-0.5 text-xs font-medium text-white hover:bg-sidebar-hover disabled:opacity-50"
     >
       {isPending ? "…" : "Unmute"}
     </button>

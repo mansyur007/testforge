@@ -22,16 +22,16 @@ export default async function ProjectsPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Projects</h1>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-content-muted">
           Multi-project workspace — each project has its own test namespace
         </p>
       </div>
 
       {session.role !== "VIEWER" && <NewProjectForm />}
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="overflow-hidden rounded-xl border border-hairline bg-surface">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
+          <thead className="bg-canvas text-left text-xs uppercase text-content-muted">
             <tr>
               <th className="px-5 py-3">Project</th>
               <th className="px-5 py-3">Test Cases</th>
@@ -40,17 +40,17 @@ export default async function ProjectsPage() {
               <th className="px-5 py-3"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-hairline-subtle">
             {projects.map((p) => (
-              <tr key={p.id} className="hover:bg-slate-50">
+              <tr key={p.id} className="hover:bg-canvas">
                 <td className="px-5 py-3">
                   <Link
                     href={`/projects/${p.slug}`}
-                    className="font-medium text-indigo-600 hover:underline"
+                    className="font-medium text-accent-text hover:underline"
                   >
                     {p.name}
                   </Link>
-                  <p className="text-xs text-slate-400">/{p.slug}</p>
+                  <p className="text-xs text-content-subtle">/{p.slug}</p>
                 </td>
                 <td className="px-5 py-3">{p._count.cases}</td>
                 <td className="px-5 py-3">{p._count.runs}</td>
@@ -58,8 +58,8 @@ export default async function ProjectsPage() {
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                       p.status === "ACTIVE"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-500"
+                        ? "bg-success-soft text-success-soft-fg"
+                        : "bg-surface-muted text-content-muted"
                     }`}
                   >
                     {p.status === "ACTIVE" ? "Active" : "Archived"}
@@ -68,7 +68,7 @@ export default async function ProjectsPage() {
                 <td className="px-5 py-3 text-right">
                   <form action={archiveProject}>
                     <input type="hidden" name="projectId" value={p.id} />
-                    <button className="text-xs text-slate-400 hover:text-slate-700">
+                    <button className="text-xs text-content-subtle hover:text-content">
                       {p.status === "ACTIVE" ? "Archive" : "Activate"}
                     </button>
                   </form>
@@ -77,7 +77,7 @@ export default async function ProjectsPage() {
             ))}
             {projects.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-10 text-center text-slate-400">
+                <td colSpan={5} className="px-5 py-10 text-center text-content-subtle">
                   No projects yet. Create your first project above.
                 </td>
               </tr>

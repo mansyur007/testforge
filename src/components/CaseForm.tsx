@@ -32,8 +32,8 @@ export type SharedGroupOption = {
 };
 
 const inputCls =
-  "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500";
-const labelCls = "mb-1 block text-sm font-medium text-slate-700";
+  "w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring";
+const labelCls = "mb-1 block text-sm font-medium text-content";
 
 function SubmitButton({ isEdit }: { isEdit: boolean }) {
   const { pending } = useFormStatus();
@@ -42,7 +42,7 @@ function SubmitButton({ isEdit }: { isEdit: boolean }) {
       type="submit"
       disabled={pending}
       data-testid="case-form-submit"
-      className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+      className="rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
     >
       {pending ? "Saving..." : isEdit ? "Save Changes" : "Create Test Case"}
     </button>
@@ -164,16 +164,16 @@ export function CaseForm({
       />
 
       {state?.error && (
-        <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
+        <p className="rounded-lg bg-danger-soft px-4 py-2.5 text-sm text-danger-soft-fg">
           {state.error}
         </p>
       )}
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6">
+      <div className="rounded-xl border border-hairline bg-surface p-6">
         <div className="grid gap-4 md:grid-cols-2">
           <div className="md:col-span-2">
             <label className={labelCls}>
-              Title <span className="text-red-500">*</span>
+              Title <span className="text-danger">*</span>
             </label>
             <input
               name="title"
@@ -314,18 +314,18 @@ export function CaseForm({
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6">
+      <div className="rounded-xl border border-hairline bg-surface p-6">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="font-semibold">
-            Steps to Reproduce <span className="text-red-500">*</span>
+            Steps to Reproduce <span className="text-danger">*</span>
           </h3>
           {/* F-27: Gherkin cases store one raw scenario body instead of rows. */}
-          <div className="flex rounded-lg border border-slate-300 p-0.5 text-xs">
+          <div className="flex rounded-lg border border-hairline-strong p-0.5 text-xs">
             <button
               type="button"
               data-testid="case-format-steps"
               onClick={() => setFormat("STEPS")}
-              className={`rounded px-2.5 py-1 font-medium ${format === "STEPS" ? "bg-indigo-600 text-white" : "text-slate-500 hover:bg-slate-100"}`}
+              className={`rounded px-2.5 py-1 font-medium ${format === "STEPS" ? "bg-accent text-white" : "text-content-muted hover:bg-surface-muted"}`}
             >
               Steps
             </button>
@@ -333,7 +333,7 @@ export function CaseForm({
               type="button"
               data-testid="case-format-gherkin"
               onClick={() => setFormat("GHERKIN")}
-              className={`rounded px-2.5 py-1 font-medium ${format === "GHERKIN" ? "bg-indigo-600 text-white" : "text-slate-500 hover:bg-slate-100"}`}
+              className={`rounded px-2.5 py-1 font-medium ${format === "GHERKIN" ? "bg-accent text-white" : "text-content-muted hover:bg-surface-muted"}`}
             >
               Gherkin (BDD)
             </button>
@@ -350,11 +350,11 @@ export function CaseForm({
               className={`${inputCls} font-mono text-xs`}
             />
             <div>
-              <p className="mb-1 text-xs font-medium text-slate-500">Preview</p>
+              <p className="mb-1 text-xs font-medium text-content-muted">Preview</p>
               {gherkinText.trim() ? (
                 <GherkinBlock text={gherkinText} />
               ) : (
-                <p className="text-xs text-slate-400">Nothing to preview yet.</p>
+                <p className="text-xs text-content-subtle">Nothing to preview yet.</p>
               )}
             </div>
           </div>
@@ -369,40 +369,40 @@ export function CaseForm({
                 const group = sharedGroups.find((g) => g.id === step.shared);
                 return (
                   <div key={i} className="flex items-start gap-2" data-testid="shared-ref-row">
-                    <span className="mt-2 w-6 text-right text-sm font-medium text-slate-400">
+                    <span className="mt-2 w-6 text-right text-sm font-medium text-content-subtle">
                       {i + 1}.
                     </span>
-                    <div className="flex-1 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2">
-                      <p className="text-sm font-medium text-indigo-800">
+                    <div className="flex-1 rounded-lg border border-accent-ring bg-accent-soft px-3 py-2">
+                      <p className="text-sm font-medium text-accent-soft-fg">
                         ⛓ {group?.title ?? "Missing shared steps"}
-                        <span className="ml-2 font-normal text-indigo-500">
+                        <span className="ml-2 font-normal text-accent-text">
                           {group ? `${group.stepCount} shared steps` : "group was deleted"}
                         </span>
                       </p>
                       {group && (
-                        <p className="mt-0.5 truncate text-xs text-indigo-500/80">
+                        <p className="mt-0.5 truncate text-xs text-accent-text/80">
                           {group.steps.map((s) => s.action).join(" → ")}
                         </p>
                       )}
                     </div>
                     <div className="flex shrink-0 gap-1 pt-1.5">
                       <button type="button" onClick={() => moveStep(i, -1)} title="Move up"
-                        className="rounded border border-slate-200 px-1.5 py-0.5 text-xs text-slate-500 hover:bg-slate-100">↑</button>
+                        className="rounded border border-hairline px-1.5 py-0.5 text-xs text-content-muted hover:bg-surface-muted">↑</button>
                       <button type="button" onClick={() => moveStep(i, 1)} title="Move down"
-                        className="rounded border border-slate-200 px-1.5 py-0.5 text-xs text-slate-500 hover:bg-slate-100">↓</button>
+                        className="rounded border border-hairline px-1.5 py-0.5 text-xs text-content-muted hover:bg-surface-muted">↓</button>
                       <button type="button" title="Unlink — copy the steps inline"
                         onClick={() => unlinkShared(i)}
-                        className="rounded border border-indigo-200 px-1.5 py-0.5 text-xs text-indigo-600 hover:bg-indigo-100">⛓✕</button>
+                        className="rounded border border-accent-ring px-1.5 py-0.5 text-xs text-accent-text hover:bg-accent-soft">⛓✕</button>
                       <button type="button" title="Remove"
                         onClick={() => setSteps((p) => p.filter((_, idx) => idx !== i))}
-                        className="rounded border border-red-200 px-1.5 py-0.5 text-xs text-red-500 hover:bg-red-50">✕</button>
+                        className="rounded border border-danger-border px-1.5 py-0.5 text-xs text-danger hover:bg-danger-soft">✕</button>
                     </div>
                   </div>
                 );
               })()
             ) : (
               <div key={i} className="flex items-start gap-2">
-                <span className="mt-2 w-6 text-right text-sm font-medium text-slate-400">
+                <span className="mt-2 w-6 text-right text-sm font-medium text-content-subtle">
                   {i + 1}.
                 </span>
                 <textarea
@@ -421,12 +421,12 @@ export function CaseForm({
                 />
                 <div className="flex shrink-0 gap-1 pt-1.5">
                   <button type="button" onClick={() => moveStep(i, -1)} title="Move up"
-                    className="rounded border border-slate-200 px-1.5 py-0.5 text-xs text-slate-500 hover:bg-slate-100">↑</button>
+                    className="rounded border border-hairline px-1.5 py-0.5 text-xs text-content-muted hover:bg-surface-muted">↑</button>
                   <button type="button" onClick={() => moveStep(i, 1)} title="Move down"
-                    className="rounded border border-slate-200 px-1.5 py-0.5 text-xs text-slate-500 hover:bg-slate-100">↓</button>
+                    className="rounded border border-hairline px-1.5 py-0.5 text-xs text-content-muted hover:bg-surface-muted">↓</button>
                   <button type="button" title="Delete"
                     onClick={() => setSteps((p) => p.filter((_, idx) => idx !== i))}
-                    className="rounded border border-red-200 px-1.5 py-0.5 text-xs text-red-500 hover:bg-red-50">✕</button>
+                    className="rounded border border-danger-border px-1.5 py-0.5 text-xs text-danger hover:bg-danger-soft">✕</button>
                 </div>
               </div>
             )
@@ -436,7 +436,7 @@ export function CaseForm({
           <button
             type="button"
             onClick={() => setSteps((p) => [...p, { action: "", expected: "" }])}
-            className="rounded-lg border border-dashed border-slate-300 px-4 py-2 text-sm text-slate-500 hover:border-indigo-400 hover:text-indigo-600"
+            className="rounded-lg border border-dashed border-hairline-strong px-4 py-2 text-sm text-content-muted hover:border-accent hover:text-accent-text"
           >
             + Add Step
           </button>
@@ -448,7 +448,7 @@ export function CaseForm({
                 if (e.target.value)
                   setSteps((p) => [...p, { shared: e.target.value }]);
               }}
-              className="rounded-lg border border-dashed border-indigo-300 px-3 py-2 text-sm text-indigo-600 hover:border-indigo-400"
+              className="rounded-lg border border-dashed border-accent-ring px-3 py-2 text-sm text-accent-text hover:border-accent"
             >
               <option value="">⛓ Insert shared steps…</option>
               {sharedGroups.map((g) => (
@@ -476,19 +476,19 @@ export function CaseForm({
       </div>
 
       {/* F-13: parameters/datasets — data-driven runs, one result per row. */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6">
+      <div className="rounded-xl border border-hairline bg-surface p-6">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-semibold">Parameters</h3>
           <button
             type="button"
             onClick={() => setExtraVars((p) => [...p, `var${p.length + 1}`])}
-            className="rounded-lg border border-dashed border-slate-300 px-3 py-1.5 text-xs text-slate-500 hover:border-indigo-400 hover:text-indigo-600"
+            className="rounded-lg border border-dashed border-hairline-strong px-3 py-1.5 text-xs text-content-muted hover:border-accent hover:text-accent-text"
           >
             + Add variable column
           </button>
         </div>
-        <p className="mb-3 text-xs text-slate-400">
-          Use <code className="rounded bg-slate-100 px-1">{"{{var}}"}</code> in
+        <p className="mb-3 text-xs text-content-subtle">
+          Use <code className="rounded bg-surface-muted px-1">{"{{var}}"}</code> in
           steps; each dataset row below runs the case once with those values
           substituted. Leave empty for a single, non-parameterized case.
         </p>
@@ -496,7 +496,7 @@ export function CaseForm({
           <div className="overflow-x-auto">
             <table className="w-full text-sm" data-testid="dataset-table">
               <thead>
-                <tr className="text-left text-xs font-medium uppercase text-slate-400">
+                <tr className="text-left text-xs font-medium uppercase text-content-subtle">
                   <th className="pb-2 pr-2">Dataset name</th>
                   {vars.map((v) => (
                     <th key={v} className="pb-2 pr-2">
@@ -550,7 +550,7 @@ export function CaseForm({
                         onClick={() =>
                           setDatasets((prev) => prev.filter((_, idx) => idx !== i))
                         }
-                        className="rounded border border-red-200 px-1.5 py-0.5 text-xs text-red-500 hover:bg-red-50"
+                        className="rounded border border-danger-border px-1.5 py-0.5 text-xs text-danger hover:bg-danger-soft"
                       >
                         ✕
                       </button>
@@ -565,7 +565,7 @@ export function CaseForm({
           type="button"
           data-testid="add-dataset-row"
           onClick={() => setDatasets((p) => [...p, { name: "", values: {} }])}
-          className="mt-2 rounded-lg border border-dashed border-slate-300 px-4 py-2 text-sm text-slate-500 hover:border-indigo-400 hover:text-indigo-600"
+          className="mt-2 rounded-lg border border-dashed border-hairline-strong px-4 py-2 text-sm text-content-muted hover:border-accent hover:text-accent-text"
         >
           + Add Dataset Row
         </button>

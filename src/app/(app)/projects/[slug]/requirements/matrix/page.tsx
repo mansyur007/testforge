@@ -68,17 +68,17 @@ export default async function TraceabilityMatrixPage({
         </div>
         <a
           href={`/api/export/requirements-matrix?project=${project.slug}`}
-          className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100"
+          className="rounded-lg border border-hairline-strong px-3 py-1.5 text-sm hover:bg-surface-muted"
           data-testid="matrix-export"
         >
           Export CSV
         </a>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-hairline bg-surface">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 text-left text-xs uppercase text-slate-400">
+            <tr className="border-b border-hairline text-left text-xs uppercase text-content-subtle">
               <th className="px-4 py-3">Requirement</th>
               <th className="px-4 py-3">Status</th>
               {MATRIX_BUCKETS.map((b) => (
@@ -92,21 +92,21 @@ export default async function TraceabilityMatrixPage({
             {rows.map((r) => (
               <tr
                 key={r.id}
-                className="border-b border-slate-100 last:border-0"
+                className="border-b border-hairline-subtle last:border-0"
                 data-testid={`matrix-row-${r.refId}`}
               >
                 <td className="px-4 py-2.5">
                   <Link
                     href={`/projects/${project.slug}/requirements/${r.id}`}
-                    className="text-indigo-600 hover:underline"
+                    className="text-accent-text hover:underline"
                   >
-                    <span className="font-mono text-xs text-slate-400">
+                    <span className="font-mono text-xs text-content-subtle">
                       {r.refId}
                     </span>{" "}
                     {r.title}
                   </Link>
                 </td>
-                <td className="px-4 py-2.5 text-xs text-slate-500">{r.status}</td>
+                <td className="px-4 py-2.5 text-xs text-content-muted">{r.status}</td>
                 {MATRIX_BUCKETS.map((b) => (
                   <td
                     key={b}
@@ -116,7 +116,7 @@ export default async function TraceabilityMatrixPage({
                     {r.counts[b] ? (
                       <span className="font-medium">{r.counts[b]}</span>
                     ) : (
-                      <span className="text-slate-300">·</span>
+                      <span className="text-content-subtle">·</span>
                     )}
                   </td>
                 ))}
@@ -126,7 +126,7 @@ export default async function TraceabilityMatrixPage({
               <tr>
                 <td
                   colSpan={2 + MATRIX_BUCKETS.length}
-                  className="px-4 py-10 text-center text-slate-400"
+                  className="px-4 py-10 text-center text-content-subtle"
                 >
                   No requirements yet.
                 </td>
@@ -135,7 +135,7 @@ export default async function TraceabilityMatrixPage({
           </tbody>
           {rows.length > 0 && (
             <tfoot>
-              <tr className="border-t border-slate-200 bg-slate-50 text-xs font-semibold">
+              <tr className="border-t border-hairline bg-canvas text-xs font-semibold">
                 <td className="px-4 py-2.5">Total</td>
                 <td className="px-4 py-2.5" />
                 {MATRIX_BUCKETS.map((b) => (
