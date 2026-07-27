@@ -78,11 +78,13 @@ export async function updatePublicShare(formData: FormData): Promise<void> {
   if (!existing) return;
 
   const showCases = formData.get("showCases") != null;
+  const showRuns = formData.get("showRuns") != null;
+  const showReports = formData.get("showReports") != null;
   const indexable = formData.get("indexable") != null;
 
   await db.publicShare.update({
     where: { projectId },
-    data: { showCases, indexable },
+    data: { showCases, showRuns, showReports, indexable },
   });
   // Search-engine visibility is the one toggle here with consequences outside
   // the app, so it gets its own audit line.
@@ -95,13 +97,19 @@ export async function updatePublicShare(formData: FormData): Promise<void> {
       entityType: "project",
       entityId: projectId,
     });
-  if (showCases !== existing.showCases)
+  // One audit line per save that moved any section, listing the new state of
+  // all of them — "what was public at time T" is the question this answers.
+  const changed =
+    showCases !== existing.showCases ||
+    showRuns !== existing.showRuns ||
+    showReports !== existing.showReports;
+  if (changed)
     await logAudit({
       userId: ctx.session.userId,
       action: "public_share.sections",
       entityType: "project",
       entityId: projectId,
-      detail: `showCases=${showCases}`,
+      detail: `showCases=${showCases} showRuns=${showRuns} showReports=${showReports}`,
     });
   revalidateShare(ctx.project.slug);
 }

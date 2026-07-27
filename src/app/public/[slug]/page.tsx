@@ -22,7 +22,7 @@ export async function generateMetadata({
 }
 
 async function loadStats(project: PublicProject) {
-  const [caseCount, suiteCount, latestCase, badge] = await Promise.all([
+  const [caseCount, suiteCount, latestCase, badge, runCount] = await Promise.all([
     db.testCase.count({ where: { projectId: project.id, deletedAt: null } }),
     db.testSuite.count({ where: { projectId: project.id } }),
     db.testCase.findFirst({
@@ -37,10 +37,15 @@ async function loadStats(project: PublicProject) {
       where: { projectId: project.id },
       select: { token: true, revokedAt: true },
     }),
+    // Only a tally, and only rendered when the Runs section is on.
+    project.share.showRuns
+      ? db.testRun.count({ where: { projectId: project.id } })
+      : Promise.resolve(0),
   ]);
   return {
     caseCount,
     suiteCount,
+    runCount,
     lastUpdated: latestCase?.updatedAt ?? null,
     badgeToken: badge && !badge.revokedAt ? badge.token : null,
   };
@@ -57,7 +62,31 @@ export default async function PublicOverviewPage({
   const tiles = [
     { label: "Test cases", value: stats.caseCount, testid: "public-stat-cases" },
     { label: "Suites", value: stats.suiteCount, testid: "public-stat-suites" },
+    ...(project.share.showRuns
+      ? [{ label: "Test runs", value: stats.runCount, testid: "public-stat-runs" }]
+      : []),
   ];
+
+  const sections = [
+    {
+      on: project.share.showCases,
+      href: `/public/${project.slug}/cases`,
+      label: "Browse the test cases →",
+      testid: "public-browse-cases",
+    },
+    {
+      on: project.share.showRuns,
+      href: `/public/${project.slug}/runs`,
+      label: "See the run history →",
+      testid: "public-browse-runs",
+    },
+    {
+      on: project.share.showReports,
+      href: `/public/${project.slug}/reports`,
+      label: "Open the quality report →",
+      testid: "public-browse-reports",
+    },
+  ].filter((s) => s.on);
 
   return (
     <>
@@ -81,7 +110,7 @@ export default async function PublicOverviewPage({
         )}
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-3">
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {tiles.map((t) => (
           <div
             key={t.label}
@@ -110,15 +139,16 @@ export default async function PublicOverviewPage({
         </div>
       </section>
 
-      {project.share.showCases && (
+      {sections.map((s) => (
         <Link
-          href={`/public/${project.slug}/cases`}
-          data-testid="public-browse-cases"
+          key={s.href}
+          href={s.href}
+          data-testid={s.testid}
           className="block rounded-xl border border-slate-200 bg-white p-5 text-sm text-slate-600 hover:border-indigo-300 hover:text-indigo-700"
         >
-          Browse the test cases →
+          {s.label}
         </Link>
-      )}
+      ))}
     </>
   );
 }

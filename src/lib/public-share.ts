@@ -24,7 +24,13 @@ export async function loadPublicProject(slug: string) {
       slug: true,
       description: true,
       publicShare: {
-        select: { enabled: true, showCases: true, indexable: true },
+        select: {
+          enabled: true,
+          showCases: true,
+          showRuns: true,
+          showReports: true,
+          indexable: true,
+        },
       },
     },
   });
@@ -39,14 +45,20 @@ export async function requirePublicProject(slug: string) {
   return project;
 }
 
-export type PublicSection = "cases";
+export type PublicSection = "cases" | "runs" | "reports";
+
+const SECTION_FLAG: Record<PublicSection, keyof PublicProject["share"]> = {
+  cases: "showCases",
+  runs: "showRuns",
+  reports: "showReports",
+};
 
 /** 404 unless the owner turned this section on. */
 export function requireSection(
   project: PublicProject,
   section: PublicSection
 ): void {
-  if (section === "cases" && !project.share.showCases) notFound();
+  if (!project.share[SECTION_FLAG[section]]) notFound();
 }
 
 /**

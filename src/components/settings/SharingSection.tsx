@@ -14,6 +14,47 @@ import {
 } from "@/app/actions/public-share";
 import type { SectionProps } from "@/lib/section-props";
 
+// The per-section checklist. `hides` spells out what the public page leaves
+// behind — the whole point of the Runs/Reports toggles is that a stranger sees
+// the shape of the execution history without the tester notes, defect links,
+// assignees and environment names that go with it (see lib/public-runs.ts).
+const SECTIONS: {
+  name: string;
+  testid: string;
+  label: string;
+  shows: string;
+  hides?: string;
+  checked: (s: { showCases: boolean; showRuns: boolean; showReports: boolean } | null) => boolean;
+}[] = [
+  {
+    name: "showCases",
+    testid: "public-share-cases-toggle",
+    label: "Test Cases",
+    shows: "Suite folders, the case list and each case's steps.",
+    checked: (s) => s?.showCases ?? true,
+  },
+  {
+    name: "showRuns",
+    testid: "public-share-runs-toggle",
+    label: "Test Runs",
+    shows:
+      "Run names, dates, pass/fail tallies and the status bar for each run.",
+    hides:
+      "per-case results, tester comments, defect links, attachments, who ran what, environments and CI origin.",
+    checked: (s) => s?.showRuns ?? false,
+  },
+  {
+    name: "showReports",
+    testid: "public-share-reports-toggle",
+    label: "Reports",
+    shows:
+      "Overall pass rate, executions, failures, automation coverage, the per-run trend and flaky-test count.",
+    hides:
+      "bug correlation, muted tests and their reasons. Flaky tests are named only when Test Cases is also on.",
+    checked: (s) => s?.showReports ?? false,
+  },
+];
+
 // F-38: owner-facing controls for public "portfolio mode" sharing.
 export async function SharingSection({
   params,
@@ -116,24 +157,42 @@ export async function SharingSection({
                 <p className="text-xs font-semibold uppercase text-slate-400">
                   Sections
                 </p>
-                <label className="mt-2 flex items-start gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    name="showCases"
-                    defaultChecked={share?.showCases ?? true}
-                    disabled={!canManage}
-                    data-testid="public-share-cases-toggle"
-                    className="mt-0.5"
-                  />
-                  <span>
-                    <span className="font-medium">Test Cases</span>
-                    <span className="block text-xs text-slate-400">
-                      Suite folders, the case list and each case&apos;s steps.
-                      The project overview is always visible while sharing is
-                      on.
-                    </span>
-                  </span>
-                </label>
+                <p className="mt-1 text-xs text-slate-400">
+                  Pick what a visitor may see. Everything is off unless it is
+                  ticked here; the project overview is always visible while
+                  sharing is on.
+                </p>
+                <div className="mt-3 space-y-3">
+                  {SECTIONS.map((s) => (
+                    <label
+                      key={s.name}
+                      className="flex items-start gap-2 text-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        name={s.name}
+                        defaultChecked={s.checked(share)}
+                        disabled={!canManage}
+                        data-testid={s.testid}
+                        className="mt-0.5"
+                      />
+                      <span>
+                        <span className="font-medium">{s.label}</span>
+                        <span className="block text-xs text-slate-400">
+                          {s.shows}
+                        </span>
+                        {s.hides && (
+                          <span className="block text-xs text-slate-400">
+                            <span className="font-medium text-slate-500">
+                              Never shared:
+                            </span>{" "}
+                            {s.hides}
+                          </span>
+                        )}
+                      </span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
               <div>

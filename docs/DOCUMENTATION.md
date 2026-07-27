@@ -21,7 +21,7 @@
 | P2 — competitive differentiators | F-11 … F-24 | 14 | ✅ all shipped |
 | P3 — nice-to-have / niche segments | F-25 … F-37 | 13 | ✅ all shipped |
 | Leapfrog — features no competitor has | L-01 … L-05 | 5 | ✅ all shipped |
-| Post-backlog additions | F-38 | 1 | ✅ shipped |
+| Post-backlog additions | F-38 (+ Part B) | 1 | ✅ shipped |
 | **Total** | | **43** | **✅ 43 / 43 complete** |
 
 Each work order in [Part IV](#part-iv--feature-work-orders) carries a `[x]` marker and, in most
@@ -3587,9 +3587,10 @@ number): this shares the **project**, under its **slug**, at `/public/<project-s
   when the project has an active one. Cases list reuses the presentation-only `SuiteFolderGrid`
   and renders its own lean table (`CasesTable` is a client component wired to the bulk-edit
   server actions), with `?suite=`, `?q=`, and server-side `?page=`/`?per=` pagination.
-- **Never exposed on any public page:** comments, attachments, custom fields, members, runs and
-  results, defects, requirements, milestones, sessions, integrations, webhooks, audit log,
-  revision history, automation/CI config, saved views, AI features.
+- **Never exposed on any public page:** comments, attachments, custom fields, members, individual
+  run results, defects, requirements, milestones, sessions, integrations, webhooks, audit log,
+  revision history, automation/CI config, saved views, AI features. (Aggregate run/report data
+  became opt-in in Part B below; nothing on this list moved.)
 - SEO: `generateMetadata` per page with OpenGraph tags so the link unfurls on LinkedIn/X;
   `robots: noindex, nofollow` **by default**, flipped only by the per-project `indexable` toggle.
 - Owner UI: Settings → **Public sharing** (`/projects/<slug>/sharing`) — master toggle with an
@@ -3601,9 +3602,45 @@ number): this shares the **project**, under its **slug**, at `/public/<project-s
   (`revalidate = 60`), so turning sharing off has to purge them.
 - e2e `e2e/public-share.spec.ts` (TC-E2E-80) drives the whole thing from a genuinely
   unauthenticated `browser.newContext()`.
-- **Deferred, deliberately:** unlisted (token) mode alongside the slug, public
-  Runs/Reports/Requirements sections, a separate public README field, a sitemap for indexable
-  projects, per-suite partial sharing, and rate limiting on the public routes.
+- **Deferred, deliberately:** unlisted (token) mode alongside the slug, a public Requirements
+  section, a separate public README field, a sitemap for indexable projects, per-suite partial
+  sharing, and rate limiting on the public routes. (Runs/Reports shipped in Part B.)
+
+#### F-38 Part B — public Runs & Reports sections `[x]`
+
+> **Status: DONE** (2026-07-27). Lifts the "public Runs/Reports sections" deferral above.
+
+Two more `PublicShare` columns, `showRuns` and `showReports`, feeding
+`src/app/public/[slug]/{runs,reports}/page.tsx` through the same
+`requirePublicProject` → `requireSection` gate. Design constraints, all load-bearing:
+
+- **Both default `false`** in the schema, not `true`. Shares already existed when these columns
+  were added; a `true` default would have published execution history on every already-public
+  project without its owner ever choosing to. Owners tick them in Settings → Public sharing,
+  where each checkbox spells out what it shows *and* what it never shares.
+- **`src/lib/public-runs.ts` is the field allow-list** and the second choke point after
+  `public-share.ts`. The authenticated pages load runs with `include: { results: true }`; the
+  public pages may not, so this module selects column by column and documents each omission.
+  Excluded: `TestRunResult.{comment,defectUrl,customJson,assigneeId,elapsedSeconds,datasetName}`
+  (tester notes, JUnit failure text, tracker links, per-project custom fields, who tested what),
+  `TestRun.{createdById,description,origin,environmentId,configJson,planId,milestoneId,baselineId}`
+  (no person's name appears on any public page; `origin` is CI topology / contributor machines;
+  `Environment.url` is an internal host). Attachments are never joined at all.
+- **There is no public run *detail* route.** The Runs section is a list of names, dates, statuses
+  and status-bar tallies — per-result data has no page to leak from, by construction.
+- **Reports is aggregates only:** pass rate, executions, failures, automation coverage, per-run
+  trend, flaky tests. The muted-tests panel (free-text `mutedReason`, plus mute/unmute mutations)
+  and bug correlation (built from `defectUrl`) are not ported.
+- **Cross-section leak guard:** flaky tests are the one report that would name individual cases,
+  so `loadPublicReport(projectId, withCaseTitles)` takes the project's `showCases` flag and
+  degrades to a bare count when Test Cases is off. Publishing Reports can never become a side
+  channel for a case catalogue the owner kept private.
+- `updatePublicShare` writes one `public_share.sections` audit line per save that moved any
+  section, recording the new state of all three — the question it answers is "what was public
+  at time T".
+- e2e: TC-E2E-80 grew a seeded run whose result carries a planted comment and a planted internal
+  Jira URL, then asserts the raw HTML of both public pages contains neither, nor the run author's
+  name, nor the account email, nor the CI origin, nor the run description.
 
 ---
 
