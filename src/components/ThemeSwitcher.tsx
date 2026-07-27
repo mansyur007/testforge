@@ -51,18 +51,30 @@ export function ThemeSwitcher({
     setPref(next);
   };
 
+  const boxPx = size === "md" ? 44 : 36;
   const box = size === "md" ? "h-11 w-11" : "h-9 w-9";
   const icon = size === "md" ? "h-5 w-5" : "h-[18px] w-[18px]";
+  const activeIndex = THEMES.indexOf(pref);
 
   return (
     <div
-      className={`flex items-center overflow-hidden rounded-lg border text-xs font-medium ${
+      className={`relative flex items-center overflow-hidden rounded-lg border text-xs font-medium ${
         tone === "dark" ? "border-sidebar-border" : "border-hairline"
       }`}
       role="group"
       aria-label="Theme"
       data-testid="theme-switcher"
     >
+      {/* F-39: the active segment slides into place (state indication + spatial
+          consistency) instead of an instant colour swap — a control switched a
+          few times a session stays inside the 150–250ms segmented-control
+          budget. transform-only, so it stays off the main thread's paint work;
+          motion-safe: drops it to an instant jump under prefers-reduced-motion. */}
+      <div
+        aria-hidden
+        className="absolute inset-y-0 left-0 bg-accent motion-safe:transition-transform motion-safe:duration-panel motion-safe:ease-tf-out"
+        style={{ width: boxPx, height: boxPx, transform: `translateX(${activeIndex * boxPx}px)` }}
+      />
       {THEMES.map((t) => (
         <button
           key={t}
@@ -72,9 +84,9 @@ export function ThemeSwitcher({
           title={LABEL[t]}
           aria-label={LABEL[t]}
           data-testid={`theme-${t}`}
-          className={`grid place-items-center ${box} ${FOCUS_RING} ${
+          className={`relative grid place-items-center ${box} ${FOCUS_RING} motion-safe:transition-colors motion-safe:duration-fast motion-safe:ease-tf-out ${
             pref === t
-              ? "bg-accent text-white"
+              ? "text-white"
               : tone === "dark"
                 ? "text-sidebar-fg hover:bg-sidebar-hover"
                 : "text-content-muted hover:bg-surface-muted"
