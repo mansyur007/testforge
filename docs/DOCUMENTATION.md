@@ -3780,6 +3780,14 @@ behavioural regression.
 to it. Fixed in `src/app/(app)/layout.tsx` by giving the `<nav>` its own scroll region
 (`min-h-0 flex-1 overflow-y-auto`) while the logo header and footer stay pinned.
 
+**Follow-up (2026-07-27):** `ThemeSwitcher` got a sliding active-segment indicator instead
+of an instant colour swap — an absolutely-positioned pill (`width`/`height` = the segment's
+own box size, `transform: translateX(index * boxSize)`) animates behind the icons on
+`motion-safe:transition-transform motion-safe:duration-panel motion-safe:ease-tf-out`
+(200ms, the repo's own ease-out curve), with the icon/label colour crossfading on
+`duration-fast` (150ms) alongside it. Gated on `motion-safe:` so `prefers-reduced-motion`
+gets an instant jump, same convention as every other transition in the app.
+
 **Deferred, deliberately:** per-project/per-organisation theming, a high-contrast theme,
 and dark-mode screenshots in the help centre (`docs/images/*` stay light-mode captures;
 out of scope per §7.10).
