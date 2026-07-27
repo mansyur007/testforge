@@ -13,10 +13,10 @@ import { deleteBaseline } from "@/app/actions/baselines";
 export const dynamic = "force-dynamic";
 
 const STATUS_BADGE: Record<string, string> = {
-  UNCHANGED: "bg-green-100 text-green-800",
-  CHANGED: "bg-amber-100 text-amber-800",
-  MOVED: "bg-blue-100 text-blue-800",
-  DELETED: "bg-red-100 text-red-800",
+  UNCHANGED: "bg-success-soft text-success-soft-fg",
+  CHANGED: "bg-warning-soft text-warning-soft-fg",
+  MOVED: "bg-info-soft text-info-soft-fg",
+  DELETED: "bg-danger-soft text-danger-soft-fg",
 };
 
 export default async function BaselineDetailPage({
@@ -64,7 +64,7 @@ export default async function BaselineDetailPage({
         <div>
           <BackLink href={`/projects/${project.slug}/baselines`}>Baselines</BackLink>
           <h2 className="mt-1 text-xl font-bold">{baseline.name}</h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-content-muted">
             Scope: <b>{scopeLabel}</b> · {comparison.length} case
             {comparison.length === 1 ? "" : "s"} · created by {baseline.createdBy.name}
           </p>
@@ -72,7 +72,7 @@ export default async function BaselineDetailPage({
         <div className="flex shrink-0 gap-2">
           <Link
             href={`/projects/${project.slug}/runs/new`}
-            className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
+            className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-white hover:bg-accent-hover"
             data-testid="baseline-new-run-link"
           >
             Create run from baseline
@@ -81,7 +81,7 @@ export default async function BaselineDetailPage({
             <form action={deleteBaseline}>
               <input type="hidden" name="baselineId" value={baseline.id} />
               <button
-                className="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+                className="rounded-lg border border-danger-border px-3 py-1.5 text-sm text-danger hover:bg-danger-soft"
                 data-testid="baseline-delete-button"
               >
                 Delete
@@ -91,11 +91,11 @@ export default async function BaselineDetailPage({
         </div>
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-5">
+      <section className="rounded-xl border border-hairline bg-surface p-5">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="font-semibold">Compare to current</h3>
           <span
-            className="text-xs text-slate-400"
+            className="text-xs text-content-subtle"
             data-testid="baseline-changed-count"
           >
             {changedCount} of {comparison.length} differ from the baseline
@@ -104,7 +104,7 @@ export default async function BaselineDetailPage({
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-200 text-left text-xs uppercase text-slate-400">
+              <tr className="border-b border-hairline text-left text-xs uppercase text-content-subtle">
                 <th className="px-3 py-2">Case</th>
                 <th className="px-3 py-2">Suite (then → now)</th>
                 <th className="px-3 py-2">Rev (pinned → current)</th>
@@ -117,31 +117,31 @@ export default async function BaselineDetailPage({
                 return (
                   <tr
                     key={row.caseId}
-                    className="border-b border-slate-100 last:border-0"
+                    className="border-b border-hairline-subtle last:border-0"
                     data-testid={`baseline-compare-row-${row.caseId}`}
                   >
                     <td className="px-3 py-2">
                       {row.status === "DELETED" || seq === undefined ? (
-                        <span className="text-slate-400">{row.title}</span>
+                        <span className="text-content-subtle">{row.title}</span>
                       ) : (
                         <Link
                           href={`/projects/${project.slug}/cases/${row.caseId}`}
-                          className="text-indigo-600 hover:underline"
+                          className="text-accent-text hover:underline"
                         >
-                          <span className="font-mono text-xs text-slate-400">
+                          <span className="font-mono text-xs text-content-subtle">
                             {caseDisplayId(project.slug, seq)}
                           </span>{" "}
                           {row.title}
                         </Link>
                       )}
                     </td>
-                    <td className="px-3 py-2 text-xs text-slate-500">
+                    <td className="px-3 py-2 text-xs text-content-muted">
                       {row.suitePathThen || "(root)"}
                       {row.suitePathNow !== null && row.suitePathNow !== row.suitePathThen && (
                         <> → {row.suitePathNow || "(root)"}</>
                       )}
                     </td>
-                    <td className="px-3 py-2 text-xs text-slate-500">
+                    <td className="px-3 py-2 text-xs text-content-muted">
                       {row.pinnedRev}
                       {row.currentRev !== null && row.currentRev !== row.pinnedRev && (
                         <> → {row.currentRev}</>
@@ -155,7 +155,7 @@ export default async function BaselineDetailPage({
                         {row.status}
                       </span>
                       {row.changedFields.length > 0 && (
-                        <span className="ml-2 text-xs text-slate-400">
+                        <span className="ml-2 text-xs text-content-subtle">
                           {row.changedFields.join(", ")}
                         </span>
                       )}

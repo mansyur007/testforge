@@ -36,7 +36,7 @@ export default async function SharedStepsPage({
       <BackLink href={`/projects/${project.slug}`}>Back to test cases</BackLink>
       <div>
         <h2 className="text-lg font-semibold">Shared Steps</h2>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-content-subtle">
           Reusable step blocks. Edit one here and every test case that inserts
           it updates instantly; a block can only be deleted when no case uses it.
         </p>

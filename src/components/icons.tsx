@@ -72,6 +72,10 @@ const ICONS: Record<string, string> = {
   gear: `<path class="tf-acf" d="M9.86 2.74 L14.14 2.74 L14.62 5.18 L15.70 5.71 L17.90 4.56 L20.57 7.90 L18.96 9.80 L19.23 10.97 L21.50 11.98 L20.55 16.14 L18.06 16.07 L17.31 17.01 L17.94 19.41 L14.09 21.27 L12.60 19.28 L11.40 19.28 L9.91 21.27 L6.06 19.41 L6.69 17.01 L5.94 16.07 L3.45 16.14 L2.50 11.98 L4.77 10.97 L5.04 9.80 L3.43 7.90 L6.10 4.56 L8.30 5.71 L9.38 5.18 Z"/><circle cx="12" cy="12" r="3.1" fill="#fff"/>`,
   // 12. Success
   celebrate: `<path class="tf-acf" d="M4 20 L8.6 8.4 a1 1 0 0 1 1.6 -.35 l5.7 5.7 a1 1 0 0 1 -.35 1.6 z"/><path class="tf-ac" d="M16.5 4 v2.4 M19.8 7.2 l-1.7 1.7 M20.5 11.5 h-2.4"/><circle class="tf-ac" cx="13.5" cy="5.5" r="0.6"/><circle class="tf-ac" cx="19.5" cy="13" r="0.6"/>`,
+  // F-39: theme switcher — sun, moon, monitor.
+  sun: `<circle class="tf-acf" cx="12" cy="12" r="4"/><path class="tf-ac" d="M12 3.5 V5.5 M12 18.5 V20.5 M3.5 12 H5.5 M18.5 12 H20.5 M5.9 5.9 L7.3 7.3 M16.7 16.7 L18.1 18.1 M5.9 18.1 L7.3 16.7 M16.7 7.3 L18.1 5.9"/>`,
+  moon: `<path class="tf-acf" d="M20 13.5 A8.5 8.5 0 1 1 10.5 4 A6.7 6.7 0 0 0 20 13.5 Z"/>`,
+  monitor: `<rect x="3.5" y="5" width="17" height="12" rx="1.8"/><path class="tf-ac" d="M9 20 h6 M12 17 v3"/>`,
 };
 
 export type IconName = keyof typeof ICONS;
@@ -94,8 +98,8 @@ export function BackLink({
 }) {
   const colors =
     variant === "dark"
-      ? "text-slate-300 hover:text-white"
-      : "text-slate-500 hover:text-indigo-600";
+      ? "text-sidebar-fg hover:text-white"
+      : "text-content-muted hover:text-accent-text";
   return (
     <Link
       href={href}
@@ -230,12 +234,12 @@ export function Logo({
   return (
     <Link href={href} className="inline-flex items-center gap-2.5">
       <span
-        className={`grid place-items-center bg-indigo-600 shadow-[0_6px_20px_-8px_rgba(79,70,229,.6)] ${mark}`}
+        className={`grid place-items-center bg-accent shadow-[0_6px_20px_-8px_rgba(79,70,229,.6)] ${mark}`}
       >
         <AnvilMark className={icon} />
       </span>
-      <span className={`font-display font-bold tracking-tight ${text} ${dark ? "text-white" : "text-slate-900 dark:text-white"}`}>
-        Test<span className="text-indigo-600 dark:text-indigo-400">Forge</span>
+      <span className={`font-display font-bold tracking-tight ${text} ${dark ? "text-white" : "text-content-strong"}`}>
+        Test<span className="text-accent-text">Forge</span>
       </span>
     </Link>
   );

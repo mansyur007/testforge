@@ -12,7 +12,7 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
     <button
       type="submit"
       disabled={pending}
-      className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+      className="w-full rounded-lg bg-accent px-4 py-2.5 font-medium text-white hover:bg-accent-hover disabled:opacity-50"
     >
       {pending ? pendingLabel : label}
     </button>
@@ -27,29 +27,29 @@ function FormInner({ lang }: { lang: Lang }) {
   return (
     <form
       action={formAction}
-      className="space-y-4 rounded-xl border border-slate-200 bg-white p-8 shadow-sm"
+      className="space-y-4 rounded-xl border border-hairline bg-surface p-8 shadow-sm"
     >
       <input type="hidden" name="token" value={token} />
       {state?.error && (
-        <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
+        <p className="rounded-lg bg-danger-soft px-4 py-2.5 text-sm text-danger-soft-fg">
           {state.error}
         </p>
       )}
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">
+        <label className="mb-1 block text-sm font-medium text-content">
           {t.newPassword}{" "}
-          <span className="text-slate-400">{t.passwordHint}</span>
+          <span className="text-content-subtle">{t.passwordHint}</span>
         </label>
         <input
           name="password"
           type="password"
           required
           minLength={8}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+          className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
         />
       </div>
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">
+        <label className="mb-1 block text-sm font-medium text-content">
           {t.confirm}
         </label>
         <input
@@ -57,7 +57,7 @@ function FormInner({ lang }: { lang: Lang }) {
           type="password"
           required
           minLength={8}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+          className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
         />
       </div>
       <SubmitButton label={t.submit} pendingLabel={t.submitting} />

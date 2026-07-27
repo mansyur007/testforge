@@ -52,8 +52,8 @@ const SETTINGS_KEYS: TabKey[] = [
 function tabClass(isActive: boolean) {
   return `inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium ${FOCUS_RING} ${
     isActive
-      ? "border-indigo-600 text-indigo-600"
-      : "border-transparent text-slate-500 hover:text-slate-800"
+      ? "border-accent text-accent-text"
+      : "border-transparent text-content-muted hover:text-content-strong"
   }`;
 }
 
@@ -87,15 +87,15 @@ export function ProjectTabs({
   return (
     <div>
       <div className="flex items-baseline gap-2">
-        <div className="flex items-center gap-2 text-sm text-slate-400">
-          <Link href="/projects" className={`hover:text-slate-600 ${FOCUS_RING}`}>
+        <div className="flex items-center gap-2 text-sm text-content-subtle">
+          <Link href="/projects" className={`hover:text-content ${FOCUS_RING}`}>
             Projects
           </Link>
           <span>/</span>
         </div>
         <h1 className="text-2xl font-bold">{name}</h1>
       </div>
-      <div className="mt-4 flex items-stretch gap-1 border-b border-slate-200">
+      <div className="mt-4 flex items-stretch gap-1 border-b border-hairline">
         <div className="flex gap-1 overflow-x-auto">
           {primary.map((t) => (
             <Link
@@ -103,8 +103,8 @@ export function ProjectTabs({
               href={t.href}
               className={`shrink-0 whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium ${FOCUS_RING} ${
                 active === t.key
-                  ? "border-indigo-600 text-indigo-600"
-                  : "border-transparent text-slate-500 hover:text-slate-800"
+                  ? "border-accent text-accent-text"
+                  : "border-transparent text-content-muted hover:text-content-strong"
               }`}
             >
               {t.label}

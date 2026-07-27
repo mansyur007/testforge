@@ -22,7 +22,7 @@ function Submit({ label }: { label: string }) {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+      className="rounded-lg bg-sidebar px-3 py-1.5 text-xs font-medium text-white hover:bg-sidebar-hover disabled:opacity-50"
     >
       {pending ? "…" : label}
     </button>
@@ -42,7 +42,7 @@ function PermissionChecks({
         <label
           key={p}
           htmlFor={`${idPrefix}-${p}`}
-          className="flex items-center gap-2 text-xs text-slate-600"
+          className="flex items-center gap-2 text-xs text-content"
         >
           <input
             id={`${idPrefix}-${p}`}
@@ -52,7 +52,7 @@ function PermissionChecks({
             defaultChecked={defaults.includes(p)}
           />
           <span>
-            <code className="rounded bg-slate-100 px-1">{p}</code>{" "}
+            <code className="rounded bg-surface-muted px-1">{p}</code>{" "}
             {PERMISSION_LABELS[p]}
           </span>
         </label>
@@ -75,7 +75,7 @@ function CustomRoleRow({ role }: { role: RoleView }) {
             <button
               type="submit"
               formAction={deleteAction}
-              className="text-xs text-slate-400 hover:text-red-600"
+              className="text-xs text-content-subtle hover:text-danger"
               data-testid={`role-delete-${role.name}`}
             >
               Delete
@@ -84,7 +84,7 @@ function CustomRoleRow({ role }: { role: RoleView }) {
         </div>
         <PermissionChecks defaults={role.permissions} idPrefix={role.id} />
         {(saveState?.error || deleteState?.error) && (
-          <p className="text-xs text-red-600">
+          <p className="text-xs text-danger">
             {saveState?.error ?? deleteState?.error}
           </p>
         )}
@@ -102,21 +102,21 @@ export function RolesManager({ roles }: { roles: RoleView[] }) {
   }, [state]);
 
   return (
-    <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+    <section className="space-y-4 rounded-xl border border-hairline bg-surface p-6">
       <div>
         <h2 className="text-lg font-semibold">Roles</h2>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-content-muted">
           Custom project roles with explicit permissions — assign them on a
           project&apos;s Members tab. Built-in roles are fixed presets.
         </p>
       </div>
 
       {/* Built-in presets, read-only reference */}
-      <div className="flex flex-wrap gap-2 text-xs text-slate-500">
+      <div className="flex flex-wrap gap-2 text-xs text-content-muted">
         {BUILT_IN_ROLES.map((r) => (
           <span
             key={r}
-            className="rounded-full bg-slate-100 px-2 py-1"
+            className="rounded-full bg-surface-muted px-2 py-1"
             title={
               ROLE_PRESETS[r].length
                 ? ROLE_PRESETS[r].join(", ")
@@ -134,27 +134,27 @@ export function RolesManager({ roles }: { roles: RoleView[] }) {
       </div>
 
       {roles.length > 0 && (
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-hairline-subtle">
           {roles.map((r) => (
             <CustomRoleRow key={r.id} role={r} />
           ))}
         </ul>
       )}
 
-      <form ref={formRef} action={formAction} className="space-y-2 border-t border-slate-100 pt-4">
+      <form ref={formRef} action={formAction} className="space-y-2 border-t border-hairline-subtle pt-4">
         <div className="flex flex-wrap items-center gap-2">
           <input
             name="name"
             required
             placeholder='New role name, e.g. "Executor"'
             data-testid="role-name-input"
-            className="w-56 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="bg-surface text-content-strong w-56 rounded-lg border border-hairline-strong px-3 py-1.5 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
           />
           <Submit label="+ Role" />
         </div>
         <PermissionChecks defaults={[]} idPrefix="new-role" />
         {state?.error && (
-          <p className="text-xs text-red-600" data-testid="role-form-error">
+          <p className="text-xs text-danger" data-testid="role-form-error">
             {state.error}
           </p>
         )}

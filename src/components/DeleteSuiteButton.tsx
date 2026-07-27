@@ -53,20 +53,20 @@ export function DeleteSuiteButton({
           setError(null);
           setOpen(true);
         }}
-        className="ml-1 shrink-0 rounded p-1 text-slate-300 hover:bg-red-50 hover:text-red-600"
+        className="ml-1 shrink-0 rounded p-1 text-content-subtle hover:bg-danger-soft hover:text-danger"
       >
         <TFIcon name="delete" className="h-4 w-4" />
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 motion-safe:animate-tf-fade-in">
-          <div className="w-full max-w-md space-y-4 rounded-xl bg-white p-6 shadow-xl motion-safe:animate-tf-pop-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 motion-safe:animate-tf-fade-in">
+          <div className="w-full max-w-md space-y-4 rounded-xl bg-surface p-6 shadow-xl motion-safe:animate-tf-pop-in">
             {blocked ? (
               <>
-                <h3 className="text-lg font-semibold text-slate-900">
+                <h3 className="text-lg font-semibold text-content-strong">
                   Can&apos;t delete &ldquo;{suiteName}&rdquo;
                 </h3>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-content-muted">
                   It has {caseCount} test case{caseCount === 1 ? "" : "s"} (here
                   or in a sub-suite). Move them to another suite or delete them
                   first.
@@ -76,7 +76,7 @@ export function DeleteSuiteButton({
                     type="button"
                     onClick={close}
                     data-testid="suite-delete-ok"
-                    className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                    className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
                   >
                     OK
                   </button>
@@ -84,18 +84,18 @@ export function DeleteSuiteButton({
               </>
             ) : (
               <>
-                <h3 className="text-lg font-semibold text-slate-900">
+                <h3 className="text-lg font-semibold text-content-strong">
                   Delete suite &ldquo;{suiteName}&rdquo;?
                 </h3>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-content-muted">
                   This also removes its sub-suites. This can&apos;t be undone.
                 </p>
-                {error && <p className="text-sm text-red-600">{error}</p>}
+                {error && <p className="text-sm text-danger">{error}</p>}
                 <div className="flex justify-end gap-2">
                   <button
                     type="button"
                     onClick={close}
-                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm hover:bg-slate-100"
+                    className="rounded-lg border border-hairline-strong px-4 py-2 text-sm hover:bg-surface-muted"
                   >
                     Cancel
                   </button>
@@ -104,7 +104,7 @@ export function DeleteSuiteButton({
                     onClick={confirmDelete}
                     disabled={pending}
                     data-testid="suite-delete-confirm"
-                    className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                    className="rounded-lg bg-danger px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
                   >
                     {pending ? "Deleting…" : "Delete"}
                   </button>

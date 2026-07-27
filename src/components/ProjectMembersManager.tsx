@@ -16,14 +16,14 @@ const BUILT_IN_OPTIONS = ["OWNER", "ADMIN", "MEMBER", "VIEWER"];
 function RoleBadge({ role }: { role: string }) {
   const tone =
     role === "OWNER"
-      ? "bg-violet-100 text-violet-700"
+      ? "bg-accent-soft text-accent-soft-fg"
       : role === "ADMIN"
-        ? "bg-indigo-100 text-indigo-700"
+        ? "bg-info-soft text-info-soft-fg"
         : role === "VIEWER"
-          ? "bg-slate-100 text-slate-600"
+          ? "bg-surface-muted text-content"
           : role === "MEMBER"
-            ? "bg-sky-100 text-sky-700"
-            : "bg-teal-100 text-teal-700"; // F-14: custom role
+            ? "bg-success-soft text-success-soft-fg"
+            : "bg-warning-soft text-warning-soft-fg"; // F-14: custom role
   return (
     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${tone}`}>
       {role}
@@ -71,18 +71,18 @@ export function ProjectMembersManager({
   return (
     <div className="max-w-3xl space-y-6">
       {msg?.error && (
-        <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
+        <p className="rounded-lg bg-danger-soft px-4 py-2.5 text-sm text-danger-soft-fg">
           {msg.error}
         </p>
       )}
       {msg?.ok && (
-        <p className="rounded-lg bg-green-50 px-4 py-2.5 text-sm text-green-700">
+        <p className="rounded-lg bg-success-soft px-4 py-2.5 text-sm text-success-soft-fg">
           {msg.ok}
         </p>
       )}
 
       {!canManage && (
-        <p className="rounded-lg bg-amber-50 px-4 py-2.5 text-sm text-amber-700">
+        <p className="rounded-lg bg-warning-soft px-4 py-2.5 text-sm text-warning-soft-fg">
           You can view this project&apos;s members, but only owners and admins
           can add or change them.
         </p>
@@ -90,19 +90,19 @@ export function ProjectMembersManager({
 
       {/* Add member */}
       {canManage && (
-        <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+        <section className="space-y-4 rounded-xl border border-hairline bg-surface p-6">
           <div>
             <h2 className="text-lg font-semibold">Add a member</h2>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-content-muted">
               Pick someone from your organization and choose their project role.
             </p>
           </div>
           {!hasOrg ? (
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-content-subtle">
               You are not part of an organization yet.
             </p>
           ) : addable.length === 0 ? (
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-content-subtle">
               Everyone in your organization is already a member. Invite more
               people in Settings → Team.
             </p>
@@ -111,7 +111,7 @@ export function ProjectMembersManager({
               <select
                 value={addUserId}
                 onChange={(e) => setAddUserId(e.target.value)}
-                className="min-w-[16rem] rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                className="min-w-[16rem] rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
               >
                 <option value="">Select a person…</option>
                 {addable.map((u) => (
@@ -123,7 +123,7 @@ export function ProjectMembersManager({
               <select
                 value={addRole}
                 onChange={(e) => setAddRole(e.target.value)}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                className="rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
               >
                 {ROLE_OPTIONS.map((r) => (
                   <option key={r} value={r}>
@@ -141,7 +141,7 @@ export function ProjectMembersManager({
                     )
                   )
                 }
-                className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+                className="rounded-lg bg-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
               >
                 {pending ? "Adding…" : "Add member"}
               </button>
@@ -151,37 +151,37 @@ export function ProjectMembersManager({
       )}
 
       {/* Members */}
-      <section className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+      <section className="space-y-4 rounded-xl border border-hairline bg-surface p-6">
         <h2 className="text-lg font-semibold">
           Members{" "}
-          <span className="text-sm font-normal text-slate-400">
+          <span className="text-sm font-normal text-content-subtle">
             ({members.length})
           </span>
         </h2>
-        <div className="overflow-hidden rounded-lg border border-slate-200">
+        <div className="overflow-hidden rounded-lg border border-hairline">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+            <thead className="bg-canvas text-left text-xs uppercase tracking-wide text-content-muted">
               <tr>
                 <th className="px-4 py-2.5 font-medium">Member</th>
                 <th className="px-4 py-2.5 font-medium">Project role</th>
                 {canManage && <th className="px-4 py-2.5" />}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-hairline-subtle">
               {members.map((m) => {
                 const isSelf = m.userId === currentUserId;
                 return (
                   <tr key={m.userId}>
                     <td className="px-4 py-3">
-                      <div className="font-medium text-slate-800">
+                      <div className="font-medium text-content-strong">
                         {m.name}
                         {isSelf && (
-                          <span className="ml-2 text-xs text-slate-400">
+                          <span className="ml-2 text-xs text-content-subtle">
                             (you)
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-slate-500">{m.email}</div>
+                      <div className="text-xs text-content-muted">{m.email}</div>
                     </td>
                     <td className="px-4 py-3">
                       {canManage ? (
@@ -199,7 +199,7 @@ export function ProjectMembersManager({
                               )
                             )
                           }
-                          className="rounded-lg border border-slate-300 px-2 py-1 text-xs focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                          className="rounded-lg border border-hairline-strong px-2 py-1 text-xs focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
                         >
                           {ROLE_OPTIONS.map((r) => (
                             <option key={r} value={r}>
@@ -225,7 +225,7 @@ export function ProjectMembersManager({
                                 )
                               );
                           }}
-                          className="text-xs font-medium text-red-600 hover:text-red-700 disabled:opacity-50"
+                          className="text-xs font-medium text-danger hover:text-danger-soft-fg disabled:opacity-50"
                         >
                           {isSelf ? "Leave" : "Remove"}
                         </button>

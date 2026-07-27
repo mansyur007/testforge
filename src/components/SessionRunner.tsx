@@ -37,10 +37,10 @@ function Timer({ startedAt, timeboxMinutes }: { startedAt: string; timeboxMinute
   return (
     <span
       data-testid="session-timer"
-      className={`font-mono text-2xl font-bold tabular-nums ${over ? "text-red-600" : "text-slate-800"}`}
+      className={`font-mono text-2xl font-bold tabular-nums ${over ? "text-danger" : "text-content-strong"}`}
     >
       {label}
-      <span className="ml-2 text-sm font-normal text-slate-400">/ {timeboxMinutes}m</span>
+      <span className="ml-2 text-sm font-normal text-content-subtle">/ {timeboxMinutes}m</span>
     </span>
   );
 }
@@ -52,7 +52,7 @@ function AddButton() {
       type="submit"
       disabled={pending}
       data-testid="session-note-submit"
-      className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+      className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
     >
       {pending ? "Adding…" : "Add note"}
     </button>
@@ -99,7 +99,7 @@ export function SessionRunner({
   }, []);
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5">
+    <div className="rounded-xl border border-hairline bg-surface p-5">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="font-semibold">Live session</h3>
         <Timer startedAt={startedAt} timeboxMinutes={timeboxMinutes} />
@@ -130,7 +130,7 @@ export function SessionRunner({
               }}
               data-testid={`session-kind-${k}`}
               className={`rounded-full px-3 py-1 text-xs font-medium ${
-                kind === k ? SESSION_NOTE_BADGES[k] : "bg-slate-50 text-slate-400 hover:bg-slate-100"
+                kind === k ? SESSION_NOTE_BADGES[k] : "bg-canvas text-content-subtle hover:bg-surface-muted"
               }`}
               title={`Hotkey: ${k[0]}`}
             >
@@ -146,11 +146,11 @@ export function SessionRunner({
           rows={3}
           placeholder="What did you find? (Cmd/Ctrl+Enter to add)"
           data-testid="session-note-input"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm"
         />
 
         <div className="flex items-center gap-3">
-          <label className="flex cursor-pointer items-center gap-2 text-xs text-slate-500">
+          <label className="flex cursor-pointer items-center gap-2 text-xs text-content-muted">
             📎 Attach
             <input
               type="file"
@@ -163,7 +163,7 @@ export function SessionRunner({
         </div>
 
         {state?.error && (
-          <p data-testid="session-note-error" className="text-xs text-red-600">
+          <p data-testid="session-note-error" className="text-xs text-danger">
             {state.error}
           </p>
         )}

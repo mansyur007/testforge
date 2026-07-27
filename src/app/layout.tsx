@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import { THEME_BOOT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
 // Tipografi sesuai "testforge design system":
@@ -49,9 +50,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* F-39: applies the theme class before first paint. suppressHydrationWarning
+            on <html> is required — the server renders no class, this script adds one. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+      </head>
       <body
-        className={`${display.variable} ${sans.variable} ${mono.variable} bg-slate-50 font-sans text-slate-900 antialiased`}
+        className={`${display.variable} ${sans.variable} ${mono.variable} bg-canvas font-sans text-content-strong antialiased`}
       >
         {children}
       </body>

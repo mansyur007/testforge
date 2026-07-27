@@ -17,18 +17,18 @@ export const DEFECT_STATUSES = [
 export type DefectStatus = (typeof DEFECT_STATUSES)[number];
 
 export const DEFECT_SEVERITY_BADGES: Record<DefectSeverity, string> = {
-  CRITICAL: "bg-red-100 text-red-800",
-  HIGH: "bg-orange-100 text-orange-800",
-  MEDIUM: "bg-yellow-100 text-yellow-800",
-  LOW: "bg-gray-100 text-gray-600",
+  CRITICAL: "bg-danger-soft text-danger-soft-fg",
+  HIGH: "bg-warning-soft text-warning-soft-fg",
+  MEDIUM: "bg-warning-soft text-warning-soft-fg",
+  LOW: "bg-surface-muted text-content-muted",
 };
 
 export const DEFECT_STATUS_BADGES: Record<DefectStatus, string> = {
-  OPEN: "bg-amber-100 text-amber-800",
-  CONFIRMED: "bg-blue-100 text-blue-800",
-  FIXED: "bg-green-100 text-green-800",
-  WONT_FIX: "bg-slate-100 text-slate-500",
-  CLOSED: "bg-gray-100 text-gray-500 line-through",
+  OPEN: "bg-warning-soft text-warning-soft-fg",
+  CONFIRMED: "bg-info-soft text-info-soft-fg",
+  FIXED: "bg-success-soft text-success-soft-fg",
+  WONT_FIX: "bg-surface-muted text-content-muted",
+  CLOSED: "bg-surface-muted text-content-subtle line-through",
 };
 
 export const DEFECT_LINK_ENTITY_TYPES = ["CASE", "RESULT"] as const;

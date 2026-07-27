@@ -26,7 +26,7 @@ export function PrintToolbar({ title }: { title: string }) {
           e.preventDefault();
           window.close();
         }}
-        className="text-sm text-slate-500 hover:text-slate-700"
+        className="text-sm text-content-muted hover:text-content"
       >
         Close
       </a>
@@ -37,8 +37,7 @@ export function PrintToolbar({ title }: { title: string }) {
           document.title = title;
           window.print();
         }}
-        className="rounded-lg px-4 py-2 text-sm font-medium text-white shadow-lg"
-        style={{ backgroundColor: "#4f46e5" }}
+        className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white shadow-lg"
       >
         Print / Save as PDF
       </button>

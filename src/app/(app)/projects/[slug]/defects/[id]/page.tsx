@@ -67,7 +67,7 @@ export default async function DefectDetailPage({
         <div>
           <BackLink href={`/projects/${project.slug}/defects`}>Defects</BackLink>
           <h2 className="mt-1 text-xl font-bold">
-            <span className="font-mono text-sm text-slate-400">
+            <span className="font-mono text-sm text-content-subtle">
               {defectDisplayId(project.slug, defect.seq)}
             </span>{" "}
             {defect.title}
@@ -79,7 +79,7 @@ export default async function DefectDetailPage({
             <form action={deleteDefect}>
               <input type="hidden" name="defectId" value={defect.id} />
               <button
-                className="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+                className="rounded-lg border border-danger-border px-3 py-1.5 text-sm text-danger hover:bg-danger-soft"
                 data-testid="defect-delete-button"
               >
                 Delete
@@ -89,16 +89,16 @@ export default async function DefectDetailPage({
         </div>
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-5">
+      <section className="rounded-xl border border-hairline bg-surface p-5">
         <h3 className="mb-3 font-semibold">Linked cases &amp; results</h3>
         <ul className="space-y-2 text-sm" data-testid="defect-links-list">
           {linkedCases.map((c) => (
             <li key={c.id} className="flex items-center justify-between gap-2">
               <Link
                 href={`/projects/${project.slug}/cases/${c.id}`}
-                className="text-slate-700 hover:text-indigo-600"
+                className="text-content hover:text-accent-text"
               >
-                <span className="font-mono text-xs text-slate-400">
+                <span className="font-mono text-xs text-content-subtle">
                   {caseDisplayId(project.slug, c.seq)}
                 </span>{" "}
                 {c.title}
@@ -111,9 +111,9 @@ export default async function DefectDetailPage({
               <li key={r.id} className="flex items-center justify-between gap-2">
                 <Link
                   href={`/projects/${project.slug}/runs/${r.run.id}`}
-                  className="text-slate-700 hover:text-indigo-600"
+                  className="text-content hover:text-accent-text"
                 >
-                  <span className="font-mono text-xs text-slate-400">
+                  <span className="font-mono text-xs text-content-subtle">
                     {caseDisplayId(project.slug, r.testCase.seq)}
                   </span>{" "}
                   {r.testCase.title} — {r.run.name}
@@ -122,7 +122,7 @@ export default async function DefectDetailPage({
                   <form action={unlinkDefect}>
                     <input type="hidden" name="linkId" value={link.id} />
                     <button
-                      className="text-xs text-slate-400 hover:text-red-600"
+                      className="text-xs text-content-subtle hover:text-danger"
                       title="Unlink"
                     >
                       ✕
@@ -133,13 +133,13 @@ export default async function DefectDetailPage({
             );
           })}
           {defect.links.length === 0 && (
-            <li className="text-slate-400">Not linked to any case or result yet.</li>
+            <li className="text-content-subtle">Not linked to any case or result yet.</li>
           )}
         </ul>
       </section>
 
       {canEdit ? (
-        <section className="rounded-xl border border-slate-200 bg-white p-5">
+        <section className="rounded-xl border border-hairline bg-surface p-5">
           <h3 className="mb-3 font-semibold">Edit</h3>
           <form action={updateDefect} className="space-y-2">
             <input type="hidden" name="defectId" value={defect.id} />
@@ -148,13 +148,13 @@ export default async function DefectDetailPage({
               required
               defaultValue={defect.title}
               data-testid="defect-edit-title"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm"
             />
             <div className="flex gap-2">
               <select
                 name="severity"
                 defaultValue={defect.severity}
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="bg-surface text-content-strong rounded-lg border border-hairline-strong px-3 py-2 text-sm"
               >
                 <option value="CRITICAL">Critical</option>
                 <option value="HIGH">High</option>
@@ -164,7 +164,7 @@ export default async function DefectDetailPage({
               <select
                 name="assigneeId"
                 defaultValue={defect.assigneeId ?? ""}
-                className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="bg-surface text-content-strong flex-1 rounded-lg border border-hairline-strong px-3 py-2 text-sm"
               >
                 <option value="">Unassigned</option>
                 {members.map((m) => (
@@ -178,10 +178,10 @@ export default async function DefectDetailPage({
               name="bodyMd"
               defaultValue={defect.bodyMd ?? ""}
               rows={6}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm"
             />
             <button
-              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
               data-testid="defect-edit-save"
             >
               Save
@@ -190,7 +190,7 @@ export default async function DefectDetailPage({
         </section>
       ) : (
         defect.bodyMd && (
-          <section className="rounded-xl border border-slate-200 bg-white p-5">
+          <section className="rounded-xl border border-hairline bg-surface p-5">
             <Markdown>{defect.bodyMd}</Markdown>
           </section>
         )

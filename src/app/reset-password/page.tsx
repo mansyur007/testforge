@@ -11,11 +11,11 @@ export default function ResetPasswordPage() {
   const t = dict[lang].auth.reset;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+    <main className="flex min-h-screen items-center justify-center bg-canvas px-4">
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
           <Logo size="lg" />
-          <p className="mt-2 text-sm text-slate-500">{t.headline}</p>
+          <p className="mt-2 text-sm text-content-muted">{t.headline}</p>
         </div>
         <ResetPasswordForm lang={lang} />
         <div className="mt-6 flex justify-center">

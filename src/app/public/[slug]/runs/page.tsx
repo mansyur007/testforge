@@ -46,19 +46,19 @@ export default async function PublicRunsPage({
           <div
             key={run.id}
             data-testid={`public-run-${run.id}`}
-            className="rounded-xl border border-slate-200 bg-white p-5"
+            className="rounded-xl border border-hairline bg-surface p-5"
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="font-medium text-slate-800">
+                <p className="font-medium text-content-strong">
                   {run.name}
                   {run.source !== "MANUAL" && (
-                    <span className="ml-2 rounded bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700">
+                    <span className="ml-2 rounded bg-info-soft px-1.5 py-0.5 text-xs text-info-soft-fg">
                       {run.source}
                     </span>
                   )}
                 </p>
-                <p className="mt-0.5 text-xs text-slate-400">
+                <p className="mt-0.5 text-xs text-content-subtle">
                   {run.createdAt.toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "short",
@@ -70,19 +70,19 @@ export default async function PublicRunsPage({
                 <span
                   className={`rounded-full px-2.5 py-1 text-xs font-medium ${
                     run.status === "COMPLETED"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-blue-100 text-blue-700"
+                      ? "bg-success-soft text-success-soft-fg"
+                      : "bg-info-soft text-info-soft-fg"
                   }`}
                 >
                   {run.status === "COMPLETED" ? "Completed" : "Active"}
                 </span>
-                <p className="mt-1 text-xs text-slate-400">
+                <p className="mt-1 text-xs text-content-subtle">
                   {run.executed}/{run.total} executed
                   {run.passRate !== null && <> · {run.passRate}% pass</>}
                 </p>
               </div>
             </div>
-            <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-gray-100">
+            <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-surface-muted">
               {barKeys.map((key) => {
                 const count = run.counts[key];
                 if (!count) return null;
@@ -102,7 +102,7 @@ export default async function PublicRunsPage({
         ))}
         {runs.length === 0 && (
           <p
-            className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400"
+            className="rounded-xl border border-dashed border-hairline-strong p-10 text-center text-sm text-content-subtle"
             data-testid="public-runs-empty"
           >
             No test runs yet.

@@ -19,10 +19,10 @@ import {
 export const dynamic = "force-dynamic";
 
 const BUCKET_BADGE: Record<string, string> = {
-  Pass: "bg-green-100 text-green-800",
-  Fail: "bg-red-100 text-red-800",
-  Blocked: "bg-orange-100 text-orange-800",
-  Untested: "bg-gray-100 text-gray-500",
+  Pass: "bg-success-soft text-success-soft-fg",
+  Fail: "bg-danger-soft text-danger-soft-fg",
+  Blocked: "bg-warning-soft text-warning-soft-fg",
+  Untested: "bg-surface-muted text-content-muted",
 };
 
 export default async function RequirementDetailPage({
@@ -83,10 +83,10 @@ export default async function RequirementDetailPage({
         <div>
           <BackLink href={`/projects/${project.slug}/requirements`}>Requirements</BackLink>
           <h2 className="mt-1 text-xl font-bold">
-            <span className="font-mono text-sm text-slate-400">{req.refId}</span>{" "}
+            <span className="font-mono text-sm text-content-subtle">{req.refId}</span>{" "}
             {req.title}
           </h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-content-muted">
             Status: <b>{status}</b>
             {req.sourceUrl && (
               <>
@@ -95,7 +95,7 @@ export default async function RequirementDetailPage({
                   href={req.sourceUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-indigo-600 hover:underline"
+                  className="text-accent-text hover:underline"
                 >
                   source
                 </a>
@@ -107,14 +107,14 @@ export default async function RequirementDetailPage({
           <div className="flex shrink-0 gap-2">
             <form action={toggleRequirementObsolete}>
               <input type="hidden" name="requirementId" value={req.id} />
-              <button className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100">
+              <button className="rounded-lg border border-hairline-strong px-3 py-1.5 text-sm hover:bg-surface-muted">
                 {req.status === "OBSOLETE" ? "Reopen" : "Mark obsolete"}
               </button>
             </form>
             <form action={deleteRequirement}>
               <input type="hidden" name="requirementId" value={req.id} />
               <button
-                className="rounded-lg border border-red-200 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50"
+                className="rounded-lg border border-danger-border px-3 py-1.5 text-sm text-danger hover:bg-danger-soft"
                 data-testid="req-delete-button"
               >
                 Delete
@@ -125,12 +125,12 @@ export default async function RequirementDetailPage({
       </div>
 
       {req.descriptionMd && (
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
+        <div className="rounded-xl border border-hairline bg-surface p-5">
           <Markdown>{req.descriptionMd}</Markdown>
         </div>
       )}
 
-      <section className="rounded-xl border border-slate-200 bg-white p-5">
+      <section className="rounded-xl border border-hairline bg-surface p-5">
         <h3 className="mb-3 font-semibold">Linked cases &amp; latest status</h3>
         <ul className="space-y-2 text-sm">
           {linkedCases.map((c) => {
@@ -143,14 +143,14 @@ export default async function RequirementDetailPage({
               >
                 <Link
                   href={`/projects/${project.slug}/cases/${c.id}`}
-                  className="min-w-0 truncate text-slate-700 hover:text-indigo-600"
+                  className="min-w-0 truncate text-content hover:text-accent-text"
                 >
-                  <span className="font-mono text-xs text-slate-400">
+                  <span className="font-mono text-xs text-content-subtle">
                     {caseDisplayId(project.slug, c.seq)}
                   </span>{" "}
                   {c.title}
                   {c.status === "DEPRECATED" && (
-                    <span className="ml-1 text-xs text-slate-400">(deprecated)</span>
+                    <span className="ml-1 text-xs text-content-subtle">(deprecated)</span>
                   )}
                 </Link>
                 <span className="flex shrink-0 items-center gap-2">
@@ -164,7 +164,7 @@ export default async function RequirementDetailPage({
                       <input type="hidden" name="requirementId" value={req.id} />
                       <input type="hidden" name="caseId" value={c.id} />
                       <button
-                        className="text-xs text-slate-400 hover:text-red-600"
+                        className="text-xs text-content-subtle hover:text-danger"
                         title="Unlink"
                         data-testid={`req-unlink-${c.id}`}
                       >
@@ -177,20 +177,20 @@ export default async function RequirementDetailPage({
             );
           })}
           {linkedCases.length === 0 && (
-            <li className="text-slate-400">No cases linked yet.</li>
+            <li className="text-content-subtle">No cases linked yet.</li>
           )}
         </ul>
 
         {canEdit && linkable.length > 0 && (
           <form
             action={linkCaseToRequirement}
-            className="mt-4 flex items-center gap-2 border-t border-slate-100 pt-4"
+            className="mt-4 flex items-center gap-2 border-t border-hairline-subtle pt-4"
           >
             <input type="hidden" name="requirementId" value={req.id} />
             <select
               name="caseId"
               data-testid="req-link-select"
-              className="min-w-64 flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm"
+              className="bg-surface text-content-strong min-w-64 flex-1 rounded-lg border border-hairline-strong px-3 py-1.5 text-sm"
             >
               {linkable.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -199,7 +199,7 @@ export default async function RequirementDetailPage({
               ))}
             </select>
             <button
-              className="rounded-lg bg-slate-800 px-3 py-1.5 text-sm text-white hover:bg-slate-700"
+              className="rounded-lg bg-sidebar px-3 py-1.5 text-sm text-white hover:bg-sidebar-hover"
               data-testid="req-link-button"
             >
               + Link case

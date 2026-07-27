@@ -3485,11 +3485,20 @@ code already does — when in doubt, grep for the pattern and copy it.
 
 #### 7.1 Tokens (source of truth: `tailwind.config.ts` + `src/app/globals.css`)
 
-| Token | Value | Use |
+**F-39 (2026-07-27) tokenised this palette.** The flat list below is now historical —
+every colour in the app resolves from the CSS-custom-property token layer in
+`src/app/globals.css` (`:root` = light, `.dark` = dark), exposed as Tailwind colour
+names (`bg-surface`, `text-content-muted`, `bg-accent-soft`, …) in `tailwind.config.ts`.
+See the `#### F-39` entry in §8 below for the full token table (light **and** dark
+values) and the class-rename map. New UI must use those semantic tokens, never a raw
+`slate-*`/`indigo-*`/`bg-white` literal — enforced by `scripts/check-theme-tokens.mjs`
+in CI. `ink` (`#1b1a22`) is the one exception: print output and `onColorOf()` only,
+never themed.
+
+| Token (pre-F-39, for history) | Value | Use |
 |---|---|---|
 | `ink` | `#1b1a22` | Print body text, high-contrast text on light |
 | `accent` | `#4f46e5` (indigo-600-ish) | THE brand color: primary buttons, links, icon strokes |
-| `accent.tint` | `#f3f2fd` | Accent-washed backgrounds |
 | accent-soft | `rgba(79,70,229,.14)` | Icon fills (`.tf-acf`), mention chips |
 | App background | `slate-50` | `<body>` |
 | Card | `bg-white rounded-xl border border-slate-200 p-6` | Every content card, verbatim |
@@ -3523,6 +3532,9 @@ code already does — when in doubt, grep for the pattern and copy it.
   never by editing the base block.
 - **Testability**: interactive/statesful elements get `data-testid` kebab-case names
   (`queued-chip`, `dataset-chip`) — the e2e suite depends on them.
+- **Theme switcher**: `ThemeSwitcher` in `src/components/ThemeSwitcher.tsx` (F-39) — a
+  three-way Light/System/Dark segmented control, `size="sm"|"md"` and `tone="light"|"dark"`
+  props. Copy this for any future control that needs to read/write the `tf_theme` cookie.
 
 #### 7.4 Design judgment rules (the taste, encoded)
 
@@ -3641,6 +3653,136 @@ Two more `PublicShare` columns, `showRuns` and `showReports`, feeding
 - e2e: TC-E2E-80 grew a seeded run whose result carries a planted comment and a planted internal
   Jira URL, then asserts the raw HTML of both public pages contains neither, nor the run author's
   name, nor the account email, nor the CI origin, nor the run description.
+
+#### F-39 — Light / dark theme `[x]`
+
+> **Status: DONE** (2026-07-27, branch `feat/theme-light-dark`). Implemented as specified.
+
+Lets a user put the entire TestForge UI into Light, Dark, or System (follows the OS), and
+have that choice stick — across the in-app shell, the landing page, auth pages, and public
+share pages. **Cookie-only** (`tf_theme`, values `light`/`dark`/`system`, `path=/`,
+`max-age=31536000`), mirroring the existing `tf_lang` cookie exactly — no DB column, no
+migration, because it must work logged-out on the landing/login/public-share pages where
+there is no user row to write to.
+
+**Resolution flow** — an inline `<head>` script (`src/lib/theme.ts`'s
+`THEME_BOOT_SCRIPT`, wired into `src/app/layout.tsx`) runs before first paint, so there is
+no flash of the wrong theme either way:
+
+```
+tf_theme cookie ─┬─ "light"  ──────────────────────────────► <html>            (no class)
+                 ├─ "dark"   ──────────────────────────────► <html class="dark">
+                 └─ "system" / absent ─► matchMedia(prefers-color-scheme: dark)
+                                          ├─ true  ────────► <html class="dark">
+                                          └─ false ────────► <html>            (no class)
+```
+
+It is deliberately **not** server-rendered from `cookies()` — that would opt the whole
+app, including the static landing page, into dynamic rendering. `<html>` also carries
+`data-theme-pref="light|dark|system"` so `ThemeSwitcher` (`src/components/ThemeSwitcher.tsx`)
+can render its active segment without a hydration mismatch, and an OS-change listener
+follows the device when the preference is "system". Placed in the sidebar footer
+(`size="sm"`, `tone="dark"`), Settings → Account → Appearance (`size="md"`, above Profile),
+and the landing + public-share headers.
+
+**Token layer** — Tailwind's `darkMode` is now `"class"` (was the `media` default).
+Every colour in the app resolves from CSS custom properties in `src/app/globals.css`
+(`:root` = light, `.dark` = dark, stored as space-separated RGB channels so Tailwind's
+`bg-x/50` opacity modifiers keep working via `rgb(var(--tf-x) / <alpha-value>)`), exposed
+as Tailwind colour names in `tailwind.config.ts`. The **light column is byte-for-byte the
+palette the app used before F-39** — light mode is pixel-identical modulo the two accepted
+deviations below.
+
+| Token | Light | Dark | Tailwind class |
+|---|---|---|---|
+| `--tf-canvas` | `248 250 252` | `2 6 23` | `bg-canvas` |
+| `--tf-surface` | `255 255 255` | `15 23 42` | `bg-surface` |
+| `--tf-surface-muted` | `241 245 249` | `30 41 59` | `bg-surface-muted` |
+| `--tf-surface-raised` | `255 255 255` | `30 41 59` | `bg-surface-raised` |
+| `--tf-text-strong` | `15 23 42` | `241 245 249` | `text-content-strong` |
+| `--tf-text` | `51 65 85` | `203 213 225` | `text-content` |
+| `--tf-text-muted` | `100 116 139` | `148 163 184` | `text-content-muted` |
+| `--tf-text-subtle` | `148 163 184` | `120 137 160` | `text-content-subtle` |
+| `--tf-border-subtle` | `241 245 249` | `30 41 59` | `border-hairline-subtle` |
+| `--tf-border` | `226 232 240` | `51 65 85` | `border-hairline` |
+| `--tf-border-strong` | `203 213 225` | `71 85 105` | `border-hairline-strong` |
+| `--tf-accent` | `79 70 229` | `99 102 241` | `bg-accent` `text-accent` |
+| `--tf-accent-hover` | `67 56 202` | `79 70 229` | `bg-accent-hover` |
+| `--tf-accent-fg` | `255 255 255` | `255 255 255` | `text-accent-fg` |
+| `--tf-accent-text` | `79 70 229` | `165 180 252` | `text-accent-text` |
+| `--tf-accent-soft` | `238 242 255` | `30 32 82` | `bg-accent-soft` |
+| `--tf-accent-soft-fg` | `67 56 202` | `199 210 254` | `text-accent-soft-fg` |
+| `--tf-accent-ring` | `99 102 241` | `129 140 248` | `ring-accent-ring` |
+| `--tf-sidebar` | `15 23 42` | `2 6 23` | `bg-sidebar` |
+| `--tf-sidebar-fg` | `203 213 225` | `203 213 225` | `text-sidebar-fg` |
+| `--tf-sidebar-hover` | `30 41 59` | `15 23 42` | `bg-sidebar-hover` |
+| `--tf-sidebar-border` | `30 41 59` | `30 41 59` | `border-sidebar-border` |
+| `--tf-danger` | `220 38 38` | `248 113 113` | `text-danger` `bg-danger` |
+| `--tf-danger-soft` | `254 242 242` | `69 20 20` | `bg-danger-soft` |
+| `--tf-danger-soft-fg` | `185 28 28` | `252 165 165` | `text-danger-soft-fg` |
+| `--tf-danger-border` | `254 202 202` | `127 29 29` | `border-danger-border` |
+| `--tf-warning` | `217 119 6` | `251 191 36` | `text-warning` `bg-warning` |
+| `--tf-warning-soft` | `254 243 199` | `69 39 6` | `bg-warning-soft` |
+| `--tf-warning-soft-fg` | `146 64 14` | `253 230 138` | `text-warning-soft-fg` |
+| `--tf-warning-border` | `253 230 138` | `120 53 15` | `border-warning-border` |
+| `--tf-success` | `22 163 74` | `74 222 128` | `text-success` `bg-success` |
+| `--tf-success-soft` | `220 252 231` | `5 46 22` | `bg-success-soft` |
+| `--tf-success-soft-fg` | `21 128 61` | `134 239 172` | `text-success-soft-fg` |
+| `--tf-success-border` | `187 247 208` | `20 83 45` | `border-success-border` |
+| `--tf-info` | `37 99 235` | `96 165 250` | `text-info` `bg-info` |
+| `--tf-info-soft` | `219 234 254` | `23 37 84` | `bg-info-soft` |
+| `--tf-info-soft-fg` | `29 78 216` | `147 197 253` | `text-info-soft-fg` |
+| `--tf-info-border` | `191 219 254` | `30 58 138` | `border-info-border` |
+
+`--tf-text-subtle`'s dark value was tuned from the originally-specified `100 116 139` to
+`120 137 160` after the §8.3 contrast pass measured 3.75:1 against `--tf-surface` dark
+(fails WCAG AA 4.5:1 for body text) — `120 137 160` clears 5:1. Every other pairing passed
+on first measurement. The **sidebar stays a fixed dark surface in both themes** (D8) —
+darker than the content area in dark mode — and role badges, status pills, and other
+multi-hue chips that predate F-39 (`RoleBadge` in `ProjectMembersManager`/`TeamManager`,
+`STATUS_BADGES`/`PRIORITY_BADGES`/etc. in `src/lib/constants.ts` and `src/lib/defects.ts`)
+were remapped onto this same five-hue token set (accent/info/success/warning/danger) since
+there is deliberately no second brand hue (§7.4.2).
+
+**Two accepted light-mode deviations**, both documented at the call site:
+- Status chips (`badgeStyle()` in `src/lib/result-statuses.ts`) now mix the status hex
+  against the live `--tf-surface`/`--tf-text-strong` tokens via CSS `color-mix()` instead
+  of assuming a white page — the only way one implementation is correct in both themes.
+  This darkens light-mode chip text by a barely perceptible amount.
+- The Tailwind `ringOffsetColor` default changed from white to `rgb(var(--tf-surface))`
+  so dark-mode focus rings aren't haloed in white; in light mode the offset colour is
+  white either way, so no visible change.
+
+**Print stays light, unconditionally** (§7.6) — `src/app/print/print.css`'s `.tf-print-doc`
+re-declares the light token values and `color-scheme: light` on its own root, so a user
+reading in dark mode still previews and prints a white page. The 21 pre-existing hardcoded
+hex values in that file were left exactly as they were.
+
+**Regression guard**: `scripts/check-theme-tokens.mjs` (`npm run check:theme`, wired into
+`.github/workflows/ci.yml` before the build step) walks `src/**/*.tsx` and fails the build
+on any raw Tailwind palette colour, `bg-white`, or a `dark:` variant — the mechanism that
+keeps the next feature from reintroducing a hardcoded colour and rotting dark mode. New UI
+must use the semantic tokens above; if none fits, add one here rather than reaching for a
+raw Tailwind colour.
+
+**Testing**: `e2e/theme.spec.ts` (9 cases — default/system resolution, first-paint dark
+cookie, switcher toggle without reload, persistence across reload/navigation, OS
+`prefers-color-scheme` following and override, print staying light, the logged-out landing
+switcher, and a no-flash check on `document.body`'s computed background). The full existing
+suite was re-run afterward; five pre-existing specs asserted on the old literal Tailwind
+class names as selectors (`bg-red-100`, `bg-indigo-600`, etc.) and were updated to the new
+token classes — exactly the kind of break §8.2 of the work order anticipated, not a
+behavioural regression.
+
+**One incidental fix surfaced during testing**: the in-app sidebar's nav list had no
+`overflow-y-auto`, so with enough seeded/active projects its content could push the footer
+(Logout, and now the theme switcher) below the fixed-height sidebar with no way to scroll
+to it. Fixed in `src/app/(app)/layout.tsx` by giving the `<nav>` its own scroll region
+(`min-h-0 flex-1 overflow-y-auto`) while the logo header and footer stay pinned.
+
+**Deferred, deliberately:** per-project/per-organisation theming, a high-contrast theme,
+and dark-mode screenshots in the help centre (`docs/images/*` stay light-mode captures;
+out of scope per §7.10).
 
 ---
 

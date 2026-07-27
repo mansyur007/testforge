@@ -215,7 +215,7 @@ test(`TC-${TC}-18 GitHub integration: bad token rejected, issue filed from failu
     await page.reload();
     const badge = page.locator('[data-testid="issue-badge-42"]');
     await expect(badge).toContainText("Closed");
-    await expect(badge).toHaveClass(/bg-green-100/);
+    await expect(badge).toHaveClass(/bg-success-soft/);
   } finally {
     await db.$disconnect();
     await mock.close();

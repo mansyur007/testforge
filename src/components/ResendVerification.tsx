@@ -17,7 +17,7 @@ function ResendButton({
     <button
       type="submit"
       disabled={pending || cooldown > 0}
-      className="mt-4 w-full rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+      className="mt-4 w-full rounded-lg border border-hairline-strong px-4 py-2 text-sm font-medium text-content hover:bg-canvas disabled:opacity-50"
     >
       {pending
         ? t.sending
@@ -54,10 +54,10 @@ export function ResendVerification({
     <form action={formAction}>
       <input type="hidden" name="email" value={email} />
       <ResendButton cooldown={cooldown} t={t} />
-      {state?.error && <p className="mt-2 text-sm text-red-600">{state.error}</p>}
-      {state?.ok && <p className="mt-2 text-sm text-green-600">{state.ok}</p>}
+      {state?.error && <p className="mt-2 text-sm text-danger">{state.error}</p>}
+      {state?.ok && <p className="mt-2 text-sm text-success">{state.ok}</p>}
       {state?.devLink && (
-        <div className="mt-3 rounded-lg bg-amber-50 p-3 text-left text-xs text-amber-800">
+        <div className="mt-3 rounded-lg bg-warning-soft p-3 text-left text-xs text-warning-soft-fg">
           <p className="font-medium">{t.devMode}</p>
           <a href={state.devLink} className="break-all underline">
             {state.devLink}

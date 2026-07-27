@@ -88,13 +88,13 @@ export default async function PublicCaseDetailPage({
       <Link
         href={backHref}
         data-testid="public-case-back"
-        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800"
+        className="inline-flex items-center gap-1.5 text-sm text-content-muted hover:text-content-strong"
       >
         ← Back to test cases
       </Link>
 
       <header>
-        <p className="font-mono text-sm text-slate-400" data-testid="public-case-id">
+        <p className="font-mono text-sm text-content-subtle" data-testid="public-case-id">
           {displayId}
         </p>
         <h1 className="font-display text-xl font-bold" data-testid="public-case-title">
@@ -102,23 +102,23 @@ export default async function PublicCaseDetailPage({
         </h1>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
           <span
-            className={`rounded-full px-2 py-0.5 font-medium ${PRIORITY_BADGES[testCase.priority] ?? "bg-slate-100 text-slate-600"}`}
+            className={`rounded-full px-2 py-0.5 font-medium ${PRIORITY_BADGES[testCase.priority] ?? "bg-surface-muted text-content"}`}
           >
             {testCase.priority}
           </span>
-          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600">
+          <span className="rounded-full bg-surface-muted px-2 py-0.5 text-content">
             {testCase.type}
           </span>
           <span
-            className={`rounded-full px-2 py-0.5 font-medium ${STATUS_BADGES[testCase.status] ?? "bg-slate-100 text-slate-600"}`}
+            className={`rounded-full px-2 py-0.5 font-medium ${STATUS_BADGES[testCase.status] ?? "bg-surface-muted text-content"}`}
           >
             {testCase.status.replace(/_/g, " ")}
           </span>
-          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-slate-600">
+          <span className="rounded-full bg-surface-muted px-2 py-0.5 text-content">
             {testCase.automationStatus.replace(/_/g, " ")}
           </span>
           {testCase.suite && (
-            <span className="text-slate-400">{testCase.suite.name}</span>
+            <span className="text-content-subtle">{testCase.suite.name}</span>
           )}
         </div>
         {tags.length > 0 && (
@@ -126,7 +126,7 @@ export default async function PublicCaseDetailPage({
             {tags.map((t) => (
               <span
                 key={t}
-                className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500"
+                className="rounded bg-surface-muted px-1.5 py-0.5 text-xs text-content-muted"
               >
                 {t}
               </span>
@@ -136,8 +136,8 @@ export default async function PublicCaseDetailPage({
       </header>
 
       {testCase.description && (
-        <section className="rounded-xl border border-slate-200 bg-white p-6">
-          <h2 className="mb-2 text-sm font-semibold uppercase text-slate-400">
+        <section className="rounded-xl border border-hairline bg-surface p-6">
+          <h2 className="mb-2 text-sm font-semibold uppercase text-content-subtle">
             Description
           </h2>
           <Markdown>{testCase.description}</Markdown>
@@ -145,8 +145,8 @@ export default async function PublicCaseDetailPage({
       )}
 
       {testCase.preconditions && (
-        <section className="rounded-xl border border-slate-200 bg-white p-6">
-          <h2 className="mb-2 text-sm font-semibold uppercase text-slate-400">
+        <section className="rounded-xl border border-hairline bg-surface p-6">
+          <h2 className="mb-2 text-sm font-semibold uppercase text-content-subtle">
             Preconditions
           </h2>
           <Markdown>{testCase.preconditions}</Markdown>
@@ -154,32 +154,32 @@ export default async function PublicCaseDetailPage({
       )}
 
       <section
-        className="rounded-xl border border-slate-200 bg-white p-6"
+        className="rounded-xl border border-hairline bg-surface p-6"
         data-testid="public-case-steps"
       >
-        <h2 className="mb-3 text-sm font-semibold uppercase text-slate-400">
+        <h2 className="mb-3 text-sm font-semibold uppercase text-content-subtle">
           {isGherkin ? "Scenario (Gherkin)" : "Steps"}
         </h2>
         {isGherkin ? (
           <GherkinBlock text={rawSteps[0].gherkin} />
         ) : steps.length === 0 ? (
-          <p className="text-sm text-slate-400">No steps yet.</p>
+          <p className="text-sm text-content-subtle">No steps yet.</p>
         ) : (
           <ol className="space-y-3">
             {steps.map((step, i) => (
               <li key={i} className="flex gap-3 text-sm">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent-soft-fg">
                   {i + 1}
                 </span>
                 <div className="grid flex-1 gap-2 md:grid-cols-2">
                   <div className="min-w-0">
                     <Markdown>{step.action}</Markdown>
                   </div>
-                  <div className="flex gap-1 text-slate-500">
+                  <div className="flex gap-1 text-content-muted">
                     {step.expected && (
                       <>
                         <span>↳</span>
-                        <Markdown className="text-slate-500">
+                        <Markdown className="text-content-muted">
                           {step.expected}
                         </Markdown>
                       </>
@@ -191,9 +191,9 @@ export default async function PublicCaseDetailPage({
           </ol>
         )}
         {testCase.expectedResult && (
-          <div className="mt-4 rounded-lg bg-green-50 p-3 text-sm">
-            <span className="font-medium text-green-800">Expected Result:</span>
-            <Markdown className="text-green-900">
+          <div className="mt-4 rounded-lg bg-success-soft p-3 text-sm">
+            <span className="font-medium text-success-soft-fg">Expected Result:</span>
+            <Markdown className="text-success-soft-fg">
               {testCase.expectedResult}
             </Markdown>
           </div>

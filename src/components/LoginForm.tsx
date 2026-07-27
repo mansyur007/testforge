@@ -15,7 +15,7 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
       type="submit"
       disabled={pending}
       data-testid="login-submit"
-      className="w-full rounded-lg bg-indigo-600 px-4 py-2.5 font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+      className="w-full rounded-lg bg-accent px-4 py-2.5 font-medium text-white hover:bg-accent-hover disabled:opacity-50"
     >
       {pending ? pendingLabel : label}
     </button>
@@ -43,9 +43,9 @@ function FormInner({
   const next = params.get("next") ?? "";
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+    <div className="rounded-xl border border-hairline bg-surface p-8 shadow-sm">
       {oauthError && (
-        <p className="mb-4 rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
+        <p className="mb-4 rounded-lg bg-danger-soft px-4 py-2.5 text-sm text-danger-soft-fg">
           {oauthError}
         </p>
       )}
@@ -53,43 +53,43 @@ function FormInner({
         <a
           href="/api/auth/oidc"
           data-testid="sso-login"
-          className="mb-3 flex w-full items-center justify-center gap-2 rounded-lg bg-slate-800 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-900"
+          className="mb-3 flex w-full items-center justify-center gap-2 rounded-lg bg-sidebar px-4 py-2.5 text-sm font-medium text-white hover:opacity-90"
         >
           {ssoLabel}
         </a>
       )}
       <OAuthButtons mode="login" lang={lang} />
       {!passwordDisabled && (
-        <div className="my-5 flex items-center gap-3 text-xs text-slate-400">
-          <span className="h-px flex-1 bg-slate-200" />
+        <div className="my-5 flex items-center gap-3 text-xs text-content-subtle">
+          <span className="h-px flex-1 bg-surface-muted" />
           {t.orEmail}
-          <span className="h-px flex-1 bg-slate-200" />
+          <span className="h-px flex-1 bg-surface-muted" />
         </div>
       )}
       {passwordDisabled ? (
-        <p className="mt-5 text-center text-xs text-slate-400">
+        <p className="mt-5 text-center text-xs text-content-subtle">
           Password sign-in is disabled on this instance.
         </p>
       ) : (
       <form action={formAction} className="space-y-4">
         <input type="hidden" name="next" value={next} />
         {verified && (
-          <p className="rounded-lg bg-green-50 px-4 py-2.5 text-sm text-green-700">
+          <p className="rounded-lg bg-success-soft px-4 py-2.5 text-sm text-success-soft-fg">
             {t.verified}
           </p>
         )}
         {reset && (
-          <p className="rounded-lg bg-green-50 px-4 py-2.5 text-sm text-green-700">
+          <p className="rounded-lg bg-success-soft px-4 py-2.5 text-sm text-success-soft-fg">
             {t.reset}
           </p>
         )}
         {state?.error && (
-          <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
+          <p className="rounded-lg bg-danger-soft px-4 py-2.5 text-sm text-danger-soft-fg">
             {state.error}
           </p>
         )}
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
+          <label className="mb-1 block text-sm font-medium text-content">
             {ldap ? `${t.email} / username` : t.email}
           </label>
           {/* F-34: with a directory configured the value may be a bare username
@@ -100,18 +100,18 @@ function FormInner({
             required
             data-testid="login-email"
             autoComplete={ldap ? "username" : "email"}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
             placeholder={ldap ? "jdoe or you@company.com" : "you@company.com"}
           />
         </div>
         <div>
           <div className="mb-1 flex items-center justify-between">
-            <label className="block text-sm font-medium text-slate-700">
+            <label className="block text-sm font-medium text-content">
               {t.password}
             </label>
             <Link
               href="/forgot-password"
-              className="text-xs text-indigo-600 hover:underline"
+              className="text-xs text-accent-text hover:underline"
             >
               {t.forgot}
             </Link>
@@ -122,18 +122,18 @@ function FormInner({
             required
             data-testid="login-password"
             autoComplete="current-password"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
             placeholder="••••••••"
           />
         </div>
-        <label className="flex items-center gap-2 text-sm text-slate-600">
+        <label className="flex items-center gap-2 text-sm text-content">
           <input type="checkbox" name="rememberMe" />
-          {t.remember} <span className="text-xs text-slate-400">{t.rememberHint}</span>
+          {t.remember} <span className="text-xs text-content-subtle">{t.rememberHint}</span>
         </label>
         <SubmitButton label={t.submit} pendingLabel={t.submitting} />
-        <p className="text-center text-sm text-slate-500">
+        <p className="text-center text-sm text-content-muted">
           {t.noAccount}{" "}
-          <Link href="/signup" className="font-medium text-indigo-600 hover:underline">
+          <Link href="/signup" className="font-medium text-accent-text hover:underline">
             {t.signupLink}
           </Link>
         </p>

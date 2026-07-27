@@ -18,25 +18,25 @@ export default function VerifyEmailPage({
   const email = searchParams.email ?? "";
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+    <main className="flex min-h-screen items-center justify-center bg-canvas px-4">
       <div className="w-full max-w-md text-center">
         <Logo size="lg" />
-        <div className="mt-6 rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-indigo-50">
+        <div className="mt-6 rounded-xl border border-hairline bg-surface p-8 shadow-sm">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-accent-soft">
             <TFIcon name="mailbox" className="h-8 w-8" />
           </div>
           <h1 className="mt-4 text-xl font-bold">{t.title}</h1>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-content-muted">
             {t.bodyPre}{" "}
-            <span className="font-medium text-slate-700">
+            <span className="font-medium text-content">
               {email || t.yourEmail}
             </span>
             {t.bodyPost}
           </p>
           <ResendVerification email={email} lang={lang} />
-          <p className="mt-6 text-xs text-slate-400">
+          <p className="mt-6 text-xs text-content-subtle">
             {t.wrongEmail}{" "}
-            <Link href="/signup" className="text-indigo-600 hover:underline">
+            <Link href="/signup" className="text-accent-text hover:underline">
               {t.signupAgain}
             </Link>
           </p>

@@ -91,7 +91,7 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-content-muted">
           Overview of all projects and recent testing activity
         </p>
       </div>
@@ -100,19 +100,19 @@ export default async function DashboardPage() {
         {stats.map((s) => (
           <div
             key={s.label}
-            className="rounded-xl border border-slate-200 bg-white p-5"
+            className="rounded-xl border border-hairline bg-surface p-5"
           >
-            <p className="text-sm text-slate-500">{s.label}</p>
+            <p className="text-sm text-content-muted">{s.label}</p>
             <p className="mt-1 text-3xl font-bold">{s.value}</p>
           </div>
         ))}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-xl border border-slate-200 bg-white p-6">
+        <section className="rounded-xl border border-hairline bg-surface p-6">
           <h2 className="mb-4 font-semibold">Active Test Runs</h2>
           {activeRuns.length === 0 && (
-            <p className="text-sm text-slate-400">No active test runs yet.</p>
+            <p className="text-sm text-content-subtle">No active test runs yet.</p>
           )}
           <div className="space-y-4">
             {activeRuns.map((run) => {
@@ -127,15 +127,15 @@ export default async function DashboardPage() {
                 <Link
                   key={run.id}
                   href={`/projects/${run.project.slug}/runs/${run.id}`}
-                  className="block rounded-lg border border-slate-100 p-3 hover:border-indigo-200 hover:bg-indigo-50/30"
+                  className="block rounded-lg border border-hairline-subtle p-3 hover:border-accent-ring hover:bg-accent-soft/30"
                 >
                   <div className="flex items-center justify-between">
                     <p className="font-medium">{run.name}</p>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-content-subtle">
                       {run.project.name}
                     </span>
                   </div>
-                  <div className="mt-2 flex h-2 overflow-hidden rounded-full bg-gray-100">
+                  <div className="mt-2 flex h-2 overflow-hidden rounded-full bg-surface-muted">
                     {(() => {
                       const defs = defsByProject.get(run.projectId) ?? [];
                       const { colorOf } = metaOf(run.projectId);
@@ -160,7 +160,7 @@ export default async function DashboardPage() {
                       });
                     })()}
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-content-muted">
                     {done}/{run.results.length} executed
                   </p>
                 </Link>
@@ -169,22 +169,22 @@ export default async function DashboardPage() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-slate-200 bg-white p-6">
+        <section className="rounded-xl border border-hairline bg-surface p-6">
           <h2 className="mb-4 font-semibold">Activity Feed</h2>
           {recentLogs.length === 0 && (
-            <p className="text-sm text-slate-400">No activity yet.</p>
+            <p className="text-sm text-content-subtle">No activity yet.</p>
           )}
           <ul className="space-y-3">
             {recentLogs.map((log) => (
               <li key={log.id} className="flex items-start gap-3 text-sm">
-                <span className="mt-0.5 inline-block h-2 w-2 shrink-0 rounded-full bg-indigo-400" />
+                <span className="mt-0.5 inline-block h-2 w-2 shrink-0 rounded-full bg-accent" />
                 <div>
                   <span className="font-medium">{log.user?.name ?? "System"}</span>{" "}
-                  <span className="text-slate-500">{log.action}</span>
+                  <span className="text-content-muted">{log.action}</span>
                   {log.detail && (
-                    <span className="text-slate-700"> — {log.detail}</span>
+                    <span className="text-content"> — {log.detail}</span>
                   )}
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-content-subtle">
                     {log.createdAt.toLocaleString("en-US")}
                   </p>
                 </div>
@@ -194,12 +194,12 @@ export default async function DashboardPage() {
         </section>
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
+      <section className="rounded-xl border border-hairline bg-surface p-6">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-semibold">Projects</h2>
           <Link
             href="/projects"
-            className="text-sm text-indigo-600 hover:underline"
+            className="text-sm text-accent-text hover:underline"
           >
             View all →
           </Link>
@@ -209,18 +209,18 @@ export default async function DashboardPage() {
             <Link
               key={p.id}
               href={`/projects/${p.slug}`}
-              className="rounded-lg border border-slate-100 p-4 hover:border-indigo-200 hover:bg-indigo-50/30"
+              className="rounded-lg border border-hairline-subtle p-4 hover:border-accent-ring hover:bg-accent-soft/30"
             >
               <p className="font-medium">{p.name}</p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-content-muted">
                 {p._count.cases} test cases · {p._count.runs} runs
               </p>
             </Link>
           ))}
           {projects.length === 0 && (
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-content-subtle">
               No projects yet.{" "}
-              <Link href="/projects" className="text-indigo-600 hover:underline">
+              <Link href="/projects" className="text-accent-text hover:underline">
                 Create your first project
               </Link>
             </p>

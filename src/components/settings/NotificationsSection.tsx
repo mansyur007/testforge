@@ -73,7 +73,7 @@ export async function NotificationsSection({
 
       <div>
         <h2 className="text-lg font-bold">Notifications</h2>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-content-muted">
           Push run and case events to Slack, Discord, Microsoft Teams, or
           email.
         </p>
@@ -86,16 +86,16 @@ export async function NotificationsSection({
           availableEvents={WEBHOOK_EVENTS}
         />
       ) : (
-        <p className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">
+        <p className="rounded-xl border border-dashed border-hairline-strong p-10 text-center text-sm text-content-subtle">
           Only project owners and admins can manage notification channels.
         </p>
       )}
 
       {/* F-17: scheduled email report summaries. */}
       {isAdmin && (
-        <section className="rounded-xl border border-slate-200 bg-white p-6">
+        <section className="rounded-xl border border-hairline bg-surface p-6">
           <h3 className="mb-1 font-semibold">Scheduled email reports</h3>
-          <p className="mb-4 text-xs text-slate-400">
+          <p className="mb-4 text-xs text-content-subtle">
             A KPI summary (pass rate, executions, top failures) emailed on a
             schedule. Requires the <code>/api/cron/send-reports</code> job.
           </p>
@@ -108,15 +108,15 @@ export async function NotificationsSection({
                   className="flex flex-wrap items-center gap-2"
                   data-testid={`report-schedule-row-${s.id}`}
                 >
-                  <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700">
+                  <span className="rounded-full bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent-soft-fg">
                     {SCHEDULE_CRONS.find((c) => c.key === s.cron)?.label ?? s.cron}
                   </span>
-                  <span className="text-slate-600">
+                  <span className="text-content">
                     {recipients.length === 1
                       ? recipients[0]
                       : `${recipients[0]} +${recipients.length - 1}`}
                   </span>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-content-subtle">
                     {s.lastSentAt
                       ? `last sent ${s.lastSentAt.toLocaleDateString("en-US")}`
                       : "never sent"}
@@ -124,7 +124,7 @@ export async function NotificationsSection({
                   <form action={deleteReportSchedule} className="inline">
                     <input type="hidden" name="scheduleId" value={s.id} />
                     <button
-                      className="rounded border border-red-200 px-2 py-0.5 text-xs text-red-600 hover:bg-red-50"
+                      className="rounded border border-danger-border px-2 py-0.5 text-xs text-danger hover:bg-danger-soft"
                       data-testid={`report-schedule-delete-${s.id}`}
                     >
                       Delete
@@ -134,7 +134,7 @@ export async function NotificationsSection({
               );
             })}
             {schedules.length === 0 && (
-              <li className="text-xs text-slate-400">No schedules yet.</li>
+              <li className="text-xs text-content-subtle">No schedules yet.</li>
             )}
           </ul>
           <form
@@ -144,7 +144,7 @@ export async function NotificationsSection({
             <input type="hidden" name="projectId" value={project.id} />
             <select
               name="cron"
-              className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm"
+              className="bg-surface text-content-strong rounded-lg border border-hairline-strong px-2 py-1.5 text-sm"
               data-testid="report-schedule-cron-select"
             >
               {SCHEDULE_CRONS.map((c) => (
@@ -158,10 +158,10 @@ export async function NotificationsSection({
               required
               placeholder="Recipients, comma-separated emails"
               data-testid="report-schedule-recipients-input"
-              className="min-w-64 flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="bg-surface text-content-strong min-w-64 flex-1 rounded-lg border border-hairline-strong px-3 py-1.5 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
             />
             <button
-              className="rounded-lg bg-slate-800 px-3 py-1.5 text-sm text-white hover:bg-slate-700"
+              className="rounded-lg bg-sidebar px-3 py-1.5 text-sm text-white hover:bg-sidebar-hover"
               data-testid="report-schedule-create-button"
             >
               + Schedule

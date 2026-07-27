@@ -1,7 +1,12 @@
 import type { Config } from "tailwindcss";
 
 // Token dari "testforge design system" (brand-data.js / Icon System.html)
+// Every colour resolves from the token block in globals.css (F-39). The
+// channel-triplet + <alpha-value> form is what keeps `bg-surface/80` working.
+const token = (name: string) => `rgb(var(--tf-${name}) / <alpha-value>)`;
+
 const config: Config = {
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -15,11 +20,49 @@ const config: Config = {
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       colors: {
-        ink: "#1b1a22",
-        accent: {
-          DEFAULT: "#4f46e5",
-          tint: "#f3f2fd",
+        ink: "#1b1a22", // print + onColorOf() only — never themed
+        canvas: token("canvas"),
+        surface: {
+          DEFAULT: token("surface"),
+          muted: token("surface-muted"),
+          raised: token("surface-raised"),
         },
+        content: {
+          DEFAULT: token("text"),
+          strong: token("text-strong"),
+          muted: token("text-muted"),
+          subtle: token("text-subtle"),
+        },
+        hairline: {
+          DEFAULT: token("border"),
+          subtle: token("border-subtle"),
+          strong: token("border-strong"),
+        },
+        accent: {
+          DEFAULT: token("accent"),
+          hover: token("accent-hover"),
+          fg: token("accent-fg"),
+          text: token("accent-text"),
+          soft: token("accent-soft"),
+          "soft-fg": token("accent-soft-fg"),
+          ring: token("accent-ring"),
+        },
+        sidebar: {
+          DEFAULT: token("sidebar"),
+          fg: token("sidebar-fg"),
+          hover: token("sidebar-hover"),
+          border: token("sidebar-border"),
+        },
+        danger: { DEFAULT: token("danger"), soft: token("danger-soft"), "soft-fg": token("danger-soft-fg"), border: token("danger-border") },
+        warning: { DEFAULT: token("warning"), soft: token("warning-soft"), "soft-fg": token("warning-soft-fg"), border: token("warning-border") },
+        success: { DEFAULT: token("success"), soft: token("success-soft"), "soft-fg": token("success-soft-fg"), border: token("success-border") },
+        info: { DEFAULT: token("info"), soft: token("info-soft"), "soft-fg": token("info-soft-fg"), border: token("info-border") },
+      },
+      // F-39: ring-offset must be the surface the element sits on, otherwise
+      // every focus ring in dark mode is haloed in white. Setting the default
+      // here means focus.ts and its call sites need no per-site change.
+      ringOffsetColor: {
+        DEFAULT: "rgb(var(--tf-surface))",
       },
       transitionTimingFunction: {
         // Kurva ease-out tegas untuk seluruh UI in-app. Mengencangkan §7.4.5

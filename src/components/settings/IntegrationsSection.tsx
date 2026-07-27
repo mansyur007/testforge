@@ -41,7 +41,7 @@ export async function IntegrationsSection({
 
       <div>
         <h2 className="text-lg font-bold">Issue tracker</h2>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-content-muted">
           Connect Jira, GitHub or GitLab to file issues straight from a failed
           test and see their live status.
         </p>
@@ -53,7 +53,7 @@ export async function IntegrationsSection({
           integrations={integrations}
         />
       ) : (
-        <p className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">
+        <p className="rounded-xl border border-dashed border-hairline-strong p-10 text-center text-sm text-content-subtle">
           Only project owners and admins can manage integrations.
         </p>
       )}

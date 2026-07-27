@@ -52,10 +52,10 @@ export function RestoreBackupForm({ maxMb }: { maxMb: number }) {
     return (
       <div
         data-testid="restore-summary"
-        className="rounded-xl border border-slate-200 bg-white p-6"
+        className="rounded-xl border border-hairline bg-surface p-6"
       >
         <h2 className="text-base font-semibold">Restore complete</h2>
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-content-muted">
           Imported {totalRows.toLocaleString("en-US")} rows and{" "}
           {summary.filesCopied.toLocaleString("en-US")} attachment
           {summary.filesCopied === 1 ? "" : "s"} in{" "}
@@ -63,7 +63,7 @@ export function RestoreBackupForm({ maxMb }: { maxMb: number }) {
           {new Date(summary.createdAt).toLocaleString("en-US")}.
         </p>
         {summary.integrationsDeactivated > 0 && (
-          <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          <p className="mt-3 rounded-lg bg-warning-soft px-3 py-2 text-sm text-warning-soft-fg">
             {summary.integrationsDeactivated} integration
             {summary.integrationsDeactivated === 1 ? " was" : "s were"} imported
             as inactive: this instance&apos;s <code className="font-mono">TF_SECRET</code>{" "}
@@ -72,7 +72,7 @@ export function RestoreBackupForm({ maxMb }: { maxMb: number }) {
             them.
           </p>
         )}
-        <p className="mt-3 text-sm text-slate-500">
+        <p className="mt-3 text-sm text-content-muted">
           Log in with any account from the restored instance — passwords carry
           over unchanged.
         </p>
@@ -83,10 +83,10 @@ export function RestoreBackupForm({ maxMb }: { maxMb: number }) {
   return (
     <form
       onSubmit={submit}
-      className="rounded-xl border border-slate-200 bg-white p-6"
+      className="rounded-xl border border-hairline bg-surface p-6"
     >
       <h2 className="text-base font-semibold">Restore</h2>
-      <p className="mt-1 text-sm text-slate-500">
+      <p className="mt-1 text-sm text-content-muted">
         This instance is empty, so it can accept a backup from another instance.
         Upload a <code className="font-mono">.tfbackup</code> file (max {maxMb} MB).
       </p>
@@ -98,13 +98,13 @@ export function RestoreBackupForm({ maxMb }: { maxMb: number }) {
           accept=".tfbackup,application/zip"
           required
           data-testid="restore-file"
-          className="text-sm text-slate-600 file:mr-3 file:rounded-lg file:border file:border-slate-200 file:bg-slate-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-100"
+          className="text-sm text-content file:mr-3 file:rounded-lg file:border file:border-hairline file:bg-canvas file:px-3 file:py-2 file:text-sm file:font-medium file:text-content hover:file:bg-surface-muted"
         />
         <button
           type="submit"
           disabled={busy}
           data-testid="restore-submit"
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
         >
           <TFIcon name="nav-backup" className="tf-onaccent h-4 w-4" />
           {busy ? "Restoring…" : "Restore this instance"}
@@ -113,7 +113,7 @@ export function RestoreBackupForm({ maxMb }: { maxMb: number }) {
       {error && (
         <p
           data-testid="restore-error"
-          className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800"
+          className="mt-3 rounded-lg bg-warning-soft px-3 py-2 text-sm text-warning-soft-fg"
         >
           {error}
         </p>

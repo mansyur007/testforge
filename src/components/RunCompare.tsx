@@ -30,7 +30,7 @@ export function CompareCheckbox({ runId }: { runId: string }) {
       onChange={() => ctx.toggle(runId)}
       title="Compare"
       data-testid={`compare-check-${runId}`}
-      className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-indigo-600"
+      className="h-4 w-4 cursor-pointer rounded border-hairline-strong accent-accent"
     />
   );
 }
@@ -41,7 +41,7 @@ export function CompareBar({ slug }: { slug: string }) {
   const [a, b] = ctx.selected;
   return (
     <div
-      className="flex flex-wrap items-center gap-3 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm"
+      className="flex flex-wrap items-center gap-3 rounded-lg border border-accent-ring bg-accent-soft px-4 py-2 text-sm"
       data-testid="compare-bar"
     >
       <span>
@@ -50,13 +50,13 @@ export function CompareBar({ slug }: { slug: string }) {
       {ctx.selected.length === 2 ? (
         <Link
           href={`/projects/${slug}/runs/compare?a=${a}&b=${b}`}
-          className="rounded-lg bg-indigo-600 px-3 py-1.5 font-medium text-white hover:bg-indigo-700"
+          className="rounded-lg bg-accent px-3 py-1.5 font-medium text-white hover:bg-accent-hover"
           data-testid="compare-go"
         >
           Compare A → B
         </Link>
       ) : (
-        <span className="text-slate-500">
+        <span className="text-content-muted">
           {ctx.selected.length > 2
             ? "Uncheck until exactly two runs are selected."
             : "Check one more run to compare."}

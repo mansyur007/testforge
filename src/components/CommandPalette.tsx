@@ -140,24 +140,24 @@ export function CommandPalette() {
         type="button"
         data-testid="global-search-trigger"
         onClick={() => setOpen(true)}
-        className="flex w-full items-center gap-2 rounded-lg border border-slate-700 px-3 py-1.5 text-sm text-slate-400 hover:border-slate-500 hover:text-slate-200"
+        className="flex w-full items-center gap-2 rounded-lg border border-sidebar-border px-3 py-1.5 text-sm text-sidebar-fg hover:text-white"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4">
           <circle cx="11" cy="11" r="7" />
           <path d="m20 20-3.5-3.5" strokeLinecap="round" />
         </svg>
         Search
-        <kbd className="ml-auto rounded border border-slate-700 px-1.5 text-[10px]">⌘K</kbd>
+        <kbd className="ml-auto rounded border border-sidebar-border px-1.5 text-[10px]">⌘K</kbd>
       </button>
 
       {open && (
         <div
-          className="fixed inset-0 z-50 bg-slate-900/50 p-4 pt-24"
+          className="fixed inset-0 z-50 bg-black/40 p-4 pt-24"
           onClick={() => setOpen(false)}
         >
           <div
             data-testid="global-search-panel"
-            className="mx-auto max-w-xl overflow-hidden rounded-xl bg-white text-slate-800 shadow-2xl"
+            className="mx-auto max-w-xl overflow-hidden rounded-xl bg-surface-raised text-content-strong shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <input
@@ -177,14 +177,14 @@ export function CommandPalette() {
               }}
               placeholder="Search cases, runs, suites, milestones…"
               data-testid="global-search-input"
-              className="w-full border-b border-slate-200 px-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="w-full border-b border-hairline bg-surface-raised px-4 py-3 text-sm text-content-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
             />
 
             <div className="max-h-80 overflow-y-auto p-2">
               {q.trim().length < 2 ? (
                 recent.length > 0 ? (
                   <>
-                    <p className="px-2 pb-1 pt-2 text-xs font-semibold uppercase text-slate-400">
+                    <p className="px-2 pb-1 pt-2 text-xs font-semibold uppercase text-content-subtle">
                       Recent
                     </p>
                     {recent.map((r) => (
@@ -192,28 +192,28 @@ export function CommandPalette() {
                         key={r.href}
                         type="button"
                         onClick={() => go(r)}
-                        className="flex w-full items-center rounded-lg px-2 py-1.5 text-left text-sm hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                        className="flex w-full items-center rounded-lg px-2 py-1.5 text-left text-sm hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2"
                       >
                         <span className="truncate">{r.label}</span>
                       </button>
                     ))}
                   </>
                 ) : (
-                  <p className="px-2 py-6 text-center text-sm text-slate-400">
+                  <p className="px-2 py-6 text-center text-sm text-content-subtle">
                     Type at least 2 characters to search.
                   </p>
                 )
               ) : items.length === 0 ? (
                 <p
                   data-testid="global-search-empty"
-                  className="px-2 py-6 text-center text-sm text-slate-400"
+                  className="px-2 py-6 text-center text-sm text-content-subtle"
                 >
                   No results for “{q.trim()}”.
                 </p>
               ) : (
                 groups.map(([group, entries]) => (
                   <div key={group}>
-                    <p className="px-2 pb-1 pt-2 text-xs font-semibold uppercase text-slate-400">
+                    <p className="px-2 pb-1 pt-2 text-xs font-semibold uppercase text-content-subtle">
                       {group}
                     </p>
                     {entries.map(({ item, flat }) => (
@@ -225,12 +225,12 @@ export function CommandPalette() {
                         onMouseEnter={() => setIdx(flat)}
                         className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm ${
                           flat === idx
-                            ? "bg-indigo-50 text-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
-                            : "hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                            ? "bg-accent-soft text-accent-soft-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2"
+                            : "hover:bg-surface-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring focus-visible:ring-offset-2"
                         }`}
                       >
                         {item.sub && (
-                          <span className="shrink-0 font-mono text-xs text-slate-400">
+                          <span className="shrink-0 font-mono text-xs text-content-subtle">
                             {item.sub}
                           </span>
                         )}
@@ -242,7 +242,7 @@ export function CommandPalette() {
               )}
             </div>
 
-            <p className="border-t border-slate-200 px-4 py-2 text-[11px] text-slate-400">
+            <p className="border-t border-hairline px-4 py-2 text-[11px] text-content-subtle">
               ↑↓ navigate · Enter open · Esc close
             </p>
           </div>

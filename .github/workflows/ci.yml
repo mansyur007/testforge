@@ -25,6 +25,8 @@ jobs:
         run: npm ci
       - name: Prisma generate
         run: npx prisma generate
+      - name: Theme token guard
+        run: npm run check:theme
       - name: Build
         env:
           NEXT_PUBLIC_BASE_URL: https://testforge.emha.space

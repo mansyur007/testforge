@@ -25,7 +25,7 @@ function SubmitSmall({ label }: { label: string }) {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-lg bg-slate-800 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-50"
+      className="rounded-lg bg-sidebar px-3 py-1.5 text-xs font-medium text-white hover:bg-sidebar-hover disabled:opacity-50"
     >
       {pending ? "…" : label}
     </button>
@@ -52,22 +52,22 @@ export function EnvironmentsManager({
 
   if (!canManage)
     return (
-      <p className="rounded-xl border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">
+      <p className="rounded-xl border border-dashed border-hairline-strong p-6 text-center text-sm text-content-subtle">
         Only project owners and admins can manage environments.
       </p>
     );
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-slate-200 bg-white p-5">
+      <div className="rounded-xl border border-hairline bg-surface p-5">
         {environments.length === 0 && (
-          <p className="mb-3 text-sm text-slate-400">
+          <p className="mb-3 text-sm text-content-subtle">
             No environments yet — add one below, or upload automation results
-            with <code className="rounded bg-slate-100 px-1">&env=Staging</code> to
+            with <code className="rounded bg-surface-muted px-1">&env=Staging</code> to
             auto-create it.
           </p>
         )}
-        <ul className="mb-4 divide-y divide-slate-100">
+        <ul className="mb-4 divide-y divide-hairline-subtle">
           {environments.map((e) => (
             <li
               key={e.id}
@@ -75,7 +75,7 @@ export function EnvironmentsManager({
               className="flex items-center justify-between py-2 text-sm"
             >
               <div className="flex items-center gap-2">
-                <span className={e.active ? "" : "text-slate-400 line-through"}>
+                <span className={e.active ? "" : "text-content-subtle line-through"}>
                   {e.name}
                 </span>
                 {e.url && (
@@ -83,7 +83,7 @@ export function EnvironmentsManager({
                     href={e.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-xs text-indigo-500 hover:underline"
+                    className="text-xs text-accent-text hover:underline"
                   >
                     {e.url}
                   </a>
@@ -94,7 +94,7 @@ export function EnvironmentsManager({
                   <input type="hidden" name="environmentId" value={e.id} />
                   <button
                     type="submit"
-                    className="text-xs text-slate-500 hover:text-indigo-600"
+                    className="text-xs text-content-muted hover:text-accent-text"
                   >
                     {e.active ? "Deactivate" : "Activate"}
                   </button>
@@ -114,7 +114,7 @@ export function EnvironmentsManager({
                   <button
                     type="submit"
                     title="Delete"
-                    className="text-slate-400 hover:text-red-600"
+                    className="text-content-subtle hover:text-danger"
                   >
                     <TFIcon name="delete" className="h-3.5 w-3.5" />
                   </button>
@@ -132,22 +132,22 @@ export function EnvironmentsManager({
               required
               placeholder="e.g. Staging"
               data-testid="environment-name-input"
-              className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="bg-surface text-content-strong flex-1 rounded-lg border border-hairline-strong px-3 py-1.5 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
             />
             <input
               name="url"
               placeholder="URL (optional)"
-              className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="bg-surface text-content-strong flex-1 rounded-lg border border-hairline-strong px-3 py-1.5 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
             />
             <SubmitSmall label="+ Environment" />
           </div>
-          {state?.error && <p className="text-xs text-red-600">{state.error}</p>}
+          {state?.error && <p className="text-xs text-danger">{state.error}</p>}
         </form>
       </div>
 
       <form
         action={setAutoCreateEnvs}
-        className="flex items-center gap-2 text-sm text-slate-600"
+        className="flex items-center gap-2 text-sm text-content"
       >
         <input type="hidden" name="projectId" value={projectId} />
         <input
@@ -159,7 +159,7 @@ export function EnvironmentsManager({
         />
         <label htmlFor="autoCreateEnvs">
           Auto-create an environment from{" "}
-          <code className="rounded bg-slate-100 px-1">&env=&lt;name&gt;</code> on
+          <code className="rounded bg-surface-muted px-1">&env=&lt;name&gt;</code> on
           automation result uploads
         </label>
       </form>

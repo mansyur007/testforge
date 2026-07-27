@@ -12,7 +12,7 @@ function SubmitButton({ count }: { count: number }) {
     <button
       type="submit"
       disabled={pending || count === 0}
-      className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+      className="rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
     >
       {pending ? "Creating..." : `Create Run (${count} test cases)`}
     </button>
@@ -49,31 +49,31 @@ export function NewRunForm({
       ))}
 
       {state?.error && (
-        <p className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-700">
+        <p className="rounded-lg bg-danger-soft px-4 py-2.5 text-sm text-danger-soft-fg">
           {state.error}
         </p>
       )}
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6">
+      <div className="rounded-xl border border-hairline bg-surface p-6">
         <div className="grid gap-4 md:grid-cols-3">
           <div className="md:col-span-2">
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              Run Name <span className="text-red-500">*</span>
+            <label className="mb-1 block text-sm font-medium text-content">
+              Run Name <span className="text-danger">*</span>
             </label>
             <input
               name="name"
               required
               placeholder="e.g. Regression Sprint 24"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label className="mb-1 block text-sm font-medium text-content">
               Milestone
             </label>
             <select
               name="milestoneId"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm"
             >
               <option value="">(no milestone)</option>
               {milestones.map((m) => (
@@ -85,13 +85,13 @@ export function NewRunForm({
           </div>
           {environments.length > 0 && (
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <label className="mb-1 block text-sm font-medium text-content">
                 Environment
               </label>
               <select
                 name="environmentId"
                 data-testid="run-environment-select"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm"
               >
                 <option value="">(none)</option>
                 {environments.map((e) => (
@@ -104,7 +104,7 @@ export function NewRunForm({
           )}
           {baselines.length > 0 && (
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <label className="mb-1 block text-sm font-medium text-content">
                 From baseline
               </label>
               <select
@@ -116,7 +116,7 @@ export function NewRunForm({
                   const baseline = baselines.find((b) => b.id === id);
                   setSelected(baseline ? new Set(baseline.caseIds) : new Set());
                 }}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm"
               >
                 <option value="">(none — current content)</option>
                 {baselines.map((b) => (
@@ -128,21 +128,21 @@ export function NewRunForm({
             </div>
           )}
           <div className="md:col-span-3">
-            <label className="mb-1 block text-sm font-medium text-slate-700">
+            <label className="mb-1 block text-sm font-medium text-content">
               Description
             </label>
             <input
               name="description"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
             />
           </div>
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6">
+      <div className="rounded-xl border border-hairline bg-surface p-6">
         <h3 className="mb-3 font-semibold">
           Select Test Cases{" "}
-          <span className="font-normal text-slate-400">
+          <span className="font-normal text-content-subtle">
             ({selected.size} selected)
           </span>
         </h3>
@@ -160,7 +160,7 @@ export function NewRunForm({
         return notApproved > 0 ? (
           <p
             data-testid="run-unapproved-warning"
-            className="rounded-lg bg-amber-50 px-4 py-2.5 text-sm text-amber-800"
+            className="rounded-lg bg-warning-soft px-4 py-2.5 text-sm text-warning-soft-fg"
           >
             ⚠️ {notApproved} selected case{notApproved === 1 ? " is" : "s are"} not
             approved yet. You can still create the run.

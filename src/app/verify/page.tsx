@@ -23,18 +23,18 @@ export default async function VerifyPage({
   if (result.ok && result.next) redirect(result.next);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+    <main className="flex min-h-screen items-center justify-center bg-canvas px-4">
       <div className="w-full max-w-md text-center">
         <Logo size="lg" />
-        <div className="mt-6 rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-500">
+        <div className="mt-6 rounded-xl border border-hairline bg-surface p-8 shadow-sm">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-danger-soft text-danger">
             <TFIcon name="invalid" current className="h-8 w-8" />
           </div>
           <h1 className="mt-4 text-xl font-bold">{t.title}</h1>
-          <p className="mt-2 text-sm text-slate-500">{result.error}</p>
+          <p className="mt-2 text-sm text-content-muted">{result.error}</p>
           <Link
             href="/verify-email"
-            className="mt-5 inline-block rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
+            className="mt-5 inline-block rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent-hover"
           >
             {t.requestNew}
           </Link>

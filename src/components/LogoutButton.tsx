@@ -12,7 +12,7 @@ export function LogoutButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-xs text-slate-400 hover:text-white"
+        className="text-xs text-sidebar-fg hover:text-white"
       >
         Log out →
       </button>
@@ -24,25 +24,25 @@ export function LogoutButton() {
             onClick={() => setOpen(false)}
           >
             <div
-              className="w-full max-w-sm rounded-xl bg-white p-6 text-slate-900 shadow-xl motion-safe:animate-tf-pop-in"
+              className="w-full max-w-sm rounded-xl bg-surface-raised p-6 text-content-strong shadow-xl motion-safe:animate-tf-pop-in"
               onClick={(e) => e.stopPropagation()}
             >
               <h2 className="text-lg font-semibold">
                 Log out of your account?
               </h2>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-content-muted">
                 You will need to log in again to access TestForge.
               </p>
               <div className="mt-5 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                  className="rounded-lg border border-hairline-strong px-4 py-2 text-sm font-medium text-content hover:bg-surface-muted"
                 >
                   Cancel
                 </button>
                 <form action={logout}>
-                  <button className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
+                  <button className="rounded-lg bg-danger px-4 py-2 text-sm font-medium text-white hover:opacity-90">
                     Log out
                   </button>
                 </form>

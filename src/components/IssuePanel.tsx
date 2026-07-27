@@ -51,8 +51,8 @@ export function IssueBadges({
             data-testid={`issue-badge-${l.issueKey}`}
             className={`rounded-full px-2 py-0.5 text-xs font-medium hover:underline ${
               isClosed(l.status)
-                ? "bg-green-100 text-green-800"
-                : "bg-amber-100 text-amber-800"
+                ? "bg-success-soft text-success-soft-fg"
+                : "bg-warning-soft text-warning-soft-fg"
             }`}
           >
             🐞 {displayKey(l.provider, l.issueKey)}
@@ -64,7 +64,7 @@ export function IssueBadges({
               <button
                 type="submit"
                 title="Unlink"
-                className="text-xs text-slate-300 hover:text-red-600"
+                className="text-xs text-content-subtle hover:text-danger"
               >
                 ✕
               </button>
@@ -83,7 +83,7 @@ function LinkSubmit() {
       type="submit"
       disabled={pending}
       data-testid="issue-link-submit"
-      className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50 disabled:opacity-50"
+      className="rounded-lg border border-hairline-strong px-3 py-1.5 text-xs hover:bg-canvas disabled:opacity-50"
     >
       {pending ? "Linking…" : "Link"}
     </button>
@@ -108,12 +108,12 @@ function LinkIssueForm({
           required
           placeholder="QA-123, #42, or issue URL"
           data-testid="issue-link-input"
-          className="flex-1 rounded-lg border border-slate-300 px-3 py-1.5 text-xs focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+          className="bg-surface text-content-strong flex-1 rounded-lg border border-hairline-strong px-3 py-1.5 text-xs focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
         />
         <LinkSubmit />
       </div>
       {state?.error && (
-        <p data-testid="issue-link-error" className="text-xs text-red-600">
+        <p data-testid="issue-link-error" className="text-xs text-danger">
           {state.error}
         </p>
       )}
@@ -128,7 +128,7 @@ function CreateSubmit() {
       type="submit"
       disabled={pending}
       data-testid="issue-create-submit"
-      className="rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+      className="rounded-lg bg-danger px-3 py-1.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
     >
       {pending ? "Filing…" : "File issue"}
     </button>
@@ -163,26 +163,26 @@ function CreateIssueModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 motion-safe:animate-tf-fade-in">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-white p-6 shadow-xl motion-safe:animate-tf-pop-in">
+      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-xl bg-surface p-6 shadow-xl motion-safe:animate-tf-pop-in">
         <div className="mb-4 flex items-start justify-between">
           <div>
             <h3 className="text-lg font-bold">File an issue</h3>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-content-muted">
               Review what gets sent to your tracker. You can edit it first.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600"
+            className="text-content-subtle hover:text-content"
             aria-label="Close"
           >
             ✕
           </button>
         </div>
 
-        {loadError && <p className="text-sm text-red-600">{loadError}</p>}
+        {loadError && <p className="text-sm text-danger">{loadError}</p>}
         {!draft && !loadError && (
-          <p className="py-8 text-center text-sm text-slate-400">
+          <p className="py-8 text-center text-sm text-content-subtle">
             Building the report…
           </p>
         )}
@@ -191,18 +191,18 @@ function CreateIssueModal({
           <form action={formAction} className="space-y-3">
             <input type="hidden" name="resultId" value={resultId} />
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-500">
+              <label className="mb-1 block text-xs font-medium text-content-muted">
                 Title
               </label>
               <input
                 name="title"
                 defaultValue={draft.title}
                 data-testid="issue-create-title"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-slate-500">
+              <label className="mb-1 block text-xs font-medium text-content-muted">
                 Description
               </label>
               <textarea
@@ -210,7 +210,7 @@ function CreateIssueModal({
                 rows={14}
                 defaultValue={draft.body}
                 data-testid="issue-create-body"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 font-mono text-xs focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 font-mono text-xs focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
               />
             </div>
             <div className="flex items-center gap-3">
@@ -218,13 +218,13 @@ function CreateIssueModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="text-sm text-slate-500 hover:text-slate-700"
+                className="text-sm text-content-muted hover:text-content"
               >
                 Cancel
               </button>
             </div>
             {state?.error && (
-              <p data-testid="issue-create-error" className="text-sm text-red-600">
+              <p data-testid="issue-create-error" className="text-sm text-danger">
                 {state.error}
               </p>
             )}
@@ -268,7 +268,7 @@ export function IssuePanel({
               type="button"
               onClick={() => setModalOpen(true)}
               data-testid="issue-create-open"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-danger-border px-3 py-1.5 text-xs font-medium text-danger-soft-fg hover:bg-danger-soft"
             >
               <TFIcon name="cicd" className="h-3.5 w-3.5" /> Create issue from
               failure

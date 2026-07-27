@@ -72,11 +72,11 @@ export default async function SessionDetailPage({
         <div>
           <BackLink href={`/projects/${project.slug}/sessions`}>Sessions</BackLink>
           <h2 className="mt-1 text-xl font-bold">{s.charter}</h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-content-muted">
             Tester: <b>{s.tester.name}</b> ·{" "}
             <span
               className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                s.status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-slate-100 text-slate-500"
+                s.status === "ACTIVE" ? "bg-success-soft text-success-soft-fg" : "bg-surface-muted text-content-muted"
               }`}
             >
               {s.status}
@@ -87,7 +87,7 @@ export default async function SessionDetailPage({
           <form action={endSession}>
             <input type="hidden" name="sessionId" value={s.id} />
             <button
-              className="shrink-0 rounded-lg border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100"
+              className="shrink-0 rounded-lg border border-hairline-strong px-3 py-1.5 text-sm hover:bg-surface-muted"
               data-testid="session-end-button"
             >
               End session
@@ -104,7 +104,7 @@ export default async function SessionDetailPage({
         />
       )}
 
-      <section className="rounded-xl border border-slate-200 bg-white p-5">
+      <section className="rounded-xl border border-hairline bg-surface p-5">
         <h3 className="mb-3 font-semibold">
           {s.status === "ENDED" ? "Session summary" : "Notes"} ({s.notes.length})
         </h3>
@@ -115,7 +115,7 @@ export default async function SessionDetailPage({
             return (
               <li
                 key={n.id}
-                className="rounded-lg border border-slate-100 p-3"
+                className="rounded-lg border border-hairline-subtle p-3"
                 data-testid={`session-note-${n.id}`}
               >
                 <div className="mb-1.5 flex items-center justify-between gap-2">
@@ -124,7 +124,7 @@ export default async function SessionDetailPage({
                   >
                     {kind}
                   </span>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-content-subtle">
                     {n.createdAt.toLocaleTimeString()}
                   </span>
                 </div>
@@ -135,7 +135,7 @@ export default async function SessionDetailPage({
                       <li key={a.id}>
                         <a
                           href={a.url}
-                          className="text-xs text-indigo-600 hover:underline"
+                          className="text-xs text-accent-text hover:underline"
                           target="_blank"
                           rel="noreferrer"
                         >
@@ -147,7 +147,7 @@ export default async function SessionDetailPage({
                 )}
 
                 {n.convertedType === "CASE" && n.convertedId && (
-                  <p className="mt-2 text-xs text-green-700">
+                  <p className="mt-2 text-xs text-success-soft-fg">
                     → Converted to draft case{" "}
                     <Link
                       href={`/projects/${project.slug}/cases/${n.convertedId}`}
@@ -158,7 +158,7 @@ export default async function SessionDetailPage({
                   </p>
                 )}
                 {n.convertedType === "ISSUE" && n.convertedId && (
-                  <p className="mt-2 text-xs text-green-700">
+                  <p className="mt-2 text-xs text-success-soft-fg">
                     → Filed as issue <b>{n.convertedId}</b>
                   </p>
                 )}
@@ -169,7 +169,7 @@ export default async function SessionDetailPage({
                       <form action={convertNoteToCase}>
                         <input type="hidden" name="noteId" value={n.id} />
                         <button
-                          className="rounded-lg border border-indigo-200 px-2.5 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-50"
+                          className="rounded-lg border border-accent-ring px-2.5 py-1 text-xs font-medium text-accent-soft-fg hover:bg-accent-soft"
                           data-testid="session-note-convert-case"
                         >
                           Convert to draft case
@@ -185,7 +185,7 @@ export default async function SessionDetailPage({
             );
           })}
           {s.notes.length === 0 && (
-            <li className="text-sm text-slate-400">No notes yet.</li>
+            <li className="text-sm text-content-subtle">No notes yet.</li>
           )}
         </ul>
       </section>

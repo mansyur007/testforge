@@ -44,7 +44,7 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
       type="submit"
       disabled={pending}
       data-testid="channel-form-submit"
-      className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+      className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:opacity-50"
     >
       {pending ? pendingLabel : label}
     </button>
@@ -55,27 +55,27 @@ function TargetInput({ type }: { type: string }) {
   if (type === "EMAIL")
     return (
       <div>
-        <label className="mb-1 block text-xs font-medium text-slate-500">
+        <label className="mb-1 block text-xs font-medium text-content-muted">
           Recipients (comma-separated)
         </label>
         <input
           name="to"
           placeholder="qa@company.com, lead@company.com"
           data-testid="channel-to-input"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+          className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
         />
       </div>
     );
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium text-slate-500">
+      <label className="mb-1 block text-xs font-medium text-content-muted">
         Incoming webhook URL
       </label>
       <input
         name="webhookUrl"
         placeholder={URL_PLACEHOLDERS[type]}
         data-testid="channel-url-input"
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+        className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
       />
     </div>
   );
@@ -108,7 +108,7 @@ function ChannelForm({
   return (
     <form
       action={formAction}
-      className="space-y-3 rounded-xl border border-slate-200 bg-white p-5"
+      className="space-y-3 rounded-xl border border-hairline bg-surface p-5"
     >
       {editing ? (
         <input type="hidden" name="channelId" value={editing.id} />
@@ -117,11 +117,11 @@ function ChannelForm({
       )}
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">
+          <label className="mb-1 block text-xs font-medium text-content-muted">
             Type
           </label>
           {editing ? (
-            <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500">
+            <p className="rounded-lg border border-hairline bg-canvas px-3 py-2 text-sm text-content-muted">
               {TYPE_LABELS[editing.type]}
             </p>
           ) : (
@@ -130,7 +130,7 @@ function ChannelForm({
               value={type}
               onChange={(e) => setType(e.target.value)}
               data-testid="channel-type-select"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              className="w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
             >
               {Object.entries(TYPE_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>
@@ -141,7 +141,7 @@ function ChannelForm({
           )}
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-slate-500">
+          <label className="mb-1 block text-xs font-medium text-content-muted">
             Name
           </label>
           <input
@@ -150,21 +150,21 @@ function ChannelForm({
             defaultValue={editing?.name ?? ""}
             placeholder="#qa-alerts"
             data-testid="channel-name-input"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+            className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
           />
         </div>
       </div>
 
       <TargetInput type={editing?.type ?? type} />
       {editing && (
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-content-subtle">
           Leave the target blank to keep the current one (
           <span className="font-mono">{editing.target}</span>).
         </p>
       )}
 
       <div>
-        <span className="mb-1 block text-xs font-medium text-slate-500">
+        <span className="mb-1 block text-xs font-medium text-content-muted">
           Events
         </span>
         <div className="flex flex-wrap gap-3">
@@ -191,14 +191,14 @@ function ChannelForm({
           <button
             type="button"
             onClick={onDone}
-            className="text-sm text-slate-500 hover:text-slate-700"
+            className="text-sm text-content-muted hover:text-content"
           >
             Cancel
           </button>
         )}
       </div>
       {state?.error && (
-        <p data-testid="channel-form-error" className="text-sm text-red-600">
+        <p data-testid="channel-form-error" className="text-sm text-danger">
           {state.error}
         </p>
       )}
@@ -215,7 +215,7 @@ function TestSubmit({ channelId }: { channelId: string }) {
       type="submit"
       disabled={pending}
       data-testid={`channel-test-${channelId}`}
-      className="text-xs text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
+      className="text-xs text-accent-text hover:text-accent-hover disabled:opacity-50"
     >
       {pending ? "Sending…" : "Send test"}
     </button>
@@ -229,12 +229,12 @@ function TestButton({ channelId }: { channelId: string }) {
       <input type="hidden" name="channelId" value={channelId} />
       <TestSubmit channelId={channelId} />
       {state?.ok && (
-        <span data-testid="channel-test-ok" className="text-xs text-green-600">
+        <span data-testid="channel-test-ok" className="text-xs text-success">
           Delivered ✓
         </span>
       )}
       {state?.error && (
-        <span data-testid="channel-test-error" className="text-xs text-red-600">
+        <span data-testid="channel-test-error" className="text-xs text-danger">
           {state.error}
         </span>
       )}
@@ -269,9 +269,9 @@ export function NotificationChannelsManager({
       />
 
       {channels.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="overflow-hidden rounded-xl border border-hairline bg-surface">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
+            <thead className="bg-canvas text-left text-xs uppercase text-content-muted">
               <tr>
                 <th className="px-4 py-3">Channel</th>
                 <th className="px-4 py-3">Target</th>
@@ -280,19 +280,19 @@ export function NotificationChannelsManager({
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-hairline-subtle">
               {channels.map((c) => (
                 <tr key={c.id} data-testid={`channel-row-${c.name}`}>
                   <td className="px-4 py-3">
                     <span className="font-medium">{c.name}</span>
-                    <span className="ml-2 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600">
+                    <span className="ml-2 rounded bg-surface-muted px-1.5 py-0.5 text-[10px] font-medium text-content">
                       {TYPE_LABELS[c.type] ?? c.type}
                     </span>
                   </td>
-                  <td className="max-w-[16rem] truncate px-4 py-3 font-mono text-xs text-slate-500">
+                  <td className="max-w-[16rem] truncate px-4 py-3 font-mono text-xs text-content-muted">
                     {c.target}
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-600">
+                  <td className="px-4 py-3 text-xs text-content">
                     {c.events.split(",").length} event
                     {c.events.split(",").length === 1 ? "" : "s"}
                   </td>
@@ -303,8 +303,8 @@ export function NotificationChannelsManager({
                         type="submit"
                         className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                           c.active
-                            ? "bg-green-100 text-green-800"
-                            : "bg-slate-100 text-slate-500"
+                            ? "bg-success-soft text-success-soft-fg"
+                            : "bg-surface-muted text-content-muted"
                         }`}
                         title="Click to toggle"
                       >
@@ -318,7 +318,7 @@ export function NotificationChannelsManager({
                       <button
                         type="button"
                         onClick={() => setEditingId(c.id)}
-                        className="text-xs text-slate-500 hover:text-slate-700"
+                        className="text-xs text-content-muted hover:text-content"
                       >
                         Edit
                       </button>
@@ -332,7 +332,7 @@ export function NotificationChannelsManager({
                         <input type="hidden" name="channelId" value={c.id} />
                         <button
                           type="submit"
-                          className="inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-800"
+                          className="inline-flex items-center gap-1 text-xs text-danger hover:text-danger-soft-fg"
                         >
                           <TFIcon name="delete" className="h-3.5 w-3.5" /> Delete
                         </button>
@@ -345,7 +345,7 @@ export function NotificationChannelsManager({
           </table>
         </div>
       )}
-      <p className="text-xs text-slate-400">
+      <p className="text-xs text-content-subtle">
         Deliveries are best-effort with a 5s timeout — a dead target never
         blocks the action that triggered it. Repeated <code>result.failed</code>{" "}
         events in the same run are aggregated to at most one message per minute

@@ -12,7 +12,7 @@ import { Markdown } from "@/components/Markdown";
 // FormData submission always sees it.
 
 const inputCls =
-  "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500";
+  "w-full rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring";
 
 export function MarkdownEditor({
   name,
@@ -83,24 +83,24 @@ export function MarkdownEditor({
   };
 
   const toolBtn =
-    "rounded px-1.5 py-0.5 text-xs text-slate-500 hover:bg-slate-100";
+    "rounded px-1.5 py-0.5 text-xs text-content-muted hover:bg-surface-muted";
 
   return (
-    <div className="rounded-lg border border-slate-300 focus-within:border-indigo-500">
-      <div className="flex items-center gap-1 border-b border-slate-200 bg-slate-50 px-2 py-1 rounded-t-lg">
+    <div className="rounded-lg border border-hairline-strong focus-within:border-accent">
+      <div className="flex items-center gap-1 border-b border-hairline bg-canvas px-2 py-1 rounded-t-lg">
         {(["write", "preview"] as const).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
             className={`rounded px-2 py-0.5 text-xs font-medium capitalize ${
-              tab === t ? "bg-white text-indigo-700 shadow-sm" : "text-slate-500"
+              tab === t ? "bg-surface text-accent-soft-fg shadow-sm" : "text-content-muted"
             }`}
           >
             {t}
           </button>
         ))}
-        <span className="mx-1 h-4 w-px bg-slate-200" />
+        <span className="mx-1 h-4 w-px bg-surface-muted" />
         <button type="button" className={`${toolBtn} font-bold`} title="Bold"
           onClick={() => edit((s) => `**${s || "bold"}**`)}>B</button>
         <button type="button" className={`${toolBtn} italic`} title="Italic"
@@ -111,7 +111,7 @@ export function MarkdownEditor({
           onClick={() => edit((s) => `\n- ${s || "item"}`)}>≡</button>
         <button type="button" className={toolBtn} title="Link"
           onClick={() => edit((s) => `[${s || "text"}](https://)`)}>🔗</button>
-        <span className="ml-auto text-[10px] text-slate-400">
+        <span className="ml-auto text-[10px] text-content-subtle">
           Markdown{canPaste ? " · paste an image to attach" : ""}
         </span>
       </div>
@@ -130,7 +130,7 @@ export function MarkdownEditor({
         }}
         placeholder={placeholder}
         data-testid={testId}
-        className={`${inputCls} rounded-t-none border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
+        className={`${inputCls} rounded-t-none border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring ${
           tab === "preview" ? "hidden" : ""
         }`}
       />
@@ -139,11 +139,11 @@ export function MarkdownEditor({
           {text.trim() ? (
             <Markdown>{text}</Markdown>
           ) : (
-            <p className="text-sm text-slate-400">Nothing to preview.</p>
+            <p className="text-sm text-content-subtle">Nothing to preview.</p>
           )}
         </div>
       )}
-      {notice && <p className="px-3 pb-2 text-xs text-amber-600">{notice}</p>}
+      {notice && <p className="px-3 pb-2 text-xs text-warning">{notice}</p>}
     </div>
   );
 }

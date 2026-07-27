@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AnvilMark } from "@/components/icons";
 import { requirePublicProject } from "@/lib/public-share";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 
 // F-38: public "portfolio mode" chrome. Deliberately NOT the (app) layout —
 // that one calls requireSession() and renders permission-aware navigation.
@@ -39,21 +40,21 @@ export default async function PublicLayout({
   ].filter((t) => t.on);
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
+    <div className="min-h-screen bg-canvas">
+      <header className="border-b border-hairline bg-surface">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-3 px-4 py-4">
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-indigo-600">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-accent">
             <AnvilMark className="h-5 w-5" />
           </span>
           <Link
             href={`/public/${project.slug}`}
             data-testid="public-project-name"
-            className="min-w-0 truncate font-display text-lg font-bold tracking-tight text-slate-900"
+            className="min-w-0 truncate font-display text-lg font-bold tracking-tight text-content-strong"
           >
             {project.name}
           </Link>
           <span
-            className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-500"
+            className="rounded-full bg-surface-muted px-2.5 py-1 text-xs font-medium text-content-muted"
             data-testid="public-readonly-chip"
           >
             Public · read-only
@@ -62,7 +63,7 @@ export default async function PublicLayout({
             <nav className="ml-auto flex items-center gap-1 text-sm">
               <Link
                 href={`/public/${project.slug}`}
-                className="rounded-lg px-3 py-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                className="rounded-lg px-3 py-1.5 text-content-muted hover:bg-surface-muted hover:text-content-strong"
               >
                 Overview
               </Link>
@@ -71,24 +72,27 @@ export default async function PublicLayout({
                   key={t.href}
                   href={t.href}
                   data-testid={t.testid}
-                  className="rounded-lg px-3 py-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                  className="rounded-lg px-3 py-1.5 text-content-muted hover:bg-surface-muted hover:text-content-strong"
                 >
                   {t.label}
                 </Link>
               ))}
             </nav>
           )}
+          <div className={tabs.length === 0 ? "ml-auto" : ""}>
+            <ThemeSwitcher size="sm" tone="light" />
+          </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-8">{children}</main>
 
-      <footer className="border-t border-slate-200 py-8 text-center text-xs text-slate-400">
+      <footer className="border-t border-hairline py-8 text-center text-xs text-content-subtle">
         Built with{" "}
         <Link
           href="/login"
           data-testid="public-cta-link"
-          className="font-medium text-indigo-600 hover:underline"
+          className="font-medium text-accent-text hover:underline"
         >
           TestForge
         </Link>

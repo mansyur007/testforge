@@ -67,7 +67,7 @@ export async function FieldsSection({
     <div className="space-y-6">
       <div>
         <h2 className="text-lg font-semibold">Custom Fields</h2>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-content-subtle">
           Project-specific fields for test cases and run results. Keys and
           types are fixed after creation; disable a field to hide it from
           forms while keeping existing values visible.
@@ -91,7 +91,7 @@ export async function FieldsSection({
       {/* F-06: matrix axes for test plans (Browser × OS × …). */}
       <div className="pt-2">
         <h2 className="text-lg font-semibold">Configurations</h2>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-content-subtle">
           Axes for test plans — a plan picks options across groups and creates
           one run per combination (e.g. Browser × OS).
         </p>
@@ -109,7 +109,7 @@ export async function FieldsSection({
       {/* F-14: result-status definitions. */}
       <div className="pt-2">
         <h2 className="text-lg font-semibold">Result Statuses</h2>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-content-subtle">
           The outcomes an executor can record. Built-in statuses keep their key
           and kind; add your own (e.g. &quot;Known Issue&quot;) with a kind that
           tells the reports how to count it.
@@ -124,7 +124,7 @@ export async function FieldsSection({
       {/* F-19: environments a run can be tagged against. */}
       <div className="pt-2">
         <h2 className="text-lg font-semibold">Environments</h2>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-content-subtle">
           Tag runs with where they executed (Staging, Prod, …); filter runs
           and reports by environment.
         </p>
@@ -144,9 +144,9 @@ export async function FieldsSection({
       {/* L-02: CI quality gate policy + latest-run verdict preview. */}
       <div className="pt-2">
         <h2 className="text-lg font-semibold">Quality Gate</h2>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-content-subtle">
           Rules CI can check with one call —{" "}
-          <code className="rounded bg-slate-100 px-1 text-xs">
+          <code className="rounded bg-surface-muted px-1 text-xs">
             npx testforge-cli gate
           </code>{" "}
           exits non-zero when the latest run breaks them. Leave every field
@@ -155,12 +155,12 @@ export async function FieldsSection({
       </div>
       <form
         action={saveGatePolicy}
-        className="rounded-xl border border-slate-200 bg-white p-6"
+        className="rounded-xl border border-hairline bg-surface p-6"
       >
         <input type="hidden" name="projectId" value={project.id} />
         <div className="grid gap-4 md:grid-cols-2">
           <label className="block text-sm">
-            <span className="font-medium text-slate-700">Minimum pass rate (%)</span>
+            <span className="font-medium text-content">Minimum pass rate (%)</span>
             <input
               name="minPassRate"
               type="number"
@@ -170,11 +170,11 @@ export async function FieldsSection({
               defaultValue={gatePolicy?.minPassRate ?? ""}
               disabled={!canAdmin}
               data-testid="gate-min-pass-rate"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:bg-slate-50"
+              className="mt-1 w-full rounded-lg border border-hairline-strong bg-surface px-3 py-2 text-sm text-content-strong focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring disabled:bg-canvas"
             />
           </label>
           <label className="block text-sm">
-            <span className="font-medium text-slate-700">Max new failures vs previous run</span>
+            <span className="font-medium text-content">Max new failures vs previous run</span>
             <input
               name="maxNewFailures"
               type="number"
@@ -182,18 +182,18 @@ export async function FieldsSection({
               defaultValue={gatePolicy?.maxNewFailures ?? ""}
               disabled={!canAdmin}
               data-testid="gate-max-new-failures"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:bg-slate-50"
+              className="mt-1 w-full rounded-lg border border-hairline-strong bg-surface px-3 py-2 text-sm text-content-strong focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring disabled:bg-canvas"
             />
           </label>
           <label className="block text-sm">
-            <span className="font-medium text-slate-700">Required tags (comma-separated)</span>
+            <span className="font-medium text-content">Required tags (comma-separated)</span>
             <input
               name="requiredTags"
               defaultValue={gatePolicy?.requiredTags?.join(", ") ?? ""}
               placeholder="smoke, critical"
               disabled={!canAdmin}
               data-testid="gate-required-tags"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:bg-slate-50"
+              className="mt-1 w-full rounded-lg border border-hairline-strong bg-surface px-3 py-2 text-sm text-content-strong focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring disabled:bg-canvas"
             />
           </label>
           <label className="flex items-end gap-2 pb-2 text-sm">
@@ -203,9 +203,9 @@ export async function FieldsSection({
               defaultChecked={gatePolicy?.blockOnUntested ?? false}
               disabled={!canAdmin}
               data-testid="gate-block-untested"
-              className="h-4 w-4 rounded border-slate-300"
+              className="h-4 w-4 rounded border-hairline-strong"
             />
-            <span className="font-medium text-slate-700">
+            <span className="font-medium text-content">
               Block when any result is still untested
             </span>
           </label>
@@ -213,29 +213,29 @@ export async function FieldsSection({
         {canAdmin && (
           <button
             data-testid="gate-save"
-            className="mt-4 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
           >
             Save gate
           </button>
         )}
         {gatePreview && (
-          <div className="mt-5 border-t border-slate-100 pt-4">
-            <p className="mb-2 text-xs font-semibold uppercase text-slate-400">
+          <div className="mt-5 border-t border-hairline-subtle pt-4">
+            <p className="mb-2 text-xs font-semibold uppercase text-content-subtle">
               Latest run: {gatePreview.run.name}
             </p>
             <table className="w-full text-sm">
               <tbody>
                 {gatePreview.checks.map((c) => (
-                  <tr key={c.name} className="border-b border-slate-50">
-                    <td className="py-1.5 font-mono text-xs text-slate-500">{c.name}</td>
-                    <td className="py-1.5 text-slate-500">{c.expected}</td>
+                  <tr key={c.name} className="border-b border-hairline-subtle">
+                    <td className="py-1.5 font-mono text-xs text-content-muted">{c.name}</td>
+                    <td className="py-1.5 text-content-muted">{c.expected}</td>
                     <td className="py-1.5">{c.actual}</td>
                     <td className="py-1.5">
                       <span
                         className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                           c.pass
-                            ? "bg-green-100 text-green-700"
-                            : "bg-red-100 text-red-700"
+                            ? "bg-success-soft text-success-soft-fg"
+                            : "bg-danger-soft text-danger-soft-fg"
                         }`}
                       >
                         {c.pass ? "OK" : "FAIL"}

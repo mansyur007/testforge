@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { getSession } from "@/lib/auth";
 import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { Logo, TFIcon, BrandIcon } from "@/components/icons";
 
 // HP-008: SEO metadata + OG (default English)
@@ -51,39 +52,39 @@ function ProductMockup() {
     { id: "TC-WEB-004", title: "Checkout with valid credit card", p: "CRITICAL", s: "RETEST" },
   ];
   const sColor: Record<string, string> = {
-    PASSED: "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
-    FAILED: "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300",
-    RETEST: "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300",
+    PASSED: "bg-success-soft text-success-soft-fg",
+    FAILED: "bg-danger-soft text-danger-soft-fg",
+    RETEST: "bg-accent-soft text-accent-soft-fg",
   };
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-      <div className="flex items-center gap-1.5 border-b border-slate-100 bg-slate-50 px-4 py-2.5 dark:border-slate-800 dark:bg-slate-800">
-        <span className="h-2.5 w-2.5 rounded-full bg-red-400" />
-        <span className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
-        <span className="h-2.5 w-2.5 rounded-full bg-green-400" />
-        <span className="ml-3 rounded bg-white px-3 py-0.5 text-xs text-slate-400 dark:bg-slate-700">
+    <div className="overflow-hidden rounded-xl border border-hairline bg-surface shadow-2xl">
+      <div className="flex items-center gap-1.5 border-b border-hairline-subtle bg-surface-muted px-4 py-2.5">
+        <span className="h-2.5 w-2.5 rounded-full bg-danger" />
+        <span className="h-2.5 w-2.5 rounded-full bg-warning" />
+        <span className="h-2.5 w-2.5 rounded-full bg-success" />
+        <span className="ml-3 rounded bg-surface px-3 py-0.5 text-xs text-content-subtle">
           testforge.io/web — Test Cases
         </span>
       </div>
       <div className="p-4">
         {/* Bar mengisi saat load: satu-satunya gerak "menjelaskan" di halaman —
             memperagakan hasil test yang menggulung jadi pass rate. */}
-        <div className="mb-3 flex h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-          <div className="tf-bar-grow w-3/5 bg-green-500" />
-          <div className="tf-bar-grow w-1/5 bg-red-500" style={{ animationDelay: "80ms" }} />
-          <div className="tf-bar-grow w-1/5 bg-purple-500" style={{ animationDelay: "160ms" }} />
+        <div className="mb-3 flex h-2 overflow-hidden rounded-full bg-surface-muted">
+          <div className="tf-bar-grow w-3/5 bg-success" />
+          <div className="tf-bar-grow w-1/5 bg-danger" style={{ animationDelay: "80ms" }} />
+          <div className="tf-bar-grow w-1/5 bg-accent" style={{ animationDelay: "160ms" }} />
         </div>
         <div className="space-y-1.5">
           {rows.map((r) => (
             <div
               key={r.id}
-              className="flex items-center gap-3 rounded-lg border border-slate-100 px-3 py-2 text-xs dark:border-slate-800"
+              className="flex items-center gap-3 rounded-lg border border-hairline-subtle px-3 py-2 text-xs"
             >
-              <span className="font-mono text-slate-400">{r.id}</span>
-              <span className="flex-1 truncate font-medium text-slate-700 dark:text-slate-200">
+              <span className="font-mono text-content-subtle">{r.id}</span>
+              <span className="flex-1 truncate font-medium text-content-strong">
                 {r.title}
               </span>
-              <span className="hidden text-slate-400 sm:inline">{r.p}</span>
+              <span className="hidden text-content-subtle sm:inline">{r.p}</span>
               <span className={`rounded-full px-2 py-0.5 font-medium ${sColor[r.s]}`}>
                 {r.s}
               </span>
@@ -98,10 +99,10 @@ function ProductMockup() {
 function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
   return (
     <div className="mx-auto mb-10 max-w-2xl text-center">
-      <p className="font-mono text-xs font-medium uppercase tracking-[.16em] text-indigo-600 dark:text-indigo-400">
+      <p className="font-mono text-xs font-medium uppercase tracking-[.16em] text-accent-text">
         {kicker}
       </p>
-      <h2 className="mt-2 text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">
+      <h2 className="mt-2 text-2xl font-bold text-content-strong sm:text-3xl">
         {title}
       </h2>
     </div>
@@ -128,23 +129,24 @@ export default async function HomePage() {
   const [session, stars] = await Promise.all([getSession(), getGitHubStars()]);
 
   return (
-    <div className="tf-landing bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+    <div className="tf-landing bg-canvas text-content-strong">
       {/* Navbar */}
-      <header className="sticky top-0 z-40 border-b border-slate-100 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
+      <header className="sticky top-0 z-40 border-b border-hairline-subtle bg-canvas/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <Logo size="sm" />
-          <nav className="hidden items-center gap-6 text-sm text-slate-600 dark:text-slate-300 md:flex">
-            <a href="#features" className="hover:text-slate-900 dark:hover:text-white">{t.nav.features}</a>
-            <a href="#comparison" className="hover:text-slate-900 dark:hover:text-white">{t.nav.comparison}</a>
-            <a href="#integrations" className="hover:text-slate-900 dark:hover:text-white">{t.nav.integrations}</a>
-            <a href="#faq" className="hover:text-slate-900 dark:hover:text-white">{t.nav.faq}</a>
+          <nav className="hidden items-center gap-6 text-sm text-content md:flex">
+            <a href="#features" className="hover:text-content-strong">{t.nav.features}</a>
+            <a href="#comparison" className="hover:text-content-strong">{t.nav.comparison}</a>
+            <a href="#integrations" className="hover:text-content-strong">{t.nav.integrations}</a>
+            <a href="#faq" className="hover:text-content-strong">{t.nav.faq}</a>
           </nav>
           <div className="flex items-center gap-2">
             <LanguageSwitcher current={lang} />
+            <ThemeSwitcher />
             {session ? (
               <Link
                 href="/dashboard"
-                className={`rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 ${CTA_MOTION}`}
+                className={`rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover ${CTA_MOTION}`}
               >
                 {t.nav.dashboard}
               </Link>
@@ -152,13 +154,13 @@ export default async function HomePage() {
               <>
                 <Link
                   href="/login"
-                  className="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white sm:inline-block"
+                  className="hidden rounded-lg px-3 py-2 text-sm font-medium text-content hover:text-content-strong sm:inline-block"
                 >
                   {t.nav.login}
                 </Link>
                 <Link
                   href="/signup"
-                  className={`rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 sm:px-4 ${CTA_MOTION}`}
+                  className={`rounded-lg bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover sm:px-4 ${CTA_MOTION}`}
                 >
                   {t.nav.cta}
                 </Link>
@@ -174,29 +176,29 @@ export default async function HomePage() {
           <div>
             <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl md:text-5xl">
               {t.hero.titlePre}{" "}
-              <span className="text-indigo-600 dark:text-indigo-400">
+              <span className="text-accent-text">
                 {t.hero.titleHighlight}
               </span>
             </h1>
-            <p className="mt-5 text-base text-slate-600 dark:text-slate-300 sm:text-lg">
+            <p className="mt-5 text-base text-content sm:text-lg">
               {t.hero.subtitle}
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 href="/signup"
-                className={`rounded-lg bg-indigo-600 px-6 py-3 text-center font-medium text-white hover:bg-indigo-700 ${CTA_MOTION}`}
+                className={`rounded-lg bg-accent px-6 py-3 text-center font-medium text-white hover:bg-accent-hover ${CTA_MOTION}`}
               >
                 {t.hero.ctaPrimary}
               </Link>
               <Link
                 href="/docs/self-hosting"
-                className={`rounded-lg border border-slate-300 px-6 py-3 text-center font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900 ${CTA_MOTION}`}
+                className={`rounded-lg border border-hairline-strong px-6 py-3 text-center font-medium text-content hover:bg-surface-muted ${CTA_MOTION}`}
               >
                 {t.hero.ctaSecondary}
               </Link>
             </div>
             {/* Trust badges (PRD §11.3.1) */}
-            <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-slate-500 dark:text-slate-400">
+            <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-content-muted">
               {t.hero.badges.map((b) => (
                 <span key={b}>{b}</span>
               ))}
@@ -207,23 +209,23 @@ export default async function HomePage() {
       </section>
 
       {/* 2. Social Proof Bar */}
-      <section className="border-y border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-6 gap-y-3 px-4 py-6 text-sm text-slate-500 dark:text-slate-400 sm:gap-x-12">
+      <section className="border-y border-hairline-subtle bg-surface">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-6 gap-y-3 px-4 py-6 text-sm text-content-muted sm:gap-x-12">
           <span className="flex items-center gap-2">
             <TFIcon name="stars" className="h-5 w-5" />
-            <b className="text-slate-700 dark:text-slate-200">{stars !== null ? stars.toLocaleString(lang === "id" ? "id-ID" : "en-US") : "—"}</b> {t.socialProof.stars}
+            <b className="text-content-strong">{stars !== null ? stars.toLocaleString(lang === "id" ? "id-ID" : "en-US") : "—"}</b> {t.socialProof.stars}
           </span>
           <span className="flex items-center gap-2">
             <TFIcon name="docker-setup" className="h-5 w-5" />
-            <b className="text-slate-700 dark:text-slate-200">{t.socialProof.dockerB}</b> {t.socialProof.docker}
+            <b className="text-content-strong">{t.socialProof.dockerB}</b> {t.socialProof.docker}
           </span>
           <span className="flex items-center gap-2">
             <TFIcon name="frameworks" className="h-5 w-5" />
-            <b className="text-slate-700 dark:text-slate-200">{t.socialProof.frameworksB}</b> {t.socialProof.frameworks}
+            <b className="text-content-strong">{t.socialProof.frameworksB}</b> {t.socialProof.frameworks}
           </span>
           <span className="flex items-center gap-2">
             <TFIcon name="geo" className="h-5 w-5" />
-            {t.socialProof.region} <b className="text-slate-700 dark:text-slate-200">{t.socialProof.regionB}</b>
+            {t.socialProof.region} <b className="text-content-strong">{t.socialProof.regionB}</b>
           </span>
         </div>
       </section>
@@ -231,7 +233,7 @@ export default async function HomePage() {
       {/* 3. Problem Statement */}
       <section className="mx-auto max-w-3xl px-4 py-16 text-center">
         <h2 className="text-2xl font-bold md:text-3xl">{t.problem.title}</h2>
-        <p className="mt-4 text-slate-600 dark:text-slate-300">{t.problem.body}</p>
+        <p className="mt-4 text-content">{t.problem.body}</p>
       </section>
 
       {/* 4. Fitur Unggulan */}
@@ -241,41 +243,41 @@ export default async function HomePage() {
           {t.features.items.map((f) => (
             <div
               key={f.title}
-              className="rounded-2xl border border-slate-200 p-6 dark:border-slate-800"
+              className="rounded-2xl border border-hairline p-6"
             >
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-accent-tint dark:bg-indigo-950">
+              <div className="grid h-11 w-11 place-items-center rounded-xl bg-accent-soft">
                 <TFIcon name={f.icon} className="h-6 w-6" />
               </div>
               <h3 className="mt-3 font-semibold">{f.title}</h3>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{f.desc}</p>
+              <p className="mt-2 text-sm text-content-muted">{f.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* 5. Perbandingan Kompetitor (PRD §11.4) */}
-      <section id="comparison" className="scroll-mt-20 bg-slate-50 py-16 dark:bg-slate-900">
+      <section id="comparison" className="scroll-mt-20 bg-canvas py-16">
         <div className="mx-auto max-w-4xl px-4">
           <SectionTitle kicker={t.comparison.kicker} title={t.comparison.title} />
-          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-950">
+          <div className="overflow-x-auto rounded-xl border border-hairline bg-surface">
             <table className="w-full min-w-[520px] text-sm">
               <thead>
-                <tr className="border-b border-slate-200 text-left dark:border-slate-700">
+                <tr className="border-b border-hairline text-left">
                   <th className="px-5 py-3.5">{t.comparison.headFeature}</th>
-                  <th className="px-5 py-3.5 text-slate-500">TestRail</th>
-                  <th className="px-5 py-3.5 text-slate-500">Qase.io</th>
-                  <th className="bg-indigo-50 px-5 py-3.5 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                  <th className="px-5 py-3.5 text-content-muted">TestRail</th>
+                  <th className="px-5 py-3.5 text-content-muted">Qase.io</th>
+                  <th className="bg-accent-soft px-5 py-3.5 text-accent-soft-fg">
                     TestForge
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-hairline-subtle">
                 {t.comparison.rows.map(([feat, tr, qa, tf]) => (
                   <tr key={feat}>
                     <td className="px-5 py-3 font-medium">{feat}</td>
-                    <td className="px-5 py-3 text-slate-500">{tr}</td>
-                    <td className="px-5 py-3 text-slate-500">{qa}</td>
-                    <td className="bg-indigo-50/50 px-5 py-3 font-semibold text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300">
+                    <td className="px-5 py-3 text-content-muted">{tr}</td>
+                    <td className="px-5 py-3 text-content-muted">{qa}</td>
+                    <td className="bg-accent-soft/50 px-5 py-3 font-semibold text-accent-soft-fg">
                       {tf}
                     </td>
                   </tr>
@@ -286,7 +288,7 @@ export default async function HomePage() {
           <div className="mt-8 text-center">
             <Link
               href="/signup"
-              className={`rounded-lg bg-indigo-600 px-6 py-3 font-medium text-white hover:bg-indigo-700 ${CTA_MOTION}`}
+              className={`rounded-lg bg-accent px-6 py-3 font-medium text-white hover:bg-accent-hover ${CTA_MOTION}`}
             >
               {t.comparison.cta}
             </Link>
@@ -299,16 +301,16 @@ export default async function HomePage() {
         <SectionTitle kicker={t.demo.kicker} title={t.demo.title} />
         <div className="grid gap-6 md:grid-cols-3">
           {t.demo.items.map((d) => (
-            <div key={d.title} className="rounded-xl border border-slate-200 p-6 dark:border-slate-800">
+            <div key={d.title} className="rounded-xl border border-hairline p-6">
               <h3 className="font-semibold">{d.title}</h3>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{d.desc}</p>
+              <p className="mt-2 text-sm text-content-muted">{d.desc}</p>
             </div>
           ))}
         </div>
         <div className="mt-8 text-center">
           <Link
             href="/login"
-            className={`rounded-lg border border-indigo-300 px-6 py-3 font-medium text-indigo-700 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-950 ${CTA_MOTION}`}
+            className={`rounded-lg border border-accent-ring px-6 py-3 font-medium text-accent-soft-fg hover:bg-accent-soft ${CTA_MOTION}`}
           >
             {t.demo.cta}
           </Link>
@@ -316,7 +318,7 @@ export default async function HomePage() {
       </section>
 
       {/* 7. Integrasi */}
-      <section id="integrations" className="scroll-mt-20 bg-slate-50 py-16 dark:bg-slate-900">
+      <section id="integrations" className="scroll-mt-20 bg-canvas py-16">
         <div className="mx-auto max-w-4xl px-4">
           <SectionTitle kicker={t.integrations.kicker} title={t.integrations.title} />
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
@@ -325,7 +327,7 @@ export default async function HomePage() {
               return (
                 <div
                   key={name}
-                  className="flex flex-col items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-4 text-center text-xs font-medium leading-tight text-slate-600 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 sm:px-3 sm:text-sm"
+                  className="flex flex-col items-center gap-2 rounded-lg border border-hairline bg-surface px-2 py-4 text-center text-xs font-medium leading-tight text-content sm:px-3 sm:text-sm"
                 >
                   <BrandIcon name={brandId} className="h-6 w-6" />
                   {name}
@@ -343,14 +345,14 @@ export default async function HomePage() {
           {t.testimonials.items.map((tm) => (
             <figure
               key={tm.name}
-              className="rounded-xl border border-slate-200 p-6 dark:border-slate-800"
+              className="rounded-xl border border-hairline p-6"
             >
-              <blockquote className="text-sm text-slate-600 dark:text-slate-300">
+              <blockquote className="text-sm text-content">
                 &ldquo;{tm.quote}&rdquo;
               </blockquote>
               <figcaption className="mt-4 text-sm">
                 <span className="font-semibold">{tm.name}</span>
-                <span className="block text-xs text-slate-400">{tm.role}</span>
+                <span className="block text-xs text-content-subtle">{tm.role}</span>
               </figcaption>
             </figure>
           ))}
@@ -358,18 +360,18 @@ export default async function HomePage() {
       </section>
 
       {/* 9. Open Source CTA */}
-      <section className="bg-slate-900 py-16 text-white dark:bg-slate-900">
+      <section className="bg-sidebar py-16 text-white">
         <div className="mx-auto max-w-3xl px-4 text-center">
-          <p className="font-mono text-xs font-medium uppercase tracking-[.16em] text-indigo-400">
+          <p className="font-mono text-xs font-medium uppercase tracking-[.16em] text-accent-ring">
             {t.openSource.kicker}
           </p>
           <h2 className="mt-2 text-2xl font-bold sm:text-3xl">{t.openSource.title}</h2>
-          <p className="mt-4 text-slate-300">{t.openSource.body}</p>
+          <p className="mt-4 text-sidebar-fg">{t.openSource.body}</p>
           <a
             href={`https://github.com/${GITHUB_REPO}`}
             target="_blank"
             rel="noopener noreferrer"
-            className={`mt-6 inline-flex items-center gap-2 rounded-lg bg-white px-6 py-3 font-medium text-slate-900 hover:bg-slate-100 ${CTA_MOTION}`}
+            className={`mt-6 inline-flex items-center gap-2 rounded-lg bg-surface px-6 py-3 font-medium text-content-strong hover:bg-surface-muted ${CTA_MOTION}`}
           >
             <TFIcon name="stars" className="h-5 w-5" />
             {t.openSource.cta}
@@ -379,14 +381,14 @@ export default async function HomePage() {
 
       {/* 10. Pricing Banner */}
       <section className="mx-auto max-w-4xl px-4 py-16 text-center">
-        <div className="rounded-2xl border-2 border-indigo-200 bg-indigo-50 p-6 dark:border-indigo-900 dark:bg-indigo-950 sm:p-10">
+        <div className="rounded-2xl border-2 border-accent-ring bg-accent-soft p-6 sm:p-10">
           <h2 className="text-2xl font-bold sm:text-3xl">{t.pricing.title}</h2>
-          <p className="mx-auto mt-3 max-w-xl text-slate-600 dark:text-slate-300">
+          <p className="mx-auto mt-3 max-w-xl text-content">
             {t.pricing.body}
           </p>
           <Link
             href="/signup"
-            className={`mt-6 inline-block rounded-lg bg-indigo-600 px-8 py-3 font-medium text-white hover:bg-indigo-700 ${CTA_MOTION}`}
+            className={`mt-6 inline-block rounded-lg bg-accent px-8 py-3 font-medium text-white hover:bg-accent-hover ${CTA_MOTION}`}
           >
             {t.pricing.cta}
           </Link>
@@ -400,59 +402,59 @@ export default async function HomePage() {
           {t.faq.items.map((f) => (
             <details
               key={f.q}
-              className="group rounded-xl border border-slate-200 p-5 dark:border-slate-800"
+              className="group rounded-xl border border-hairline p-5"
             >
               <summary className="cursor-pointer list-none font-medium">
                 {f.q}
-                <span className="float-right text-slate-400 motion-safe:group-open:rotate-45 motion-safe:transition-transform motion-safe:duration-panel motion-safe:ease-tf-out">
+                <span className="float-right text-content-subtle motion-safe:group-open:rotate-45 motion-safe:transition-transform motion-safe:duration-panel motion-safe:ease-tf-out">
                   ＋
                 </span>
               </summary>
-              <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">{f.a}</p>
+              <p className="mt-3 text-sm text-content-muted">{f.a}</p>
             </details>
           ))}
         </div>
       </section>
 
       {/* 12. Footer */}
-      <footer className="border-t border-slate-100 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
+      <footer className="border-t border-hairline-subtle bg-canvas">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 md:grid-cols-4">
           <div>
             <Logo size="sm" />
-            <p className="mt-2 text-sm text-slate-500">{t.footer.tagline}</p>
+            <p className="mt-2 text-sm text-content-muted">{t.footer.tagline}</p>
           </div>
           <div className="text-sm">
             <p className="font-semibold">{t.footer.product}</p>
-            <ul className="mt-3 space-y-2 text-slate-500">
-              <li><a href="#features" className="hover:text-slate-900 dark:hover:text-white">{t.footer.features}</a></li>
-              <li><a href="#comparison" className="hover:text-slate-900 dark:hover:text-white">{t.footer.comparison}</a></li>
-              <li><Link href="/docs/self-hosting" className="hover:text-slate-900 dark:hover:text-white">{t.footer.selfHosting}</Link></li>
-              <li><Link href="/signup" className="hover:text-slate-900 dark:hover:text-white">{t.footer.signup}</Link></li>
+            <ul className="mt-3 space-y-2 text-content-muted">
+              <li><a href="#features" className="hover:text-content-strong">{t.footer.features}</a></li>
+              <li><a href="#comparison" className="hover:text-content-strong">{t.footer.comparison}</a></li>
+              <li><Link href="/docs/self-hosting" className="hover:text-content-strong">{t.footer.selfHosting}</Link></li>
+              <li><Link href="/signup" className="hover:text-content-strong">{t.footer.signup}</Link></li>
             </ul>
           </div>
           <div className="text-sm">
             <p className="font-semibold">{t.footer.community}</p>
-            <ul className="mt-3 space-y-2 text-slate-500">
+            <ul className="mt-3 space-y-2 text-content-muted">
               <li>
-                <a href={`https://github.com/${GITHUB_REPO}`} target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 dark:hover:text-white">
+                <a href={`https://github.com/${GITHUB_REPO}`} target="_blank" rel="noopener noreferrer" className="hover:text-content-strong">
                   GitHub
                 </a>
               </li>
-              <li><a href="#" className="hover:text-slate-900 dark:hover:text-white">Discord</a></li>
-              <li><a href="#" className="hover:text-slate-900 dark:hover:text-white">{t.footer.docs}</a></li>
+              <li><a href="#" className="hover:text-content-strong">Discord</a></li>
+              <li><a href="#" className="hover:text-content-strong">{t.footer.docs}</a></li>
             </ul>
           </div>
           <div className="text-sm">
             <p className="font-semibold">{t.footer.legal}</p>
-            <ul className="mt-3 space-y-2 text-slate-500">
-              <li><Link href="/terms" className="hover:text-slate-900 dark:hover:text-white">{t.footer.terms}</Link></li>
-              <li><Link href="/privacy" className="hover:text-slate-900 dark:hover:text-white">{t.footer.privacy}</Link></li>
+            <ul className="mt-3 space-y-2 text-content-muted">
+              <li><Link href="/terms" className="hover:text-content-strong">{t.footer.terms}</Link></li>
+              <li><Link href="/privacy" className="hover:text-content-strong">{t.footer.privacy}</Link></li>
             </ul>
           </div>
         </div>
-        <p className="border-t border-slate-100 py-5 text-center text-xs text-slate-400 dark:border-slate-800">
+        <p className="border-t border-hairline-subtle py-5 text-center text-xs text-content-subtle">
           © {new Date().getFullYear()} TestForge. MIT License. · Part of{" "}
-          <a href="https://emha.space" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600 dark:hover:text-slate-200">
+          <a href="https://emha.space" target="_blank" rel="noopener noreferrer" className="underline hover:text-content-muted">
             EMHA Universe
           </a>
         </p>

@@ -30,12 +30,12 @@ const DELTA_ORDER: Delta[] = [
 ];
 
 const DELTA_META: Record<Delta, { arrow: string; label: string; cls: string }> = {
-  REGRESSION: { arrow: "↓", label: "Regressed", cls: "text-red-600" },
-  FIXED: { arrow: "↑", label: "Fixed", cls: "text-green-600" },
-  CHANGED: { arrow: "→", label: "Changed", cls: "text-amber-600" },
-  ONLY_A: { arrow: "−", label: "Only in A", cls: "text-slate-400" },
-  ONLY_B: { arrow: "+", label: "Only in B", cls: "text-slate-400" },
-  SAME: { arrow: "=", label: "Same", cls: "text-slate-300" },
+  REGRESSION: { arrow: "↓", label: "Regressed", cls: "text-danger" },
+  FIXED: { arrow: "↑", label: "Fixed", cls: "text-success" },
+  CHANGED: { arrow: "→", label: "Changed", cls: "text-warning" },
+  ONLY_A: { arrow: "−", label: "Only in A", cls: "text-content-subtle" },
+  ONLY_B: { arrow: "+", label: "Only in B", cls: "text-content-subtle" },
+  SAME: { arrow: "=", label: "Same", cls: "text-content-subtle" },
 };
 
 export default async function RunComparePage({
@@ -56,12 +56,12 @@ export default async function RunComparePage({
     return (
       <div className="space-y-6">
         <ProjectTabs slug={project.slug} name={project.name} active="runs" />
-        <div className="rounded-xl border border-dashed border-slate-300 p-10 text-center text-sm text-slate-400">
+        <div className="rounded-xl border border-dashed border-hairline-strong p-10 text-center text-sm text-content-subtle">
           Pick two different runs to compare — check &quot;Compare&quot; on two
           runs in the{" "}
           <Link
             href={`/projects/${project.slug}/runs`}
-            className="text-indigo-600 hover:underline"
+            className="text-accent-text hover:underline"
           >
             runs list
           </Link>
@@ -139,15 +139,15 @@ export default async function RunComparePage({
   const changed = counted.filter((r) => r.delta === "CHANGED").length;
 
   const runHeader = (run: NonNullable<typeof runA>, tag: "A" | "B") => (
-    <div className="flex-1 rounded-xl border border-slate-200 bg-white p-4">
-      <p className="text-xs font-semibold uppercase text-slate-400">Run {tag}</p>
+    <div className="flex-1 rounded-xl border border-hairline bg-surface p-4">
+      <p className="text-xs font-semibold uppercase text-content-subtle">Run {tag}</p>
       <Link
         href={`/projects/${project.slug}/runs/${run.id}`}
-        className="font-medium text-indigo-600 hover:underline"
+        className="font-medium text-accent-text hover:underline"
       >
         {run.name}
       </Link>
-      <p className="mt-0.5 text-xs text-slate-400">
+      <p className="mt-0.5 text-xs text-content-subtle">
         {run.createdAt.toLocaleDateString("en-US")}
         {run.environment && <> · {run.environment.name}</>}
         {" · "}
@@ -158,7 +158,7 @@ export default async function RunComparePage({
 
   const badge = (status: string | null) =>
     status == null ? (
-      <span className="text-xs text-slate-300">—</span>
+      <span className="text-xs text-content-subtle">—</span>
     ) : (
       <span
         className="rounded-full px-2 py-0.5 text-xs font-medium"
@@ -186,7 +186,7 @@ export default async function RunComparePage({
       <div className="flex flex-wrap gap-3 text-sm">
         <span
           className={`rounded-lg px-3 py-1.5 font-medium ${
-            regressions > 0 ? "bg-red-100 text-red-700" : "bg-slate-100 text-slate-500"
+            regressions > 0 ? "bg-danger-soft text-danger-soft-fg" : "bg-surface-muted text-content-muted"
           }`}
           data-testid="compare-regressions"
         >
@@ -194,21 +194,21 @@ export default async function RunComparePage({
         </span>
         <span
           className={`rounded-lg px-3 py-1.5 font-medium ${
-            fixes > 0 ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"
+            fixes > 0 ? "bg-success-soft text-success-soft-fg" : "bg-surface-muted text-content-muted"
           }`}
           data-testid="compare-fixes"
         >
           ↑ {fixes} fixed
         </span>
-        <span className="rounded-lg bg-slate-100 px-3 py-1.5 font-medium text-slate-500" data-testid="compare-changed">
+        <span className="rounded-lg bg-surface-muted px-3 py-1.5 font-medium text-content-muted" data-testid="compare-changed">
           → {changed} changed
         </span>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-hairline bg-surface">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 text-left text-xs uppercase text-slate-400">
+            <tr className="border-b border-hairline text-left text-xs uppercase text-content-subtle">
               <th className="px-4 py-3">Case</th>
               <th className="px-4 py-3">Status in A</th>
               <th className="px-4 py-3 text-center">Δ</th>
@@ -222,21 +222,21 @@ export default async function RunComparePage({
               return (
                 <tr
                   key={r.key}
-                  className="border-b border-slate-100 last:border-0"
+                  className="border-b border-hairline-subtle last:border-0"
                   data-testid={`compare-row-${caseDisplayId(project.slug, r.seq)}${r.datasetName ? `-${r.datasetName}` : ""}`}
                 >
                   <td className="px-4 py-2.5">
-                    <span className="font-mono text-xs text-slate-400">
+                    <span className="font-mono text-xs text-content-subtle">
                       {caseDisplayId(project.slug, r.seq)}
                     </span>{" "}
                     {r.title}
                     {r.datasetName && (
-                      <span className="ml-1 rounded bg-indigo-50 px-1.5 py-0.5 text-xs text-indigo-700">
+                      <span className="ml-1 rounded bg-accent-soft px-1.5 py-0.5 text-xs text-accent-soft-fg">
                         {r.datasetName}
                       </span>
                     )}
                     {r.muted && (
-                      <span className="ml-1 rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">
+                      <span className="ml-1 rounded bg-surface-muted px-1.5 py-0.5 text-xs text-content-muted">
                         muted
                       </span>
                     )}
@@ -254,7 +254,7 @@ export default async function RunComparePage({
             })}
             {table.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-slate-400">
+                <td colSpan={5} className="px-4 py-10 text-center text-content-subtle">
                   Neither run has any results.
                 </td>
               </tr>

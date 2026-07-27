@@ -11,6 +11,7 @@
   "scripts": {
     "dev": "next dev",
     "prebuild": "node scripts/totp-selftest.mjs && node scripts/backup-selfcheck.mjs",
+    "check:theme": "node scripts/check-theme-tokens.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

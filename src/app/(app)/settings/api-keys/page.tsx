@@ -26,14 +26,14 @@ export default async function ApiKeysPage() {
     <div className="max-w-3xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold">API Keys</h1>
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-content-muted">
           For CI/CD and REST API authentication. Keys are hashed in the database
           and shown only once when created.{" "}
           <a
             href="/docs/api"
             target="_blank"
             rel="noreferrer"
-            className="font-medium text-indigo-600 hover:underline"
+            className="font-medium text-accent-text hover:underline"
           >
             View API reference →
           </a>
@@ -42,9 +42,9 @@ export default async function ApiKeysPage() {
 
       <ApiKeyCreator projects={projects} />
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-xl border border-hairline bg-surface">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase text-slate-500">
+          <thead className="bg-canvas text-left text-xs uppercase text-content-muted">
             <tr>
               <th className="px-5 py-3">Name</th>
               <th className="px-5 py-3">Key</th>
@@ -55,19 +55,19 @@ export default async function ApiKeysPage() {
               <th className="px-5 py-3"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-hairline-subtle">
             {keys.map((k) => (
               <tr key={k.id}>
                 <td className="px-5 py-3 font-medium">{k.name}</td>
-                <td className="px-5 py-3 font-mono text-xs text-slate-500">
+                <td className="px-5 py-3 font-mono text-xs text-content-muted">
                   {k.prefix}••••••••
                 </td>
                 <td className="px-5 py-3">
                   <span
                     className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                       k.scope === "READ"
-                        ? "bg-slate-100 text-slate-600"
-                        : "bg-indigo-100 text-indigo-700"
+                        ? "bg-surface-muted text-content"
+                        : "bg-accent-soft text-accent-soft-fg"
                     }`}
                   >
                     {k.scope === "READ" ? "Read-only" : "Read & write"}
@@ -75,17 +75,17 @@ export default async function ApiKeysPage() {
                 </td>
                 <td className="px-5 py-3 text-xs">
                   {k.project ? (
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 font-medium text-amber-800">
+                    <span className="rounded-full bg-warning-soft px-2 py-0.5 font-medium text-warning-soft-fg">
                       {k.project.name}
                     </span>
                   ) : (
-                    <span className="text-slate-400">All projects</span>
+                    <span className="text-content-subtle">All projects</span>
                   )}
                 </td>
-                <td className="px-5 py-3 text-xs text-slate-500">
+                <td className="px-5 py-3 text-xs text-content-muted">
                   {k.rateLimitPerMin ? `${k.rateLimitPerMin}/min` : "Default"}
                 </td>
-                <td className="px-5 py-3 text-xs text-slate-500">
+                <td className="px-5 py-3 text-xs text-content-muted">
                   {k.lastUsedAt
                     ? k.lastUsedAt.toLocaleString("en-US")
                     : "Never"}
@@ -97,7 +97,7 @@ export default async function ApiKeysPage() {
             ))}
             {keys.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-5 py-8 text-center text-slate-400">
+                <td colSpan={7} className="px-5 py-8 text-center text-content-subtle">
                   No API keys yet.
                 </td>
               </tr>

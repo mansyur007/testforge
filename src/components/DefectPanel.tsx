@@ -19,11 +19,11 @@ export type DefectLinkView = {
 export type ProjectDefectOption = { id: string; displayId: string; title: string };
 
 const STATUS_BADGE: Record<string, string> = {
-  OPEN: "bg-amber-100 text-amber-800",
-  CONFIRMED: "bg-blue-100 text-blue-800",
-  FIXED: "bg-green-100 text-green-800",
-  WONT_FIX: "bg-slate-100 text-slate-500",
-  CLOSED: "bg-gray-100 text-gray-500",
+  OPEN: "bg-warning-soft text-warning-soft-fg",
+  CONFIRMED: "bg-info-soft text-info-soft-fg",
+  FIXED: "bg-success-soft text-success-soft-fg",
+  WONT_FIX: "bg-surface-muted text-content-muted",
+  CLOSED: "bg-surface-muted text-content-muted",
 };
 
 export function DefectPanel({
@@ -62,7 +62,7 @@ export function DefectPanel({
                   <button
                     type="submit"
                     title="Unlink"
-                    className="text-xs text-slate-300 hover:text-red-600"
+                    className="text-xs text-content-subtle hover:text-danger"
                   >
                     ✕
                   </button>
@@ -81,7 +81,7 @@ export function DefectPanel({
                 type="button"
                 onClick={() => setMode("link")}
                 data-testid="defect-link-open"
-                className="rounded-lg border border-slate-300 px-2.5 py-1 text-xs hover:bg-slate-50"
+                className="rounded-lg border border-hairline-strong px-2.5 py-1 text-xs hover:bg-canvas"
               >
                 Link defect
               </button>
@@ -89,7 +89,7 @@ export function DefectPanel({
                 type="button"
                 onClick={() => setMode("new")}
                 data-testid="defect-new-open"
-                className="rounded-lg border border-slate-300 px-2.5 py-1 text-xs hover:bg-slate-50"
+                className="rounded-lg border border-hairline-strong px-2.5 py-1 text-xs hover:bg-canvas"
               >
                 Report defect
               </button>
@@ -108,7 +108,7 @@ export function DefectPanel({
                 name="defectId"
                 required
                 data-testid="defect-link-select"
-                className="min-w-48 flex-1 rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
+                className="bg-surface text-content-strong min-w-48 flex-1 rounded-lg border border-hairline-strong px-2 py-1.5 text-xs"
               >
                 {projectDefects
                   .filter((d) => !links.some((l) => l.defectId === d.id))
@@ -119,7 +119,7 @@ export function DefectPanel({
                   ))}
               </select>
               <button
-                className="rounded-lg bg-slate-800 px-2.5 py-1 text-xs text-white hover:bg-slate-700"
+                className="rounded-lg bg-sidebar px-2.5 py-1 text-xs text-white hover:bg-sidebar-hover"
                 data-testid="defect-link-submit"
               >
                 Link
@@ -127,7 +127,7 @@ export function DefectPanel({
               <button
                 type="button"
                 onClick={() => setMode("idle")}
-                className="text-xs text-slate-400 hover:text-slate-600"
+                className="text-xs text-content-subtle hover:text-content"
               >
                 Cancel
               </button>
@@ -147,13 +147,13 @@ export function DefectPanel({
                 required
                 placeholder="Defect title"
                 data-testid="defect-new-title"
-                className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
+                className="bg-surface text-content-strong w-full rounded-lg border border-hairline-strong px-2 py-1.5 text-xs"
               />
               <div className="flex items-center gap-2">
                 <select
                   name="severity"
                   defaultValue="MEDIUM"
-                  className="rounded-lg border border-slate-300 px-2 py-1.5 text-xs"
+                  className="bg-surface text-content-strong rounded-lg border border-hairline-strong px-2 py-1.5 text-xs"
                 >
                   <option value="CRITICAL">Critical</option>
                   <option value="HIGH">High</option>
@@ -161,7 +161,7 @@ export function DefectPanel({
                   <option value="LOW">Low</option>
                 </select>
                 <button
-                  className="rounded-lg bg-indigo-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-indigo-700"
+                  className="rounded-lg bg-accent px-2.5 py-1 text-xs font-medium text-white hover:bg-accent-hover"
                   data-testid="defect-new-submit"
                 >
                   Report
@@ -169,7 +169,7 @@ export function DefectPanel({
                 <button
                   type="button"
                   onClick={() => setMode("idle")}
-                  className="text-xs text-slate-400 hover:text-slate-600"
+                  className="text-xs text-content-subtle hover:text-content"
                 >
                   Cancel
                 </button>

@@ -26,7 +26,7 @@ export function CompletePlanButton({
       <input type="hidden" name="planId" value={planId} />
       <button
         data-testid="plan-complete"
-        className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700"
+        className="rounded-lg bg-success px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
       >
         ✓ Complete Plan
       </button>

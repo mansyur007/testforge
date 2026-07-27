@@ -47,7 +47,7 @@ test(`TC-${TC}-64 Exploratory sessions: hotkey notes, IDEA→draft case, end ses
   // 2. Hotkey "b" selects BUG, then submit a note.
   await blurActiveElement(page);
   await page.keyboard.press("b");
-  await expect(page.locator('[data-testid="session-kind-BUG"]')).toHaveClass(/bg-red-100/);
+  await expect(page.locator('[data-testid="session-kind-BUG"]')).toHaveClass(/bg-danger-soft/);
   await page.fill(
     '[data-testid="session-note-input"]',
     `Filter dropdown overlaps results on narrow viewports ${ts}`
@@ -60,7 +60,7 @@ test(`TC-${TC}-64 Exploratory sessions: hotkey notes, IDEA→draft case, end ses
   // 3. Hotkey "i" selects IDEA, then submit a note.
   await blurActiveElement(page);
   await page.keyboard.press("i");
-  await expect(page.locator('[data-testid="session-kind-IDEA"]')).toHaveClass(/bg-indigo-100/);
+  await expect(page.locator('[data-testid="session-kind-IDEA"]')).toHaveClass(/bg-accent-soft/);
   const ideaText = `Add a case for filtering by multiple tags at once ${ts}`;
   await page.fill('[data-testid="session-note-input"]', ideaText);
   await page.click('[data-testid="session-note-submit"]');
