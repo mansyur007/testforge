@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Logo } from "@/components/icons";
 import { cookies } from "next/headers";
 import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
@@ -5,6 +6,14 @@ import { LoginForm } from "@/components/LoginForm";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { oidcConfig } from "@/lib/oidc";
 import { ldapEnabled } from "@/lib/ldap";
+import { canonical } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  title: "Log In — TestForge",
+  description:
+    "Log in to TestForge — open source test case management for manual and automated testing.",
+  alternates: canonical("/login"),
+};
 
 export const dynamic = "force-dynamic";
 

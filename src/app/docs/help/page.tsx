@@ -2,15 +2,45 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Logo, TFIcon } from "@/components/icons";
 import { HELP_TOPICS } from "@/content/help";
+import { JsonLd } from "@/components/JsonLd";
+import { absoluteUrl, breadcrumbLd, canonical, ldGraph } from "@/lib/seo";
+
+const DESCRIPTION =
+  "Guides for using TestForge: test cases, runs, plans, automation, and more.";
 
 export const metadata: Metadata = {
   title: "Help — TestForge",
-  description: "Guides for using TestForge: test cases, runs, plans, automation, and more.",
+  description: DESCRIPTION,
+  alternates: canonical("/docs/help"),
+  openGraph: {
+    type: "website",
+    siteName: "TestForge",
+    url: "/docs/help",
+    title: "Help — TestForge",
+    description: DESCRIPTION,
+  },
 };
 
 export default function HelpIndexPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
+      <JsonLd
+        data={ldGraph(
+          breadcrumbLd([
+            { name: "TestForge", path: "/" },
+            { name: "Help", path: "/docs/help" },
+          ]),
+          {
+            "@type": "ItemList",
+            itemListElement: HELP_TOPICS.map((t, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              name: t.title,
+              url: absoluteUrl(`/docs/help/${t.slug}`),
+            })),
+          },
+        )}
+      />
       <div className="mb-8 flex items-center justify-between">
         <Logo size="sm" />
         <Link href="/dashboard" className="text-sm text-accent-text hover:underline">

@@ -6,17 +6,31 @@ import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { Logo, TFIcon, BrandIcon } from "@/components/icons";
+import { JsonLd } from "@/components/JsonLd";
+import {
+  canonical,
+  faqLd,
+  ldGraph,
+  organizationLd,
+  softwareApplicationLd,
+  websiteLd,
+} from "@/lib/seo";
 
 // HP-008: SEO metadata + OG (default English)
 export const metadata: Metadata = {
   title: "TestForge — Test Management That Doesn't Cost a Thing",
   description:
     "Manage manual and automation test cases in one platform. Open source, self-hosted, 100% free forever. The free alternative to TestRail, Qase.io, and Zephyr.",
+  // Next merges metadata shallowly: this object REPLACES the root layout's
+  // openGraph, so siteName/locale/url are repeated here rather than inherited.
   openGraph: {
     title: "TestForge — Open Source Test Case Management",
     description:
       "Manual + automation testing in one platform. Free forever, unlimited users.",
     type: "website",
+    siteName: "TestForge",
+    locale: "en_US",
+    url: "/",
   },
   // Gambarnya datang dari src/app/opengraph-image.tsx (konvensi file Next);
   // X/Twitter memakai og:image itu selama card-nya besar.
@@ -26,6 +40,7 @@ export const metadata: Metadata = {
     description:
       "Manual + automation testing in one platform. Free forever, unlimited users.",
   },
+  alternates: canonical("/"),
 };
 
 const GITHUB_REPO = process.env.NEXT_PUBLIC_GITHUB_REPO ?? "mansyur007/testforge";
@@ -130,6 +145,18 @@ export default async function HomePage() {
 
   return (
     <div className="tf-landing bg-canvas text-content-strong">
+      {/* F-40: structured data. The FAQ block is the same copy rendered in the
+          #faq section below (same i18n dict), which is what Google's FAQ
+          rich-result policy requires — no hidden answers. */}
+      <JsonLd
+        data={ldGraph(
+          organizationLd(),
+          websiteLd(),
+          softwareApplicationLd({ description: t.hero.subtitle }),
+          faqLd(t.faq.items),
+        )}
+      />
+
       {/* Navbar */}
       <header className="sticky top-0 z-40 border-b border-hairline-subtle bg-canvas/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">

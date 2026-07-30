@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { Logo, TFIcon } from "@/components/icons";
 import { Markdown } from "@/components/Markdown";
 import { HELP_TOPICS, getHelpTopic } from "@/content/help";
+import { JsonLd } from "@/components/JsonLd";
+import { breadcrumbLd, canonical, ldGraph, techArticleLd } from "@/lib/seo";
 
 export function generateStaticParams() {
   return HELP_TOPICS.map((t) => ({ topic: t.slug }));
@@ -11,7 +13,24 @@ export function generateStaticParams() {
 
 export function generateMetadata({ params }: { params: { topic: string } }): Metadata {
   const topic = getHelpTopic(params.topic);
-  return { title: topic ? `${topic.title} — TestForge Help` : "Help — TestForge" };
+  if (!topic) return { title: "Help — TestForge", robots: { index: false } };
+  const title = `${topic.title} — TestForge Help`;
+  const path = `/docs/help/${topic.slug}`;
+  // F-40: every topic carries its own summary as the description — without it
+  // Google writes the snippet from whatever text it finds first, which for
+  // these pages is the sidebar nav.
+  return {
+    title,
+    description: topic.summary,
+    alternates: canonical(path),
+    openGraph: {
+      type: "article",
+      siteName: "TestForge",
+      url: path,
+      title,
+      description: topic.summary,
+    },
+  };
 }
 
 export default function HelpTopicPage({ params }: { params: { topic: string } }) {
@@ -20,6 +39,20 @@ export default function HelpTopicPage({ params }: { params: { topic: string } })
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-12">
+      <JsonLd
+        data={ldGraph(
+          techArticleLd({
+            headline: topic.title,
+            description: topic.summary,
+            path: `/docs/help/${topic.slug}`,
+          }),
+          breadcrumbLd([
+            { name: "TestForge", path: "/" },
+            { name: "Help", path: "/docs/help" },
+            { name: topic.title, path: `/docs/help/${topic.slug}` },
+          ]),
+        )}
+      />
       <div className="mb-8 flex items-center justify-between">
         <Logo size="sm" />
         <Link href="/dashboard" className="text-sm text-accent-text hover:underline">

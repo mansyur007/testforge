@@ -22,6 +22,7 @@ export async function generateMetadata({
   return publicMetadata(project, {
     title: "Test runs",
     description: `Test execution history for ${project.name}, published with TestForge.`,
+    path: "/runs",
   });
 }
 

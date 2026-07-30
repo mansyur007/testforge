@@ -3,6 +3,9 @@ import { Logo } from "@/components/icons";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { AcceptInvite } from "@/components/AcceptInvite";
+import { NOINDEX } from "@/lib/seo";
+
+export const metadata = { title: "Team invitation — TestForge", robots: NOINDEX };
 
 export const dynamic = "force-dynamic";
 

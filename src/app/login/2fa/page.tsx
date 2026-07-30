@@ -2,6 +2,9 @@ import { redirect } from "next/navigation";
 import { Logo } from "@/components/icons";
 import { readPending2fa } from "@/lib/auth";
 import { TwoFactorLoginForm } from "@/components/TwoFactorLoginForm";
+import { NOINDEX } from "@/lib/seo";
+
+export const metadata = { title: "Two-factor code — TestForge", robots: NOINDEX };
 
 export const dynamic = "force-dynamic";
 

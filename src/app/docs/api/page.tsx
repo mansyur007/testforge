@@ -1,10 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ApiDocs } from "@/components/ApiDocs";
+import { canonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "API Reference — TestForge",
-  description: "REST API reference for TestForge (OpenAPI 3.1).",
+  description:
+    "REST API reference for TestForge (OpenAPI 3.1) — projects, test cases, runs, and JUnit XML upload from any CI pipeline.",
+  alternates: canonical("/docs/api"),
+  openGraph: {
+    type: "article",
+    siteName: "TestForge",
+    url: "/docs/api",
+    title: "API Reference — TestForge",
+    description: "REST API reference for TestForge (OpenAPI 3.1).",
+  },
 };
 
 export const dynamic = "force-dynamic";

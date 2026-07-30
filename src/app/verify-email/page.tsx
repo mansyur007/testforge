@@ -4,6 +4,9 @@ import { cookies } from "next/headers";
 import { ResendVerification } from "@/components/ResendVerification";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
+import { NOINDEX } from "@/lib/seo";
+
+export const metadata = { title: "Verify email — TestForge", robots: NOINDEX };
 
 export const dynamic = "force-dynamic";
 

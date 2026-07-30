@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { BackLink } from "@/components/icons";
+import { canonical } from "@/lib/seo";
 
-export const metadata = { title: "Terms of Service — TestForge" };
+export const metadata: Metadata = {
+  title: "Terms of Service — TestForge",
+  description:
+    "Terms of service for TestForge, the open source (MIT) test case management platform.",
+  alternates: canonical("/terms"),
+};
 
 export default function TermsPage() {
   return (

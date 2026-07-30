@@ -3,6 +3,9 @@ import { cookies } from "next/headers";
 import { ForgotPasswordForm } from "@/components/ForgotPasswordForm";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
+import { NOINDEX } from "@/lib/seo";
+
+export const metadata = { title: "Reset password — TestForge", robots: NOINDEX };
 
 export const dynamic = "force-dynamic";
 
