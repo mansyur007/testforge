@@ -2,6 +2,9 @@ import { redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { OnboardingWizard } from "@/components/OnboardingWizard";
+import { NOINDEX } from "@/lib/seo";
+
+export const metadata = { title: "Get started — TestForge", robots: NOINDEX };
 
 export const dynamic = "force-dynamic";
 

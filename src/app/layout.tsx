@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import { THEME_BOOT_SCRIPT } from "@/lib/theme";
+import { INDEXABLE, SITE_NAME, SITE_URL } from "@/lib/seo";
 import "./globals.css";
 
 // Tipografi sesuai "testforge design system":
@@ -21,17 +22,52 @@ const mono = IBM_Plex_Mono({
   variable: "--font-mono",
 });
 
+const DESCRIPTION =
+  "Open source test case management platform — the free alternative to TestRail, Qase.io, and Zephyr.";
+
 export const metadata: Metadata = {
   // Tanpa metadataBase, Next menulis og:image/twitter:image sebagai
   // http://localhost:3000/... — scraper LinkedIn/WhatsApp/Slack tidak bisa
   // mengambilnya. NEXT_PUBLIC_BASE_URL di-bake saat build Docker
   // (docker-compose.prod.yml → build.args).
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000",
-  ),
+  metadataBase: new URL(SITE_URL),
   title: "TestForge — Test Case Management",
-  description:
-    "Open source test case management platform — the free alternative to TestRail, Qase.io, and Zephyr.",
+  description: DESCRIPTION,
+  applicationName: SITE_NAME,
+  // F-40: site-wide defaults every page inherits unless it overrides them.
+  // Keywords carry no ranking weight at Google, but Bing and several
+  // LLM crawlers still read them, and they cost one tag.
+  keywords: [
+    "test case management",
+    "test management tool",
+    "open source TestRail alternative",
+    "Qase alternative",
+    "Zephyr alternative",
+    "QA test management",
+    "self-hosted test management",
+    "JUnit XML reporting",
+    "test automation dashboard",
+  ],
+  authors: [{ name: "TestForge" }],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
+  category: "technology",
+  robots: INDEXABLE,
+  openGraph: {
+    type: "website",
+    siteName: SITE_NAME,
+    locale: "en_US",
+    url: "/",
+    title: "TestForge — Test Case Management",
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TestForge — Test Case Management",
+    description: DESCRIPTION,
+  },
+  // Phone-number autolinking mangles IDs like TC-WEB-001 on iOS Safari.
+  formatDetection: { telephone: false, date: false, address: false },
 };
 
 // F-36: enable installable/standalone rendering. viewport-fit: cover lets the

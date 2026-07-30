@@ -3,11 +3,23 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
 import { Logo, TFIcon, BackLink } from "@/components/icons";
+import { JsonLd } from "@/components/JsonLd";
+import { breadcrumbLd, canonical, ldGraph, techArticleLd } from "@/lib/seo";
+
+const DESCRIPTION =
+  "Deploy TestForge on your own server with a single Docker Compose command — free, open source test case management on your own infrastructure.";
 
 export const metadata: Metadata = {
   title: "Self-Hosting — TestForge",
-  description:
-    "Deploy TestForge on your own server with a single Docker Compose command.",
+  description: DESCRIPTION,
+  alternates: canonical("/docs/self-hosting"),
+  openGraph: {
+    type: "article",
+    siteName: "TestForge",
+    url: "/docs/self-hosting",
+    title: "Self-Hosting — TestForge",
+    description: DESCRIPTION,
+  },
 };
 
 export const dynamic = "force-dynamic";
@@ -22,6 +34,19 @@ export default function SelfHostingPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
+      <JsonLd
+        data={ldGraph(
+          techArticleLd({
+            headline: "Self-hosting TestForge",
+            description: DESCRIPTION,
+            path: "/docs/self-hosting",
+          }),
+          breadcrumbLd([
+            { name: "TestForge", path: "/" },
+            { name: "Self-Hosting", path: "/docs/self-hosting" },
+          ]),
+        )}
+      />
       <div className="mb-8 flex items-center justify-between">
         <Logo size="sm" />
         <BackLink href="/">{t.back}</BackLink>

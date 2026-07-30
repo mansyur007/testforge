@@ -261,6 +261,12 @@ test(`TC-${TC}-80 Public sharing: anonymous portfolio view, section + index togg
     expect(content ?? "index").not.toContain("noindex");
   }).toPass({ timeout: 15_000 });
 
+  // F-40: …and puts the project into sitemap.xml. Only indexable shares are
+  // listed, so this is the one assertion that proves the DB half of the sitemap.
+  const sitemap = await (await anon.request.get("/sitemap.xml")).text();
+  expect(sitemap).toContain(`/public/${project.slug}</loc>`);
+  expect(sitemap).toContain(`/public/${project.slug}/cases</loc>`);
+
   // 5. Section toggle off → the whole cases area 404s, overview still renders.
   await page.uncheck('[data-testid="public-share-cases-toggle"]');
   await page.click('[data-testid="public-share-save"]');

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
+import { NOINDEX } from "@/lib/seo";
 
 // F-38: the single security choke point for /public/<slug>. Every public page
 // loads its project through loadPublicProject() and nothing else — there is no
@@ -67,7 +68,7 @@ export function requireSection(
  */
 export function publicMetadata(
   project: PublicProject,
-  opts: { title?: string; description?: string } = {}
+  opts: { title?: string; description?: string; path?: string } = {}
 ): Metadata {
   const title = opts.title
     ? `${opts.title} — ${project.name} — TestForge`
@@ -77,11 +78,23 @@ export function publicMetadata(
     project.description ||
     `Test cases and QA documentation for ${project.name}, published with TestForge.`;
   const index = project.share.indexable;
+  // F-40: a section's own path, so /cases and /runs each declare themselves
+  // canonical instead of all four sections collapsing onto the overview.
+  const url = `/public/${project.slug}${opts.path ?? ""}`;
   return {
     title,
     description,
-    robots: { index, follow: index },
-    openGraph: { type: "website", title, description },
+    robots: index
+      ? { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large" } }
+      : NOINDEX,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "website",
+      siteName: "TestForge",
+      url,
+      title,
+      description,
+    },
   };
 }
 

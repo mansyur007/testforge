@@ -61,6 +61,7 @@ export async function generateMetadata({
     description:
       testCase.description ||
       `Test case ${caseDisplayId(project.slug, testCase.seq)} in ${project.name}.`,
+    path: `/cases/${params.caseId}`,
   });
 }
 

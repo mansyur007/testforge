@@ -5,6 +5,9 @@ import { redirect } from "next/navigation";
 import { verifyEmailToken } from "@/app/actions/auth";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
+import { NOINDEX } from "@/lib/seo";
+
+export const metadata = { title: "Verify email — TestForge", robots: NOINDEX };
 
 export const dynamic = "force-dynamic";
 

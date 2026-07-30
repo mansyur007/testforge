@@ -5,11 +5,21 @@ import { cookies } from "next/headers";
 import { SignupForm } from "@/components/SignupForm";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
+import { canonical } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Sign Up Free — TestForge",
   description:
     "Create a free TestForge account. No credit card, unlimited users and projects.",
+  alternates: canonical("/signup"),
+  openGraph: {
+    type: "website",
+    siteName: "TestForge",
+    url: "/signup",
+    title: "Sign Up Free — TestForge",
+    description:
+      "Create a free TestForge account. No credit card, unlimited users and projects.",
+  },
 };
 
 export const dynamic = "force-dynamic";

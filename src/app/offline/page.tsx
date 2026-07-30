@@ -1,10 +1,11 @@
 import { Logo } from "@/components/icons";
+import { NOINDEX } from "@/lib/seo";
 
 // F-36 Part B: the one page the service worker precaches. Shown when a
 // navigation fails offline. No data fetching (must render with zero network)
 // and reassurance-first copy — anything the tester recorded is safe in the
 // Part C queue and syncs automatically once they're back in range.
-export const metadata = { title: "Offline — TestForge" };
+export const metadata = { title: "Offline — TestForge", robots: NOINDEX };
 
 export default function OfflinePage() {
   return (

@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { BackLink } from "@/components/icons";
+import { canonical } from "@/lib/seo";
 
-export const metadata = { title: "Privacy Policy — TestForge" };
+export const metadata: Metadata = {
+  title: "Privacy Policy — TestForge",
+  description:
+    "How TestForge handles account data, passwords, and API keys — and why self-hosted deployments keep everything on your own server.",
+  alternates: canonical("/privacy"),
+};
 
 export default function PrivacyPage() {
   return (

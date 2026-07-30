@@ -1,14 +1,77 @@
 import type { MetadataRoute } from "next";
+import { HELP_TOPICS } from "@/content/help";
+import { db } from "@/lib/db";
+import { absoluteUrl } from "@/lib/seo";
 
 // HP-008: sitemap.xml
-export default function sitemap(): MetadataRoute.Sitemap {
-  const base = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-  return [
-    { url: base, changeFrequency: "weekly", priority: 1 },
-    { url: `${base}/signup`, changeFrequency: "monthly", priority: 0.9 },
-    { url: `${base}/login`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${base}/docs/self-hosting`, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${base}/terms`, changeFrequency: "yearly", priority: 0.3 },
-    { url: `${base}/privacy`, changeFrequency: "yearly", priority: 0.3 },
+// F-40: adds the help center (nine topics that were invisible to crawlers), the
+// API reference, and every project its owner published AND marked indexable.
+export const dynamic = "force-dynamic";
+
+/**
+ * Public projects opted into indexing (F-38). `indexable: false` shares stay
+ * out — they already render `robots: noindex`, and listing them here would
+ * advertise URLs their owners asked not to surface.
+ */
+async function publicProjectEntries(): Promise<MetadataRoute.Sitemap> {
+  try {
+    const shares = await db.publicShare.findMany({
+      where: { enabled: true, indexable: true },
+      select: {
+        updatedAt: true,
+        showCases: true,
+        project: { select: { slug: true } },
+      },
+    });
+    return shares.flatMap((share) => {
+      const base = `/public/${share.project.slug}`;
+      // `Project` has no updatedAt column, so the share row's own timestamp is
+      // the best signal available for <lastmod>.
+      const lastModified = share.updatedAt;
+      const entries: MetadataRoute.Sitemap = [
+        {
+          url: absoluteUrl(base),
+          lastModified,
+          changeFrequency: "weekly",
+          priority: 0.6,
+        },
+      ];
+      if (share.showCases) {
+        entries.push({
+          url: absoluteUrl(`${base}/cases`),
+          lastModified,
+          changeFrequency: "weekly",
+          priority: 0.5,
+        });
+      }
+      return entries;
+    });
+  } catch {
+    // No DB reachable (e.g. `next build` in CI): still serve the static half
+    // rather than failing the whole route.
+    return [];
+  }
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const staticEntries: MetadataRoute.Sitemap = [
+    { url: absoluteUrl("/"), changeFrequency: "weekly", priority: 1 },
+    { url: absoluteUrl("/signup"), changeFrequency: "monthly", priority: 0.9 },
+    {
+      url: absoluteUrl("/docs/self-hosting"),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    { url: absoluteUrl("/docs/help"), changeFrequency: "monthly", priority: 0.8 },
+    ...HELP_TOPICS.map((topic) => ({
+      url: absoluteUrl(`/docs/help/${topic.slug}`),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
+    { url: absoluteUrl("/docs/api"), changeFrequency: "monthly", priority: 0.7 },
+    { url: absoluteUrl("/login"), changeFrequency: "monthly", priority: 0.4 },
+    { url: absoluteUrl("/terms"), changeFrequency: "yearly", priority: 0.3 },
+    { url: absoluteUrl("/privacy"), changeFrequency: "yearly", priority: 0.3 },
   ];
+  return [...staticEntries, ...(await publicProjectEntries())];
 }

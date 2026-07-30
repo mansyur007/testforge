@@ -38,6 +38,7 @@ export async function generateMetadata({
   return publicMetadata(project, {
     title: "Test cases",
     description: `Test cases for ${project.name}, published with TestForge.`,
+    path: "/cases",
   });
 }
 

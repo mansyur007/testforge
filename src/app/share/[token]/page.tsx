@@ -8,6 +8,7 @@ import { bucketStatus, isMuted, NON_EXECUTED_BUCKETS } from "@/lib/mute";
 import { loadReportData } from "@/lib/report-data";
 import { GRID_COLS } from "@/lib/dashboards";
 import { WidgetBody, widgetTypeLabel } from "@/components/DashboardWidgets";
+import { NOINDEX } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ export const dynamic = "force-dynamic";
 // Absolutely no mutations and no links into the app from this page; noindex.
 export const metadata: Metadata = {
   title: "Shared report — TestForge",
-  robots: { index: false, follow: false },
+  robots: NOINDEX,
 };
 
 async function loadLink(token: string) {

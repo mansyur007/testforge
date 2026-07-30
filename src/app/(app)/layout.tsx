@@ -9,6 +9,12 @@ import { CommandPalette } from "@/components/CommandPalette";
 import { AppShell } from "@/components/AppShell";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { loadMyWorkCounts } from "@/lib/my-work";
+import { NOINDEX } from "@/lib/seo";
+
+// F-40: one noindex for the whole authenticated shell. Pages inside this group
+// may set their own title; `robots` merges down from here unless one overrides
+// it, so no in-app route can be indexed by forgetting a tag.
+export const metadata = { robots: NOINDEX };
 
 export default async function AppLayout({
   children,

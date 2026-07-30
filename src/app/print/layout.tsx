@@ -1,4 +1,9 @@
 import "./print.css";
+import { NOINDEX } from "@/lib/seo";
+
+// F-40: print documents contain project data — never indexable. Pages under
+// /print set only their own title, so this merges down untouched.
+export const metadata = { robots: NOINDEX };
 
 // F-35: minimal document layout for the /print route group. No app shell, no
 // dark sidebar — a plain white paginated document that maps 1:1 to the paper

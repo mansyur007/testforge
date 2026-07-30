@@ -3792,6 +3792,76 @@ gets an instant jump, same convention as every other transition in the app.
 and dark-mode screenshots in the help centre (`docs/images/*` stay light-mode captures;
 out of scope per §7.10).
 
+#### F-40 — SEO hardening (canonicals, structured data, crawl hygiene) `[x]`
+
+> **Status: DONE** (2026-07-30, branch `feat/seo-hardening`). Builds on HP-008, which shipped
+> the basics (title/description/OG image/sitemap/robots.txt).
+
+Everything a crawler reads now resolves from **one module**, `src/lib/seo.ts`: `SITE_URL` /
+`absoluteUrl()`, `canonical(path)`, the `NOINDEX` and `INDEXABLE` robots constants, and the
+JSON-LD builders. `src/components/JsonLd.tsx` renders a block (escaping every `<` to its JSON unicode
+escape, so a FAQ answer or project description can never close the script tag early). No page hand-rolls an
+absolute URL any more.
+
+**1. Canonicals.** Every public page declares one (`alternates.canonical`), resolved against the
+root layout's `metadataBase`: `/`, `/signup`, `/login`, `/terms`, `/privacy`, `/docs/api`,
+`/docs/self-hosting`, `/docs/help`, `/docs/help/<topic>`. The public-share pages (F-38) get theirs
+from `publicMetadata()`, which now takes a `path` — so `/cases`, `/runs`, `/reports` and each case
+detail declare themselves canonical instead of all four sections collapsing onto the overview.
+
+**2. Structured data** (`@graph`, one `<script>` per page, `@id`-linked):
+
+| Page | Nodes |
+|---|---|
+| `/` | `Organization`, `WebSite`, `SoftwareApplication` (`offers.price: "0"`, MIT license, `featureList`), `FAQPage` |
+| `/docs/help` | `BreadcrumbList`, `ItemList` of the nine topics |
+| `/docs/help/<topic>` | `TechArticle`, `BreadcrumbList` |
+| `/docs/self-hosting` | `TechArticle`, `BreadcrumbList` |
+
+The `FAQPage` is generated **from the same i18n dict the `#faq` section renders** — Google's
+rich-result policy requires the answers to be visible on the page, so it cannot be a separate copy
+that drifts.
+
+**3. Crawl hygiene.** `robots.txt` grew from four disallow entries to fifteen (adds `/my-work`,
+`/print/`, `/share/`, `/invite/`, `/verify`, `/verify-email`, `/reset-password`,
+`/forgot-password`, `/login/2fa`, `/offline`). robots.txt only asks a crawler not to *fetch*, so
+every one of those routes also carries `robots: NOINDEX` in its own metadata — including a single
+`export const metadata = { robots: NOINDEX }` on `src/app/(app)/layout.tsx` and
+`src/app/print/layout.tsx`, which merges down over the whole authenticated shell so no in-app
+route can be indexed by forgetting a tag.
+
+**4. Sitemap.** Was six static URLs; now covers the help centre (nine topic pages that were
+invisible to crawlers), `/docs/help`, `/docs/api`, and — the new dynamic half — every project whose
+owner both published it *and* ticked `indexable` (`+ /cases` when that section is on). Shares with
+`indexable: false` stay out: they already render noindex, and listing them would advertise URLs
+their owners asked not to surface. The route is `force-dynamic` with the DB query in a `try/catch`
+returning `[]`, so `next build` without a reachable database still emits the static half.
+
+**5. Root metadata** gained `applicationName`, `keywords` (no ranking weight at Google; Bing and
+several LLM crawlers still read them), `authors`/`creator`/`publisher`, `category`, site-wide
+`openGraph` (`siteName`/`locale`/`url`) and `twitter` defaults, `robots: INDEXABLE`
+(`max-image-preview: large` — the default `standard` shows a thumbnail instead of the full-width OG
+image), and `formatDetection: { telephone: false }` so iOS Safari stops autolinking IDs like
+`TC-WEB-001`. Note that Next merges metadata **shallowly**: a page-level `openGraph` replaces the
+parent's entirely, so `siteName`/`locale`/`url` are repeated per page rather than inherited.
+
+Pages that had a title but no description got one (`/terms`, `/privacy`), and each help topic now
+uses its own `summary` — without it Google wrote the snippet from the first text on the page, which
+for those pages is the sidebar nav.
+
+**Testing.** `tsc --noEmit` + `next lint` clean. Verified against a running dev server: homepage
+emits the four-node graph with six FAQ entries and a canonical, `/docs/help/automation` emits
+`TechArticle` + `BreadcrumbList` with its own description, `/forgot-password` returns
+`noindex, nofollow, nocache`, and `robots.txt`/`sitemap.xml` render the expanded lists. The DB half
+of the sitemap is covered in `e2e/public-share.spec.ts` (TC-E2E-80): right after the indexable
+toggle flips the robots meta, the spec now asserts `/public/<slug>` and `/public/<slug>/cases`
+appear in `sitemap.xml`. `help-center`, `print-views`, `public-share`, `share-links`, `pwa-mobile`
+and `smoke` specs re-run green.
+
+**Deferred, deliberately:** HP-009 (analytics) is still backlog — this feature adds no third-party
+script. `hreflang` alternates are not applicable: `tf_lang` is a cookie, so `en` and `id` share one
+URL rather than living at `/en/…` and `/id/…`.
+
 ---
 
 *End of document. When a feature ships: tick its checkbox here, flip the cell in
