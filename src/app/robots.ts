@@ -26,6 +26,7 @@ export default function robots(): MetadataRoute.Robots {
         "/reset-password",
         "/forgot-password",
         "/login/2fa",
+        "/superadmin", // F-41 instance console
         "/offline",
       ],
     },

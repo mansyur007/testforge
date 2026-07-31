@@ -31,8 +31,12 @@ export default defineConfig({
     // which binds 9798 inside the LDAP spec. Local password login stays enabled
     // — every other spec logs in with the seeded local account, and LDAP is only
     // consulted as a fallback after a local password miss.
+    // F-41: the instance console is dormant without a credential, so the spec
+    // needs one configured at dev-server boot (same shape as the OIDC/LDAP
+    // mocks above). The password is long on purpose — anything under 24 chars
+    // leaves the feature disabled.
     command:
-      "TF_ALLOW_ANY_WEBHOOK_HOST=1 TF_ALLOW_INSECURE_INTEGRATION_URL=1 CRON_SECRET=e2e-cron-secret TF_OIDC_ISSUER=http://127.0.0.1:9797 TF_OIDC_CLIENT_ID=testforge-e2e TF_OIDC_CLIENT_SECRET=e2e-oidc-secret TF_OIDC_AUTO_PROVISION=1 TF_LDAP_URL=ldap://127.0.0.1:9798 TF_LDAP_BASE_DN=dc=testforge,dc=local TF_LDAP_BIND_DN=cn=svc,dc=testforge,dc=local TF_LDAP_BIND_PASSWORD=svc-secret TF_LDAP_AUTO_PROVISION=1 TF_LDAP_ORG_SLUG=e2e-org npm run dev -- -p 3456",
+      "TF_SUPERADMIN_USER=e2e-superadmin TF_SUPERADMIN_PASSWORD=e2e-superadmin-password-long-enough TF_ALLOW_ANY_WEBHOOK_HOST=1 TF_ALLOW_INSECURE_INTEGRATION_URL=1 CRON_SECRET=e2e-cron-secret TF_OIDC_ISSUER=http://127.0.0.1:9797 TF_OIDC_CLIENT_ID=testforge-e2e TF_OIDC_CLIENT_SECRET=e2e-oidc-secret TF_OIDC_AUTO_PROVISION=1 TF_LDAP_URL=ldap://127.0.0.1:9798 TF_LDAP_BASE_DN=dc=testforge,dc=local TF_LDAP_BIND_DN=cn=svc,dc=testforge,dc=local TF_LDAP_BIND_PASSWORD=svc-secret TF_LDAP_AUTO_PROVISION=1 TF_LDAP_ORG_SLUG=e2e-org npm run dev -- -p 3456",
     port: 3456,
     reuseExistingServer: true,
     timeout: 120_000,

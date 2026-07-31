@@ -198,6 +198,12 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   System (follows your device) from the sidebar footer, Settings → Account,
   or the landing page header; the choice sticks via a cookie, applies before
   first paint (no flash), and works logged-out too (F-39)
+- **Instance console** — a read-only `/superadmin` page listing every
+  registered user across all organizations (name, email, role, org, projects,
+  verification and 2FA status, signup date) with search and CSV export. It is
+  for the person who runs the server, not for tenants: the credential is
+  static and comes from the environment, never from a `User` row, and the
+  whole route 404s unless it is configured (F-41)
 
 </details>
 
