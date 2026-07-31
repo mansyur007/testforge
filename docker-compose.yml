@@ -28,6 +28,14 @@ services:
       # TF_OIDC_BUTTON_LABEL: "Single sign-on"
       # TF_OIDC_ALLOW_UNVERIFIED_EMAIL: "1" # only if your IdP omits email_verified
       # TF_DISABLE_PASSWORD_LOGIN: "1"     # SSO/social only (needs a provider!)
+      # F-41: instance console at /superadmin — a read-only list of every
+      # registered user, across organizations. Dormant (404) unless the username
+      # and a password are both set. The password is static, so make it long:
+      # the plaintext form is rejected under 24 chars. Prefer the bcrypt hash —
+      # but escape every `$` as `$$` in compose, or use TF_SUPERADMIN_PASSWORD.
+      TF_SUPERADMIN_USER: "${TF_SUPERADMIN_USER:-}"
+      TF_SUPERADMIN_PASSWORD: "${TF_SUPERADMIN_PASSWORD:-}"
+      # TF_SUPERADMIN_PASSWORD_HASH: "${TF_SUPERADMIN_PASSWORD_HASH:-}"
       # F-34: LDAP / Active Directory. Dormant unless TF_LDAP_URL *and*
       # TF_LDAP_BASE_DN are both set. Local accounts stay usable as a fallback.
       # TF_LDAP_URL: "ldap://ldap.example.com:389"   # or ldaps://…:636

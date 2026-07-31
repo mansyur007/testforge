@@ -3864,5 +3864,62 @@ URL rather than living at `/en/…` and `/id/…`.
 
 ---
 
+#### F-41 — Instance console: registered users (`/superadmin`) `[x]`
+
+> **Status: DONE** (2026-07-31, branch `feat/superadmin-users`).
+
+Until now nothing in the app could see across organizations, by design: Settings → Team is
+`where: { organizationId: me.organizationId }`, and the only other cross-tenant query is the
+`@mention` autocomplete. The person who *runs* the instance had no way to answer "who has signed
+up?" short of opening the SQLite file on the VPS. F-41 gives them one page, and keeps the tenant
+boundary intact everywhere else.
+
+**The operator is not a `User`.** No row, no signup, no email, no password reset — a static
+credential read from the environment (`src/lib/superadmin.ts`):
+
+| Env | Meaning |
+|---|---|
+| `TF_SUPERADMIN_USER` | Username. Required. |
+| `TF_SUPERADMIN_PASSWORD` | Plaintext. Rejected under **24 characters** — a static secret nobody rotates should not be guessable. |
+| `TF_SUPERADMIN_PASSWORD_HASH` | bcrypt, preferred when your secret store handles `$` cleanly (Compose interpolation eats a bare `$`; escape it `$$`). Takes precedence over the plaintext var. |
+
+Unset (or set with a too-short plaintext password, which logs a warning once) → `superadminEnabled()`
+is false and **every `/superadmin` route 404s**, indistinguishable from a build without the feature.
+Flipping it off also invalidates outstanding cookies immediately, since `getSuperadminSession()`
+re-reads the config on every call.
+
+**Session.** A separate `tf_superadmin` JWT cookie, `path=/superadmin`, 8 hours, httpOnly +
+`secure` in production. It is signed with `AUTH_SECRET` like a normal session, so it also carries a
+`purpose: "superadmin"` claim *and* re-checks the username against the current config — a valid
+`tf_session` token replayed under the other cookie name verifies but fails both checks. The path
+scope is why the CSV export lives at `/superadmin/export` rather than under `/api`: an `/api` route
+would never receive the cookie.
+
+**Login** (`src/app/actions/superadmin.ts`) uses the same in-memory lockout shape as the app's login
+action — 5 failures per IP per 10 minutes — returns one generic "Invalid credentials." for both a
+wrong username and a wrong password, and writes `instance.login` / `instance.login.failed` (with the
+IP) to the audit log with a null `userId`.
+
+**The page** (`/superadmin`) is read-only on purpose — member management stays where the permission
+model lives, in the org admin UI. It shows four counters (users, email-verified, org admins,
+organizations) and a table of every account: name + email, organization, role, project-membership
+count, verified / 2FA status, signup time. Search (`?q=`) matches name or email — SQLite's `LIKE` is
+case-insensitive for ASCII, so Prisma's `contains` needs no `mode`, which SQLite does not support —
+and paging is 50/page. `Download CSV` streams the full list (`no-store`).
+
+`robots.txt` disallows `/superadmin` and both pages carry `robots: NOINDEX`.
+
+**Testing.** `tsc --noEmit`, `next lint` and `check:theme` clean. `e2e/superadmin.spec.ts`:
+TC-E2E-81 walks signed-out redirect → wrong password → sign-in → cross-org list (the seeded org
+admin *and* the org-less `Outsider`) → search → CSV 200 → sign out → CSV 401; TC-E2E-82 logs in as a
+normal org ADMIN and confirms that session is still bounced to the console login and gets a 401 from
+the export. The credential for the suite is set in `playwright.config.ts` → `webServer.command`.
+
+**Deployment.** `TF_SUPERADMIN_USER` / `TF_SUPERADMIN_PASSWORD` are passed through in both compose
+files, but the values live only in the VPS `/opt/testforge/.env` — which `deploy.yml` excludes from
+its rsync, so they survive every deploy and never enter git.
+
+---
+
 *End of document. When a feature ships: tick its checkbox here, flip the cell in
 [Part III — Competitive Comparison](#part-iii--competitive-comparison), and add the README line (§1 DoD).*

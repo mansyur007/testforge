@@ -43,6 +43,13 @@ services:
       # TF_OIDC_CLIENT_SECRET: ${TF_OIDC_CLIENT_SECRET:-}
       # TF_OIDC_AUTO_PROVISION: "1"
       # TF_DISABLE_PASSWORD_LOGIN: "1"    # SSO/social only (needs a provider!)
+      # Instance console (F-41) at /superadmin — read-only list of every
+      # registered user across organizations. Dormant (404) unless both are set;
+      # the static password must be at least 24 chars (or set the bcrypt hash,
+      # escaping `$` as `$$`). Values live in the VPS .env, never in git.
+      TF_SUPERADMIN_USER: ${TF_SUPERADMIN_USER:-}
+      TF_SUPERADMIN_PASSWORD: ${TF_SUPERADMIN_PASSWORD:-}
+      # TF_SUPERADMIN_PASSWORD_HASH: ${TF_SUPERADMIN_PASSWORD_HASH:-}
       # LDAP / Active Directory (F-34). Dormant unless TF_LDAP_URL and
       # TF_LDAP_BASE_DN are both set; see docker-compose.yml for the full list.
       # TF_LDAP_URL: ${TF_LDAP_URL:-}
