@@ -3921,5 +3921,62 @@ its rsync, so they survive every deploy and never enter git.
 
 ---
 
+#### F-42 — Public overview insight panels `[x]`
+
+> **Status: DONE** (2026-08-02, branch `feat/public-overview-insights`).
+
+The public overview (F-38) was four counters and three link rows: it proved a project *exists*
+without saying anything about it. For the feature's primary audience — a QA engineer sending the
+link to a recruiter or a client — that is the one page that has to land. F-42 turns it into a
+summary of the project without opening a single new door.
+
+**Panels, and the toggle each one belongs to.** The overview may never publish more than the
+sections the owner turned on, so every panel is gated by the toggle that gates the page it
+summarizes:
+
+| Panel | Shows | Gate |
+|---|---|---|
+| Latest run | newest run's name, age, status bar, pass rate | `showRuns \|\| showReports` |
+| Pass rate trend | sparkline over the last 12 runs + all-time rate | `showRuns \|\| showReports` |
+| Run activity | GitHub-style 52-week heatmap of runs per day | `showRuns \|\| showReports` |
+| Test design | priority distribution + case-type chips | `showCases` |
+| Automation | % automated + automation-status distribution | `showCases` |
+| Coverage tags | top 12 tags with case counts | `showCases` |
+
+`showRuns || showReports` rather than `showRuns` alone: the Reports page already publishes the
+per-run trend *with run names on the labels*, so a project sharing only Reports is not told
+anything new by the execution panels. With both off they never load — the queries are behind the
+same condition, not just the render.
+
+**No new data path.** `src/lib/public-overview.ts` is aggregates only, and its execution half
+calls `loadPublicRuns()` from `public-runs.ts` rather than querying `TestRun` itself — that module
+is the documented field allow-list for anything run-shaped (F-38 Part B), and a second copy of it
+is exactly the thing that goes stale. The design half is three `groupBy` queries plus the tag
+column; no case body, no assignee, no custom field.
+
+**Cross-section leak guard, same shape as the flaky panel.** Coverage tags is the one panel that
+quotes the catalogue's own vocabulary, so it lives entirely inside the `showCases` branch: turning
+Test Cases off removes the panel *and* the query. TC-E2E-80 asserts this with a tag string
+(`expiry-guard`) planted so it appears nowhere else on the page.
+
+**Presentation** is `src/components/PublicInsights.tsx` — server components, no client JS, no
+`<form>` (the overview's "zero forms" assertion still holds). Colour classes live there rather than
+in the lib because Tailwind's content scan covers `src/components` and `src/app` but not `src/lib`.
+The activity grid is built in **UTC**: the public pages are ISR-cached and shared by every viewer,
+so a server-local day boundary would mean nothing. `Last updated` now takes the newest run into
+account too, and the section links became cards with a blurb.
+
+**Testing.** `tsc --noEmit`, `next lint`, `check:theme` clean. TC-E2E-80 grew four checkpoints:
+design panels present while execution panels are absent (and the run name nowhere in the HTML),
+the execution panels appearing when Runs/Reports are switched on, the design panels *and* the tag
+vanishing when Test Cases is switched off, and the overview added to the existing
+"no comment / no defect URL / no author / no CI origin" raw-HTML leak sweep.
+
+**Deferred, deliberately:** month labels on the activity grid, a per-suite coverage panel (suite
+names are already one click away in the Test Cases section), and any client-side interactivity —
+tooltips are `title` attributes so the page stays script-free.
+
+---
+
 *End of document. When a feature ships: tick its checkbox here, flip the cell in
 [Part III — Competitive Comparison](#part-iii--competitive-comparison), and add the README line (§1 DoD).*

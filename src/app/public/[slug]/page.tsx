@@ -1,15 +1,38 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
+import { TFIcon } from "@/components/icons";
 import {
   publicMetadata,
   requirePublicProject,
   type PublicProject,
 } from "@/lib/public-share";
+import {
+  loadDesignInsights,
+  loadExecutionInsights,
+  relativeDays,
+  type DesignInsights,
+  type ExecutionInsights,
+} from "@/lib/public-overview";
+import {
+  ActivityPanel,
+  AutomationPanel,
+  DesignPanel,
+  LatestRunPanel,
+  TagsPanel,
+  TrendPanel,
+} from "@/components/PublicInsights";
 
 // F-38: public project overview. No session, no server actions, no links into
 // the authenticated app (the footer CTA in the layout is the only one).
 // Cacheable — nothing here is per-viewer.
+//
+// F-42: the counters grew into insight panels. Each panel is gated by the same
+// section toggle that gates the page it summarizes, so the overview can never
+// publish more than the sections the owner turned on:
+//   showCases                → Test design / Automation / Coverage tags
+//   showRuns || showReports  → Latest run / Pass rate trend / Run activity
+// Everything they render is an aggregate from lib/public-overview.ts.
 export const revalidate = 60;
 
 export async function generateMetadata({
@@ -51,13 +74,37 @@ async function loadStats(project: PublicProject) {
   };
 }
 
+const DATE_FORMAT = {
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+} as const;
+
 export default async function PublicOverviewPage({
   params,
 }: {
   params: { slug: string };
 }) {
   const project = await requirePublicProject(params.slug);
-  const stats = await loadStats(project);
+  // Reports publishes the same execution aggregates as Runs, so either toggle
+  // is enough for the execution panels — with both off they never load.
+  const showExecution = project.share.showRuns || project.share.showReports;
+
+  const [stats, design, execution] = await Promise.all([
+    loadStats(project),
+    project.share.showCases
+      ? loadDesignInsights(project.id)
+      : Promise.resolve<DesignInsights | null>(null),
+    showExecution
+      ? loadExecutionInsights(project.id)
+      : Promise.resolve<ExecutionInsights | null>(null),
+  ]);
+
+  // A run is activity too — with the execution sections on, "last updated"
+  // would otherwise go stale on a project whose cases are simply finished.
+  const lastActivity = [stats.lastUpdated, execution?.latest?.createdAt ?? null]
+    .filter((d): d is Date => d !== null)
+    .sort((a, b) => b.getTime() - a.getTime())[0];
 
   const tiles = [
     { label: "Test cases", value: stats.caseCount, testid: "public-stat-cases" },
@@ -71,19 +118,25 @@ export default async function PublicOverviewPage({
     {
       on: project.share.showCases,
       href: `/public/${project.slug}/cases`,
-      label: "Browse the test cases →",
+      icon: "manual",
+      label: "Test cases",
+      blurb: "Browse the suites, steps and expected results.",
       testid: "public-browse-cases",
     },
     {
       on: project.share.showRuns,
       href: `/public/${project.slug}/runs`,
-      label: "See the run history →",
+      icon: "cicd",
+      label: "Test runs",
+      blurb: "Every execution, with its status breakdown.",
       testid: "public-browse-runs",
     },
     {
       on: project.share.showReports,
       href: `/public/${project.slug}/reports`,
-      label: "Open the quality report →",
+      icon: "trend",
+      label: "Quality report",
+      blurb: "Pass rate, automation coverage and flaky tests.",
       testid: "public-browse-reports",
     },
   ].filter((s) => s.on);
@@ -99,15 +152,22 @@ export default async function PublicOverviewPage({
             {project.description}
           </p>
         )}
-        {stats.badgeToken && (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
-            src={`/badge/${stats.badgeToken}.svg`}
-            alt="Quality badge"
-            data-testid="public-quality-badge"
-            className="mt-4 h-5"
-          />
-        )}
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          {stats.badgeToken && (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={`/badge/${stats.badgeToken}.svg`}
+              alt="Quality badge"
+              data-testid="public-quality-badge"
+              className="h-5"
+            />
+          )}
+          {lastActivity && (
+            <span className="text-xs text-content-subtle">
+              Updated {relativeDays(lastActivity)}
+            </span>
+          )}
+        </div>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -128,27 +188,56 @@ export default async function PublicOverviewPage({
             Last updated
           </p>
           <p className="mt-1 text-sm text-content">
-            {stats.lastUpdated
-              ? stats.lastUpdated.toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                })
+            {lastActivity
+              ? lastActivity.toLocaleDateString("en-US", DATE_FORMAT)
               : "—"}
           </p>
         </div>
       </section>
 
-      {sections.map((s) => (
-        <Link
-          key={s.href}
-          href={s.href}
-          data-testid={s.testid}
-          className="block rounded-xl border border-hairline bg-surface p-5 text-sm text-content hover:border-accent-ring hover:text-accent-soft-fg"
-        >
-          {s.label}
-        </Link>
-      ))}
+      {execution && execution.latest && (
+        <>
+          <div className="grid gap-4 lg:grid-cols-3">
+            <LatestRunPanel execution={execution} />
+            <TrendPanel execution={execution} />
+          </div>
+          <ActivityPanel execution={execution} />
+        </>
+      )}
+
+      {design && design.total > 0 && (
+        <>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <DesignPanel design={design} />
+            <AutomationPanel design={design} />
+          </div>
+          <TagsPanel design={design} />
+        </>
+      )}
+
+      {sections.length > 0 && (
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {sections.map((s) => (
+            <Link
+              key={s.href}
+              href={s.href}
+              data-testid={s.testid}
+              className="flex h-full flex-col rounded-xl border border-hairline bg-surface p-5 hover:border-accent-ring"
+            >
+              <span className="flex items-center gap-2 font-medium text-content-strong">
+                <TFIcon name={s.icon} className="h-5 w-5" />
+                {s.label}
+              </span>
+              <span className="mt-1.5 block text-sm text-content-muted">
+                {s.blurb}
+              </span>
+              <span className="mt-auto block pt-3 text-sm font-medium text-accent-text">
+                Open →
+              </span>
+            </Link>
+          ))}
+        </section>
+      )}
     </>
   );
 }
