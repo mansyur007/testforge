@@ -1,19 +1,20 @@
 name: Deploy TestForge to VPS
 
-# Auto-deploy to the VPS on every push/merge to main (or manually via Actions).
-# Do NOT push commits directly to main — use a feature branch + PR so CI runs
-# first; merge to main is what triggers production deploy.
+# Deploys to the VPS on a nightly schedule (23:00 WIB), or manually via Actions
+# any time. Do NOT push commits directly to main — use a feature branch + PR so
+# CI runs first; merging to main just queues the change for the next scheduled
+# deploy (or trigger it manually if it needs to go out sooner).
+# The nightly run is skipped automatically if main has no commits newer than the
+# last successful deploy, so small/no-op merge days don't redeploy for nothing.
+# Manual (workflow_dispatch) runs always deploy, regardless of that check.
 # Strategy: the runner rsyncs source to /opt/testforge, then builds + ups on the
 # VPS. TestForge runs as its own stack, fronted by Caddy (owned by the Tokopudidi
 # stack) over the shared external network tokopudidi_default.
 # State (SQLite testforge.db) lives in the named volume `testforge_data`, NOT in
 # the source tree — so rsync --delete is safe as long as the box's .env is kept.
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-      - '**.md'
-      - 'LICENSE'
+  schedule:
+    - cron: '0 16 * * *' # 23:00 WIB (UTC+7)
   workflow_dispatch:
 
 concurrency:
@@ -21,7 +22,45 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  check:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    outputs:
+      should_deploy: ${{ steps.check.outputs.should_deploy }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Check for commits since last successful deploy
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LAST_SUCCESS=$(gh run list --workflow=deploy.yml --branch=main --status=success --limit=1 --json createdAt --jq '.[0].createdAt // empty')
+          LAST_COMMIT_EPOCH=$(git log -1 --format=%ct)
+
+          if [ -z "$LAST_SUCCESS" ]; then
+            echo "No prior successful deploy found — deploying."
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          LAST_SUCCESS_EPOCH=$(date -u -d "$LAST_SUCCESS" +%s)
+          echo "Last successful deploy: $LAST_SUCCESS ($LAST_SUCCESS_EPOCH)"
+          echo "Last commit on main:    $(git log -1 --format=%cI) ($LAST_COMMIT_EPOCH)"
+
+          if [ "$LAST_COMMIT_EPOCH" -gt "$LAST_SUCCESS_EPOCH" ]; then
+            echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No new commits since last deploy — skipping."
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+          fi
+
   deploy:
+    needs: [check]
+    if: always() && (github.event_name == 'workflow_dispatch' || needs.check.outputs.should_deploy == 'true')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
