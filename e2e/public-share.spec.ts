@@ -17,6 +17,10 @@ const db = new PrismaClient();
 
 const CASE_TITLE = "Checkout rejects an expired card";
 const RUN_NAME = "Regression 2026-07";
+// F-42: the overview's Coverage tags panel publishes this. It must vanish with
+// the Test Cases toggle, so it has to be a string that appears nowhere else on
+// the page — not in the project name, not in the description.
+const CASE_TAG = "expiry-guard";
 // Planted in the seeded run's result. Neither string may appear anywhere under
 // /public once Runs and Reports are on — they stand in for the tester notes and
 // tracker links that make execution data more sensitive than case design.
@@ -54,7 +58,7 @@ async function seedProject() {
       expectedResult: "An expiry error is shown and no charge is made",
       priority: "HIGH",
       type: "SMOKE",
-      tags: "portfolio",
+      tags: CASE_TAG,
     },
     select: { id: true },
   });
@@ -163,6 +167,23 @@ test(`TC-${TC}-80 Public sharing: anonymous portfolio view, section + index togg
     anonPage.locator('[data-testid="public-stat-cases"] p').last()
   ).toHaveText("1");
 
+  // F-42: the insight panels obey the same section toggles. Test Cases is on,
+  // so the design panels render off the case catalogue…
+  await expect(anonPage.locator('[data-testid="public-design"]')).toContainText(
+    "High"
+  );
+  await expect(
+    anonPage.locator('[data-testid="public-automation-coverage"]')
+  ).toHaveText("0%");
+  await expect(anonPage.locator('[data-testid="public-tags"]')).toContainText(
+    CASE_TAG
+  );
+  // …while Runs and Reports are still off, so nothing execution-shaped is on
+  // the overview yet — not even the seeded run's name.
+  for (const testid of ["public-latest-run", "public-trend", "public-activity"])
+    expect(await anonPage.locator(`[data-testid="${testid}"]`).count()).toBe(0);
+  expect(await anonPage.content()).not.toContain(RUN_NAME);
+
   // Read-only discipline: no mutation surface, no links back into the app
   // other than the "Built with TestForge" CTA to /login.
   expect(await anonPage.locator("form").count()).toBe(0);
@@ -229,9 +250,26 @@ test(`TC-${TC}-80 Public sharing: anonymous portfolio view, section + index togg
     anonPage.locator('[data-testid="public-report-executions"] p').last()
   ).toHaveText("1");
 
+  // F-42: and now the overview grows its execution panels. The public pages
+  // are ISR-cached, so retry until the toggle's revalidate has landed.
+  await expect(async () => {
+    await anonPage.goto(`/public/${project.slug}`);
+    await expect(
+      anonPage.locator('[data-testid="public-latest-run"]')
+    ).toContainText(RUN_NAME);
+  }).toPass({ timeout: 15_000 });
+  await expect(
+    anonPage.locator('[data-testid="public-latest-run-rate"]')
+  ).toContainText("100%");
+  await expect(
+    anonPage.locator('[data-testid="public-activity-total"]')
+  ).toContainText("1 run");
+
   // The whole reason these toggles are separate: what a result carries must
   // not ride along with the tally it contributes to.
-  for (const path of [`/runs`, `/reports`]) {
+  // The overview is in this loop too since F-42: it summarizes the same runs,
+  // so it inherits the same "the tally may travel, its contents may not" rule.
+  for (const path of ["", `/runs`, `/reports`]) {
     const res = await anon.request.get(`/public/${project.slug}${path}`);
     const body = await res.text();
     for (const secret of [
@@ -242,7 +280,10 @@ test(`TC-${TC}-80 Public sharing: anonymous portfolio view, section + index togg
       "CI · GitHub Actions",
       "Internal scope notes",
     ])
-      expect(body, `${path} must not leak "${secret}"`).not.toContain(secret);
+      expect(
+        body,
+        `${path || "/overview"} must not leak "${secret}"`
+      ).not.toContain(secret);
     expect(body).not.toContain("/projects/");
   }
 
@@ -281,6 +322,20 @@ test(`TC-${TC}-80 Public sharing: anonymous portfolio view, section + index togg
     404
   );
   await expectStatus(anon, `/public/${project.slug}`, 200);
+
+  // F-42: the overview's design panels are part of the Test Cases section, so
+  // the catalogue's own vocabulary goes with it — the tag panel is the one
+  // place the overview would quote a case's content.
+  await expect(async () => {
+    const body = await (
+      await anon.request.get(`/public/${project.slug}`)
+    ).text();
+    expect(body).not.toContain("public-design");
+    expect(body).not.toContain("public-tags");
+    expect(body).not.toContain(CASE_TAG);
+    // Runs and Reports are still on, so the execution half stays.
+    expect(body).toContain("public-latest-run");
+  }).toPass({ timeout: 15_000 });
 
   // 6. Sharing off entirely → every public URL 404s again.
   await page.click('[data-testid="public-share-disable"]');

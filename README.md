@@ -143,7 +143,9 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   read-only at `/public/<project-slug>`: overview, suite folders and every test
   case, no sign-in, no way back into the app. Toggle the Test Cases section and
   search-engine indexing (`noindex` by default) from Settings → Public sharing
-  (F-38)
+  (F-38). The overview summarizes the project at a glance — latest run, pass-rate
+  trend, a year of run activity, priority mix, automation coverage and coverage
+  tags — with each panel gated by the section toggle it belongs to (F-42)
 - **Scheduled reports** — email a KPI summary (pass rate, executions, top
   failures, link to the full report) daily or weekly to a list of recipients;
   managed under Notifications, sent by the `/api/cron/send-reports` job
