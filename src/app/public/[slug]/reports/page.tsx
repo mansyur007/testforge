@@ -39,8 +39,13 @@ export default async function PublicReportsPage({
   const { totals } = report;
   const pct = (n: number | null) => (n === null ? "—" : `${n}%`);
 
-  const tiles = [
-    { label: "Overall pass rate", value: pct(totals.passRate), testid: "public-report-pass-rate" },
+  const tiles: { label: string; value: string; testid: string; hint?: string }[] = [
+    {
+      label: "Overall pass rate",
+      value: pct(totals.passRate),
+      testid: "public-report-pass-rate",
+      hint: "Rounded to the nearest whole number — may show 100% even when a run has failures.",
+    },
     { label: "Total executions", value: String(totals.executed), testid: "public-report-executions" },
     { label: "Failed", value: String(totals.failed), testid: "public-report-failed" },
     {
@@ -63,7 +68,18 @@ export default async function PublicReportsPage({
             data-testid={t.testid}
             className="rounded-xl border border-hairline bg-surface p-5"
           >
-            <p className="text-sm text-content-muted">{t.label}</p>
+            <p className="flex items-center gap-1 text-sm text-content-muted">
+              {t.label}
+              {t.hint && (
+                <span
+                  title={t.hint}
+                  aria-label={t.hint}
+                  className="inline-flex h-4 w-4 shrink-0 cursor-help items-center justify-center rounded-full border border-content-subtle/50 text-[10px] font-semibold leading-none text-content-subtle"
+                >
+                  i
+                </span>
+              )}
+            </p>
             <p className="mt-1 text-3xl font-bold">{t.value}</p>
           </div>
         ))}
