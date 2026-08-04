@@ -10,6 +10,7 @@ import { ProjectTabs } from "@/components/ProjectTabs";
 import { NewSuiteForm } from "@/components/NewSuiteForm";
 import { CasesTable } from "@/components/CasesTable";
 import { SuiteTree, type SuiteNode } from "@/components/SuiteTree";
+import { SuiteRail } from "@/components/SuiteRail";
 import { SuiteFolderGrid } from "@/components/SuiteFolderGrid";
 import { SavedViewsMenu } from "@/components/SavedViewsMenu";
 import { ExportMenu } from "@/components/ExportMenu";
@@ -211,35 +212,24 @@ export default async function ProjectPage({
       {/* Below md the suite rail stacks above the case list — side by side on a
           phone left the list ~60px wide. Desktop (≥md) is unchanged. */}
       <div className="flex flex-col gap-6 md:flex-row">
-        {/* Sidebar suite tree */}
-        <aside className="w-full shrink-0 space-y-4 md:w-64">
-          <div className="rounded-xl border border-hairline bg-surface p-4">
-            <h3 className="mb-3 text-xs font-semibold uppercase text-content-subtle">
-              Test Suites
-            </h3>
-            <SuiteTree
-              slug={project.slug}
-              canWrite={canWrite}
-              activeSuite={searchParams.suite}
-              searchParams={searchParams}
-              roots={suiteTree}
+        {/* Sidebar suite tree. Below md SuiteRail collapses this to a tappable
+            "Test Suites" header so the cases table stays on the first screen;
+            ≥md it is the same always-open w-64 column as before. */}
+        <SuiteRail slug={project.slug}>
+          <SuiteTree
+            slug={project.slug}
+            canWrite={canWrite}
+            activeSuite={searchParams.suite}
+            searchParams={searchParams}
+            roots={suiteTree}
+          />
+          <div className="mt-3">
+            <NewSuiteForm
+              projectId={project.id}
+              suites={flattenTree(suiteTree)}
             />
-            <div className="mt-3">
-              <NewSuiteForm
-                projectId={project.id}
-                suites={flattenTree(suiteTree)}
-              />
-            </div>
           </div>
-          {/* F-04: reusable step blocks library */}
-          <Link
-            href={`/projects/${project.slug}/cases/shared-steps`}
-            data-testid="shared-steps-link"
-            className="block rounded-xl border border-hairline bg-surface px-4 py-3 text-sm text-content hover:border-accent-ring hover:text-accent-soft-fg"
-          >
-            ⛓ Shared Steps
-          </Link>
-        </aside>
+        </SuiteRail>
 
         {/* Case list */}
         <div className="min-w-0 flex-1 space-y-4">
