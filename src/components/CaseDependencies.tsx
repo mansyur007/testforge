@@ -53,7 +53,7 @@ export function CaseDependencies({
             <li key={p.linkId} className="flex items-center justify-between gap-2">
               <Link
                 href={`/projects/${projectSlug}/cases/${p.case.id}`}
-                className="min-w-0 truncate text-content hover:text-accent-text"
+                className="w-0 flex-1 truncate text-content hover:text-accent-text"
               >
                 <span className="font-mono text-xs text-content-subtle">{p.case.displayId}</span>{" "}
                 {p.case.title}
@@ -83,7 +83,10 @@ export function CaseDependencies({
             <select
               name="dependsOnCaseId"
               data-testid="dependency-add-select"
-              className="bg-surface text-content-strong min-w-48 flex-1 rounded-lg border border-hairline-strong px-2 py-1.5 text-xs"
+              // min-w-0 (not min-w-48): option labels are "TC-… — <full title>",
+              // so the select's intrinsic width ran to ~470px and pushed the
+              // whole page wide on a phone. flex-1 still gives it the row.
+              className="bg-surface text-content-strong w-full min-w-0 flex-1 rounded-lg border border-hairline-strong px-2 py-1.5 text-xs"
             >
               {candidates.map((c) => (
                 <option key={c.id} value={c.id}>

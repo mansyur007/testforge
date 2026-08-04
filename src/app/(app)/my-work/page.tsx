@@ -32,7 +32,7 @@ export default async function MyWorkPage() {
             >
               <Link
                 href={`/projects/${r.run.project.slug}/runs/${r.run.id}`}
-                className="min-w-0 truncate text-content hover:text-accent-text"
+                className="w-0 flex-1 truncate text-content hover:text-accent-text"
               >
                 <span className="text-xs text-content-subtle">{r.run.project.name} ·</span>{" "}
                 <span className="font-mono text-xs text-content-subtle">
@@ -70,7 +70,7 @@ export default async function MyWorkPage() {
             >
               <Link
                 href={`/projects/${c.project.slug}/cases/${c.id}`}
-                className="min-w-0 truncate text-content hover:text-accent-text"
+                className="w-0 flex-1 truncate text-content hover:text-accent-text"
               >
                 <span className="text-xs text-content-subtle">{c.project.name} ·</span>{" "}
                 <span className="font-mono text-xs text-content-subtle">

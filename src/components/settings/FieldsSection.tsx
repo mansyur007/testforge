@@ -223,6 +223,7 @@ export async function FieldsSection({
             <p className="mb-2 text-xs font-semibold uppercase text-content-subtle">
               Latest run: {gatePreview.run.name}
             </p>
+            <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <tbody>
                 {gatePreview.checks.map((c) => (
@@ -245,6 +246,7 @@ export async function FieldsSection({
                 ))}
               </tbody>
             </table>
+            </div>
             <p className="mt-2 text-sm font-semibold" data-testid="gate-preview-verdict">
               gate: {gatePreview.pass ? "PASS" : "FAIL"}
             </p>

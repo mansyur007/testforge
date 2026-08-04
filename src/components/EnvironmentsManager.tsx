@@ -126,18 +126,20 @@ export function EnvironmentsManager({
 
         <form ref={formRef} action={formAction} className="space-y-1">
           <input type="hidden" name="projectId" value={projectId} />
-          <div className="flex gap-2">
+          {/* flex-wrap + min-w-0: two flex-1 inputs plus the button need ~466px
+              of intrinsic width, which pushed a phone viewport 128px wide. */}
+          <div className="flex flex-wrap gap-2">
             <input
               name="name"
               required
               placeholder="e.g. Staging"
               data-testid="environment-name-input"
-              className="bg-surface text-content-strong flex-1 rounded-lg border border-hairline-strong px-3 py-1.5 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
+              className="bg-surface text-content-strong min-w-0 flex-1 rounded-lg border border-hairline-strong px-3 py-1.5 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
             />
             <input
               name="url"
               placeholder="URL (optional)"
-              className="bg-surface text-content-strong flex-1 rounded-lg border border-hairline-strong px-3 py-1.5 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
+              className="bg-surface text-content-strong min-w-0 flex-1 rounded-lg border border-hairline-strong px-3 py-1.5 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
             />
             <SubmitSmall label="+ Environment" />
           </div>

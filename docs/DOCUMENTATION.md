@@ -21,8 +21,8 @@
 | P2 — competitive differentiators | F-11 … F-24 | 14 | ✅ all shipped |
 | P3 — nice-to-have / niche segments | F-25 … F-37 | 13 | ✅ all shipped |
 | Leapfrog — features no competitor has | L-01 … L-05 | 5 | ✅ all shipped |
-| Post-backlog additions | F-38 (+ Part B) | 1 | ✅ shipped |
-| **Total** | | **43** | **✅ 43 / 43 complete** |
+| Post-backlog additions | F-38 (+ Part B) … F-43 | 6 | ✅ shipped |
+| **Total** | | **48** | **✅ 48 / 48 complete** |
 
 Each work order in [Part IV](#part-iv--feature-work-orders) carries a `[x]` marker and, in most
 cases, its completion date and any deliberately deferred sub-scope. Deliberate exclusions are
@@ -3975,6 +3975,79 @@ vanishing when Test Cases is switched off, and the overview added to the existin
 **Deferred, deliberately:** month labels on the activity grid, a per-suite coverage panel (suite
 names are already one click away in the Test Cases section), and any client-side interactivity —
 tooltips are `title` attributes so the page stays script-free.
+
+#### F-43 — Mobile responsiveness audit `[x]`
+
+> **Status: DONE** (2026-08-04, branch `feat/mobile-responsive-audit`).
+
+F-36 made the *shell* and the *run executor* work on a phone, and stopped there by design — its
+scope was the walking tester. Everything that tester touches before and after the run (the case
+catalogue, reports, project settings) had never been looked at below 768px. F-43 audits every
+route at 375×812 and fixes what it found. **No feature changes, no new UI** — layout only.
+
+**Method: measured, not eyeballed.** A throwaway Playwright harness walked 54 authenticated
+routes at 375×812 and recorded `documentElement.scrollWidth - clientWidth` per route. Reporting
+the *elements* that overflow is close to useless — they're mostly innocent blocks inheriting a
+width someone else forced. So the harness also computes each element's **min-content width** by
+cloning it into a `width: min-content` probe, walks depth-first, and reports only the deepest node
+that is still too wide. That names the actual culprit (a `<select>`, a `<pre>`, a nowrap row)
+instead of its twelve ancestors. Two corrections were needed before the output was trustworthy:
+descendant scroll containers are neutralised in the clone (otherwise the horizontally-scrolling
+`ProjectTabs` strip is blamed on every page), and `overflow: hidden`/`auto` subtrees are skipped
+(content there is contained by design).
+
+**The rule applied everywhere: stack or scroll below `md` (768px), leave ≥`md` byte-identical.**
+`md` is already the shell's drawer breakpoint (F-36), so nothing in the 768–1023px band moves and
+there is no desktop regression to argue about.
+
+**Baseline: 9 of 54 routes overflowed. Result: 0 of 54.**
+
+| Route | Was | Root cause | Fix |
+|---|---:|---|---|
+| `/projects/[slug]` | 148px | `w-64` suite rail beside the case list left the list **63px wide**, and its table wrapper was `overflow-hidden` — the columns weren't scrollable, they were *invisible* | rail stacks below `md`; wrapper → `overflow-x-auto` |
+| `/projects/[slug]/cases/[caseId]` | 213px | 4-button action row; dependency `<select>` sized to its widest option (`TC-… — <full title>`, ~470px) | header stacks below `md`; select → `w-full min-w-0` |
+| `/projects/[slug]/fields` | 128px | two `flex-1` inputs + button in one row | `flex-wrap` + `min-w-0` |
+| `/projects/[slug]/runs` | 103px | milestone name + date + button in one row | `flex-wrap` + `min-w-0` |
+| `/projects/[slug]/reports` | 63px | trend chart columns can't shrink below their `100%` label (min-content 1717px with enough runs) | chart → `overflow-x-auto` |
+| `/projects/[slug]/import` | 43px | 5 importer tab names in a non-scrolling row | same treatment as `ProjectTabs` |
+| `/projects/[slug]/requirements` | 37px | refId + title inputs in one row | `flex-wrap` + `min-w-0` |
+| `/projects/[slug]/api` | 18px | `white-space: pre` curl samples set the grid track's min-content | `min-w-0` on both grid children |
+| `/` (landing) | 59px | logo + language + theme + CTA need ~450px | navbar `flex-wrap` |
+
+**Three CSS traps worth writing down, because they will recur:**
+
+1. **`min-w-0 truncate` on a flex child is not enough.** `truncate` sets `white-space: nowrap`, and
+   Chrome still counts the full string in the row's min-content contribution; `min-width: 0` does
+   not lower it. Pinning the width does: **`w-0 flex-1 truncate`**. This pattern appears in ~10
+   list rows across the app and all of them were latent — only the two with long titles had tripped.
+   **It only works when the parent is genuinely a flex container** — on a plain `<li>` the flex
+   properties are ignored and `w-0` collapses the link to nothing. Two sites (`CaseDependencies`
+   "Required by", `my-work` review list) are plain `<li>` and deliberately keep `min-w-0`.
+2. **A grid track sizes to its items' min-content**, so one `<pre>` or `<select>` deep inside a
+   grid child sets the whole column's width. `min-w-0` on the grid child is the release valve.
+3. **`overflow-hidden` on a table wrapper is not a responsive fix** — it hides columns with no way
+   to reach them. `overflow-x-auto` clips the rounded corners identically and scrolls. Every table
+   wrapper in the app was converted; none contained an absolutely-positioned popover that the
+   implied `overflow-y: auto` would have clipped (checked before changing each one).
+
+**Testing.** The audit harness reports 0/54 routes overflowing (was 9/54); `tsc --noEmit`,
+`check:theme`, and the full Playwright suite pass. Note for whoever runs the suite on Windows:
+`playwright.config.ts`'s `webServer.command` uses POSIX `VAR=x cmd` env prefixes, which cmd.exe
+rejects — start `next dev -p 3456` with those vars yourself and let `reuseExistingServer` pick it up.
+
+**Deferred, deliberately:**
+
+- **Touch-target sizing.** §7.4 asks for ≥44px targets and much of the app sits at 36–38px
+  (`px-3 py-2 text-sm`). That is a density decision affecting every button on every surface, not a
+  responsiveness bug — it belongs in its own change with its own review, not smuggled into a
+  layout audit.
+- **Collapsing the suite rail on `/projects/[slug]`.** Stacking fixed the breakage (the case list
+  was 63px wide), but the rail is ~630px tall on a phone, so the cases table now starts below the
+  fold. Making it a disclosure below `md` means inventing an interaction — open by default or not,
+  does it remember state — and that is a design call, not a layout fix. Left as a deliberate,
+  visible follow-up rather than decided in passing.
+- `/print/*` (paper, not phones) and drag-to-reorder in the cases table (it has keyboard and menu
+  equivalents; a touch DnD alternative is its own feature).
 
 ---
 

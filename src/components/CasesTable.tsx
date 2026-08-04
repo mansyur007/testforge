@@ -415,7 +415,11 @@ export function CasesTable({
         </div>
       )}
 
-      <div className="overflow-hidden rounded-xl border border-hairline bg-surface">
+      {/* overflow-x-auto (not -hidden): on a phone the 7-column table is wider
+          than the viewport, and clipping it made Priority/Type/Automation/Tags
+          unreachable. Still clips the rounded corners; no scrollbar on desktop,
+          where the table fits. */}
+      <div className="overflow-x-auto rounded-xl border border-hairline bg-surface">
         <table className="w-full text-sm">
           <thead className="bg-canvas text-left text-xs uppercase text-content-muted">
             <tr>

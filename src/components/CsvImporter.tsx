@@ -227,7 +227,7 @@ export function CsvImporter({
         </div>
         {message && <p className="text-sm" data-testid="csv-import-message">{message}</p>}
         {preview && (
-          <div className="max-h-64 overflow-y-auto rounded-lg border border-hairline">
+          <div className="max-h-64 overflow-auto rounded-lg border border-hairline">
             <table className="w-full text-xs">
               <thead className="bg-canvas text-left uppercase text-content-muted">
                 <tr>

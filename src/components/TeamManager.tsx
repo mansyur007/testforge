@@ -156,7 +156,7 @@ export function TeamManager({
             ({members.length})
           </span>
         </h2>
-        <div className="overflow-hidden rounded-lg border border-hairline">
+        <div className="overflow-x-auto rounded-lg border border-hairline">
           <table className="w-full text-sm">
             <thead className="bg-canvas text-left text-xs uppercase tracking-wide text-content-muted">
               <tr>
@@ -256,7 +256,7 @@ export function TeamManager({
         {invitations.length === 0 ? (
           <p className="text-sm text-content-subtle">No pending invitations.</p>
         ) : (
-          <div className="overflow-hidden rounded-lg border border-hairline">
+          <div className="overflow-x-auto rounded-lg border border-hairline">
             <table className="w-full text-sm">
               <thead className="bg-canvas text-left text-xs uppercase tracking-wide text-content-muted">
                 <tr>

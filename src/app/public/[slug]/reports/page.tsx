@@ -147,7 +147,7 @@ export default async function PublicReportsPage({
               <li key={f.caseId} className="flex items-center justify-between gap-3">
                 <Link
                   href={`/public/${project.slug}/cases/${f.caseId}`}
-                  className="min-w-0 truncate text-content hover:text-accent-soft-fg"
+                  className="w-0 flex-1 truncate text-content hover:text-accent-soft-fg"
                 >
                   <span className="font-mono text-xs text-content-subtle">
                     {f.testCase && caseDisplayId(project.slug, f.testCase.seq)}

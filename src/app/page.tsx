@@ -159,7 +159,10 @@ export default async function HomePage() {
 
       {/* Navbar */}
       <header className="sticky top-0 z-40 border-b border-hairline-subtle bg-canvas/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+        {/* flex-wrap: logo + language + theme + CTA need ~450px, so on a phone
+            the controls drop to a second row instead of widening the page.
+            No effect from md up, where they already fit on one line. */}
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-y-2 px-4 py-3">
           <Logo size="sm" />
           <nav className="hidden items-center gap-6 text-sm text-content md:flex">
             <a href="#features" className="hover:text-content-strong">{t.nav.features}</a>

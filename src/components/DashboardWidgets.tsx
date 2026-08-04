@@ -130,11 +130,11 @@ function FlakyListWidget({
         return (
         <li key={f.testCase!.id} className="flex items-center justify-between gap-2">
           {noLinks ? (
-            <span className="min-w-0 truncate text-content">{label}</span>
+            <span className="w-0 flex-1 truncate text-content">{label}</span>
           ) : (
             <Link
               href={`/projects/${slug}/cases/${f.testCase!.id}`}
-              className="min-w-0 truncate text-content hover:text-accent-text"
+              className="w-0 flex-1 truncate text-content hover:text-accent-text"
             >
               {label}
             </Link>

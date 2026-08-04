@@ -269,7 +269,7 @@ export function NotificationChannelsManager({
       />
 
       {channels.length > 0 && (
-        <div className="overflow-hidden rounded-xl border border-hairline bg-surface">
+        <div className="overflow-x-auto rounded-xl border border-hairline bg-surface">
           <table className="w-full text-sm">
             <thead className="bg-canvas text-left text-xs uppercase text-content-muted">
               <tr>
