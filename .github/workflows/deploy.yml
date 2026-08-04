@@ -1,6 +1,6 @@
 name: Deploy TestForge to VPS
 
-# Deploys to the VPS on a nightly schedule (23:00 WIB), or manually via Actions
+# Deploys to the VPS on a nightly schedule (02:00 WIB), or manually via Actions
 # any time. Do NOT push commits directly to main — use a feature branch + PR so
 # CI runs first; merging to main just queues the change for the next scheduled
 # deploy (or trigger it manually if it needs to go out sooner).
@@ -14,7 +14,7 @@ name: Deploy TestForge to VPS
 # the source tree — so rsync --delete is safe as long as the box's .env is kept.
 on:
   schedule:
-    - cron: '0 16 * * *' # 23:00 WIB (UTC+7)
+    - cron: '0 19 * * *' # 02:00 WIB (UTC+7)
   workflow_dispatch:
 
 concurrency:
