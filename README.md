@@ -191,9 +191,10 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   IndexedDB and sync automatically when you're back online, with a
   last-write-wins conflict notice so nothing is silently lost (F-36)
 - **Responsive on a phone, everywhere** — every route is audited at 375px: the
-  suite rail stacks above the case list, wide tables and code samples scroll in
-  their own box instead of panning the page, and toolbars wrap. Desktop layout
-  from 768px up is untouched (F-43)
+  suite rail collapses to a tappable "Test Suites" header above the case list,
+  wide tables and code samples scroll in their own box instead of panning the
+  page, and toolbars wrap. Desktop layout from 768px up is untouched
+  (F-43, F-44)
 - **AI assist (bring your own key)** — point an org at any Anthropic-compatible
   endpoint (key stored encrypted) to draft test cases from a pasted
   requirement, suggest edge-case steps on a case, and flag near-duplicate

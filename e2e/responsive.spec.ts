@@ -114,5 +114,61 @@ test(`TC-${TC}-85 Responsive: desktop layout is unchanged at 1280px`, async ({
   expect(list.x).toBeGreaterThan(railBox!.x + railBox!.width);
   expect(Math.abs(list.top - railBox!.y)).toBeLessThan(4);
 
+  // The <md disclosure must not leak upward: no toggle, and the whole rail is
+  // open with no interaction. The rail's own default state is "closed", so if
+  // the md: overrides ever break, everything below is invisible on desktop.
+  await expect(page.locator('[data-testid="suite-rail-toggle"]')).toBeHidden();
+  await expect(page.locator("#suite-rail-panel")).toBeVisible();
+  // The tree renders even with no suites; the search box above it does not.
+  await expect(page.getByRole("tree", { name: "Test suites" })).toBeVisible();
+  await expect(page.locator('[data-testid="shared-steps-link"]')).toBeVisible();
+
   expect(await overflowOf(page)).toBeLessThanOrEqual(1);
+});
+
+test(`TC-${TC}-86 Responsive: the suite rail is a collapsed disclosure at 375px`, async ({
+  page,
+}) => {
+  await page.setViewportSize(PHONE);
+  await login(page);
+
+  await page.goto(`/projects/${E2E.projectSlug}`, { waitUntil: "networkidle" });
+
+  const toggle = page.locator('[data-testid="suite-rail-toggle"]');
+  const panel = page.locator("#suite-rail-panel");
+  const sharedSteps = page.locator('[data-testid="shared-steps-link"]');
+  const rail = page.locator("main aside").first();
+  const table = page.locator("table").first();
+
+  // Collapsed by default — the tree, the new-suite form and the Shared Steps
+  // card are all behind the one tap.
+  await expect(toggle).toBeVisible();
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(panel).toBeHidden();
+  await expect(sharedSteps).toBeHidden();
+
+  // The reason for the change: F-43's stacked rail was ~630px tall, so it alone
+  // pushed the cases table most of a screen down. Closed, it is one header row.
+  const closedRail = await rail.boundingBox();
+  expect(closedRail!.height).toBeLessThan(120);
+  const closedTableTop = (await table.boundingBox())!.y;
+
+  // Tapping opens it, and an open rail still doesn't widen the page.
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  await expect(panel).toBeVisible();
+  await expect(sharedSteps).toBeVisible();
+  expect(await overflowOf(page)).toBeLessThanOrEqual(1);
+
+  // How much vertical space the collapse actually buys. Asserted as a delta,
+  // not as "the table is above the fold": what still sits between the rail and
+  // the table (toolbar, and mostly SuiteFolderGrid — ~570px with 8 root suites
+  // in the e2e fixture) is other components' height, not this one's.
+  const openTableTop = (await table.boundingBox())!.y;
+  expect(openTableTop - closedTableTop).toBeGreaterThan(400);
+
+  // …and tapping again closes it.
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await expect(panel).toBeHidden();
 });

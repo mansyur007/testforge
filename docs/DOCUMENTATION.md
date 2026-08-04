@@ -4045,9 +4045,66 @@ rejects — start `next dev -p 3456` with those vars yourself and let `reuseExis
   was 63px wide), but the rail is ~630px tall on a phone, so the cases table now starts below the
   fold. Making it a disclosure below `md` means inventing an interaction — open by default or not,
   does it remember state — and that is a design call, not a layout fix. Left as a deliberate,
-  visible follow-up rather than decided in passing.
+  visible follow-up rather than decided in passing. **→ done in F-44.**
 - `/print/*` (paper, not phones) and drag-to-reorder in the cases table (it has keyboard and menu
   equivalents; a touch DnD alternative is its own feature).
+
+---
+
+#### F-44 — Collapsible suite rail on the project overview `[x]`
+
+> **Status: DONE** (2026-08-04, branch `feat/collapsible-suite-rail`). Closes the first deferred
+> item in F-43 above.
+
+F-43 stacked the suite rail above the case list below `md` because side by side left the list
+63px wide. That fixed the overflow and created the next problem: the rail — suite tree, search,
+Expand/Collapse all, `NewSuiteForm`, Shared Steps card — is **~630px tall on a phone**, so the
+cases table opened most of a screen down. Below `md` the rail is now a disclosure, **collapsed by
+default**: a 44px "Test Suites" header with a chevron, one tap to open.
+
+**The two design calls F-43 declined to make in passing:**
+
+1. **Collapsed by default, not open.** The table is the reason the route exists; the tree is
+   navigation you reach for deliberately. Open-by-default would have reproduced the F-43 problem
+   with an extra tap available to fix it.
+2. **State is not persisted** (unlike `SuiteTree`'s own per-node collapse, which is in
+   `localStorage`). Tapping a suite navigates, and arriving at the filtered cases with the rail
+   shut is the wanted end state — a remembered "open" would drop the user below the fold on every
+   navigation. Nothing to remember also means nothing to reconcile against the viewport on resize.
+
+**Implementation.** `src/components/SuiteRail.tsx` — a client component owning one `useState` and
+the `<aside>` itself; the page passes `SuiteTree` + `NewSuiteForm` as `children` (both are already
+client components, so this is plain RSC composition, no prop re-plumbing). `<details>`/`<summary>`
+was rejected: `open` is a DOM property, and there is no CSS that forces it open from `md` up.
+
+**Keeping ≥`md` byte-identical** was the constraint, and it dictated the markup:
+
+- The toggle (`md:hidden`) and the `<h3>` (`hidden md:block`) are **separate nodes**. One node
+  styled to serve both would still be focusable and clickable on desktop, toggling state that the
+  `md:` overrides then ignore.
+- The toggle lives **inside** the card, not as a sibling of it in the `space-y-4` `<aside>`.
+  Tailwind's `space-y-*` selector is `& > :not([hidden]) ~ :not([hidden])` — it keys on the
+  `hidden` *attribute*, not the `hidden` *class*, so a `display:none` first child still makes the
+  card the "second" child and would have pushed the whole rail down 16px on desktop.
+- The panel carries `mt-3 md:mt-0`, so at `md` the `<h3>`'s `mb-3` is the only gap, exactly as
+  before. Verified: rail box 256px wide, list starts to its right at the same `y`, card top flush
+  with the rail top.
+
+Chevron reuses `SuiteTree`'s glyph and rotates 90° over `duration-panel` (200ms) `ease-tf-out`
+behind `motion-safe:` (§7.4.5); the header is `min-h-[44px]` (§7.4.4); `data-testid`
+`suite-rail-toggle`, panel `id="suite-rail-panel"` wired via `aria-controls` + `aria-expanded`.
+
+**Testing.** `e2e/responsive.spec.ts` — new **TC-E2E-86** (collapsed by default at 375px, one tap
+opens the tree *and* the Shared Steps card, tap again closes, no overflow while open), and
+TC-E2E-85 gained the no-leak-upward guard (at 1280px the toggle is absent and the panel, suite
+search and Shared Steps are visible with no interaction — the component's own default is
+"closed", so a broken `md:` override would blank the desktop rail).
+
+**Not fixed here, and worth knowing.** The rail is no longer what keeps the cases table off the
+first screen — `SuiteFolderGrid` is. Measured at 375px on the e2e fixture (8 root suites):
+collapsed rail 78px, toolbar 228px, **folder grid 572px**, table top at y=1110. The grid is one
+full-width card per suite and grows linearly with suite count; making it a compact list or a
+2-column grid on phones is its own change against its own feature, not a rider on this one.
 
 ---
 
