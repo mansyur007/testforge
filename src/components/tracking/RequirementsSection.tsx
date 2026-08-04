@@ -116,19 +116,21 @@ export async function RequirementsSection({ params }: SectionProps) {
             <h3 className="mb-3 font-semibold">Add requirement</h3>
             <form action={createRequirement} className="space-y-2">
               <input type="hidden" name="projectId" value={project.id} />
-              <div className="flex gap-2">
+              {/* flex-wrap + min-w-0: on a phone these two fields sit on their
+                  own lines instead of forcing the page wider than the screen. */}
+              <div className="flex flex-wrap gap-2">
                 <input
                   name="refId"
                   placeholder="REQ-001 (auto if blank)"
                   data-testid="req-refid-input"
-                  className="bg-surface text-content-strong w-40 rounded-lg border border-hairline-strong px-3 py-2 text-sm"
+                  className="bg-surface text-content-strong w-full min-w-0 rounded-lg border border-hairline-strong px-3 py-2 text-sm sm:w-40"
                 />
                 <input
                   name="title"
                   required
                   placeholder="Requirement title"
                   data-testid="req-title-input"
-                  className="bg-surface text-content-strong flex-1 rounded-lg border border-hairline-strong px-3 py-2 text-sm"
+                  className="bg-surface text-content-strong min-w-0 flex-1 rounded-lg border border-hairline-strong px-3 py-2 text-sm"
                 />
               </div>
               <input

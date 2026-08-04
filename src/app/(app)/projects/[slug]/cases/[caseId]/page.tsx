@@ -212,8 +212,10 @@ export default async function CaseDetailPage({
 
       <BackLink href={backHref} testId="case-back">Back to test cases</BackLink>
 
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      {/* Title and the 4-button action row sit side by side from md up; below
+          that they stack, so the buttons don't push the page wide. */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="min-w-0">
           <p className="font-mono text-sm text-content-subtle">{displayId}</p>
           <h2 className="text-xl font-bold">{testCase.title}</h2>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
@@ -255,7 +257,7 @@ export default async function CaseDetailPage({
             )}
           </div>
         </div>
-        <div className="flex shrink-0 gap-2">
+        <div className="flex flex-wrap gap-2 md:shrink-0">
           {/* F-35: one-case printable document. */}
           <Link
             href={`/print/projects/${testCase.project.slug}/cases?case=${testCase.id}`}
@@ -500,7 +502,10 @@ export default async function CaseDetailPage({
                   <li key={d.id} className="flex items-center justify-between gap-2">
                     <Link
                       href={`/projects/${testCase.project.slug}/cases/${d.id}`}
-                      className="min-w-0 truncate text-warning-soft-fg hover:underline"
+                      // w-0 flex-1 (not min-w-0): `truncate` sets white-space
+                      // nowrap, and Chrome still counted the full title in this
+                      // row's min-content until the width was pinned to 0.
+                      className="w-0 flex-1 truncate text-warning-soft-fg hover:underline"
                     >
                       <span className="font-mono text-xs text-warning-soft-fg">{d.displayId}</span>{" "}
                       {d.title}

@@ -219,13 +219,14 @@ export default async function RunsPage({
             <p className="text-content-subtle">No milestones yet.</p>
           )}
         </ul>
-        <form action={createMilestone} className="flex gap-2">
+        {/* flex-wrap + min-w-0: name, date and button don't fit one phone row. */}
+        <form action={createMilestone} className="flex flex-wrap gap-2">
           <input type="hidden" name="projectId" value={project.id} />
           <input
             name="name"
             required
             placeholder="Milestone name, e.g. Release v2.0"
-            className="bg-surface text-content-strong flex-1 rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
+            className="bg-surface text-content-strong min-w-0 flex-1 rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
           />
           <input type="date" name="dueDate" className="bg-surface text-content-strong rounded-lg border border-hairline-strong px-3 py-2 text-sm" />
           <button className="rounded-lg bg-sidebar px-4 py-2 text-sm text-white hover:bg-sidebar-hover">

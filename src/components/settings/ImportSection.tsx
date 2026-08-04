@@ -60,13 +60,15 @@ export async function ImportSection({
   return (
     <div className="space-y-6">
 
-      <div className="flex gap-1 border-b border-hairline text-sm">
+      {/* Scrolls horizontally on a phone, same treatment as ProjectTabs — five
+          importer names don't fit a 375px row. */}
+      <div className="flex gap-1 overflow-x-auto border-b border-hairline text-sm">
         {TABS.map(([key, label]) => (
           <Link
             key={key}
             href={`${basePath}${key === "csv" ? "" : `?tab=${key}`}`}
             data-testid={`import-tab-${key}`}
-            className={`-mb-px border-b-2 px-4 py-2 font-medium ${
+            className={`-mb-px shrink-0 whitespace-nowrap border-b-2 px-4 py-2 font-medium ${
               tab === key
                 ? "border-accent text-accent-soft-fg"
                 : "border-transparent text-content-muted hover:text-content"

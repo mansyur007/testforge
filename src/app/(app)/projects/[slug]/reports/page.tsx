@@ -200,7 +200,11 @@ export default async function ReportsPage({
         {trend.length === 0 ? (
           <p className="text-sm text-content-subtle">No run data yet.</p>
         ) : (
-          <div className="flex h-44 items-end gap-2">
+          // overflow-x-auto: each column can't shrink below its "100%" label, so
+          // a project with many runs needs more width than a phone has. The
+          // chart scrolls instead of widening the page; no scrollbar on desktop,
+          // where the columns still divide the card evenly.
+          <div className="flex h-44 items-end gap-2 overflow-x-auto">
             {trend.map((t, i) => (
               // h-full + justify-end: the bar's `height: N%` needs a parent with a
               // definite height to resolve against, or it collapses to 0px. Same fix
@@ -238,7 +242,7 @@ export default async function ReportsPage({
                 <li key={f.caseId} className="flex items-center justify-between">
                   <Link
                     href={`/projects/${project.slug}/cases/${f.caseId}`}
-                    className="min-w-0 truncate text-content hover:text-accent-text"
+                    className="w-0 flex-1 truncate text-content hover:text-accent-text"
                   >
                     <span className="font-mono text-xs text-content-subtle">
                       {f.testCase && caseDisplayId(project.slug, f.testCase.seq)}
@@ -331,6 +335,7 @@ export default async function ReportsPage({
 
       <section className="rounded-xl border border-hairline bg-surface p-6">
         <h3 className="mb-4 flex items-center gap-2 font-semibold"><TFIcon name="breakdown" className="h-5 w-5" /> Breakdown per Run</h3>
+        <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="text-left text-xs uppercase text-content-muted">
             <tr>
@@ -389,6 +394,7 @@ export default async function ReportsPage({
             })}
           </tbody>
         </table>
+        </div>
       </section>
     </div>
   );

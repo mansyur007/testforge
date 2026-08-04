@@ -208,9 +208,11 @@ export default async function ProjectPage({
     <div className="space-y-6">
       <ProjectTabs slug={project.slug} name={project.name} active="cases" />
 
-      <div className="flex gap-6">
+      {/* Below md the suite rail stacks above the case list — side by side on a
+          phone left the list ~60px wide. Desktop (≥md) is unchanged. */}
+      <div className="flex flex-col gap-6 md:flex-row">
         {/* Sidebar suite tree */}
-        <aside className="w-64 shrink-0 space-y-4">
+        <aside className="w-full shrink-0 space-y-4 md:w-64">
           <div className="rounded-xl border border-hairline bg-surface p-4">
             <h3 className="mb-3 text-xs font-semibold uppercase text-content-subtle">
               Test Suites

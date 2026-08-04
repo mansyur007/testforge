@@ -128,7 +128,7 @@ export function ToolImporter({
               </ul>
             )}
             {preview.sample.length > 0 && (
-              <div className="mt-2 max-h-64 overflow-y-auto rounded-lg border border-hairline">
+              <div className="mt-2 max-h-64 overflow-auto rounded-lg border border-hairline">
                 <table className="w-full text-xs">
                   <thead className="bg-canvas text-left uppercase text-content-muted">
                     <tr>

@@ -75,8 +75,11 @@ export async function ApiSection({
   return (
     <div className="space-y-6">
 
+      {/* min-w-0: a grid track sizes to its items' min-content, and the curl
+          samples below are `white-space: pre`. Without it the longest command
+          line, not the viewport, decided the column width. */}
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+        <div className="min-w-0 space-y-6 lg:col-span-2">
           <section className="rounded-xl border border-hairline bg-surface p-6">
             <h3 className="flex items-center gap-2 font-semibold">
               <TFIcon name="cicd" className="h-5 w-5" /> Upload automation results
@@ -223,7 +226,7 @@ export async function ApiSection({
           </section>
         </div>
 
-        <aside className="space-y-6">
+        <aside className="min-w-0 space-y-6">
           <section className="rounded-xl border border-hairline bg-surface p-6">
             <h4 className="text-sm font-semibold text-content">
               Supported frameworks
