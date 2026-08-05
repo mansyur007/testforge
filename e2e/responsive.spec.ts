@@ -172,3 +172,42 @@ test(`TC-${TC}-86 Responsive: the suite rail is a collapsed disclosure at 375px`
   await expect(toggle).toHaveAttribute("aria-expanded", "false");
   await expect(panel).toBeHidden();
 });
+
+test(`TC-${TC}-87 Responsive: the case toolbar lays out in flush rows at 375px`, async ({
+  page,
+}) => {
+  await page.setViewportSize(PHONE);
+  await login(page);
+  await page.goto(`/projects/${E2E.projectSlug}?v=all`, {
+    waitUntil: "networkidle",
+  });
+
+  const search = page.locator('input[name="q"]');
+  const priority = page.locator('select[name="priority"]');
+  const type = page.locator('select[name="type"]');
+
+  const [searchBox, priorityBox, typeBox] = await Promise.all([
+    search.boundingBox(),
+    priority.boundingBox(),
+    type.boundingBox(),
+  ]);
+
+  // The old failure mode: the search input kept its desktop w-48 (192px) and sat
+  // stranded mid-row with a select crammed beside it. On a phone it owns its
+  // line — measured against the row below it, which spans the toolbar's width.
+  const rowWidth = typeBox!.x + typeBox!.width - priorityBox!.x;
+  expect(searchBox!.width).toBeGreaterThan(rowWidth * 0.95);
+
+  // The two selects share the next line rather than one wrapping away alone.
+  expect(Math.abs(priorityBox!.y - typeBox!.y)).toBeLessThan(2);
+  expect(priorityBox!.y).toBeGreaterThan(searchBox!.y);
+
+  expect(await overflowOf(page)).toBeLessThanOrEqual(1);
+
+  // Desktop keeps the original w-48 search — the mobile rules are max-md: only.
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(`/projects/${E2E.projectSlug}?v=all`, {
+    waitUntil: "networkidle",
+  });
+  expect((await search.boundingBox())!.width).toBe(192);
+});

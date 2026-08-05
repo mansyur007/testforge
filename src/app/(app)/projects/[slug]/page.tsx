@@ -233,7 +233,21 @@ export default async function ProjectPage({
 
         {/* Case list */}
         <div className="min-w-0 flex-1 space-y-4">
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Toolbar. Ten controls in one flex-wrap row collapsed into a ragged
+              six-line pile on a phone: the search box stranded mid-row, "Filter"
+              orphaned, and neighbours on the same line off by 2-3px because
+              items-center centres each one in a line of mixed heights.
+              Below md it becomes two bands — filters, then actions — with every
+              child stretching so each line is flush on both edges.
+              Both wrappers are `display: contents` by default, so from md up
+              they vanish from layout and the desktop row is the same flat list
+              of children it has always been. Every mobile rule is an additive
+              `max-md:` override on top of the untouched original classes: an
+              `md:` counter-rule has to re-derive the desktop value and one that
+              got it wrong (md:min-w-0 on the form) collapsed the search box from
+              192px to 51px. */}
+          <div className="flex flex-wrap items-center gap-2 max-md:flex-col max-md:flex-nowrap max-md:items-stretch">
+          <div className="contents max-md:flex max-md:flex-wrap max-md:items-stretch max-md:gap-2 max-md:[&>*]:grow max-md:[&_[data-testid=saved-views-trigger]]:w-full">
             <SavedViewsMenu
               projectId={project.id}
               projectSlug={project.slug}
@@ -250,7 +264,10 @@ export default async function ProjectPage({
                 filters: sanitizeCaseFilters(JSON.parse(v.filtersJson)),
               }))}
             />
-            <form className="flex flex-1 flex-wrap items-center gap-2">
+            {/* Full width on a phone so the search box owns its own line and
+                the two selects share the next one, instead of the search being
+                stranded at w-48 with a select crammed beside it. */}
+            <form className="flex flex-1 flex-wrap items-center gap-2 max-md:w-full max-md:flex-none">
               {searchParams.suite && (
                 <input type="hidden" name="suite" value={searchParams.suite} />
               )}
@@ -258,12 +275,12 @@ export default async function ProjectPage({
                 name="q"
                 defaultValue={searchParams.q}
                 placeholder="Search test cases..."
-                className="bg-surface text-content-strong w-48 rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
+                className="bg-surface text-content-strong w-48 rounded-lg border border-hairline-strong px-3 py-2 text-sm focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring max-md:w-full max-md:min-w-0"
               />
               <select
                 name="priority"
                 defaultValue={searchParams.priority ?? ""}
-                className="bg-surface text-content-strong rounded-lg border border-hairline-strong px-2 py-2 text-sm"
+                className="bg-surface text-content-strong rounded-lg border border-hairline-strong px-2 py-2 text-sm max-md:min-w-0 max-md:flex-1"
               >
                 <option value="">All Priorities</option>
                 {PRIORITIES.map((p) => (
@@ -273,17 +290,20 @@ export default async function ProjectPage({
               <select
                 name="type"
                 defaultValue={searchParams.type ?? ""}
-                className="bg-surface text-content-strong rounded-lg border border-hairline-strong px-2 py-2 text-sm"
+                className="bg-surface text-content-strong rounded-lg border border-hairline-strong px-2 py-2 text-sm max-md:min-w-0 max-md:flex-1"
               >
                 <option value="">All Types</option>
                 {CASE_TYPES.map((t) => (
                   <option key={t}>{t}</option>
                 ))}
               </select>
-              <button className="rounded-lg border border-hairline-strong px-3 py-2 text-sm hover:bg-surface-muted">
+              <button className="rounded-lg border border-hairline-strong px-3 py-2 text-sm hover:bg-surface-muted max-md:shrink-0">
                 Filter
               </button>
             </form>
+          </div>
+
+          <div className="contents max-md:flex max-md:flex-wrap max-md:items-stretch max-md:gap-2 max-md:[&>*]:grow max-md:[&_[data-testid=export-menu-trigger]]:w-full">
             {/* F-15: "Needs my review" toggle chip. */}
             <Link
               href={
@@ -348,11 +368,12 @@ export default async function ProjectPage({
               <Link
                 href={`/projects/${project.slug}/cases/new${searchParams.suite ? `?suite=${searchParams.suite}` : ""}`}
                 data-testid="case-new"
-                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover max-md:text-center"
               >
                 + Test Case
               </Link>
             )}
+          </div>
           </div>
 
           {openFolder && (
