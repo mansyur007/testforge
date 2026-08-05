@@ -4106,6 +4106,60 @@ collapsed rail 78px, toolbar 228px, **folder grid 572px**, table top at y=1110. 
 full-width card per suite and grows linearly with suite count; making it a compact list or a
 2-column grid on phones is its own change against its own feature, not a rider on this one.
 
+#### F-45 — Case toolbar layout on phones `[x]`
+
+> **Status: DONE** (2026-08-04, branch `feat/mobile-toolbar-rows`). Reported from a screenshot:
+> F-43 removed the toolbar's *overflow* but left its *appearance* bad.
+
+Ten controls in one `flex flex-wrap items-center gap-2` row broke into a ragged six-line pile at
+375px. Measured before: search stranded at its desktop `w-48` with a select crammed beside it,
+`Filter` orphaned on its own line, and neighbours on the same visual row sitting at **y=415 vs
+417** and **513 vs 516** — `items-center` centres each item within a wrap-line of mixed heights,
+so nothing shared a baseline. Every line also ended at a different x.
+
+**Two `display: contents` bands.** The toolbar is now an outer row containing two wrappers —
+filters (Views + the filter form) and actions (review chip, Export, Print, Import, AI, + Test
+Case). Below `md` each wrapper is a real flex container that can be styled; from `md` up both are
+`display: contents`, so they vanish from layout and the desktop row is the same flat list of
+children it has always been. **No DOM reordering**, so no `order` juggling was needed.
+
+**Everything mobile-only is written as a `max-md:` override on top of the untouched original
+classes**, rather than as a base rule with an `md:` counter-rule. This is the lesson from the
+first attempt, which used `md:min-w-0` on the form: `min-width: 0` removed the min-content floor
+that was holding a `flex-1` form open, and the search input collapsed from 192px to **51px** on
+desktop. Additive `max-md:` rules make desktop identical by construction rather than by
+re-derivation. Verified by stashing the change and diffing the measured desktop geometry —
+identical to the pixel (bar 179px tall; search 192, priority 115, type 138, Views 230 at the same
+x on both).
+
+Alignment comes from `max-md:items-stretch` (one height per line) plus `max-md:[&>*]:grow` (each
+line flush to both edges). Two children are wrappers whose *inner* button wouldn't stretch with
+them, so the trigger is targeted directly —
+`max-md:[&_[data-testid=saved-views-trigger]]:w-full` and the same for `export-menu-trigger`.
+Targeted by testid rather than a structural `[&>div>button]`, which would also have hit the
+buttons inside `AiGenerateCases`'s modal.
+
+Result at 375px — every row flush 16→359, one height per row:
+
+| Row | Contents |
+|---|---|
+| 1 | Views (full width) |
+| 2 | Search (full width) |
+| 3 | `All Priorities` · `All Types` · `Filter` |
+| 4 | `Needs my review` · `Export ▾` |
+| 5 | `Print view` · `Import` |
+| 6 | `Generate with AI` · `+ Test Case` |
+
+**Testing.** `e2e/responsive.spec.ts` **TC-E2E-87**: at 375px the search spans the toolbar width
+and the two selects share the line below it; at 1280px the search is back to exactly 192px, which
+is the guard that the `max-md:` rules never leak upward. Both dropdowns were opened at 375px to
+confirm the now-full-width triggers still position their panels inside the viewport.
+
+**Height is unchanged at 277px** — this was a raggedness fix, not a compaction. Making the
+toolbar genuinely shorter on a phone means hiding rarely-used actions (Export/Print/Import) behind
+a disclosure, which is the same "invent an interaction" call deferred in F-43/F-44 and belongs
+with the `SuiteFolderGrid` work noted above.
+
 ---
 
 *End of document. When a feature ships: tick its checkbox here, flip the cell in
