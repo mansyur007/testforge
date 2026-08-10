@@ -1,0 +1,80 @@
+// A-01: the Academy content registry. Same shape as src/content/help/index.ts —
+// plain TS modules imported at build time, not files read at request time.
+import { fundamentals } from "./tracks/fundamentals";
+import { manualPro } from "./tracks/manual-pro";
+import { automation } from "./tracks/automation";
+import { beyond } from "./tracks/beyond";
+import { istqb } from "./tracks/istqb";
+import type { ContentStatus, Lesson, Track } from "./types";
+
+export type { ContentStatus, Lesson, Track };
+
+/** Every track, in roadmap order — drafts included, because the roadmap shows
+ *  them as "coming soon" cards. Anything that produces a *route* must filter to
+ *  published first (see `publishedTracks`). */
+export const TRACKS: Track[] = [
+  fundamentals,
+  manualPro,
+  automation,
+  beyond,
+  istqb,
+];
+
+/**
+ * Required on every surface that names the certification scheme — see
+ * docs/QA-ACADEMY.md §7. One constant so it cannot drift between pages.
+ */
+export const ISTQB_DISCLAIMER =
+  "ISTQB® is a registered trademark of the International Software Testing Qualifications Board. TestForge QA Academy is not affiliated with, endorsed by, or accredited by the ISTQB or any of its member boards. Practice questions are written from the published syllabus learning objectives and are not reproduced from any real examination.";
+
+export function publishedTracks(): Track[] {
+  return TRACKS.filter((t) => t.status === "published");
+}
+
+/** Published lessons of a track, in order. Drafts inside a published track are
+ *  skipped the same way a draft track is — one status field, one rule. */
+export function publishedLessons(track: Track): Lesson[] {
+  return track.lessons.filter((l) => l.status === "published");
+}
+
+/** Published track by slug. Returns undefined for drafts on purpose: the route
+ *  layer turns that into a 404 rather than serving unfinished content. */
+export function getTrack(slug: string): Track | undefined {
+  return publishedTracks().find((t) => t.slug === slug);
+}
+
+export function getLesson(
+  trackSlug: string,
+  lessonSlug: string,
+): { track: Track; lesson: Lesson } | undefined {
+  const track = getTrack(trackSlug);
+  if (!track) return undefined;
+  const lesson = publishedLessons(track).find((l) => l.slug === lessonSlug);
+  return lesson ? { track, lesson } : undefined;
+}
+
+/** Previous/next within the track's published lessons — the prev/next footer is
+ *  the main way people move through a track, so it must never point at a draft. */
+export function lessonNeighbours(
+  track: Track,
+  lessonSlug: string,
+): { prev: Lesson | null; next: Lesson | null } {
+  const lessons = publishedLessons(track);
+  const i = lessons.findIndex((l) => l.slug === lessonSlug);
+  if (i === -1) return { prev: null, next: null };
+  return {
+    prev: i > 0 ? lessons[i - 1] : null,
+    next: i < lessons.length - 1 ? lessons[i + 1] : null,
+  };
+}
+
+export function trackMinutes(track: Track): number {
+  return publishedLessons(track).reduce((sum, l) => sum + l.minutes, 0);
+}
+
+/** `{ track, lesson }` slug pairs for `generateStaticParams`. */
+export function allLessonParams(): { track: string; lesson: string }[] {
+  return publishedTracks().flatMap((t) =>
+    publishedLessons(t).map((l) => ({ track: t.slug, lesson: l.slug })),
+  );
+}

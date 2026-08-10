@@ -27,6 +27,9 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   block on, plus an embeddable live quality badge.
 - **Cases as code** — sync a `tests/` folder of YAML with the server so test
   cases get reviewed in pull requests like the rest of your code.
+- **QA Academy** — a free roadmap from zero to professional QA at `/academy`:
+  testing fundamentals, manual QA at work, automation, and Foundation Level exam
+  prep, practised in a real project ([plan](docs/QA-ACADEMY.md)).
 - **Self-hosted and free** — one `docker compose up`, SQLite or PostgreSQL,
   unlimited users, no per-seat pricing, MIT licensed.
 
@@ -276,6 +279,8 @@ npm/PyPI (publishing is a manual step).
 - `src/app/(app)/` — application pages (dashboard, projects, runs, reports, settings)
 - `src/app/actions/` — server actions (data mutations)
 - `src/app/api/` — REST API v1, CSV import/export, JUnit upload
+- `src/content/` — git-versioned long-form content: `help/` (in-app help center)
+  and `academy/` (QA Academy tracks and lessons)
 - `prisma/schema.prisma` — data model (including ERD gap fixes from the audit)
 
 ## Git & deploy
