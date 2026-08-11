@@ -14,6 +14,15 @@ import { getSandboxTask } from "@/content/academy/sandbox";
 import { runChecker } from "@/lib/academy/checks";
 import type { CheckResult } from "@/lib/academy/types";
 import { db } from "@/lib/db";
+import { getBlueprint } from "@/content/academy/exams";
+import {
+  beginAttempt,
+  verifyStartTicket,
+  gradeFromTicket,
+  type StartedExam,
+  type GradedAttempt,
+} from "@/lib/academy/exam";
+import { getQuestion } from "@/content/academy/questions";
 
 // A-02: grading for the in-lesson self-check.
 //
@@ -332,4 +341,209 @@ export async function claimAcademyProgress(
     detail: `${rows.length} lesson(s)`,
   });
   return { claimed: rows.length };
+}
+
+// ---------------------------------------------------------------------------
+// A-06: the ISTQB practice exam and the six chapter quizzes — same engine,
+// same actions, a chapter quiz is just a blueprint with one chapter and no
+// timer (docs/QA-ACADEMY.md §5.2). Like `gradeSelfCheck`, these deliberately
+// depart from Part IV §0.2 for `startExamAction`: no session required to
+// *take* the exam (the hybrid placement's whole point, §1), rate-limited
+// because it's a public endpoint that reads the question bank. `submitExamAction`
+// re-adds the §0.2 shape for its authed half, because that half writes real
+// data: `requireSession` is not used (submission must work anonymously too),
+// but persistence and the audit log only fire when a session exists.
+// ---------------------------------------------------------------------------
+
+const EXAM_RATE_LIMIT_PER_MIN = 20;
+
+function examClientKey(action: string): string {
+  const h = headers();
+  const fwd = h.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return `academy-exam-${action}:${fwd || h.get("x-real-ip") || "unknown"}`;
+}
+
+export async function startExamAction(
+  templateSlug: string,
+  extraTime?: boolean,
+): Promise<{ error: string } | StartedExam> {
+  if (!rateLimit(examClientKey("start"), EXAM_RATE_LIMIT_PER_MIN).ok) {
+    return { error: "Too many attempts. Wait a minute and try again." };
+  }
+  if (!getBlueprint(templateSlug)) return { error: "Unknown exam." };
+  return beginAttempt(templateSlug, { extraTime });
+}
+
+export type SubmitExamResult =
+  | { error: string }
+  | (GradedAttempt & { attemptId?: string });
+
+/**
+ * Grade a submitted attempt. `ticket` is what `startExamAction` handed back —
+ * the server never trusts anything else about when the attempt started or how
+ * long it ran (docs/QA-ACADEMY.md §2.3). When a session exists the graded
+ * result is persisted as an `ExamAttempt` row and its id is returned so the
+ * client can navigate to the durable `/academy/istqb/practice-exam/[attemptId]`
+ * view; anonymous callers get the same graded result back with nothing
+ * written to the database (§2.4 — no row for a crawler or a casual visitor).
+ */
+export async function submitExamAction(
+  ticket: string,
+  rawAnswers: Record<string, string[]>,
+): Promise<SubmitExamResult> {
+  if (!rateLimit(examClientKey("submit"), EXAM_RATE_LIMIT_PER_MIN).ok) {
+    return { error: "Too many attempts. Wait a minute and try again." };
+  }
+
+  const payload = await verifyStartTicket(ticket);
+  if (!payload) return { error: "This attempt has expired or is invalid. Start again." };
+
+  const answers: Record<string, string[]> = {};
+  for (const [key, value] of Object.entries(rawAnswers ?? {})) {
+    if (typeof key !== "string") continue;
+    answers[key] = (Array.isArray(value) ? value : [])
+      .filter((v): v is string => typeof v === "string")
+      .slice(0, 12);
+  }
+
+  const graded = gradeFromTicket(payload, answers);
+
+  const session = await getSession();
+  if (!session) return graded;
+
+  const attempt = await db.examAttempt.create({
+    data: {
+      userId: session.userId,
+      templateSlug: payload.templateSlug,
+      seed: payload.seed,
+      questionIdsJson: JSON.stringify(payload.questionIds),
+      answersJson: JSON.stringify(answers),
+      startedAt: new Date(payload.startedAt),
+      submittedAt: new Date(),
+      durationSec: payload.durationSec,
+      score: graded.score,
+      total: graded.total,
+      passed: graded.passed,
+      chapterScoresJson: JSON.stringify(graded.chapterScores),
+    },
+  });
+
+  await logAudit({
+    userId: session.userId,
+    action: "academy.exam_submit",
+    entityType: "examAttempt",
+    entityId: attempt.id,
+    detail: `${payload.templateSlug}:${graded.score}/${graded.total}`,
+  });
+  revalidatePath("/academy/me");
+
+  return { ...graded, attemptId: attempt.id };
+}
+
+export type ExamAttemptSummary = {
+  id: string;
+  templateSlug: string;
+  score: number;
+  total: number;
+  passed: boolean;
+  submittedAt: string | null;
+  startedAt: string;
+};
+
+/** Attempt history for `/academy/me` — newest first. */
+export async function getMyExamAttempts(): Promise<ExamAttemptSummary[]> {
+  const session = await getSession();
+  if (!session) return [];
+
+  const rows = await db.examAttempt.findMany({
+    where: { userId: session.userId },
+    orderBy: { startedAt: "desc" },
+    select: {
+      id: true,
+      templateSlug: true,
+      score: true,
+      total: true,
+      passed: true,
+      submittedAt: true,
+      startedAt: true,
+    },
+  });
+  return rows.map((r) => ({
+    ...r,
+    submittedAt: r.submittedAt ? r.submittedAt.toISOString() : null,
+    startedAt: r.startedAt.toISOString(),
+  }));
+}
+
+/**
+ * Full review for `/academy/istqb/practice-exam/[attemptId]` — session-scoped
+ * (the route table's "session" auth; there is no anonymous variant of this
+ * route in this work order, see docs/QA-ACADEMY.md's A-06 entry). A question
+ * the bank no longer has (edited slug, withdrawn question) degrades to a
+ * "question withdrawn" placeholder rather than breaking the page, per the
+ * `ExamAttempt` schema comment in docs/QA-ACADEMY.md §3.
+ */
+export async function getExamAttempt(attemptId: string): Promise<
+  | { error: string }
+  | (ExamAttemptSummary & {
+      chapterScores: Record<string, { correct: number; total: number }>;
+      review: {
+        id: string;
+        stem: string;
+        withdrawn?: true;
+        chosenIds: string[];
+        correctChoiceIds: string[];
+        correct: boolean;
+        explanation: string;
+      }[];
+    })
+> {
+  const session = await requireSession();
+  const attempt = await db.examAttempt.findFirst({
+    where: { id: attemptId, userId: session.userId },
+  });
+  if (!attempt) return { error: "Attempt not found." };
+
+  const questionIds: string[] = JSON.parse(attempt.questionIdsJson || "[]");
+  const answers: Record<string, string[]> = JSON.parse(attempt.answersJson || "{}");
+
+  const review = questionIds.map((id) => {
+    const q = getQuestion(id);
+    const chosenIds = answers[id] ?? [];
+    if (!q) {
+      return {
+        id,
+        stem: "This question has since been withdrawn from the bank.",
+        withdrawn: true as const,
+        chosenIds,
+        correctChoiceIds: [],
+        correct: false,
+        explanation: "",
+      };
+    }
+    const correctChoiceIds = q.choices.filter((c) => c.correct).map((c) => c.id);
+    const correct =
+      correctChoiceIds.length === chosenIds.length &&
+      correctChoiceIds.every((cid) => chosenIds.includes(cid));
+    return {
+      id,
+      stem: q.stem,
+      chosenIds,
+      correctChoiceIds,
+      correct,
+      explanation: q.explanation,
+    };
+  });
+
+  return {
+    id: attempt.id,
+    templateSlug: attempt.templateSlug,
+    score: attempt.score,
+    total: attempt.total,
+    passed: attempt.passed,
+    submittedAt: attempt.submittedAt ? attempt.submittedAt.toISOString() : null,
+    startedAt: attempt.startedAt.toISOString(),
+    chapterScores: JSON.parse(attempt.chapterScoresJson || "{}"),
+    review,
+  };
 }

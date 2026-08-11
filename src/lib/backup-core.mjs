@@ -35,6 +35,7 @@ export const MODEL_ORDER = [
   "Invitation",
   "TwoFactorRecoveryCode",
   "LessonProgress",
+  "ExamAttempt",
   "Project",
   "ProjectMember",
   "Milestone",

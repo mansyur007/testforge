@@ -547,3 +547,143 @@ test(`TC-${TC}-103 /academy/me and the dashboard's "Continue learning" widget re
   await page.waitForURL("**/academy/me");
   await expect(page.getByRole("heading", { name: "My progress" })).toBeVisible();
 });
+
+// ---------------------------------------------------------------------------
+// A-06: the ISTQB exam engine — chapter quizzes and the full practice exam
+// share it (docs/QA-ACADEMY.md §5.2), so one flow through a chapter quiz
+// exercises the same draw/ticket/grade path the 40-question paper uses.
+// ---------------------------------------------------------------------------
+
+/** Click the first radio choice for whichever question is on screen. */
+async function answerCurrentQuestion(page: Page) {
+  await page.locator('[data-testid^="exam-choice-"]').first().click();
+}
+
+/** Answer every question in an in-progress attempt, one screen at a time. */
+async function answerAllQuestions(page: Page, count: number) {
+  for (let i = 0; i < count; i++) {
+    await answerCurrentQuestion(page);
+    if (i < count - 1) await page.click('[data-testid="exam-next"]');
+  }
+}
+
+test(`TC-${TC}-104 An anonymous chapter quiz grades inline and writes zero database rows`, async ({
+  page,
+}) => {
+  const before = await db.examAttempt.count();
+
+  await page.goto("/academy/istqb/practice-exam/chapter/1");
+  await expect(page.getByTestId("exam-start")).toBeVisible();
+  await page.click('[data-testid="exam-begin"]');
+
+  await expect(page.getByTestId("exam-taking")).toBeVisible();
+  await answerAllQuestions(page, 8);
+
+  await page.click('[data-testid="exam-review-submit"]');
+  await expect(page.getByTestId("exam-confirm-submit")).toBeVisible();
+  await page.click('[data-testid="exam-confirm-submit-btn"]');
+
+  // Graded inline, no navigation to a persisted [attemptId] page — see the
+  // A-06 entry in docs/QA-ACADEMY.md for why an anonymous submission never
+  // gets one.
+  await expect(page.getByTestId("exam-result")).toBeVisible();
+  await expect(page.getByTestId("exam-result-headline")).toContainText("/ 8");
+  await expect(page.getByTestId("exam-chapter-bar-1")).toBeVisible();
+  await expect(page).toHaveURL(/\/academy\/istqb\/practice-exam\/chapter\/1$/);
+
+  const after = await db.examAttempt.count();
+  expect(after).toBe(before);
+});
+
+test(`TC-${TC}-105 A signed-in attempt persists, redirects to its own page, and shows in attempt history`, async ({
+  page,
+}) => {
+  const email = `academy-exam-${Date.now()}@testforge.local`;
+  const passwordHash = await bcrypt.hash("AcademyExam123", 10);
+  await db.user.create({
+    data: {
+      name: "Academy Exam Test",
+      email,
+      passwordHash,
+      emailVerifiedAt: new Date(),
+      onboardedAt: new Date(),
+    },
+  });
+
+  await login(page, email, "AcademyExam123");
+
+  await page.goto("/academy/istqb/practice-exam/chapter/2");
+  await page.click('[data-testid="exam-begin"]');
+  await answerAllQuestions(page, 8);
+  await page.click('[data-testid="exam-review-submit"]');
+  await page.click('[data-testid="exam-confirm-submit-btn"]');
+
+  await page.waitForURL(/\/academy\/istqb\/practice-exam\/[a-z0-9]+$/);
+  await expect(page.getByTestId("exam-attempt-headline")).toContainText("/ 8");
+  await expect(page.getByTestId("exam-attempt-chapter-bar-2")).toBeVisible();
+
+  const attempt = await db.examAttempt.findFirst({
+    where: { user: { email }, templateSlug: "ctfl-v4-ch2" },
+  });
+  expect(attempt).not.toBeNull();
+  expect(attempt?.total).toBe(8);
+
+  await page.goto("/academy/me");
+  await expect(page.getByTestId("me-exam-history")).toContainText("Chapter quiz");
+  await expect(page.getByTestId(`me-exam-attempt-${attempt!.id}`)).toBeVisible();
+
+  await db.user.delete({ where: { email } }); // cascades ExamAttempt
+});
+
+test(`TC-${TC}-106 The full practice exam start screen shows the real blueprint and an extra-time option`, async ({
+  page,
+}) => {
+  await page.goto("/academy/istqb/practice-exam");
+  await expect(page.getByTestId("exam-start")).toBeVisible();
+  // 8+6+4+11+9+2 from the CTFL v4.0 blueprint in src/content/academy/exams.ts.
+  await expect(page.getByTestId("exam-start")).toContainText("40");
+  await expect(page.getByTestId("exam-start")).toContainText("60 min");
+  await expect(page.getByTestId("exam-extra-time")).toBeVisible();
+
+  await page.click('[data-testid="chapter-quiz-link-3"]');
+  await page.waitForURL("**/academy/istqb/practice-exam/chapter/3");
+  await expect(page.getByTestId("exam-start")).toContainText("Untimed");
+});
+
+test(`TC-${TC}-107 The exam answer key never reaches the page before submission`, async ({
+  page,
+}) => {
+  await page.goto("/academy/istqb/practice-exam/chapter/1");
+  // Nothing about the paper is even fetched yet at this point — the start
+  // screen only knows the public blueprint (title, chapter, counts).
+  const beforeBegin = await page.content();
+  expect(beforeBegin).not.toContain('"correct":true');
+  expect(beforeBegin).not.toContain("correctChoiceIds");
+
+  await page.click('[data-testid="exam-begin"]');
+  await expect(page.getByTestId("exam-taking")).toBeVisible();
+
+  // Which 8 of chapter 1's 12 questions got drawn is random per attempt
+  // (seeded, not fixed), so this checks the property rather than one known
+  // question: none of chapter 1's explanations — read straight from the
+  // content source, same 40-char canary scripts/academy-bundle-check.mjs
+  // uses — may appear anywhere on the page, while at least one of its stems
+  // (the sanitized half) must.
+  const fs = await import("node:fs");
+  const src = fs.readFileSync("src/content/academy/questions/ch1-fundamentals.ts", "utf8");
+  const explanationCanaries = Array.from(
+    src.matchAll(/explanation:\s*"((?:[^"\\]|\\.)*)"/g),
+  ).map((m) => m[1].replace(/\\"/g, '"').slice(0, 40));
+  const stems = Array.from(src.matchAll(/stem:\s*"((?:[^"\\]|\\.)*)"/g)).map((m) =>
+    m[1].replace(/\\"/g, '"').slice(0, 30),
+  );
+  expect(explanationCanaries.length).toBeGreaterThan(0);
+
+  const whileTaking = await page.content();
+  expect(whileTaking).not.toContain('"correct":true');
+  expect(whileTaking).not.toContain("correctChoiceIds");
+  for (const canary of explanationCanaries) {
+    expect(whileTaking).not.toContain(canary);
+  }
+  expect(stems.some((s) => whileTaking.includes(s))).toBe(true);
+});

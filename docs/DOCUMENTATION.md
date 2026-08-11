@@ -4160,7 +4160,7 @@ toolbar genuinely shorter on a phone means hiding rarely-used actions (Export/Pr
 a disclosure, which is the same "invent an interaction" call deferred in F-43/F-44 and belongs
 with the `SuiteFolderGrid` work noted above.
 
-#### A-01 … A-05 — TestForge QA Academy (in progress)
+#### A-01 … A-06 — TestForge QA Academy (in progress)
 
 > **Full work-order detail lives in [`docs/QA-ACADEMY.md`](QA-ACADEMY.md)** — Academy is a
 > subsystem delivered over several PRs rather than one feature (per that doc's header), so its
@@ -4211,8 +4211,28 @@ with the `SuiteFolderGrid` work noted above.
   already ticked; claiming again changes nothing — checked against a `LessonProgress.count()`, not
   just the UI) and **TC-E2E-103** (`/academy/me` and the dashboard widget). See `docs/QA-ACADEMY.md`
   § A-05 for the full account of both bugs and how they were actually found.
-- **A-06 … A-08** `[ ]` not started — the ISTQB practice exam, certificates, content build-out.
-  See `docs/QA-ACADEMY.md` §8.
+- **A-06** `[x]` (2026-08-11, branch `feat/academy-exam`) — Exam engine + ISTQB practice exam.
+  `ExamAttempt` model; `src/lib/academy/exam-core.mjs` (pure — `drawQuestionIds`, `gradeAttempt`,
+  `isLate` — unit-tested by `scripts/academy-exam-selftest.mjs` with no DB, run in `prebuild`) plus
+  `src/lib/academy/exam.ts` (`server-only`, signs/verifies the start ticket with `jose`); a 72-
+  question bank across six chapters (short of the plan's ≥300 target — tracked as content debt, see
+  the deviation writeup) and the `ctfl-v4-full`/six `ctfl-v4-ch<n>` blueprints, all run by one
+  `ExamRunner` UI (navigator, flag-for-review, countdown, confirm-submit, auto-submit at zero).
+  Server-authoritative timer: `isLate()` takes no client-supplied elapsed time at all, so a
+  tampered client clock has nothing to influence. Anonymous attempts grade inline with zero DB
+  rows; signed-in attempts persist and redirect to `/academy/istqb/practice-exam/[attemptId]`,
+  which is also what `/academy/me`'s new attempt history links to.
+- **A-06's one deviation:** the route table's `[attemptId]` "session or signed ticket" auth
+  resolved to session-only — an anonymous result renders inline on the exam page instead of
+  navigating to a ticket-encoded URL, since there's no concrete need yet for an anonymous learner
+  to revisit a result across page loads. `e2e/academy.spec.ts` **TC-E2E-104** (anonymous quiz:
+  `ExamAttempt.count()` unchanged before/after, the literal acceptance criterion), **TC-E2E-105**
+  (signed-in: persisted row, correct redirect, shows in attempt history), **TC-E2E-106** (full-exam
+  blueprint on the start screen), **TC-E2E-107** (no answer key on the page before or during an
+  attempt, checked against whichever questions the seed actually drew). See `docs/QA-ACADEMY.md`
+  § A-06 for the full writeup, including a stale-session-cookie edge case found while manually
+  walking the flow (pre-existing app-wide behaviour, not a regression, not fixed in this PR).
+- **A-07 … A-08** `[ ]` not started — certificates, content build-out. See `docs/QA-ACADEMY.md` §8.
 
 ---
 
