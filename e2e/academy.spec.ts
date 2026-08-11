@@ -135,3 +135,42 @@ test(`TC-${TC}-93 Academy is reachable from the app sidebar`, async ({ page }) =
   await page.waitForURL("**/academy");
   await expect(page.getByRole("heading", { name: "QA Academy", level: 1 })).toBeVisible();
 });
+
+test(`TC-${TC}-94 On a phone Academy is reachable without the desktop nav`, async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/");
+
+  // The landing header nav is `hidden md:flex` and the landing has no
+  // hamburger, so on a phone it carries nothing. That is exactly why the hero
+  // link and the Academy section exist — this test is the guard that removing
+  // either one would leave mobile visitors with only the footer.
+  await expect(page.locator("header nav")).toBeHidden();
+
+  const section = page.locator("#academy");
+  await expect(section).toBeVisible();
+  // Five tracks, read from the content module rather than retyped here.
+  await expect(section.getByRole("heading", { level: 3 })).toHaveCount(5);
+  await expect(section.getByTestId("landing-academy-cta")).toBeVisible();
+
+  await page.click('[data-testid="hero-academy-link"]');
+  await page.waitForURL("**/academy");
+  await expect(page.getByRole("heading", { name: "QA Academy", level: 1 })).toBeVisible();
+});
+
+test(`TC-${TC}-95 Every Academy entry point is labelled beta`, async ({ page }) => {
+  await page.goto("/");
+  // Hero link, header nav, footer and the section CTA all carry the chip; the
+  // count is the assertion because a missing one is the failure mode.
+  await expect(page.getByTestId("beta-chip")).toHaveCount(4);
+
+  await page.goto("/academy");
+  await expect(page.getByTestId("academy-beta-banner")).toBeVisible();
+  await expect(page.getByTestId("academy-beta-banner")).toContainText("in beta");
+
+  await login(page);
+  await expect(
+    page.locator('[data-testid="nav-academy"] [data-testid="beta-chip"]'),
+  ).toBeVisible();
+});

@@ -5,7 +5,8 @@
 > exam — delivered *inside* TestForge, using the real product as the practice ground.
 >
 > **Status:** A-01 shipped 2026-08-10 (roadmap, track and lesson routes, Track 1 published);
-> A-03 shipped 2026-08-11 (sitemap, `Course` markup, landing and app entry points).
+> A-03 shipped 2026-08-11 (sitemap, `Course` markup, landing and app entry points);
+> A-03b shipped 2026-08-11 (mobile entry points, beta labelling).
 > A-02, A-04 … A-08 planned. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-08` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
@@ -472,6 +473,37 @@ a fifth nav item, and TC-E2E-83/85 are what guard that at 375px and 1280px.
 serves both languages and Google will only ever index the English text. Indonesian SEO needs
 `/id/academy/**` paths plus `hreflang`, which changes routing for the whole public site — its own
 change, not a rider on this one.
+
+### A-03b — Mobile entry points and beta labelling `[x]`
+
+> **Status: DONE** (2026-08-11, branch `feat/academy-beta-entry-points`). Added after A-03 shipped,
+> from one observation: **the landing header nav is `hidden md:flex` and the landing has no
+> hamburger**, so on a phone A-03's header link rendered to nothing. A mobile visitor's only route
+> to Academy was the footer, at the bottom of an 8,600px page.
+
+**Delivered:**
+
+- **Hero link** on the landing (`hero-academy-link`) — at y≈476 on a 375px viewport, the first
+  mention a phone user meets, versus y≈2624 for the section.
+- **Landing section** `#academy` between Features and Comparison: five track cards built **from
+  `src/content/academy`**, not retyped, so the section cannot drift from what `/academy` offers —
+  lesson counts and the published/draft split are read from the same module the routes use. Sixth
+  grid cell is the CTA plus the beta note. Chrome strings en/id; track titles stay English, per
+  the A-03 decision.
+- **`BetaChip`** (`src/components/BetaChip.tsx`) on every Academy entry point — header nav, footer,
+  hero link, landing section, app sidebar (`tone="dark"`) — and next to the `/academy` heading,
+  plus a **banner** on `/academy` stating that one track is finished, the rest are being written,
+  published lessons may still change, and where to report problems.
+- **Help center** now points at Academy ("learning to test rather than learning the tool").
+
+**Verified:** TC-E2E-94 (at 375px the header nav is hidden, the section renders five track headings
+and its CTA, and the hero link navigates) and **TC-E2E-95** (four beta chips on the landing, banner
+on `/academy`, chip in the app sidebar). Regression: TC-E2E-27, 83–87, 1–4 and the nine theme tests
+all green — TC-83 covers `/` at 375px, which is the guard for the new section's layout.
+
+**Note.** `GITHUB_REPO` is now declared a fourth time (here, `page.tsx`, `docs/self-hosting`,
+`lib/seo.ts`). Hoisting it into one exported constant is the right fix and is a change to three
+files this work order has no business touching — left as a deliberate follow-up.
 
 ### A-04 — Academy sandbox + coach overlay `[ ]`
 

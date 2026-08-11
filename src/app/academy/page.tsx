@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Logo, TFIcon } from "@/components/icons";
+import { BetaChip } from "@/components/BetaChip";
 import { JsonLd } from "@/components/JsonLd";
 import { formatMinutes } from "@/components/AcademyNav";
 import {
@@ -10,6 +11,11 @@ import {
   trackMinutes,
 } from "@/content/academy";
 import { absoluteUrl, breadcrumbLd, canonical, INDEXABLE, ldGraph } from "@/lib/seo";
+
+// Declared locally, the same way src/app/docs/self-hosting/page.tsx and
+// src/app/page.tsx already do it. Hoisting it into a shared constant would be
+// the better design and is a change to three unrelated files, not this one.
+const GITHUB_REPO = process.env.NEXT_PUBLIC_GITHUB_REPO ?? "mansyur007/testforge";
 
 const DESCRIPTION =
   "A free roadmap from zero to professional QA: testing fundamentals, manual QA at work, automation, and Foundation Level exam prep — practised in a real test management tool.";
@@ -65,8 +71,9 @@ export default function AcademyIndexPage() {
         </Link>
       </div>
 
-      <h1 className="text-3xl font-bold text-content-strong sm:text-4xl">
+      <h1 className="flex flex-wrap items-center gap-3 text-3xl font-bold text-content-strong sm:text-4xl">
         QA Academy
+        <BetaChip className="translate-y-1" />
       </h1>
       <p className="mt-3 max-w-2xl text-lg text-content">
         A roadmap from zero to professional QA — and then to automation. Free,
@@ -76,6 +83,33 @@ export default function AcademyIndexPage() {
       <p className="mt-2 text-sm text-content-muted">
         {totalLessons} lessons available now · more tracks in progress
       </p>
+
+      {/* A-03b: said once, plainly, at the top. A reader who invests two hours
+          in a track deserves to know up front that the rest is still being
+          written and that lessons may change under them. */}
+      <div
+        data-testid="academy-beta-banner"
+        className="mt-6 flex items-start gap-3 rounded-xl border border-hairline bg-surface-muted p-4"
+      >
+        <BetaChip className="mt-0.5" />
+        <p className="text-sm text-content">
+          <strong className="text-content-strong">
+            QA Academy is in beta.
+          </strong>{" "}
+          One track is finished; the rest are still being written, and published
+          lessons may still change. Nothing here needs an account — if something
+          is wrong or missing,{" "}
+          <a
+            href={`https://github.com/${GITHUB_REPO}/issues`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-accent-text hover:underline"
+          >
+            tell us on GitHub
+          </a>
+          .
+        </p>
+      </div>
 
       <ol className="mt-10 space-y-4">
         {TRACKS.map((track, i) => {

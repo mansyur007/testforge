@@ -7,6 +7,7 @@ import { LogoutButton } from "@/components/LogoutButton";
 import { SidebarProjects } from "@/components/SidebarProjects";
 import { CommandPalette } from "@/components/CommandPalette";
 import { AppShell } from "@/components/AppShell";
+import { BetaChip } from "@/components/BetaChip";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { loadMyWorkCounts } from "@/lib/my-work";
 import { NOINDEX } from "@/lib/seo";
@@ -48,7 +49,7 @@ export default async function AppLayout({
     // A-03: Academy sits with Help — both are reference material rather than
     // project work. English-only per repo conventions §0.5 (app UI is not
     // translated); the public /academy pages carry their own chrome.
-    { href: "/academy", label: "Academy", icon: "target" },
+    { href: "/academy", label: "Academy", icon: "target", beta: true },
     { href: "/docs/help", label: "Help", icon: "nav-help" },
   ];
 
@@ -73,6 +74,7 @@ export default async function AppLayout({
               >
                 <TFIcon name={item.icon} current className="h-[19px] w-[19px]" />
                 {item.label}
+                {"beta" in item && <BetaChip tone="dark" className="ml-auto" />}
                 {"badge" in item && item.badge! > 0 && (
                   <span
                     data-testid="my-work-nav-badge"

@@ -19,6 +19,9 @@ const en = {
       subtitle: "Manage manual and automation test cases in one platform. Open source, self-hosted, 100% free forever.",
       ctaPrimary: "Start for Free",
       ctaSecondary: "Self-Host in 5 Minutes",
+      // A-03b: the landing header nav is `hidden md:flex`, so on a phone this
+      // link is the first Academy entry point a visitor can see at all.
+      academyLink: "New: QA Academy — learn QA from zero",
       badges: ["✓ Open Source (MIT License)", "✓ No credit card required", "✓ Unlimited users & projects"],
     },
     socialProof: {
@@ -33,6 +36,20 @@ const en = {
     problem: {
       title: "The best test management tools are expensive and complicated",
       body: "TestRail costs $36/user/month. Qase $20/user/month. For a 10-person QA team, that's thousands of dollars a year — just to record test cases. Spreadsheets are free but fall apart during regression. TestForge gives you the features of paid tools, at zero cost, with your data staying yours.",
+    },
+    // A-03b: the landing section for QA Academy. Track *titles* stay English —
+    // they come from src/content/academy, which is English-only until A-08
+    // brings translated lesson bodies and localised routes together.
+    academy: {
+      kicker: "QA Academy",
+      title: "Learn QA from zero — free",
+      body: "A roadmap from your first test case to automation and Foundation Level exam prep, practised in a real test management tool instead of on slides. Nothing is behind a login.",
+      cta: "Open QA Academy",
+      betaNote:
+        "Academy is in beta: tracks are still being written and the content will change.",
+      lessons: "lessons",
+      available: "available now",
+      inProgress: "in progress",
     },
     features: {
       kicker: "Key Features",
@@ -259,6 +276,7 @@ const id: typeof en = {
       titlePre: "Test Management That",
       titleHighlight: "Doesn't Cost a Thing",
       subtitle: "Kelola test case manual dan automation dalam satu platform. Open source, self-hosted, 100% gratis selamanya.",
+      academyLink: "Baru: QA Academy — belajar QA dari nol",
       ctaPrimary: "Mulai Gratis",
       ctaSecondary: "Self-Host dalam 5 Menit",
       badges: ["✓ Open Source (MIT License)", "✓ Tanpa kartu kredit", "✓ Unlimited users & projects"],
@@ -275,6 +293,17 @@ const id: typeof en = {
     problem: {
       title: "Tools test management terbaik itu mahal dan rumit",
       body: "TestRail $36/user/bulan. Qase $20/user/bulan. Untuk tim QA berisi 10 orang, itu ribuan dolar per tahun — hanya untuk mencatat test case. Sementara spreadsheet gratis tapi kacau saat regression. TestForge memberi fitur setara tools berbayar, tanpa biaya, dan datanya tetap milik kamu.",
+    },
+    academy: {
+      kicker: "QA Academy",
+      title: "Belajar QA dari nol — gratis",
+      body: "Roadmap dari test case pertama sampai automation dan persiapan ujian Foundation Level, dipraktikkan langsung di test management tool sungguhan, bukan di slide. Tidak ada yang disembunyikan di balik login.",
+      cta: "Buka QA Academy",
+      betaNote:
+        "Academy masih beta: materinya sedang ditulis dan isinya akan berubah.",
+      lessons: "materi",
+      available: "sudah tersedia",
+      inProgress: "sedang ditulis",
     },
     features: {
       kicker: "Fitur Unggulan",
