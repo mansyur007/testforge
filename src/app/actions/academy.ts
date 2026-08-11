@@ -1,6 +1,11 @@
 "use server";
 
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { requireSession } from "@/lib/auth";
+import { logAudit } from "@/lib/audit";
+import { ensureSandbox, resetSandbox } from "@/lib/academy/sandbox";
 import { getLesson } from "@/content/academy";
 import { gradeQuestions } from "@/lib/academy/questions";
 import type { SelfCheckResult } from "@/lib/academy/types";
@@ -61,4 +66,53 @@ export async function gradeSelfCheck(input: {
   }
 
   return gradeQuestions(found.lesson.selfCheck, answers);
+}
+
+// ---------------------------------------------------------------------------
+// A-04: sandbox provisioning. Unlike gradeSelfCheck above, these DO follow the
+// §0.2 shape — they create and destroy real project data, so they need a
+// session, and they are audited. There is no RBAC check on top of it: the
+// sandbox is the learner's own project and they are its OWNER, so "may this
+// user do it" is answered by the fact that it is theirs.
+// ---------------------------------------------------------------------------
+
+/** Open (creating on first use) the learner's sandbox. */
+export async function openSandbox(formData?: FormData) {
+  const session = await requireSession();
+  const sandbox = await ensureSandbox(session.userId);
+
+  await logAudit({
+    userId: session.userId,
+    action: "academy.sandbox_open",
+    entityType: "project",
+    entityId: sandbox.id,
+    detail: sandbox.slug,
+  });
+
+  // A lesson can pass a suite to land on, so "do the exercise" opens where the
+  // exercise happens rather than at the project root.
+  const to = String(formData?.get("to") ?? "").trim();
+  redirect(to.startsWith("/") ? to.replace("{slug}", sandbox.slug) : `/projects/${sandbox.slug}`);
+}
+
+/**
+ * Wipe the sandbox back to the ShopMini fixture. Both parameters are required
+ * by `useFormState`'s call signature and neither carries anything — the target
+ * is always the caller's own sandbox.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function resetSandboxAction(_prev: unknown, _formData: FormData) {
+  const session = await requireSession();
+  const sandbox = await resetSandbox(session.userId);
+
+  await logAudit({
+    userId: session.userId,
+    action: "academy.sandbox_reset",
+    entityType: "project",
+    entityId: sandbox.id,
+    detail: sandbox.slug,
+  });
+
+  revalidatePath(`/projects/${sandbox.slug}`);
+  return { ok: true as const };
 }

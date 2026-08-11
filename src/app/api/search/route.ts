@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { caseDisplayId } from "@/lib/constants";
+import { NOT_SANDBOX } from "@/lib/academy/sandbox";
 
 // F-09 global search (⌘K palette). Internal, session-only endpoint.
 // The security boundary: every query is scoped to projects the user is a
@@ -23,10 +24,15 @@ export async function GET(req: NextRequest) {
   const projectFilter = req.nextUrl.searchParams.get("project");
   if (q.length < 2) return NextResponse.json(EMPTY);
 
+  // A-04: unscoped search is "find something in my work", so the Academy
+  // sandbox stays out of it — its seeded ShopMini cases use the same vocabulary
+  // (checkout, cart, login) as real projects and would sit at the top of every
+  // result. Scoping explicitly to the sandbox's slug still searches it, which is
+  // what a learner looking for their own practice case would do.
   const projects = await db.project.findMany({
     where: {
       members: { some: { userId: session.userId } },
-      ...(projectFilter ? { slug: projectFilter } : {}),
+      ...(projectFilter ? { slug: projectFilter } : NOT_SANDBOX),
     },
     select: { id: true, slug: true },
   });

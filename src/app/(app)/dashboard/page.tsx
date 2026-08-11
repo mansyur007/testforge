@@ -4,6 +4,7 @@ import { requireSession } from "@/lib/auth";
 import { loadStatusDefsForProjects } from "@/lib/result-status-defs";
 import { statusMeta } from "@/lib/result-statuses";
 import { bucketStatus, isMuted, NON_EXECUTED_BUCKETS } from "@/lib/mute";
+import { NOT_SANDBOX } from "@/lib/academy/sandbox";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,12 @@ export default async function DashboardPage() {
 
   // Tenant isolation: every stat is scoped to the user's projects (membership),
   // and recent activity to their organization.
-  const mine = { members: { some: { userId: session.userId } } };
+  // A-04: `NOT_SANDBOX` keeps the Academy sandbox out of every number on this
+  // page. It is a real project with real cases, so without it a learner's
+  // practice work would inflate "Active Projects", the case count and the
+  // pass-rate KPI — the dashboard is a report on their work, not their
+  // homework.
+  const mine = { members: { some: { userId: session.userId } }, ...NOT_SANDBOX };
   const logScope = me?.organizationId
     ? { user: { organizationId: me.organizationId } }
     : { userId: session.userId };
@@ -100,6 +106,7 @@ export default async function DashboardPage() {
         {stats.map((s) => (
           <div
             key={s.label}
+            data-testid={`stat-${s.label.toLowerCase().replace(/\s+/g, "-")}`}
             className="rounded-xl border border-hairline bg-surface p-5"
           >
             <p className="text-sm text-content-muted">{s.label}</p>
