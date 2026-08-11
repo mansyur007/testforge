@@ -30,6 +30,15 @@ const overflowOf = (page: Page) =>
 test(`TC-${TC}-83 Responsive: no horizontal overflow on any core route at 375px`, async ({
   page,
 }) => {
+  // Twelve routes, each waited to `networkidle`, in one test on the default 30s
+  // budget. Warm, the whole loop takes ~13s; but the suite runs against `next
+  // dev`, so the first hit on a route pays for its on-demand compile, and
+  // `/projects/<slug>/api` (the full OpenAPI reference) is the heaviest page in
+  // the app. On a cold CI worker that one navigation can eat the rest of the
+  // budget and time the test out — measured at 25s+ locally with a cold cache
+  // against 13s warm. This is a per-route compile cost, not a slow page: the
+  // fix is a budget that matches what the test actually does.
+  test.setTimeout(90_000);
   await page.setViewportSize(PHONE);
   await login(page);
 

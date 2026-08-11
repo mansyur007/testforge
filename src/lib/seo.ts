@@ -169,6 +169,43 @@ export function techArticleLd(opts: {
 }
 
 /**
+ * A-03: one Academy track. `hasCourseInstance` is only emitted when a workload
+ * is known — Google reads `courseWorkload` for the course rich result, and the
+ * lesson minutes in `src/content/academy` are a real figure, not an estimate we
+ * invented for the markup. `isAccessibleForFree` is the differentiator worth
+ * declaring: every competitor's equivalent is behind a paywall.
+ */
+export function courseLd(opts: {
+  name: string;
+  description: string;
+  path: string;
+  /** Sum of the track's published lesson minutes. */
+  workloadMinutes?: number;
+}): Ld {
+  const hours = opts.workloadMinutes ? Math.floor(opts.workloadMinutes / 60) : 0;
+  const minutes = opts.workloadMinutes ? opts.workloadMinutes % 60 : 0;
+  return {
+    "@type": "Course",
+    name: opts.name,
+    description: opts.description,
+    url: absoluteUrl(opts.path),
+    inLanguage: "en",
+    isAccessibleForFree: true,
+    provider: { "@id": absoluteUrl("/#organization") },
+    isPartOf: { "@id": absoluteUrl("/#website") },
+    ...(opts.workloadMinutes
+      ? {
+          hasCourseInstance: {
+            "@type": "CourseInstance",
+            courseMode: "online",
+            courseWorkload: `PT${hours ? `${hours}H` : ""}${minutes ? `${minutes}M` : ""}`,
+          },
+        }
+      : {}),
+  };
+}
+
+/**
  * Wraps nodes in one `@graph` so a page emits a single <script> the crawler
  * can resolve `@id` references across, instead of N disconnected blobs.
  */

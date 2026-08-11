@@ -12,7 +12,7 @@ export function resolveLang(value: string | undefined): Lang {
 
 const en = {
   landing: {
-    nav: { features: "Features", comparison: "Comparison", integrations: "Integrations", faq: "FAQ", login: "Log In", dashboard: "Dashboard →", cta: "Start for Free" },
+    nav: { features: "Features", comparison: "Comparison", integrations: "Integrations", academy: "Academy", faq: "FAQ", login: "Log In", dashboard: "Dashboard →", cta: "Start for Free" },
     hero: {
       titlePre: "Test Management That",
       titleHighlight: "Doesn't Cost a Thing",
@@ -110,6 +110,7 @@ const en = {
       features: "Features",
       comparison: "Comparison",
       selfHosting: "Self-Hosting",
+      academy: "QA Academy",
       signup: "Sign Up Free",
       community: "Community",
       docs: "Documentation",
@@ -253,7 +254,7 @@ const en = {
 
 const id: typeof en = {
   landing: {
-    nav: { features: "Fitur", comparison: "Perbandingan", integrations: "Integrasi", faq: "FAQ", login: "Masuk", dashboard: "Dashboard →", cta: "Mulai Gratis" },
+    nav: { features: "Fitur", comparison: "Perbandingan", integrations: "Integrasi", academy: "Akademi", faq: "FAQ", login: "Masuk", dashboard: "Dashboard →", cta: "Mulai Gratis" },
     hero: {
       titlePre: "Test Management That",
       titleHighlight: "Doesn't Cost a Thing",
@@ -351,6 +352,7 @@ const id: typeof en = {
       features: "Fitur",
       comparison: "Perbandingan",
       selfHosting: "Self-Hosting",
+      academy: "Akademi QA",
       signup: "Daftar Gratis",
       community: "Komunitas",
       docs: "Dokumentasi",

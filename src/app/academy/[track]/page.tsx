@@ -10,7 +10,14 @@ import {
   publishedTracks,
   trackMinutes,
 } from "@/content/academy";
-import { absoluteUrl, breadcrumbLd, canonical, INDEXABLE, ldGraph } from "@/lib/seo";
+import {
+  absoluteUrl,
+  breadcrumbLd,
+  canonical,
+  courseLd,
+  INDEXABLE,
+  ldGraph,
+} from "@/lib/seo";
 
 /** Published tracks only, and `dynamicParams = false` so a draft slug 404s
  *  instead of rendering unfinished content. Preview of a draft is a branch
@@ -59,6 +66,12 @@ export default function AcademyTrackPage({
     <main className="mx-auto max-w-5xl px-4 py-12">
       <JsonLd
         data={ldGraph(
+          courseLd({
+            name: track.title,
+            description: track.tagline,
+            path: `/academy/${track.slug}`,
+            workloadMinutes: trackMinutes(track),
+          }),
           breadcrumbLd([
             { name: "TestForge", path: "/" },
             { name: "QA Academy", path: "/academy" },
