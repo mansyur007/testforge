@@ -1,5 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { test, expect } from "@playwright/test";
@@ -17,17 +15,15 @@ import { test, expect } from "@playwright/test";
 // This mints a JWT that is cryptographically valid — signed with the same
 // AUTH_SECRET the dev server uses — for a user that has already been deleted,
 // the same shape `createSession()` produces (userId/email/name/role, HS256).
-// AUTH_SECRET isn't a real secret (it's the checked-in dev default in
-// `.env`), so reading it here rather than hardcoding a copy is just to not
-// drift from whatever `.env` says.
+// AUTH_SECRET isn't a real secret (it's the checked-in dev default), so
+// reading it from `process.env` here — the same source `src/lib/auth.ts`
+// reads from, with the same fallback — is just to not drift from whatever
+// the dev server is actually using, without depending on a `.env` file
+// existing on disk (it doesn't in CI; env vars are injected directly there).
 const db = new PrismaClient();
 
 function readAuthSecret(): string {
-  const envPath = path.resolve(__dirname, "..", ".env");
-  const raw = fs.readFileSync(envPath, "utf8");
-  const match = raw.match(/^AUTH_SECRET="?([^"\n]+)"?/m);
-  if (!match) throw new Error("AUTH_SECRET not found in .env");
-  return match[1];
+  return process.env.AUTH_SECRET ?? "testforge-dev-secret";
 }
 
 async function mintStaleSessionToken(userId: string): Promise<string> {
