@@ -49,6 +49,44 @@ export type Lesson = {
   selfCheck?: SelfCheckQuestion[];
 };
 
+/**
+ * A-06: one question in the ISTQB Foundation question bank. A superset of
+ * `SelfCheckQuestion` — same answer-key shape and the same rule applies
+ * (`chapter`/`kLevel` also stay off the client: they leak difficulty hints,
+ * see docs/QA-ACADEMY.md §2.2), plus the fields the exam blueprint and the
+ * per-chapter result breakdown need.
+ */
+export type ExamQuestion = SelfCheckQuestion & {
+  /** CTFL v4.0 chapter number, 1–6. What the blueprint draws against. */
+  chapter: 1 | 2 | 3 | 4 | 5 | 6;
+  /** Bloom-ish cognitive level per the syllabus: K1 recall, K2 understand, K3 apply. */
+  kLevel: "K1" | "K2" | "K3";
+  /** e.g. "FL-4.2.1" — which learning objective this tests. Lets a reviewer
+   *  check the question teaches the objective rather than reproducing anyone
+   *  else's material (docs/QA-ACADEMY.md §7.2). */
+  syllabusRef: string;
+};
+
+/** One chapter's share of a paper. */
+export type ExamChapterWeight = { chapter: 1 | 2 | 3 | 4 | 5 | 6; topic: string; count: number };
+
+/**
+ * A drawable paper. `durationSec` is what the server signs into the ticket
+ * (docs/QA-ACADEMY.md §2.3) — the timer is never a client fact. `timed: false`
+ * means the UI shows no countdown (the six chapter quizzes); the ticket still
+ * carries a generous duration so the same grading path works unmodified.
+ */
+export type ExamBlueprint = {
+  slug: string;
+  title: string;
+  timed: boolean;
+  durationSec: number;
+  /** Offered as a checkbox at start for full papers; ignored by quizzes. */
+  extraTimeSec?: number;
+  passPct: number;
+  chapters: ExamChapterWeight[];
+};
+
 export type Track = {
   slug: string;
   title: string;

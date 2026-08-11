@@ -11,7 +11,8 @@
 > A-04a shipped 2026-08-11 (sandbox provisioning, ShopMini fixture, isolation);
 > A-04b shipped 2026-08-11 (coach overlay, five sandbox-task checkers);
 > A-05 shipped 2026-08-11 (persistence, claim-at-signup, `/academy/me`).
-> A-06 … A-08 planned. Created 2026-08-10.
+> A-06 shipped 2026-08-11 (exam engine, ISTQB question bank, practice exam + chapter quizzes).
+> A-07 … A-08 planned. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-08` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
@@ -724,16 +725,79 @@ lesson from this work order) a locally corrupted `dev.db`/stale Prisma Client ma
 twice changes nothing — confirmed by both the UI (still "2 of") and a `LessonProgress.count()`
 staying at exactly 2 after a second claim attempt.
 
-### A-06 — Exam engine + ISTQB practice exam `[ ]`
+### A-06 — Exam engine + ISTQB practice exam `[x]`
 
-`ExamAttempt` model; `src/lib/academy/exam.ts` (`sanitizeQuestion`, `draw`, signed ticket
-issue/verify, `gradeAttempt`); the question bank (≥300, six chapter files); six chapter quizzes
-and `ctfl-v4-full`; exam UI (navigator, flag, timer, warnings, auto-submit); result screen with
-per-chapter breakdown and full review; attempt history.
+> **Status: DONE** (2026-08-11, branch `feat/academy-exam`).
 
-**Acceptance:** server-side clock wins (submit with a tampered client time → rejected, partial
-grade); the same `seed` reproduces the same paper; drawn chapter counts match the blueprint over
-1000 seeded draws (unit test); an anonymous attempt writes zero rows.
+**Delivered:** `ExamAttempt` model (authed attempts only — see below); the exam engine, split the
+same way the sandbox checkers are (§6.2): `src/lib/academy/exam-core.mjs` is plain, pure ESM
+(`drawQuestionIds`, `gradeAttempt`, `isLate`, no DB, no JWT — unit-tested by
+`scripts/academy-exam-selftest.mjs`, wired into `prebuild`), and `src/lib/academy/exam.ts` is the
+`server-only` typed wrapper that draws from the real question bank and signs/verifies the start
+ticket (`jose`, same `AUTH_SECRET`-derived-key pattern as `src/lib/superadmin.ts`). The question
+bank (`src/content/academy/questions/**`, 72 questions — see the deviation below) and the
+blueprints (`src/content/academy/exams.ts`: `ctfl-v4-full` and six `ctfl-v4-ch<n>` chapter quizzes,
+sharing one `ExamBlueprint` shape and one `ExamRunner` UI, docs §5.2's "reusing the same engine").
+Server actions in `src/app/actions/academy.ts`: `startExamAction`, `submitExamAction`,
+`getMyExamAttempts`, `getExamAttempt`. UI: `src/components/academy/ExamRunner.tsx` (start screen →
+one-question-per-screen with a navigator grid, flag-for-review, a confirm-submit dialog showing
+unanswered/flagged counts, a live countdown with a colour change under 2 minutes, auto-submit at
+zero) plus three routes — `/academy/istqb/practice-exam` (full paper), `/academy/istqb/practice-
+exam/chapter/[chapter]` (the six quizzes, `dynamicParams = false`), `/academy/istqb/practice-
+exam/[attemptId]` (persisted, session-scoped review) — and an "Exam attempts" section on
+`/academy/me`.
+
+**The timer is server-authoritative, exactly as §2.3 specifies, and it's isolated into one pure
+function so the acceptance criterion is actually checkable without a browser.** `startExamAction`
+draws the paper and signs `{ templateSlug, questionIds, seed, startedAt, durationSec }` into a JWT
+— the *only* clock that matters. `isLate(startedAtMs, durationSec, nowMs, graceMs)` in
+`exam-core.mjs` takes no client-supplied "elapsed" value as a parameter at all, which is what makes
+a tampered client clock irrelevant by construction rather than by a check that could be skipped: a
+late submission is graded exactly as answered (never discarded — a client that raced the timer and
+only got partway through should see a score for what it actually answered) with a `late: true` flag
+surfaced on the result.
+
+**The route table's "session or signed ticket" auth for `[attemptId]`, resolved one way.** The plan
+left two auth mechanisms open for that route. This work order took the simpler of the two: an
+anonymous submission is graded and shown **inline** on the exam page itself (no navigation, no row
+— §2.4), while `[attemptId]` is session-scoped only, serving the persisted, revisit-from-`/academy/
+me` view. A signed "result ticket" as a URL segment (the other option the route table implied) would
+have added a second ticket format for an anonymous learner to bookmark a result they can't return to
+anyway once `localStorage`/the tab is gone — not worth it until there's a concrete reason to keep an
+anonymous result addressable across visits.
+
+**One content-scope deviation, flagged up front rather than discovered by a reviewer.** §9 calls the
+bank "the cost, not the code" of this feature, and that held: this work order ships **72 questions
+(12/chapter)** against the plan's ≥300/5× target — enough to draw the full blueprint (chapter 4's 11
+is the largest weight) and every chapter quiz (8, not the plan's 10 — also sized to this bank) without
+a repeat inside one paper, but well short of 5×, so different seeds' papers will overlap more than
+the target design calls for. Every question still carries a real `syllabusRef` for review, and
+`src/content/academy/questions/index.ts` documents this as tracked content debt for a follow-up
+work order rather than silently shipping under-target. The **chapter weights themselves** (§5.1's
+own "verify before seeding" warning) were taken from the CTFL v4.0 syllabus structure as read for
+this work order and still need a human check against the currently published numbers before anyone
+studies for the real exam from this bank.
+
+**Verified.** `scripts/academy-exam-selftest.mjs` (`prebuild`) — same seed reproduces the same
+paper; a different seed doesn't; no repeats within a paper; **drawn chapter counts match the
+blueprint over 1000 seeded draws** with zero violations; full/partial/zero grading and the 65%
+pass line; `isLate` at the exact edge of the grace window and just past it. `scripts/academy-
+bundle-check.mjs` (`postbuild`, unchanged — it already walks all of `src/content/academy/**`)
+covers the new question files with no changes: *"109 explanations, 109 client chunks, 0 leaks"*.
+`e2e/academy.spec.ts` **TC-E2E-105** (anonymous chapter quiz grades inline; `ExamAttempt.count()`
+unchanged before/after — the actual "zero rows" acceptance criterion, not just "no visible
+attempt-id"), **TC-E2E-106** (signed-in attempt redirects to its own `[attemptId]` page, a real row
+exists with the right `total`, and it shows in `/academy/me`'s attempt history), **TC-E2E-107**
+(full-exam start screen shows the real 40-question/60-minute blueprint and the extra-time
+checkbox), **TC-E2E-108** (no explanation text or `correct`/`correctChoiceIds` on the page either
+before *or during* an attempt — checked against whichever 8-of-12 questions the seed actually drew,
+since asserting on one fixed question would be testing the seed, not the boundary). All 20 specs in
+the file, including the pre-existing A-01…A-05 ones, pass together (~1.2 min). Manually walked
+through both the anonymous and signed-in flows in a live `next dev` browser before writing the e2e
+— which is what surfaced a stale-session edge case worth recording: `getSession()` trusts its JWT
+without checking the user row still exists (true of every Academy action, not new to this one), so
+a cookie left over from a deleted user 500s instead of behaving like "signed out". Not fixed here —
+it's pre-existing behaviour across the whole app, not a regression — but worth a dedicated look.
 
 ### A-07 — Certificates & shareable badge `[ ]`
 

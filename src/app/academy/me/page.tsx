@@ -7,6 +7,7 @@ import { requireSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { publishedLessons, publishedTracks } from "@/content/academy";
 import { NOINDEX } from "@/lib/seo";
+import { getMyExamAttempts } from "@/app/actions/academy";
 
 // A-05: the one Academy page that needs a session — progress belongs to
 // somebody, same reasoning as /academy/sandbox. Everything else under
@@ -38,6 +39,7 @@ export default async function AcademyMePage() {
 
   const totalDone = tracks.reduce((n, t) => n + t.done, 0);
   const totalLessons = tracks.reduce((n, t) => n + t.lessons.length, 0);
+  const attempts = await getMyExamAttempts();
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
@@ -119,6 +121,47 @@ export default async function AcademyMePage() {
           to see it here.
         </p>
       )}
+
+      {/* A-06: exam and chapter-quiz attempt history. Newest first, same
+          resume-link shape as the tracks above. */}
+      <section className="mt-10" data-testid="me-exam-history">
+        <h2 className="text-lg font-semibold text-content-strong">Exam attempts</h2>
+        {attempts.length === 0 ? (
+          <p className="mt-2 text-sm text-content-muted">
+            No attempts yet —{" "}
+            <Link href="/academy/istqb/practice-exam" className="text-accent-text hover:underline">
+              take the practice exam
+            </Link>
+            .
+          </p>
+        ) : (
+          <ul className="mt-3 space-y-2">
+            {attempts.map((a) => (
+              <li
+                key={a.id}
+                data-testid={`me-exam-attempt-${a.id}`}
+                className="flex items-center justify-between rounded-lg border border-hairline bg-surface px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-content-strong">
+                    {a.templateSlug === "ctfl-v4-full" ? "Full practice exam" : `Chapter quiz — ${a.templateSlug}`}
+                  </p>
+                  <p className="text-xs text-content-muted">
+                    {a.submittedAt ? new Date(a.submittedAt).toLocaleDateString() : "In progress"} ·{" "}
+                    {a.score}/{a.total} · {a.passed ? "Pass" : "Not a pass"}
+                  </p>
+                </div>
+                <Link
+                  href={`/academy/istqb/practice-exam/${a.id}`}
+                  className="shrink-0 rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium text-content hover:bg-surface-muted"
+                >
+                  Review
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </main>
   );
 }

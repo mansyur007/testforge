@@ -54,6 +54,7 @@ model User {
   createdBaselines SuiteBaseline[]  @relation("BaselineCreator")
   publicShares    PublicShare[]     @relation("PublicShareCreator")
   lessonProgress  LessonProgress[]
+  examAttempts    ExamAttempt[]
 }
 
 // F-20: single-use TOTP recovery codes. codeHash is the sha256 hex of the raw
@@ -937,6 +938,33 @@ model LessonProgress {
 
   @@unique([userId, lessonSlug])
   @@index([userId, trackSlug])
+}
+
+// A-06: one row per *persisted* ISTQB practice-exam attempt — authed users
+// only. Anonymous attempts are graded from a signed ticket (src/lib/academy/
+// exam.ts) and never reach this table; see docs/QA-ACADEMY.md §2.4 and §3.
+// Questions are NOT copied in: questionIdsJson + seed reproduce the exact
+// paper from the git-versioned bank on demand, so an edited or withdrawn
+// question never corrupts an old attempt's review view.
+model ExamAttempt {
+  id                String    @id @default(cuid())
+  userId            String
+  templateSlug      String // "ctfl-v4-full" | "ctfl-v4-ch1" | ...
+  seed              String
+  questionIdsJson   String    @default("[]")
+  answersJson       String    @default("{}") // { [questionId]: string[] }
+  startedAt         DateTime  @default(now())
+  submittedAt       DateTime?
+  durationSec       Int
+  score             Int       @default(0) // correct answers
+  total             Int
+  passed            Boolean   @default(false)
+  chapterScoresJson String    @default("{}") // { "1": {correct, total}, ... }
+  createdAt         DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, templateSlug])
 }
 
 // Gap audit: PRD §5.5 mensyaratkan audit log tapi tabelnya tidak ada di ERD.
