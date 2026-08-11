@@ -8,6 +8,15 @@ export default defineConfig({
   globalSetup: "./e2e/global-setup.ts",
   fullyParallel: false,
   workers: 1,
+  // Playwright's 30s default assumes a built app. This suite runs against
+  // `next dev`, where the first request to a route pays for its on-demand
+  // compile — measured on this repo at roughly double the warm cost, and the
+  // long multi-route tests (TC-83's twelve routes, TC-80's six phases plus a
+  // 15s `toPass` poll) sit close enough to 30s warm that a cold CI worker tips
+  // them over. Both failed that way on unrelated PRs, and TC-80 fails cold on
+  // `main` too. 60s is a budget that matches what the tests actually do; a
+  // genuinely hung test still fails, just 30s later.
+  timeout: 60_000,
   reporter: [["list"], ["junit", { outputFile: "e2e-results/junit.xml" }]],
   use: {
     baseURL: "http://localhost:3456",

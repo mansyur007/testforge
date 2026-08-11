@@ -102,4 +102,42 @@ You will not run every type. Pick by risk:
 **Next:** the seven principles — the shortest lesson here, and the one that
 saves you the most arguments.
 `,
+  selfCheck: [
+    {
+      id: "q1",
+      stem: "A developer fixes the defect you filed. You re-run your original steps and they pass. What did you just do, and is it enough?",
+      choices: [
+        { id: "a", text: "Regression testing — yes, that closes it" },
+        { id: "b", text: "Confirmation testing — no, the area around the change still needs regression", correct: true },
+        { id: "c", text: "Smoke testing — yes, the build is good" },
+        { id: "d", text: "Acceptance testing — no, the product owner must sign off" },
+      ],
+      explanation:
+        "Re-running the failing steps is confirmation testing, and it only proves that one path now works. A fix can break a neighbour, so the change's blast radius still needs regression before the defect is closed.",
+    },
+    {
+      id: "q2",
+      stem: "Your regression suite takes six hours and blocks every release. What do you build first to unblock the team?",
+      choices: [
+        { id: "a", text: "A smoke suite of a few fast, critical checks", correct: true },
+        { id: "b", text: "More regression cases, to find problems sooner" },
+        { id: "c", text: "A performance test of the slowest pages" },
+        { id: "d", text: "Nothing — the suite has to run in full every time" },
+      ],
+      explanation:
+        "Smoke testing is triage: a handful of fast checks that decide whether a build is worth testing at all. It does not replace regression, but it stops the team burning six hours on a build that cannot even log in.",
+    },
+    {
+      id: "q3",
+      stem: "\"The checkout button cannot be reached with the keyboard.\" What kind of testing found this?",
+      choices: [
+        { id: "a", text: "Functional testing" },
+        { id: "b", text: "White-box testing" },
+        { id: "c", text: "Non-functional — accessibility", correct: true },
+        { id: "d", text: "Change-related testing" },
+      ],
+      explanation:
+        "The button does what it is supposed to do when clicked, so the behaviour is correct — what fails is a quality attribute of how it can be used. That is non-functional testing, and accessibility is the cheapest of the family to start: tab through the page.",
+    },
+  ],
 };

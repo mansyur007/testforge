@@ -108,4 +108,43 @@ Not everything with states looks like an order:
 
 **Next:** putting it together — writing test cases someone else can run.
 `,
+  selfCheck: [
+    {
+      id: "q1",
+      stem: "What does 1-switch coverage catch that 0-switch coverage doesn't?",
+      choices: [
+        { id: "a", text: "Transitions that were never taken at all" },
+        { id: "b", text: "Defects where the route into a state changes the behaviour", correct: true },
+        { id: "c", text: "States that can never be reached" },
+        { id: "d", text: "Invalid transitions the UI hides" },
+      ],
+      explanation:
+        "0-switch takes every valid transition once, in isolation. 1-switch takes them in consecutive pairs, which is what exposes history-dependent bugs — a refund after shipping behaving differently from a refund before it, because stock was already released.",
+    },
+    {
+      id: "q2",
+      stem: "The transition table has a dash for Cancelled → Refunded, and the UI hides the refund button on cancelled orders. Is the invalid transition tested?",
+      choices: [
+        { id: "a", text: "Yes — if the button is hidden, the transition cannot happen" },
+        { id: "b", text: "No — the rule has to hold when the UI is bypassed", correct: true },
+        { id: "c", text: "No, but it is only worth testing if the API is public" },
+        { id: "d", text: "Yes, provided the hidden button is covered by an automated test" },
+      ],
+      explanation:
+        "A hidden button is a UI convenience, not an enforced rule. The transition has to be attempted where the guard actually lives: through the API, from a stale second tab, from the back button, or by replaying a webhook the provider already delivered.",
+    },
+    {
+      id: "q3",
+      stem: "Which of these are worth attacking with state transition testing?",
+      multi: true,
+      choices: [
+        { id: "a", text: "A multi-step form wizard", correct: true },
+        { id: "b", text: "Authentication: logged out, session expired, 2FA pending", correct: true },
+        { id: "c", text: "An upload: queued, uploading, processing, failed", correct: true },
+        { id: "d", text: "A static pricing page with no interaction" },
+      ],
+      explanation:
+        "Anything that remembers what happened before has states worth modelling — wizards, sessions and uploads all behave differently depending on how they got where they are. A page with no state has no transitions to break.",
+    },
+  ],
 };

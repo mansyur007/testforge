@@ -106,4 +106,43 @@ valuable thing you do.
 
 **Next:** how all of this fits into a two-week sprint.
 `,
+  selfCheck: [
+    {
+      id: "q1",
+      stem: "Who should move a defect to Closed?",
+      choices: [
+        { id: "a", text: "The developer who fixed it" },
+        { id: "b", text: "The person who reported it, after verifying", correct: true },
+        { id: "c", text: "The product owner at the end of the sprint" },
+        { id: "d", text: "Whoever notices it is fixed" },
+      ],
+      explanation:
+        "The reporter knows what they saw and can re-run the exact conditions. Letting developers close their own defects removes the only independent check in the loop, and it is a reliable way of shipping regressions.",
+    },
+    {
+      id: "q2",
+      stem: "A defect reproduces for you but not for the developer. Which are worth checking first?",
+      multi: true,
+      choices: [
+        { id: "a", text: "Whether you are on the same build", correct: true },
+        { id: "b", text: "Account role and permissions", correct: true },
+        { id: "c", text: "Data volume and seeded state", correct: true },
+        { id: "d", text: "Whether the developer is a careful tester" },
+      ],
+      explanation:
+        "\"Works on my machine\" is a difference in conditions, not a dispute. Build, role and data explain most of them, and replying with the difference you found — rather than with the disagreement — turns a stand-off into a lead.",
+    },
+    {
+      id: "q3",
+      stem: "Why is \"number of bugs found\" a poor way to measure a tester?",
+      choices: [
+        { id: "a", text: "Bugs are hard to count consistently" },
+        { id: "b", text: "It rewards filing noise and punishes preventing defects early", correct: true },
+        { id: "c", text: "Developers introduce the bugs, so it measures them instead" },
+        { id: "d", text: "It cannot be compared between projects" },
+      ],
+      explanation:
+        "The most valuable testing often produces no defect report at all — a question in refinement that stops the defect being built. A count rewards volume over prevention, so the metric quietly pushes people away from the work that matters most.",
+    },
+  ],
 };

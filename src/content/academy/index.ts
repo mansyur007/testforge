@@ -1,13 +1,26 @@
 // A-01: the Academy content registry. Same shape as src/content/help/index.ts —
 // plain TS modules imported at build time, not files read at request time.
+//
+// A-02: this module now carries answer keys (`SelfCheckQuestion.correct` and the
+// explanations), so it is server-only. Importing it from a client component is a
+// build error, which is a stronger guarantee than the lint rule the work order
+// originally proposed — ESLint cannot express "files with 'use client'", since
+// Next has no filename convention for them. Client components take the data they
+// need as props, sanitized by `src/lib/academy/questions.ts`.
+import "server-only";
 import { fundamentals } from "./tracks/fundamentals";
 import { manualPro } from "./tracks/manual-pro";
 import { automation } from "./tracks/automation";
 import { beyond } from "./tracks/beyond";
 import { istqb } from "./tracks/istqb";
-import type { ContentStatus, Lesson, Track } from "./types";
+import type {
+  ContentStatus,
+  Lesson,
+  SelfCheckQuestion,
+  Track,
+} from "./types";
 
-export type { ContentStatus, Lesson, Track };
+export type { ContentStatus, Lesson, SelfCheckQuestion, Track };
 
 /** Every track, in roadmap order — drafts included, because the roadmap shows
  *  them as "coming soon" cards. Anything that produces a *route* must filter to

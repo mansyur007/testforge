@@ -5,7 +5,10 @@ import { Logo, TFIcon } from "@/components/icons";
 import { Markdown } from "@/components/Markdown";
 import { JsonLd } from "@/components/JsonLd";
 import { AcademyNav, SandboxBadge } from "@/components/AcademyNav";
+import { SelfCheck } from "@/components/SelfCheck";
+import { LessonDoneToggle } from "@/components/AcademyProgress";
 import { allLessonParams, getLesson, lessonNeighbours } from "@/content/academy";
+import { sanitizeQuestions } from "@/lib/academy/questions";
 import { breadcrumbLd, canonical, INDEXABLE, ldGraph, techArticleLd } from "@/lib/seo";
 
 export function generateStaticParams() {
@@ -135,6 +138,21 @@ export default function AcademyLessonPage({
           <Markdown className="mt-8 max-w-none text-base leading-relaxed max-md:[&_table]:block max-md:[&_table]:w-max max-md:[&_table]:max-w-full max-md:[&_table]:overflow-x-auto">
             {lesson.body}
           </Markdown>
+
+          {/* A-02: sanitized here, in a server component — `sanitizeQuestions`
+              is the only thing that crosses the answer-key boundary, and it
+              runs before any of this reaches the RSC payload. */}
+          {lesson.selfCheck?.length ? (
+            <SelfCheck
+              track={track.slug}
+              lesson={lesson.slug}
+              questions={sanitizeQuestions(lesson.selfCheck)}
+            />
+          ) : null}
+
+          <div className="mt-8 flex items-center gap-3">
+            <LessonDoneToggle lessonSlug={lesson.slug} />
+          </div>
 
           <nav
             className="mt-12 flex flex-col gap-3 border-t border-hairline pt-6 sm:flex-row sm:justify-between"

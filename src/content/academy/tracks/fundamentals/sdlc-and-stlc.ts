@@ -95,4 +95,42 @@ sees you.
 
 **Next:** the four test levels, in detail.
 `,
+  selfCheck: [
+    {
+      id: "q1",
+      stem: "In the V-model, which test level verifies the requirements document?",
+      choices: [
+        { id: "a", text: "Component (unit) testing" },
+        { id: "b", text: "Integration testing" },
+        { id: "c", text: "System testing" },
+        { id: "d", text: "Acceptance testing", correct: true },
+      ],
+      explanation:
+        "Each specification level pairs with the test level that verifies it: detailed design with unit, architecture with integration, system design with system testing, and requirements with acceptance testing — which is why acceptance asks whether we built the right thing rather than whether the code works.",
+    },
+    {
+      id: "q2",
+      stem: "Your team ships to production several times a day. What happens to the six STLC phases?",
+      choices: [
+        { id: "a", text: "They disappear — continuous delivery replaces them" },
+        { id: "b", text: "They still happen, but per story instead of per release", correct: true },
+        { id: "c", text: "Only execution survives; planning and design are dropped" },
+        { id: "d", text: "They move entirely into the developers' work" },
+      ],
+      explanation:
+        "The phases are activities, not a calendar. Shipping faster changes the batch size and the cadence, so analysis, planning, design, setup, execution and closure happen for each story rather than once per release — they get smaller and more frequent, not optional.",
+    },
+    {
+      id: "q3",
+      stem: "Which of these is a usable exit criterion?",
+      choices: [
+        { id: "a", text: "No bugs remain in the product" },
+        { id: "b", text: "The team feels confident about the release" },
+        { id: "c", text: "All P1 cases executed and no open critical defects", correct: true },
+        { id: "d", text: "Testing has run for two full weeks" },
+      ],
+      explanation:
+        "An exit criterion has to be measurable and achievable. \"No bugs remain\" cannot be established, confidence is not evidence, and a fixed duration says nothing about coverage — but executed-cases plus open-defect severity can be checked by anyone.",
+    },
+  ],
 };

@@ -174,3 +174,78 @@ test(`TC-${TC}-95 Every Academy entry point is labelled beta`, async ({ page }) 
     page.locator('[data-testid="nav-academy"] [data-testid="beta-chip"]'),
   ).toBeVisible();
 });
+
+const LESSON = "/academy/fundamentals/what-qa-does";
+
+test(`TC-${TC}-96 Self-check grades, explains, retries, and records progress`, async ({
+  page,
+}) => {
+  await page.goto(LESSON);
+  await expect(page.getByTestId("self-check")).toBeVisible();
+
+  // Nothing is revealed before submitting — the explanation only exists in the
+  // grading response.
+  await expect(page.getByTestId("self-check-explanation-q1")).toHaveCount(0);
+  await expect(page.getByTestId("self-check-submit")).toBeDisabled();
+
+  // Answer everything wrong first: a quiz that only works when you're right is
+  // not a quiz, and the explanation has to show up either way.
+  await page.click('[data-testid="self-check-choice-q1-a"]');
+  await page.click('[data-testid="self-check-choice-q2-a"]');
+  await page.click('[data-testid="self-check-choice-q3-c"]');
+  await page.click('[data-testid="self-check-submit"]');
+
+  await expect(page.getByTestId("self-check-score")).toContainText("0 / 3");
+  await expect(page.getByTestId("self-check-explanation-q1")).toBeVisible();
+  await expect(page.getByTestId("lesson-done-toggle")).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+
+  await page.click('[data-testid="self-check-retry"]');
+  await expect(page.getByTestId("self-check-explanation-q1")).toHaveCount(0);
+
+  await page.click('[data-testid="self-check-choice-q1-b"]');
+  await page.click('[data-testid="self-check-choice-q2-b"]');
+  // q3 is multi-select: all three of a, b, d, and set equality is the rule.
+  await page.click('[data-testid="self-check-choice-q3-a"]');
+  await page.click('[data-testid="self-check-choice-q3-b"]');
+  await page.click('[data-testid="self-check-choice-q3-d"]');
+  await page.click('[data-testid="self-check-submit"]');
+
+  await expect(page.getByTestId("self-check-score")).toContainText("3 / 3");
+  await expect(page.getByTestId("lesson-done-toggle")).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+
+  // Progress is localStorage, so it has to survive a reload and be visible on
+  // the track page — that is the whole user-facing point of storing it.
+  await page.reload();
+  await expect(page.getByTestId("lesson-done-toggle")).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+
+  await page.goto("/academy/fundamentals");
+  await expect(page.getByTestId("track-progress")).toContainText(
+    "1 of 13 lessons done",
+  );
+});
+
+test(`TC-${TC}-97 The answer key never reaches the browser`, async ({ page }) => {
+  // The served document carries the RSC payload inline, so this covers both the
+  // HTML and the flight data the client hydrates from. `scripts/academy-bundle-
+  // check.mjs` covers the JS chunks at build time; between them there is nowhere
+  // for an answer to hide.
+  const html = await (await page.request.get(LESSON)).text();
+
+  // A sentence that exists only in an explanation.
+  expect(html).not.toContain("No amount of testing proves the absence of defects");
+  expect(html).not.toContain("correctChoiceIds");
+  expect(html).not.toContain('"correct":true');
+
+  // The questions themselves are of course present — this is a check on what
+  // was stripped, not a check that the quiz failed to render.
+  expect(html).toContain("What is the honest answer?");
+});

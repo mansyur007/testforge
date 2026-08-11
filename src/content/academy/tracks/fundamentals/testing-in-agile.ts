@@ -114,4 +114,43 @@ SQL, and reporting to people who don't read test cases — the
 - Your sprint is a mini-waterfall. What is the first thing you'd change, and
   which ceremony does it happen in?
 `,
+  selfCheck: [
+    {
+      id: "q1",
+      stem: "Your team builds for eight days and hands everything to QA on day nine. Where is the highest-leverage place to intervene?",
+      choices: [
+        { id: "a", text: "Sprint review — demo the edge cases" },
+        { id: "b", text: "Backlog refinement — question the stories before they are estimated", correct: true },
+        { id: "c", text: "Daily stand-up — report the blockage every morning" },
+        { id: "d", text: "Retrospective — raise it after the sprint" },
+      ],
+      explanation:
+        "The squeeze is set long before day nine, when stories are accepted and estimated without their testing cost or their unanswered questions. Refinement is where ambiguity is cheapest to remove and where testing effort becomes part of the estimate.",
+    },
+    {
+      id: "q2",
+      stem: "Which acceptance criterion can actually fail a test?",
+      choices: [
+        { id: "a", text: "Checkout should handle out-of-stock items properly" },
+        { id: "b", text: "Given a cart with an out-of-stock item, when the customer clicks Checkout, then the cart shows \"out of stock\" and no order is created", correct: true },
+        { id: "c", text: "The cart must be reliable under load" },
+        { id: "d", text: "Out-of-stock handling should be user friendly" },
+      ],
+      explanation:
+        "A criterion that names the data, the trigger and the observable result can be executed and can fail. \"Properly\", \"reliable\" and \"user friendly\" cannot fail a test, which means they cannot pass one either.",
+    },
+    {
+      id: "q3",
+      stem: "Which belong in a Definition of Done that includes testing?",
+      multi: true,
+      choices: [
+        { id: "a", text: "Acceptance criteria covered by tests, and those tests pass", correct: true },
+        { id: "b", text: "No open critical or high defects on the story", correct: true },
+        { id: "c", text: "Regression executed around the area the change touched", correct: true },
+        { id: "d", text: "Zero known defects anywhere in the product" },
+      ],
+      explanation:
+        "A DoD has to be checkable per story: covered criteria, open-defect severity and regression around the change all are. \"Zero known defects anywhere\" is neither achievable nor about this story, so it turns the DoD into something teams route around.",
+    },
+  ],
 };

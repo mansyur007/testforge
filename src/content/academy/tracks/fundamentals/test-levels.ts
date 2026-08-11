@@ -105,4 +105,43 @@ the test pyramid — and the argument about its shape.
 **Next:** test *types* — a different axis entirely, and the one most people
 mix up with levels.
 `,
+  selfCheck: [
+    {
+      id: "q1",
+      stem: "Login works, but the avatar never loads: the front end requests /avatar and the service serves /avatars. Which level should have caught it?",
+      choices: [
+        { id: "a", text: "Component (unit) testing" },
+        { id: "b", text: "Integration testing", correct: true },
+        { id: "c", text: "Acceptance testing" },
+        { id: "d", text: "None — this is a design defect" },
+      ],
+      explanation:
+        "Both sides can be individually correct and still disagree about the contract between them. A mismatched path, type or header is the textbook integration defect: each unit suite stays green because neither unit ever talks to the other.",
+    },
+    {
+      id: "q2",
+      stem: "\"The report takes 40 seconds to render with a year of data.\" Which level is this normally found at?",
+      choices: [
+        { id: "a", text: "Unit — the query function is slow" },
+        { id: "b", text: "System, in an environment with realistic data volume", correct: true },
+        { id: "c", text: "Integration — the database is involved" },
+        { id: "d", text: "It is not a testable finding" },
+      ],
+      explanation:
+        "Non-functional behaviour needs the assembled system and production-like data. A unit test on the query proves nothing about the whole page, and an integration test with three seeded rows will never reproduce a year of records.",
+    },
+    {
+      id: "q3",
+      stem: "Why is 100% unit-test coverage a weak argument for shipping?",
+      multi: true,
+      choices: [
+        { id: "a", text: "It says nothing about how components behave together", correct: true },
+        { id: "b", text: "Coverage measures what executed, not whether the result was right", correct: true },
+        { id: "c", text: "It cannot tell you whether the requirement itself was sensible", correct: true },
+        { id: "d", text: "Unit tests are unreliable and usually flaky" },
+      ],
+      explanation:
+        "Coverage is an execution metric on isolated pieces. It is blind to integration, blind to whether assertions are meaningful, and blind to whether the specification was right in the first place — which is precisely why four levels exist. Unit tests being flaky is not the issue; they are the steadiest tests there are.",
+    },
+  ],
 };

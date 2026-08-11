@@ -133,4 +133,43 @@ apply.
 **Next:** the other thing you'll write every day — a defect report that gets
 fixed instead of closed as "cannot reproduce".
 `,
+  selfCheck: [
+    {
+      id: "q1",
+      stem: "Which expected result is usable?",
+      choices: [
+        { id: "a", text: "The order is processed correctly" },
+        { id: "b", text: "The system behaves as expected" },
+        { id: "c", text: "Status becomes \"Paid\", a confirmation email arrives, and stock for SKU-1042 drops from 200 to 198", correct: true },
+        { id: "d", text: "No errors are shown" },
+      ],
+      explanation:
+        "An expected result has to be observable by someone who has never seen the feature. \"Correctly\" and \"as expected\" postpone the disagreement to the moment the test fails; concrete states, messages and numbers settle it in advance.",
+    },
+    {
+      id: "q2",
+      stem: "Case 12 passes only when case 11 ran first and left items in the cart. What is the defect in the case?",
+      choices: [
+        { id: "a", text: "It is too detailed" },
+        { id: "b", text: "It has an unstated precondition, so it fails when run alone", correct: true },
+        { id: "c", text: "It tests too many things at once" },
+        { id: "d", text: "Nothing — tests are expected to run in order" },
+      ],
+      explanation:
+        "A case that silently depends on its predecessor's leftovers fails for whoever runs it in isolation, and the hour they lose is spent on the case, not the product. State the precondition or have the case set itself up.",
+    },
+    {
+      id: "q3",
+      stem: "Which of these belong in a test case?",
+      multi: true,
+      choices: [
+        { id: "a", text: "Concrete test data, not a description of it", correct: true },
+        { id: "b", text: "A title that names the condition and the outcome", correct: true },
+        { id: "c", text: "The CSS selector of the button to click" },
+        { id: "d", text: "Preconditions that put the world in a known state", correct: true },
+      ],
+      explanation:
+        "Data, an informative title and preconditions all survive the product being redesigned. A CSS selector encodes the implementation, so the case goes wrong the moment the markup changes while the software is still perfectly fine.",
+    },
+  ],
 };

@@ -13,6 +13,7 @@
     "prebuild": "node scripts/totp-selftest.mjs && node scripts/backup-selfcheck.mjs",
     "check:theme": "node scripts/check-theme-tokens.mjs",
     "build": "next build",
+    "postbuild": "node scripts/academy-bundle-check.mjs",
     "start": "next start",
     "lint": "next lint",
     "seed": "node prisma/seed.mjs",
@@ -38,7 +39,8 @@
     "react-dom": "^18",
     "react-markdown": "^9.1.0",
     "rehype-sanitize": "^6.0.0",
-    "remark-gfm": "^4.0.1"
+    "remark-gfm": "^4.0.1",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.0",

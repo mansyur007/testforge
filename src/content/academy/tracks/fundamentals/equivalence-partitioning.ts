@@ -102,4 +102,43 @@ and the result you'd expect. Keep the list; you'll extend it in the next lesson.
 **Next:** boundary value analysis — where the same requirement gives up its real
 bugs.
 `,
+  selfCheck: [
+    {
+      id: "q1",
+      stem: "ShopMini quantity accepts whole numbers 1–99. A colleague tests 5, 40 and 80 and calls the field covered. What is wrong with that?",
+      choices: [
+        { id: "a", text: "Nothing — three values across the range is reasonable" },
+        { id: "b", text: "All three are in the same partition, so two add nothing and every invalid partition is untested", correct: true },
+        { id: "c", text: "They should have tested every value from 1 to 99" },
+        { id: "d", text: "The values are valid, so no defect can be found" },
+      ],
+      explanation:
+        "5, 40 and 80 are one partition sampled three times — the second and third tests carry almost no new information. The untested partitions are the interesting ones: below 1, above 99, non-integers, non-numbers and empty, which is where the developer's assumptions were never checked.",
+    },
+    {
+      id: "q2",
+      stem: "\"Students get 20% off, staff 30%, everyone else nothing.\" How many valid partitions is that?",
+      choices: [
+        { id: "a", text: "One — all valid customers" },
+        { id: "b", text: "Two — discounted and not discounted" },
+        { id: "c", text: "Three — student, staff, everyone else", correct: true },
+        { id: "d", text: "It depends on how many customers exist" },
+      ],
+      explanation:
+        "A partition is a group the system treats the same way, and these three groups produce three different outcomes. Collapsing them into \"valid\" would leave two of the three discount rules untested.",
+    },
+    {
+      id: "q3",
+      stem: "Which of these are legitimate equivalence partitions to test for a required text field?",
+      multi: true,
+      choices: [
+        { id: "a", text: "Empty input", correct: true },
+        { id: "b", text: "A value of the expected shape", correct: true },
+        { id: "c", text: "Input containing characters the rule forbids", correct: true },
+        { id: "d", text: "Every possible string of the allowed length" },
+      ],
+      explanation:
+        "Empty, well-formed and forbidden-character inputs are each handled differently, so each is its own partition. Enumerating every allowed string is exhaustive testing — the thing partitioning exists to avoid.",
+    },
+  ],
 };
