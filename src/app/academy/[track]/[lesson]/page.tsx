@@ -8,6 +8,8 @@ import { AcademyNav, SandboxBadge } from "@/components/AcademyNav";
 import { SelfCheck } from "@/components/SelfCheck";
 import { LessonDoneToggle } from "@/components/AcademyProgress";
 import { allLessonParams, getLesson, lessonNeighbours } from "@/content/academy";
+import { getSandboxTask } from "@/content/academy/sandbox";
+import { openSandboxTask } from "@/app/actions/academy";
 import { sanitizeQuestions } from "@/lib/academy/questions";
 import { breadcrumbLd, canonical, INDEXABLE, ldGraph, techArticleLd } from "@/lib/seo";
 
@@ -53,6 +55,10 @@ export default function AcademyLessonPage({
   if (!found) notFound();
   const { track, lesson } = found;
   const { prev, next } = lessonNeighbours(track, lesson.slug);
+  // A-04b: only the five lessons with a real checker get the direct-to-exercise
+  // button; other sandbox-marked lessons (T2+) still get the generic callout
+  // below until their own work order lands a task and a checker for them.
+  const sandboxTask = getSandboxTask(lesson.slug);
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-12">
@@ -115,23 +121,38 @@ export default function AcademyLessonPage({
               className="mt-6 flex gap-3 rounded-xl border border-hairline bg-accent-soft p-4"
             >
               <TFIcon name="edit" className="mt-0.5 h-5 w-5 shrink-0" />
-              <p className="text-sm text-accent-soft-fg">
-                <strong>This lesson has an exercise.</strong> It runs in your
-                Academy sandbox — a real TestForge project seeded with ShopMini,
-                kept out of your dashboard and projects list.{" "}
-                <Link
-                  href="/academy/sandbox"
-                  data-testid="lesson-sandbox-link"
-                  className="underline"
-                >
-                  Open your sandbox
-                </Link>
-                , or{" "}
-                <Link href="/signup" className="underline">
-                  create a free account
-                </Link>{" "}
-                first.
-              </p>
+              <div className="text-sm text-accent-soft-fg">
+                <p>
+                  <strong>This lesson has an exercise.</strong> It runs in your
+                  Academy sandbox — a real TestForge project seeded with
+                  ShopMini, kept out of your dashboard and projects list.
+                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  {sandboxTask ? (
+                    <form action={openSandboxTask}>
+                      <input type="hidden" name="lesson" value={lesson.slug} />
+                      <button
+                        type="submit"
+                        data-testid="lesson-start-exercise"
+                        className="min-h-[36px] rounded-lg bg-accent px-4 py-1.5 text-xs font-medium text-white hover:bg-accent-hover"
+                      >
+                        Start this exercise
+                      </button>
+                    </form>
+                  ) : (
+                    <Link
+                      href="/academy/sandbox"
+                      data-testid="lesson-sandbox-link"
+                      className="text-xs font-medium underline"
+                    >
+                      Open your sandbox
+                    </Link>
+                  )}
+                  <Link href="/signup" className="text-xs underline">
+                    or create a free account first
+                  </Link>
+                </div>
+              </div>
             </div>
           )}
 

@@ -324,3 +324,129 @@ test(`TC-${TC}-99 Reset wipes the sandbox back to the fixture without duplicatin
     page.getByText("Cart — quantity above maximum (100) is rejected"),
   ).toHaveCount(1);
 });
+
+test(`TC-${TC}-100 The coach checks sandbox work, gives specific feedback, and survives the save redirect`, async ({
+  page,
+}) => {
+  await login(page);
+
+  await page.goto("/academy/fundamentals/boundary-value-analysis");
+  await page.click('[data-testid="lesson-start-exercise"]');
+  await page.waitForURL(/\/projects\/academy-[^/]+\/cases\/new\?.*academy=boundary-value-analysis/);
+  await expect(page.getByTestId("academy-coach")).toBeVisible();
+  await expect(page.getByTestId("academy-coach")).toContainText("Boundary value analysis");
+
+  // A thin case: one step, no boundary values named — should not pass.
+  await page.fill('[data-testid="case-title-input"]', "Cart quantity smoke check");
+  await page
+    .locator('textarea[placeholder^="Action step"]')
+    .first()
+    .fill("Open the cart and change the quantity");
+  await page.click('[data-testid="case-form-submit"]');
+
+  // `createCase` redirects to the case detail page — `?academy=` is gone from
+  // the URL, but the coach must still be docked (sessionStorage, not the URL,
+  // is what's keeping it up — see AcademyCoach.tsx). Wait for the heading
+  // rather than trusting page.url() immediately: "**/cases/**" would also
+  // match /cases/new mid-redirect (the same trap e2e/shared-steps.spec.ts
+  // documents).
+  await expect(page.getByRole("heading", { name: "Cart quantity smoke check" })).toBeVisible();
+  await expect(page.url()).not.toContain("academy=");
+  await expect(page.getByTestId("academy-coach")).toBeVisible();
+
+  await page.click('[data-testid="academy-coach-check"]');
+  await expect(page.getByTestId("academy-coach-result")).toContainText("Not yet");
+  await expect(page.getByTestId("academy-coach-result")).toContainText("99");
+
+  // Add a second, real boundary case in the same suite — the checker reads
+  // every case created since the exercise was opened, not just the newest.
+  await page.goto("/academy/fundamentals/boundary-value-analysis");
+  await page.click('[data-testid="lesson-start-exercise"]');
+  await page.waitForURL(/\/projects\/academy-[^/]+\/cases\/new\?.*academy=boundary-value-analysis/);
+
+  await page.fill(
+    '[data-testid="case-title-input"]',
+    "Cart quantity boundaries — 0, 1, 99, 100",
+  );
+  const actions = page.locator('textarea[placeholder^="Action step"]');
+  const expecteds = page.locator('textarea[placeholder^="Expected result"]');
+  await actions.nth(0).fill("Set quantity to 0");
+  await expecteds.nth(0).fill("Rejected");
+  await page.locator("button", { hasText: "+ Add Step" }).click();
+  await actions.nth(1).fill("Set quantity to 1");
+  await expecteds.nth(1).fill("Accepted");
+  await page.locator("button", { hasText: "+ Add Step" }).click();
+  await actions.nth(2).fill("Set quantity to 99");
+  await expecteds.nth(2).fill("Accepted");
+  await page.locator("button", { hasText: "+ Add Step" }).click();
+  await actions.nth(3).fill("Set quantity to 100");
+  await expecteds.nth(3).fill("Rejected");
+  await page.fill('textarea[name="expectedResult"]', "Only 1 to 99 is accepted.");
+  await page.click('[data-testid="case-form-submit"]');
+
+  await expect(
+    page.getByRole("heading", { name: "Cart quantity boundaries — 0, 1, 99, 100" }),
+  ).toBeVisible();
+  await expect(page.getByTestId("academy-coach")).toBeVisible();
+  await page.click('[data-testid="academy-coach-check"]');
+  await expect(page.getByTestId("academy-coach-result")).toContainText("Nice");
+
+  // A pass marks the lesson done — localStorage (A-02), so it shows on the
+  // lesson page without needing a session round-trip.
+  await page.goto("/academy/fundamentals/boundary-value-analysis");
+  await expect(page.getByTestId("lesson-done-toggle")).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+});
+
+test(`TC-${TC}-101 The bug-report checker grades a Defect, and "Mark done anyway" always works`, async ({
+  page,
+}) => {
+  await login(page);
+
+  await page.goto("/academy/fundamentals/bug-reports");
+  await page.click('[data-testid="lesson-start-exercise"]');
+  await page.waitForURL(/\/projects\/academy-[^/]+\/defects\?academy=bug-reports/);
+  await expect(page.getByTestId("academy-coach")).toBeVisible();
+
+  // Defect creation doesn't redirect (unlike a case), so `?academy=` survives
+  // in the URL on its own — this is the other half of the "stays docked"
+  // design (AcademyCoach.tsx), the branch that doesn't need sessionStorage.
+  await page.fill(
+    '[data-testid="defect-title-input"]',
+    "Shipping shows Rp 0 at exactly Rp 500,000 (staging)",
+  );
+  await page.fill(
+    'textarea[name="bodyMd"]',
+    `Environment: staging, Chrome 126.
+
+Steps to reproduce:
+1. Add items until the subtotal is exactly Rp 500,000.
+2. Open checkout.
+
+Actual: Shipping line reads Rp 0.
+
+Expected: "Over Rp 500,000" ships free; exactly 500,000 should be charged Rp 20,000 per the requirement (AC-2 of the shipping rule).`,
+  );
+  await page.click('[data-testid="defect-create-button"]');
+  await expect(page.url()).toContain("academy=bug-reports");
+
+  await page.click('[data-testid="academy-coach-check"]');
+  await expect(page.getByTestId("academy-coach-result")).toContainText("Nice");
+
+  // A fresh, unrelated lesson exercise: don't submit anything, use the escape
+  // hatch instead. It must always be available — the lesson is the point, not
+  // the grader (docs/QA-ACADEMY.md §9).
+  await page.goto("/academy/fundamentals/equivalence-partitioning");
+  await page.click('[data-testid="lesson-start-exercise"]');
+  await page.waitForURL(/\/projects\/academy-[^/]+\/cases\/new\?.*academy=equivalence-partitioning/);
+  await page.click('[data-testid="academy-coach-mark-done"]');
+  await expect(page.getByTestId("academy-coach-result")).toContainText("Marked done");
+
+  await page.goto("/academy/fundamentals/equivalence-partitioning");
+  await expect(page.getByTestId("lesson-done-toggle")).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+});

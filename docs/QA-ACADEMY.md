@@ -8,8 +8,9 @@
 > A-03 shipped 2026-08-11 (sitemap, `Course` markup, landing and app entry points);
 > A-03b shipped 2026-08-11 (mobile entry points, beta labelling);
 > A-02 shipped 2026-08-11 (39 self-check questions, anonymous progress, server-side grading);
-> A-04a shipped 2026-08-11 (sandbox provisioning, ShopMini fixture, isolation).
-> A-04b, A-05 … A-08 planned. Created 2026-08-10.
+> A-04a shipped 2026-08-11 (sandbox provisioning, ShopMini fixture, isolation);
+> A-04b shipped 2026-08-11 (coach overlay, five sandbox-task checkers).
+> A-05 … A-08 planned. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-08` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
@@ -588,14 +589,77 @@ creating one) and **TC-E2E-99** (reset is two-step, and the fixture case appears
 afterwards — re-seeding on top of the old rows instead of replacing them is the failure mode worth
 guarding). Regression: search and project-hub specs green.
 
-#### A-04b — Coach overlay and checkers `[ ]`
+#### A-04b — Coach overlay and checkers `[x]`
 
-`AcademyCoach` mounted in `src/app/(app)/layout.tsx`, reading `?academy=<lessonSlug>`;
-`verifyTask()` and the first five checkers (test case, BVA, EP, decision table, bug report), each
-with unit tests over real good and bad submissions; "Mark done anyway" always available.
+> **Status: DONE** (2026-08-11, branch `feat/academy-coach`).
 
-**Acceptance:** from a lesson, one click lands on the real case form with the coach docked; a
-deliberately bad submission gets specific feedback and a good one marks the lesson done.
+**Delivered:** `AcademyCoach` (`src/components/AcademyCoach.tsx`), mounted once in
+`src/app/(app)/layout.tsx`, reading `?academy=<lessonSlug>`; a "Start this exercise" button on
+each of the five sandbox-marked T1 lessons (`openSandboxTask` in `src/app/actions/academy.ts`),
+which creates the sandbox on first use and lands the learner on the real form — `cases/new`
+pre-scoped to the right suite, or `defects` for the one non-case task — with the coach docked;
+`verifyTask()` and the first five checkers (test case anatomy, BVA, EP, decision table, bug
+report); a hint disclosure; **Check my work**; **Mark done anyway**, always available.
+
+**Where the task metadata lives.** `SANDBOX_TASKS` in `src/content/academy/sandbox.ts` — task
+text, acceptance criteria, hint, and which suite (or "defect") the exercise targets — keyed by
+lesson slug, the same key `?academy=` carries. Deliberately not folded into the `Lesson` type in
+`src/content/academy/types.ts`: that module is `server-only` (A-02's answer-key boundary), and
+`AcademyCoach` is a client component that needs this data directly rather than round-tripping
+through a server action to render a heading. Nothing in it is secret — it's the same thing each
+lesson's body already says in prose.
+
+**Checkers are pure functions, and that is what makes them testable.** `src/lib/academy/
+checks-core.mjs` is plain ESM — the same pattern `src/lib/backup-core.mjs` already established in
+this repo for logic that needs to run both inside the typed app and under bare `node` — taking
+plain `{ title, stepsJson, expectedResult, … }` objects and returning `{ passed, feedback[] }`,
+never touching a database. `src/lib/academy/checks.ts` is the thin, `server-only` typed wrapper
+that fetches real rows from the learner's sandbox (scoped by suite and by `createdAt >= since`)
+and hands them to the matching function. This is what makes `scripts/academy-checks-selftest.mjs`
+possible — the unit tests §9 asks for run in milliseconds, no test database, wired into `prebuild`
+next to `totp-selftest.mjs` and `backup-selfcheck.mjs` so `npm run build` covers it with no CI
+change.
+
+**Staying docked across a redirect is the actual engineering problem here, not the panel.** A
+lesson's exercise link lands on `/projects/<sandbox>/cases/new?academy=<slug>`, but `createCase`
+redirects to the new case's own detail page on save, dropping the query string — a coach that
+vanished the instant the learner hit Save would be useless for the one action that matters. The
+active lesson is mirrored into `sessionStorage` (`tf_academy_active`, alongside when the attempt
+started) and the panel stays docked for as long as the learner is anywhere under their sandbox
+project, not just the exact URL the query param first arrived on, until "Back to lesson" or leaving
+the sandbox. Filing a defect doesn't have this problem — `createDefect` revalidates in place rather
+than redirecting — so that path is covered by the plain `?academy=` param on its own; the e2e
+exercises both branches.
+
+**The attempt clock.** `since` (when the coach panel was opened for this lesson) stands in for
+docs §2.3's exam-timer idea, applied here: a checker only counts rows created after the learner
+opened the exercise, so the seeded reference cases (excluded again by exact title, belt-and-braces)
+and leftovers from an earlier attempt can't accidentally satisfy someone else's check. It has to
+survive both the save-redirect *and* a plain reload of the exercise URL — reopening a lesson's
+"Start this exercise" a second time to add another case must not reset the clock and orphan the
+case already written — so it's read from `sessionStorage`, not component state, whenever the
+`academy` param reappears for the lesson already being tracked.
+
+**One deviation.** §6.2's own illustrative example named "the Checkout suite" for the
+boundary-value-analysis checker. It ships against **Cart** instead — that's where the fixture's
+own reference case for the same quantity field already lives, and it keeps the BVA and "writing
+test cases" checkers scoped to different suites so neither can be satisfied by the other's work.
+
+**Verified:** `scripts/academy-checks-selftest.mjs` runs as part of `prebuild` — *"academy-checks-
+selftest: OK (5 checkers, good and bad submissions)"* — a good and a bad fixture per checker,
+including the specific case a boolean-coverage checker would get wrong: BVA rejects 0/1/100
+*without* 99 even though that's "3 of 4" boundaries, because 99 is the one the lesson exists to
+teach. `e2e/academy.spec.ts` **TC-E2E-100** (a thin case fails with feedback naming the missing
+99; the coach stays docked through the save redirect; a second, complete case in the same suite
+passes and marks the lesson done) and **TC-E2E-101** (the defect-based checker, on the branch
+where `?academy=` survives without sessionStorage; "Mark done anyway" on a lesson nothing was
+submitted for). Regression: `shared-steps` and `case-history` specs green — both exercise
+`cases/new` and were the ones most likely to notice `AcademyCoach` mounted globally.
+
+**Acceptance, restated against what shipped:** from a lesson, one click lands on the real case
+(or defect) form with the coach docked; a deliberately bad submission gets specific, actionable
+feedback and is not marked done; a good one passes and marks the lesson done; "Mark done anyway"
+works regardless.
 
 ### A-05 — Persistence: progress, claim-at-signup, `/academy/me` `[ ]`
 

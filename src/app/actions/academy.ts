@@ -5,11 +5,15 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireSession } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
-import { ensureSandbox, resetSandbox } from "@/lib/academy/sandbox";
+import { ensureSandbox, findSandbox, resetSandbox } from "@/lib/academy/sandbox";
 import { getLesson } from "@/content/academy";
 import { gradeQuestions } from "@/lib/academy/questions";
 import type { SelfCheckResult } from "@/lib/academy/types";
 import { rateLimit } from "@/lib/rate-limit";
+import { getSandboxTask } from "@/content/academy/sandbox";
+import { runChecker } from "@/lib/academy/checks";
+import type { CheckResult } from "@/lib/academy/types";
+import { db } from "@/lib/db";
 
 // A-02: grading for the in-lesson self-check.
 //
@@ -115,4 +119,81 @@ export async function resetSandboxAction(_prev: unknown, _formData: FormData) {
 
   revalidatePath(`/projects/${sandbox.slug}`);
   return { ok: true as const };
+}
+
+// ---------------------------------------------------------------------------
+// A-04b: the coach overlay. `openSandboxTask` is the "Start this exercise"
+// button on a hands-on lesson — it lands on the real form, pre-scoped to the
+// suite the task lives in, with `?academy=<lessonSlug>` for `AcademyCoach` to
+// pick up. `verifyTask` is "Check my work".
+// ---------------------------------------------------------------------------
+
+/** Open (creating on first use) the sandbox, scoped to one lesson's exercise. */
+export async function openSandboxTask(formData: FormData) {
+  const session = await requireSession();
+  const lessonSlug = String(formData.get("lesson") ?? "").trim();
+  const task = getSandboxTask(lessonSlug);
+  if (!task) redirect("/academy/sandbox");
+
+  const sandbox = await ensureSandbox(session.userId);
+
+  await logAudit({
+    userId: session.userId,
+    action: "academy.task_open",
+    entityType: "project",
+    entityId: sandbox.id,
+    detail: lessonSlug,
+  });
+
+  let path: string;
+  if (task.target.kind === "defect") {
+    path = `/projects/${sandbox.slug}/defects?academy=${lessonSlug}`;
+  } else {
+    // Suites are seeded by name (src/content/academy/sandbox.ts), not a fixed
+    // id, so the exercise resolves the id at redirect time rather than the
+    // lesson content trying to know it in advance.
+    const suite = await db.testSuite.findFirst({
+      where: { projectId: sandbox.id, name: task.target.suite },
+      select: { id: true },
+    });
+    const qs = suite
+      ? `?suite=${suite.id}&academy=${lessonSlug}`
+      : `?academy=${lessonSlug}`;
+    path = `/projects/${sandbox.slug}/cases/new${qs}`;
+  }
+  redirect(path);
+}
+
+/**
+ * Grade the learner's sandbox work for one lesson. `sinceIso` is when the
+ * coach panel was opened (docs/QA-ACADEMY.md §6.2) — captured client-side so it
+ * survives the redirect that saving a case causes; only rows created after
+ * that count, so a checker can't be passed by something left over from a
+ * previous attempt.
+ */
+export async function verifyTask(
+  lessonSlug: string,
+  sinceIso: string,
+): Promise<CheckResult | { error: string }> {
+  const session = await requireSession();
+  const sandbox = await findSandbox(session.userId);
+  if (!sandbox) return { error: "Open your sandbox first." };
+
+  const since = new Date(sinceIso);
+  if (Number.isNaN(since.getTime())) {
+    return { error: "Something went wrong — reopen the exercise from the lesson." };
+  }
+
+  const result = await runChecker(lessonSlug, sandbox.id, since);
+  if ("error" in result) return result;
+
+  await logAudit({
+    userId: session.userId,
+    action: "academy.task_check",
+    entityType: "project",
+    entityId: sandbox.id,
+    detail: `${lessonSlug}:${result.passed ? "pass" : "fail"}`,
+  });
+
+  return result;
 }

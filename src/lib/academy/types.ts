@@ -25,3 +25,12 @@ export type QuestionVerdict = {
 export type SelfCheckResult =
   | { error: string }
   | { verdicts: QuestionVerdict[]; score: number; total: number };
+
+/**
+ * A-04b: the result of grading a sandbox exercise. Lives here rather than in
+ * `src/lib/academy/checks.ts` for the same reason as everything else in this
+ * file: `checks.ts` is `server-only`, and `AcademyCoach` (a client component)
+ * needs the type without a chance of ever pulling in the module that touches
+ * the database.
+ */
+export type CheckResult = { passed: boolean; feedback: string[] };
