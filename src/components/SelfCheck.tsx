@@ -56,7 +56,7 @@ export function SelfCheck({
       // A perfect run marks the lesson done. Anything less doesn't: the quiz is
       // the check, so "I got 2 of 3" is not a finished lesson — but the learner
       // can still tick it by hand with the toggle below if they disagree.
-      if (result.score === result.total) markDone(lesson);
+      if (result.score === result.total) markDone(lesson, track);
     } catch {
       setError("Couldn't reach the server. Try again.");
     } finally {

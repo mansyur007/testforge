@@ -180,7 +180,7 @@ export default function AcademyLessonPage({
           ) : null}
 
           <div className="mt-8 flex items-center gap-3">
-            <LessonDoneToggle lessonSlug={lesson.slug} />
+            <LessonDoneToggle lessonSlug={lesson.slug} trackSlug={track.slug} />
           </div>
 
           <nav

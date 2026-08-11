@@ -121,7 +121,7 @@ function AcademyCoachInner({ sandboxSlug }: { sandboxSlug: string | null }) {
     try {
       const r = await verifyTask(active.lessonSlug, active.startedAtIso);
       setResult(r);
-      if ("passed" in r && r.passed) markDone(active.lessonSlug);
+      if ("passed" in r && r.passed) markDone(active.lessonSlug, task!.trackSlug);
     } catch {
       setResult({ error: "Couldn't reach the server. Try again." });
     } finally {
@@ -130,7 +130,7 @@ function AcademyCoachInner({ sandboxSlug }: { sandboxSlug: string | null }) {
   }
 
   function markDoneAnyway() {
-    markDone(active!.lessonSlug);
+    markDone(active!.lessonSlug, task!.trackSlug);
     setResult({ passed: true, feedback: ["Marked done — the checker was skipped."] });
   }
 

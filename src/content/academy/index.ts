@@ -91,3 +91,16 @@ export function allLessonParams(): { track: string; lesson: string }[] {
     publishedLessons(t).map((l) => ({ track: t.slug, lesson: l.slug })),
   );
 }
+
+/**
+ * A-05: which published track a lesson slug belongs to. Anonymous progress
+ * (A-02) only ever recorded the slug, not the track, so
+ * `claimAcademyProgress()` needs this to fill in `LessonProgress.trackSlug`
+ * when folding localStorage into the DB. A removed or still-draft lesson
+ * resolves to `undefined` — the claim just skips it rather than guessing.
+ */
+export function findLessonTrack(lessonSlug: string): Track | undefined {
+  return publishedTracks().find((t) =>
+    publishedLessons(t).some((l) => l.slug === lessonSlug),
+  );
+}

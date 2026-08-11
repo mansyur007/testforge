@@ -3,10 +3,10 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { requireSession } from "@/lib/auth";
+import { getSession, requireSession } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
 import { ensureSandbox, findSandbox, resetSandbox } from "@/lib/academy/sandbox";
-import { getLesson } from "@/content/academy";
+import { findLessonTrack, getLesson } from "@/content/academy";
 import { gradeQuestions } from "@/lib/academy/questions";
 import type { SelfCheckResult } from "@/lib/academy/types";
 import { rateLimit } from "@/lib/rate-limit";
@@ -196,4 +196,140 @@ export async function verifyTask(
   });
 
   return result;
+}
+
+// ---------------------------------------------------------------------------
+// A-05: persisted lesson progress. `getSession`, not `requireSession` — like
+// `gradeSelfCheck` above, this has to work for a stranger reading a lesson;
+// the difference here is the DB path only activates once one exists.
+// `src/lib/academy/progress.ts` (client) is what decides whether to call
+// these or fall back to `localStorage`, and syncs the two on the way in.
+// ---------------------------------------------------------------------------
+
+/** DB-backed progress for the signed-in viewer, or `{ authed: false }` for
+ *  anyone else — the client's cue to keep using `localStorage`. */
+export async function getMyLessonProgress(): Promise<
+  { authed: false } | { authed: true; progress: Record<string, string> }
+> {
+  const session = await getSession();
+  if (!session) return { authed: false };
+
+  const rows = await db.lessonProgress.findMany({
+    where: { userId: session.userId },
+    select: { lessonSlug: true, completedAt: true, createdAt: true },
+  });
+  const progress: Record<string, string> = {};
+  for (const r of rows) {
+    progress[r.lessonSlug] = (r.completedAt ?? r.createdAt).toISOString();
+  }
+  return { authed: true, progress };
+}
+
+/** "Mark as done", persisted. Returns `ok: false` for a signed-out caller
+ *  rather than throwing — the client's own toggle already writes
+ *  `localStorage` regardless and only calls this when it already knows
+ *  there's a session, but a cookie can expire between the two. */
+export async function markLessonDoneAction(
+  trackSlug: string,
+  lessonSlug: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const session = await getSession();
+  if (!session) return { ok: false, error: "Sign in to save progress." };
+
+  const now = new Date();
+  await db.lessonProgress.upsert({
+    where: { userId_lessonSlug: { userId: session.userId, lessonSlug } },
+    create: { userId: session.userId, trackSlug, lessonSlug, status: "DONE", completedAt: now },
+    update: { status: "DONE", completedAt: now },
+  });
+  await logAudit({
+    userId: session.userId,
+    action: "academy.lesson_complete",
+    entityType: "lesson",
+    entityId: lessonSlug,
+    detail: trackSlug,
+  });
+  return { ok: true };
+}
+
+/** The undo side of the toggle — a learner who disagrees with a perfect quiz
+ *  score (or a bad "Mark done anyway") can always untick it. */
+export async function markLessonNotDoneAction(
+  lessonSlug: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const session = await getSession();
+  if (!session) return { ok: false, error: "Sign in to save progress." };
+
+  await db.lessonProgress.deleteMany({
+    where: { userId: session.userId, lessonSlug },
+  });
+  return { ok: true };
+}
+
+/**
+ * Fold anonymous `localStorage` progress into the DB, once, on first
+ * authenticated load. `@@unique([userId, lessonSlug])` is what makes this
+ * idempotent — running it twice (a second tab, a retried request) inserts
+ * nothing new the second time, by construction rather than by a flag.
+ */
+export async function claimAcademyProgress(
+  local: Record<string, string>,
+): Promise<{ claimed: number }> {
+  const session = await getSession();
+  if (!session) return { claimed: 0 };
+
+  const entries = Object.entries(local ?? {}).filter(
+    (e): e is [string, string] =>
+      typeof e[0] === "string" &&
+      typeof e[1] === "string" &&
+      !Number.isNaN(Date.parse(e[1])),
+  );
+  if (entries.length === 0) return { claimed: 0 };
+
+  const existing = await db.lessonProgress.findMany({
+    where: {
+      userId: session.userId,
+      lessonSlug: { in: entries.map(([slug]) => slug) },
+    },
+    select: { lessonSlug: true },
+  });
+  const already = new Set(existing.map((r) => r.lessonSlug));
+
+  const rows = entries
+    .filter(([slug]) => !already.has(slug))
+    .map(([lessonSlug, ts]) => {
+      // A lesson that no longer exists (renamed, removed, still draft) has
+      // nowhere to point `trackSlug` at — skip it rather than guess.
+      const track = findLessonTrack(lessonSlug);
+      if (!track) return null;
+      return {
+        userId: session.userId,
+        trackSlug: track.slug,
+        lessonSlug,
+        status: "DONE",
+        completedAt: new Date(ts),
+      };
+    })
+    .filter((r): r is NonNullable<typeof r> => r !== null);
+
+  if (rows.length === 0) return { claimed: 0 };
+
+  try {
+    await db.lessonProgress.createMany({ data: rows });
+  } catch {
+    // A concurrent claim (two tabs signing up at once) can race the
+    // `already` check above and hit the unique constraint. Harmless — the
+    // caller re-fetches from getMyLessonProgress() right after this returns,
+    // so nothing is lost either way, just possibly double-counted here.
+    return { claimed: 0 };
+  }
+
+  await logAudit({
+    userId: session.userId,
+    action: "academy.progress_claim",
+    entityType: "user",
+    entityId: session.userId,
+    detail: `${rows.length} lesson(s)`,
+  });
+  return { claimed: rows.length };
 }

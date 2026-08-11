@@ -34,6 +34,7 @@ export const MODEL_ORDER = [
   "VerificationToken",
   "Invitation",
   "TwoFactorRecoveryCode",
+  "LessonProgress",
   "Project",
   "ProjectMember",
   "Milestone",

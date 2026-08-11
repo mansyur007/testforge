@@ -4160,7 +4160,7 @@ toolbar genuinely shorter on a phone means hiding rarely-used actions (Export/Pr
 a disclosure, which is the same "invent an interaction" call deferred in F-43/F-44 and belongs
 with the `SuiteFolderGrid` work noted above.
 
-#### A-01 … A-04b — TestForge QA Academy (in progress)
+#### A-01 … A-05 — TestForge QA Academy (in progress)
 
 > **Full work-order detail lives in [`docs/QA-ACADEMY.md`](QA-ACADEMY.md)** — Academy is a
 > subsystem delivered over several PRs rather than one feature (per that doc's header), so its
@@ -4198,8 +4198,21 @@ with the `SuiteFolderGrid` work noted above.
   that is where the fixture's own reference case for the same field already lives — and it keeps
   the BVA and "writing test cases" checkers scoped to different suites so neither can pass by
   reading the other's work.
-- **A-05 … A-08** `[ ]` not started — persistence, the ISTQB practice exam, certificates, content
-  build-out. See `docs/QA-ACADEMY.md` §8.
+- **A-05** `[x]` (2026-08-11, branch `feat/academy-persistence`) — Persistence: `LessonProgress`
+  model, `/academy/me`, a dashboard "Continue learning" card. `localStorage` (A-02) becomes a
+  local *cache* of the DB once a session exists rather than the record of truth;
+  `claimAcademyProgress()` folds it in once, idempotently, on first authenticated load. Two real
+  bugs surfaced by testing this against a browser rather than reading the logic: a promise cache
+  that answered "not authed" forever once it had ever run anonymously (server actions redirect via
+  Next's router, not a hard nav, so the module survives sign-in), and a claim-failure path that
+  silently overwrote `localStorage` with the *pre-claim* DB snapshot — deleting the very progress
+  that was waiting to be saved whenever the claim request itself got interrupted. `e2e/
+  academy.spec.ts` **TC-E2E-102** (finish two lessons signed out, sign in as a fresh account, both
+  already ticked; claiming again changes nothing — checked against a `LessonProgress.count()`, not
+  just the UI) and **TC-E2E-103** (`/academy/me` and the dashboard widget). See `docs/QA-ACADEMY.md`
+  § A-05 for the full account of both bugs and how they were actually found.
+- **A-06 … A-08** `[ ]` not started — the ISTQB practice exam, certificates, content build-out.
+  See `docs/QA-ACADEMY.md` §8.
 
 ---
 

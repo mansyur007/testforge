@@ -9,8 +9,9 @@
 > A-03b shipped 2026-08-11 (mobile entry points, beta labelling);
 > A-02 shipped 2026-08-11 (39 self-check questions, anonymous progress, server-side grading);
 > A-04a shipped 2026-08-11 (sandbox provisioning, ShopMini fixture, isolation);
-> A-04b shipped 2026-08-11 (coach overlay, five sandbox-task checkers).
-> A-05 … A-08 planned. Created 2026-08-10.
+> A-04b shipped 2026-08-11 (coach overlay, five sandbox-task checkers);
+> A-05 shipped 2026-08-11 (persistence, claim-at-signup, `/academy/me`).
+> A-06 … A-08 planned. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-08` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
@@ -661,15 +662,67 @@ submitted for). Regression: `shared-steps` and `case-history` specs green — bo
 feedback and is not marked done; a good one passes and marks the lesson done; "Mark done anyway"
 works regardless.
 
-### A-05 — Persistence: progress, claim-at-signup, `/academy/me` `[ ]`
+### A-05 — Persistence: progress, claim-at-signup, `/academy/me` `[x]`
 
-`LessonProgress` model; `academy.ts` server actions; progress reads from the DB when a session
-exists and from `localStorage` otherwise; `claimAcademyProgress()` on first authenticated load;
-`/academy/me` (progress per track, resume link); a "Continue learning" dashboard widget reusing the
-`DashboardWidgets` pattern.
+> **Status: DONE** (2026-08-11, branch `feat/academy-persistence`).
 
-**Acceptance:** finish two lessons signed out, sign up, and both are already ticked; running the
-claim twice changes nothing.
+**Delivered:** `LessonProgress` model (`userId`, `trackSlug`, `lessonSlug`, `status`,
+`completedAt`, `@@unique([userId, lessonSlug])`); four server actions in `src/app/actions/
+academy.ts` — `getMyLessonProgress()`, `markLessonDoneAction()`, `markLessonNotDoneAction()`,
+`claimAcademyProgress()`; `/academy/me` (progress per published track, a Start/Continue/Review
+resume link per track); a "Continue learning" card on the app dashboard, in the same
+`<section className="rounded-xl border ...">` shape the rest of that page already uses — the work
+order's "the `DashboardWidgets` pattern" turned out to name a styling convention, not a component
+to import, since no such component exists in this codebase.
+
+**Where the DB boundary actually sits.** `localStorage` (`tf_academy_progress`, A-02) stops being
+the record of truth once a session exists and becomes a **local cache of the DB** instead —
+`src/lib/academy/progress.ts` still owns `readProgress()`/`markDone()`/`markNotDone()`, and every
+existing caller (`SelfCheck`, `AcademyCoach`, `LessonDoneToggle`) is unchanged in shape, just now
+passing a `trackSlug` through so a DB write has somewhere to file itself. `ensureSynced()` is the
+new piece: fetch DB progress → if `localStorage` has anything, claim it → write the DB's answer
+back into `localStorage`. Cached at module scope so N progress components on one page cost one
+round trip, triggered from `useProgressTick` (existing components) plus two new always-mounted,
+render-nothing components — `AcademySync` in `src/app/(app)/layout.tsx` (every authenticated page)
+and `AcademyMeSync` in `/academy/me` itself, which also calls `router.refresh()` once synced so
+the page it's on doesn't need a manual reload to show what it just claimed.
+
+**Two real bugs found by testing this against the actual browser, not just the logic in isolation**
+(both are load-bearing comments in `src/lib/academy/progress.ts` now):
+
+1. **The stale-"anonymous"-forever cache.** `<form action={...}>` server actions redirect via
+   Next's router, not a hard navigation, so the module that ran `ensureSynced()` on an anonymous
+   page and cached a resolved "not authed" promise *survives* signing in. A promise cached forever
+   would answer "not authed" for the rest of the tab's life and the claim would never fire. Fixed
+   with a `settled` flag that only latches once a check has resolved *authed* — an anonymous result
+   leaves the door open for the next caller to check again.
+2. **The claim-failure data-loss bug — the sharper one.** If `claimAcademyProgress()`'s request
+   itself never completes (a real network blip, or — what actually reproduced it — the browser
+   tearing down the page mid-flight because a hard navigation followed right after triggering it),
+   the code used to fall through to `write(result.progress)` anyway, where `result` was still the
+   *pre-claim* DB snapshot fetched a moment earlier. That silently **overwrote `localStorage` with
+   a copy missing the very lessons that were waiting to be claimed** — permanently, since the next
+   sync would see nothing left to claim. Fixed by leaving `localStorage` (and `settled`) untouched
+   on a failed claim, so the next `ensureSynced()` call genuinely retries instead of quietly
+   discarding progress no one ever saw fail. Found via `page.on("console")` capture on a failing
+   Playwright run, not by inspection — the failure mode doesn't announce itself in a code review,
+   only in a debugger session watching an actual claim attempt get cut off mid-flight.
+
+**Verified.** `e2e/academy.spec.ts` **TC-E2E-102** (finish two lessons signed out, sign in as a
+fresh account, both show done on `/academy/me` and on their own lesson pages; revisiting
+`/academy/me` — a second, genuine `claimAcademyProgress()` call with the same already-claimed
+local data — changes nothing, asserted against both the UI and a direct `LessonProgress` row
+count) and **TC-E2E-103** (`/academy/me` and the dashboard widget reflect real DB progress
+accumulated by earlier tests in the file; the sidebar's "My progress" link reaches it). Full
+`e2e/academy.spec.ts` (18 tests) and the adjacent `shared-steps`/`case-history` specs — the ones
+most likely to notice a component now mounted on every authenticated page — all green, run
+repeatedly against a freshly reset dev database to rule out both flakiness and (the harder-won
+lesson from this work order) a locally corrupted `dev.db`/stale Prisma Client masquerading as one.
+
+**Acceptance, as specified:** finish two lessons signed out, sign up, and both are already ticked
+— confirmed by TC-E2E-102 signing in as a brand-new account, not by inspection. Running the claim
+twice changes nothing — confirmed by both the UI (still "2 of") and a `LessonProgress.count()`
+staying at exactly 2 after a second claim attempt.
 
 ### A-06 — Exam engine + ISTQB practice exam `[ ]`
 

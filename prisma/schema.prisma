@@ -53,6 +53,7 @@ model User {
   createdDefects  Defect[]          @relation("DefectCreator")
   createdBaselines SuiteBaseline[]  @relation("BaselineCreator")
   publicShares    PublicShare[]     @relation("PublicShareCreator")
+  lessonProgress  LessonProgress[]
 }
 
 // F-20: single-use TOTP recovery codes. codeHash is the sha256 hex of the raw
@@ -916,6 +917,26 @@ model Invitation {
   invitedBy    User         @relation(fields: [invitedById], references: [id])
 
   @@unique([organizationId, email])
+}
+
+// A-05: persisted Academy lesson progress. Content lives in git
+// (src/content/academy/**); only the slugs are stored here, so an edited or
+// removed lesson never breaks an old row — see docs/QA-ACADEMY.md §3.
+// Anonymous progress stays in localStorage (A-02) and is folded in once via
+// claimAcademyProgress() on first authenticated load.
+model LessonProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  trackSlug   String
+  lessonSlug  String
+  status      String    @default("DONE") // STARTED | DONE
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonSlug])
+  @@index([userId, trackSlug])
 }
 
 // Gap audit: PRD §5.5 mensyaratkan audit log tapi tabelnya tidak ada di ERD.
