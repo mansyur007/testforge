@@ -7,8 +7,9 @@
 > **Status:** A-01 shipped 2026-08-10 (roadmap, track and lesson routes, Track 1 published);
 > A-03 shipped 2026-08-11 (sitemap, `Course` markup, landing and app entry points);
 > A-03b shipped 2026-08-11 (mobile entry points, beta labelling);
-> A-02 shipped 2026-08-11 (39 self-check questions, anonymous progress, server-side grading).
-> A-04 … A-08 planned. Created 2026-08-10.
+> A-02 shipped 2026-08-11 (39 self-check questions, anonymous progress, server-side grading);
+> A-04a shipped 2026-08-11 (sandbox provisioning, ShopMini fixture, isolation).
+> A-04b, A-05 … A-08 planned. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-08` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
@@ -542,15 +543,59 @@ all green — TC-83 covers `/` at 375px, which is the guard for the new section'
 `lib/seo.ts`). Hoisting it into one exported constant is the right fix and is a change to three
 files this work order has no business touching — left as a deliberate follow-up.
 
-### A-04 — Academy sandbox + coach overlay `[ ]`
+### A-04 — Academy sandbox + coach overlay
 
-`Project.kind` column and the `NORMAL` filters that go with it; `ensureSandbox()`, `seedSandbox()`,
-the ShopMini fixture; `AcademyCoach`; `verifyTask()` and the first five checkers (test case,
-BVA, EP, decision table, bug report). Sandbox section in the project switcher; **Reset sandbox**.
+**Split into two PRs.** The original work order bundled provisioning with the coach overlay and
+five checkers. The checkers are called out in §9 as the sharpest product risk in this project, and
+they deserve a review that is about them rather than one that also has to weigh a schema migration
+and four query-filter changes. A-04a is the foundation; A-04b is the part that grades people's work.
+
+#### A-04a — Sandbox provisioning, fixture and isolation `[x]`
+
+> **Status: DONE** (2026-08-11, branch `feat/academy-sandbox`). First Academy schema change.
+
+**Delivered:** `Project.kind` (`NORMAL | ACADEMY_SANDBOX`, defaulted, no migration file — the repo
+uses `prisma db push`); `ensureSandbox()` / `seedSandbox()` / `resetSandbox()` in
+`src/lib/academy/sandbox.ts`; the **ShopMini fixture** in `src/content/academy/sandbox.ts` (four
+suites, three reference cases, and the requirements the T1 exercises are written against);
+`/academy/sandbox` as the sandbox's home (create, open, reset); the sandbox under Academy in the
+sidebar; hands-on lesson callouts now link to it instead of apologising for it.
+
+**Isolation — the reason the column exists.** A sandbox is a *real* project (same tables, same
+permissions, so a lesson can open the real `CaseForm`), which means it would otherwise show up as
+the learner's work. `NOT_SANDBOX` now filters:
+
+| Surface | Why |
+|---|---|
+| Dashboard (`mine`) | Practice cases would inflate Active Projects, Total Test Cases and the pass-rate KPI |
+| `/projects` table | It is scratch space, not a project they own work in |
+| Sidebar project list | Same, and it has its own entry under Academy |
+| Global search | The fixture uses the same vocabulary (checkout, cart, login) as real projects and would top every result |
+
+Search is filtered **only when unscoped**: `?project=<sandbox-slug>` still searches it, which is
+what a learner hunting for their own practice case actually does.
+
+**Judgement calls.** The slug is derived from the user id (`academy-<8>`), not random, so a learner
+who deletes their sandbox and starts a hands-on lesson again lands on the same URL and any link a
+lesson printed for them still works; a collision loop covers the case where someone names a normal
+project the same thing. Reset **keeps the project and replaces its contents** rather than deleting
+and recreating — "give me the starting position back" is not "give me a different project". The
+learner is `OWNER` of their sandbox, so lessons can exercise every permission the product has.
+
+**Verified:** TC-E2E-98 (created on demand, seeded with four suites and the reference cases,
+absent from `/projects`, and the dashboard's Active Projects count unchanged before and after
+creating one) and **TC-E2E-99** (reset is two-step, and the fixture case appears **exactly once**
+afterwards — re-seeding on top of the old rows instead of replacing them is the failure mode worth
+guarding). Regression: search and project-hub specs green.
+
+#### A-04b — Coach overlay and checkers `[ ]`
+
+`AcademyCoach` mounted in `src/app/(app)/layout.tsx`, reading `?academy=<lessonSlug>`;
+`verifyTask()` and the first five checkers (test case, BVA, EP, decision table, bug report), each
+with unit tests over real good and bad submissions; "Mark done anyway" always available.
 
 **Acceptance:** from a lesson, one click lands on the real case form with the coach docked; a
-deliberately bad submission gets specific feedback and a good one marks the lesson done; the
-sandbox never appears in dashboard counts, org metrics, or the normal project list.
+deliberately bad submission gets specific feedback and a good one marks the lesson done.
 
 ### A-05 — Persistence: progress, claim-at-signup, `/academy/me` `[ ]`
 

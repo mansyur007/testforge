@@ -249,3 +249,78 @@ test(`TC-${TC}-97 The answer key never reaches the browser`, async ({ page }) =>
   // was stripped, not a check that the quiz failed to render.
   expect(html).toContain("What is the honest answer?");
 });
+
+test(`TC-${TC}-98 The sandbox is created on demand, seeded, and kept out of the user's work`, async ({
+  page,
+}) => {
+  await login(page);
+
+  // Baseline: how many projects the dashboard counts before a sandbox exists.
+  await page.goto("/dashboard");
+  const projectsBefore = await page
+    .getByTestId("stat-active-projects")
+    .textContent()
+    .catch(() => null);
+
+  await page.goto("/academy/sandbox");
+  const existing = await page.getByTestId("sandbox-open").count();
+  if (existing === 0) {
+    await page.click('[data-testid="sandbox-create"]');
+    // Creation redirects into the project itself.
+    await page.waitForURL(/\/projects\/academy-/);
+  }
+
+  // Seeded with the ShopMini fixture: four suites and three reference cases.
+  await page.goto("/academy/sandbox");
+  await expect(page.getByTestId("sandbox-open")).toBeVisible();
+  const slug = (await page.getByTestId("sandbox-open").getAttribute("href"))!
+    .split("/")
+    .pop()!;
+  expect(slug).toMatch(/^academy-/);
+
+  await page.goto(`/projects/${slug}`);
+  await expect(page.getByText("Cart", { exact: true }).first()).toBeVisible();
+  await expect(
+    page.getByText("Cart — quantity above maximum (100) is rejected"),
+  ).toBeVisible();
+
+  // The point of Project.kind: a real project that stays out of the surfaces
+  // listing the user's actual work.
+  await page.goto("/projects");
+  await expect(page.getByRole("link", { name: /academy-/ })).toHaveCount(0);
+
+  await page.goto("/dashboard");
+  const projectsAfter = await page
+    .getByTestId("stat-active-projects")
+    .textContent()
+    .catch(() => null);
+  expect(projectsAfter).toBe(projectsBefore);
+});
+
+test(`TC-${TC}-99 Reset wipes the sandbox back to the fixture without duplicating it`, async ({
+  page,
+}) => {
+  await login(page);
+  await page.goto("/academy/sandbox");
+  if ((await page.getByTestId("sandbox-open").count()) === 0) {
+    await page.click('[data-testid="sandbox-create"]');
+    await page.waitForURL(/\/projects\/academy-/);
+    await page.goto("/academy/sandbox");
+  }
+  const slug = (await page.getByTestId("sandbox-open").getAttribute("href"))!
+    .split("/")
+    .pop()!;
+
+  // Two-step: the first click only arms it, so a stray click cannot wipe work.
+  await page.click('[data-testid="sandbox-reset"]');
+  await expect(page.getByTestId("sandbox-reset-confirm")).toBeVisible();
+  await page.click('[data-testid="sandbox-reset-confirm"]');
+  await expect(page.getByTestId("sandbox-reset-done")).toBeVisible();
+
+  // The failure mode worth guarding: re-seeding on top of the old rows instead
+  // of replacing them. The fixture case must appear exactly once.
+  await page.goto(`/projects/${slug}`);
+  await expect(
+    page.getByText("Cart — quantity above maximum (100) is rejected"),
+  ).toHaveCount(1);
+});

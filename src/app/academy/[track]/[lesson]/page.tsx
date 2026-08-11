@@ -116,13 +116,21 @@ export default function AcademyLessonPage({
             >
               <TFIcon name="edit" className="mt-0.5 h-5 w-5 shrink-0" />
               <p className="text-sm text-accent-soft-fg">
-                <strong>This lesson has an exercise.</strong> The hands-on part
-                runs in a real TestForge project — the sandbox is being built,
-                so for now do the exercise in a project of your own.{" "}
+                <strong>This lesson has an exercise.</strong> It runs in your
+                Academy sandbox — a real TestForge project seeded with ShopMini,
+                kept out of your dashboard and projects list.{" "}
+                <Link
+                  href="/academy/sandbox"
+                  data-testid="lesson-sandbox-link"
+                  className="underline"
+                >
+                  Open your sandbox
+                </Link>
+                , or{" "}
                 <Link href="/signup" className="underline">
-                  Create a free account
+                  create a free account
                 </Link>{" "}
-                if you don&rsquo;t have one.
+                first.
               </p>
             </div>
           )}

@@ -8,6 +8,7 @@ import { SidebarProjects } from "@/components/SidebarProjects";
 import { CommandPalette } from "@/components/CommandPalette";
 import { AppShell } from "@/components/AppShell";
 import { BetaChip } from "@/components/BetaChip";
+import { NOT_SANDBOX, findSandbox } from "@/lib/academy/sandbox";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { loadMyWorkCounts } from "@/lib/my-work";
 import { NOINDEX } from "@/lib/seo";
@@ -27,10 +28,14 @@ export default async function AppLayout({
   // Active projects listed inline under the Projects nav item so any project is
   // one click away from anywhere — no Projects-list detour.
   const projects = await db.project.findMany({
-    where: { ...memberScope(session.userId), status: "ACTIVE" },
+    where: { ...memberScope(session.userId), status: "ACTIVE", ...NOT_SANDBOX },
     select: { id: true, name: true, slug: true },
     orderBy: { createdAt: "desc" },
   });
+
+  // A-04: the sandbox hangs under Academy instead, so the project list stays a
+  // list of the user's work. Null until they open their first hands-on lesson.
+  const sandbox = await findSandbox(session.userId);
 
   // F-31: cross-project count for the "My Work" badge.
   const myWorkCounts = await loadMyWorkCounts(session.userId);
@@ -86,6 +91,11 @@ export default async function AppLayout({
               </Link>
               {item.href === "/projects" && (
                 <SidebarProjects projects={projects} />
+              )}
+              {item.href === "/academy" && sandbox && (
+                <SidebarProjects
+                  projects={[{ ...sandbox, name: "Sandbox" }]}
+                />
               )}
             </div>
           ))}
