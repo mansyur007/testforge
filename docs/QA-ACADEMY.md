@@ -784,12 +784,12 @@ blueprint over 1000 seeded draws** with zero violations; full/partial/zero gradi
 pass line; `isLate` at the exact edge of the grace window and just past it. `scripts/academy-
 bundle-check.mjs` (`postbuild`, unchanged — it already walks all of `src/content/academy/**`)
 covers the new question files with no changes: *"109 explanations, 109 client chunks, 0 leaks"*.
-`e2e/academy.spec.ts` **TC-E2E-104** (anonymous chapter quiz grades inline; `ExamAttempt.count()`
+`e2e/academy.spec.ts` **TC-E2E-105** (anonymous chapter quiz grades inline; `ExamAttempt.count()`
 unchanged before/after — the actual "zero rows" acceptance criterion, not just "no visible
-attempt-id"), **TC-E2E-105** (signed-in attempt redirects to its own `[attemptId]` page, a real row
-exists with the right `total`, and it shows in `/academy/me`'s attempt history), **TC-E2E-106**
+attempt-id"), **TC-E2E-106** (signed-in attempt redirects to its own `[attemptId]` page, a real row
+exists with the right `total`, and it shows in `/academy/me`'s attempt history), **TC-E2E-107**
 (full-exam start screen shows the real 40-question/60-minute blueprint and the extra-time
-checkbox), **TC-E2E-107** (no explanation text or `correct`/`correctChoiceIds` on the page either
+checkbox), **TC-E2E-108** (no explanation text or `correct`/`correctChoiceIds` on the page either
 before *or during* an attempt — checked against whichever 8-of-12 questions the seed actually drew,
 since asserting on one fixed question would be testing the seed, not the boundary). All 20 specs in
 the file, including the pre-existing A-01…A-05 ones, pass together (~1.2 min). Manually walked

@@ -4225,10 +4225,10 @@ with the `SuiteFolderGrid` work noted above.
 - **A-06's one deviation:** the route table's `[attemptId]` "session or signed ticket" auth
   resolved to session-only — an anonymous result renders inline on the exam page instead of
   navigating to a ticket-encoded URL, since there's no concrete need yet for an anonymous learner
-  to revisit a result across page loads. `e2e/academy.spec.ts` **TC-E2E-104** (anonymous quiz:
-  `ExamAttempt.count()` unchanged before/after, the literal acceptance criterion), **TC-E2E-105**
-  (signed-in: persisted row, correct redirect, shows in attempt history), **TC-E2E-106** (full-exam
-  blueprint on the start screen), **TC-E2E-107** (no answer key on the page before or during an
+  to revisit a result across page loads. `e2e/academy.spec.ts` **TC-E2E-105** (anonymous quiz:
+  `ExamAttempt.count()` unchanged before/after, the literal acceptance criterion), **TC-E2E-106**
+  (signed-in: persisted row, correct redirect, shows in attempt history), **TC-E2E-107** (full-exam
+  blueprint on the start screen), **TC-E2E-108** (no answer key on the page before or during an
   attempt, checked against whichever questions the seed actually drew). See `docs/QA-ACADEMY.md`
   § A-06 for the full writeup, including a stale-session-cookie edge case found while manually
   walking the flow (pre-existing app-wide behaviour, not a regression, not fixed in this PR).

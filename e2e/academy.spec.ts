@@ -567,7 +567,7 @@ async function answerAllQuestions(page: Page, count: number) {
   }
 }
 
-test(`TC-${TC}-104 An anonymous chapter quiz grades inline and writes zero database rows`, async ({
+test(`TC-${TC}-105 An anonymous chapter quiz grades inline and writes zero database rows`, async ({
   page,
 }) => {
   const before = await db.examAttempt.count();
@@ -595,7 +595,7 @@ test(`TC-${TC}-104 An anonymous chapter quiz grades inline and writes zero datab
   expect(after).toBe(before);
 });
 
-test(`TC-${TC}-105 A signed-in attempt persists, redirects to its own page, and shows in attempt history`, async ({
+test(`TC-${TC}-106 A signed-in attempt persists, redirects to its own page, and shows in attempt history`, async ({
   page,
 }) => {
   const email = `academy-exam-${Date.now()}@testforge.local`;
@@ -635,7 +635,7 @@ test(`TC-${TC}-105 A signed-in attempt persists, redirects to its own page, and 
   await db.user.delete({ where: { email } }); // cascades ExamAttempt
 });
 
-test(`TC-${TC}-106 The full practice exam start screen shows the real blueprint and an extra-time option`, async ({
+test(`TC-${TC}-107 The full practice exam start screen shows the real blueprint and an extra-time option`, async ({
   page,
 }) => {
   await page.goto("/academy/istqb/practice-exam");
@@ -650,7 +650,7 @@ test(`TC-${TC}-106 The full practice exam start screen shows the real blueprint 
   await expect(page.getByTestId("exam-start")).toContainText("Untimed");
 });
 
-test(`TC-${TC}-107 The exam answer key never reaches the page before submission`, async ({
+test(`TC-${TC}-108 The exam answer key never reaches the page before submission`, async ({
   page,
 }) => {
   await page.goto("/academy/istqb/practice-exam/chapter/1");
