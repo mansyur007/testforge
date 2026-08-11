@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { HELP_TOPICS } from "@/content/help";
+import { publishedLessons, publishedTracks } from "@/content/academy";
 import { db } from "@/lib/db";
 import { absoluteUrl } from "@/lib/seo";
 
@@ -69,6 +70,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     })),
     { url: absoluteUrl("/docs/api"), changeFrequency: "monthly", priority: 0.7 },
+    // A-03: QA Academy. Only published tracks and lessons are listed — drafts
+    // have no route at all (`dynamicParams = false`), so advertising them here
+    // would put 404s in the sitemap.
+    { url: absoluteUrl("/academy"), changeFrequency: "weekly", priority: 0.9 },
+    ...publishedTracks().flatMap((track) => [
+      {
+        url: absoluteUrl(`/academy/${track.slug}`),
+        changeFrequency: "weekly" as const,
+        priority: 0.8,
+      },
+      ...publishedLessons(track).map((lesson) => ({
+        url: absoluteUrl(`/academy/${track.slug}/${lesson.slug}`),
+        changeFrequency: "monthly" as const,
+        priority: 0.7,
+      })),
+    ]),
     { url: absoluteUrl("/login"), changeFrequency: "monthly", priority: 0.4 },
     { url: absoluteUrl("/terms"), changeFrequency: "yearly", priority: 0.3 },
     { url: absoluteUrl("/privacy"), changeFrequency: "yearly", priority: 0.3 },

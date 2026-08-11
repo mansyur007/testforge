@@ -168,6 +168,10 @@ export default async function HomePage() {
             <a href="#features" className="hover:text-content-strong">{t.nav.features}</a>
             <a href="#comparison" className="hover:text-content-strong">{t.nav.comparison}</a>
             <a href="#integrations" className="hover:text-content-strong">{t.nav.integrations}</a>
+            {/* A-03: the only real route among the anchors — /academy is the
+                organic entry point, so it needs a link from the page crawlers
+                actually reach. */}
+            <Link href="/academy" className="hover:text-content-strong">{t.nav.academy}</Link>
             <a href="#faq" className="hover:text-content-strong">{t.nav.faq}</a>
           </nav>
           <div className="flex items-center gap-2">
@@ -459,6 +463,7 @@ export default async function HomePage() {
               <li><a href="#features" className="hover:text-content-strong">{t.footer.features}</a></li>
               <li><a href="#comparison" className="hover:text-content-strong">{t.footer.comparison}</a></li>
               <li><Link href="/docs/self-hosting" className="hover:text-content-strong">{t.footer.selfHosting}</Link></li>
+              <li><Link href="/academy" className="hover:text-content-strong">{t.footer.academy}</Link></li>
               <li><Link href="/signup" className="hover:text-content-strong">{t.footer.signup}</Link></li>
             </ul>
           </div>

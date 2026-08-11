@@ -4,8 +4,9 @@
 > from zero to a hireable QA, on to QA automation, and through an ISTQB® Foundation Level practice
 > exam — delivered *inside* TestForge, using the real product as the practice ground.
 >
-> **Status:** A-01 shipped 2026-08-10 (roadmap, track and lesson routes, Track 1 published).
-> A-02 … A-08 planned. Created 2026-08-10.
+> **Status:** A-01 shipped 2026-08-10 (roadmap, track and lesson routes, Track 1 published);
+> A-03 shipped 2026-08-11 (sitemap, `Course` markup, landing and app entry points).
+> A-02, A-04 … A-08 planned. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-08` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
@@ -435,13 +436,37 @@ server action (`gradeSelfCheck`) even here, so the same code path serves the exa
 **Acceptance:** grep the built `.next/static/chunks/**` for `isCorrect` → no hits (asserted by a
 unit test, not by hand).
 
-### A-03 — SEO, i18n chrome, landing & app navigation `[ ]`
+### A-03 — SEO, i18n chrome, landing & app navigation `[x]`
 
-Academy routes in `sitemap.ts`; `Course` and `Quiz` JSON-LD nodes added to `src/lib/seo.ts`;
-per-lesson canonical + OG; `INDEXABLE` on published, `NOINDEX` on drafts. "Academy" in the landing
-nav, the footer's new **Learn** column, and `AppShell`. Chrome strings through `src/lib/i18n.ts`
-(en/id); lesson bodies are locale-keyed in the content module with **en required, id optional,
-falling back to en**.
+> **Status: DONE** (2026-08-11, branch `feat/academy-seo-nav`). A-01 shipped the routes with no
+> inbound link from anywhere; this is what makes them reachable.
+
+**Delivered:** `/academy`, every published track and every published lesson in `src/app/sitemap.ts`
+(drafts excluded — they have no route, so listing them would put 404s in the sitemap); `courseLd()`
+in `src/lib/seo.ts`, emitted on track pages; **Academy** in the landing header nav and the footer's
+Product column (both via `src/lib/i18n.ts`, en/id), and in the app sidebar next to Help.
+
+**Verified:** TC-E2E-92 (landing nav link navigates; sitemap contains the roadmap, the track and a
+lesson URL but *not* the draft track; the track page's `Course` node carries
+`isAccessibleForFree` and a `courseWorkload` matching the real lesson minutes) and **TC-E2E-93**
+(app sidebar link). Regression: TC-E2E-27 and TC-E2E-83…87 re-run green — the landing header gained
+a fifth nav item, and TC-E2E-83/85 are what guard that at 375px and 1280px.
+
+**Three deviations from the plan as written:**
+
+1. **No `Quiz` JSON-LD.** There are no quizzes until A-02. A helper nothing calls is dead code —
+   same reasoning that deferred `AcademyProgressBar` in A-01. It lands with the quizzes.
+2. **No new footer column.** The footer grid is `md:grid-cols-4` and was designed as four; a fifth
+   column for one link means re-balancing the whole footer. Academy sits in **Product**, which is
+   also where it belongs — it is part of the product, not a separate publication.
+3. **Academy page chrome is English-only.** Only the *entry points* (landing nav, footer) are
+   translated, because the landing page around them is fully translated and an untranslated label
+   there would stand out. The Academy pages themselves stay English: the lessons are English, and
+   Indonesian buttons wrapped around English lesson bodies is a worse experience than consistent
+   English. Locale-keyed lesson bodies were also dropped from this work order — introducing the
+   `{ en, id? }` shape across 13 lesson files while there is not one line of Indonesian content is
+   churn, and it costs exactly the same to do later. Both land together in A-08, with the localised
+   routes that make them worth having.
 
 **Known limit, deliberately deferred to A-08:** language is a cookie (`tf_lang`), so a single URL
 serves both languages and Google will only ever index the English text. Indonesian SEO needs

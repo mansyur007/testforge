@@ -45,6 +45,10 @@ export default async function AppLayout({
     { href: "/settings/audit-log", label: "Audit Log", icon: "nav-audit" },
     { href: "/settings/backup", label: "Backup", icon: "nav-backup" },
     { href: "/settings/account", label: "Account", icon: "nav-account" },
+    // A-03: Academy sits with Help — both are reference material rather than
+    // project work. English-only per repo conventions §0.5 (app UI is not
+    // translated); the public /academy pages carry their own chrome.
+    { href: "/academy", label: "Academy", icon: "target" },
     { href: "/docs/help", label: "Help", icon: "nav-help" },
   ];
 

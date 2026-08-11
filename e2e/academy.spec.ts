@@ -1,11 +1,21 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
+import { E2E } from "./global-setup";
 
-// A-01: TestForge QA Academy shell. Every route here is public, so the whole
-// spec runs in the default unauthenticated context — no login helper. That is
-// itself part of what's under test: the point of the hybrid placement
-// (docs/QA-ACADEMY.md §1) is that a stranger from a search result can read the
-// entire track without an account.
+// A-01: TestForge QA Academy shell. A-03: its entry points and sitemap.
+// Every Academy route is public, so all of this runs unauthenticated except
+// TC-E2E-93. That is itself part of what's under test: the point of the hybrid
+// placement (docs/QA-ACADEMY.md §1) is that a stranger from a search result can
+// read an entire track without an account.
 const TC = (process.env.TF_PROJECT ?? "e2e").toUpperCase();
+
+// Only TC-E2E-93 needs a session — it checks the in-app entry point.
+async function login(page: Page) {
+  await page.goto("/login");
+  await page.fill('input[name="email"]', E2E.email);
+  await page.fill('input[name="password"]', E2E.password);
+  await page.click('button[type="submit"]');
+  await page.waitForURL("**/dashboard");
+}
 
 test(`TC-${TC}-88 Academy roadmap lists published tracks and marks the rest in progress`, async ({
   page,
@@ -88,4 +98,40 @@ test(`TC-${TC}-91 Academy routes don't overflow a 375px phone`, async ({ page })
     );
     expect(overflow, `horizontal overflow on ${path}`).toBeLessThanOrEqual(1);
   }
+});
+
+test(`TC-${TC}-92 Academy is reachable from the landing page and listed in the sitemap`, async ({
+  page,
+}) => {
+  // A-01 shipped the routes with no inbound link anywhere; A-03 is what makes
+  // them discoverable, so "the link exists and goes somewhere" is the feature.
+  await page.goto("/");
+  await page.locator("header").getByRole("link", { name: "Academy" }).click();
+  await page.waitForURL("**/academy");
+  await expect(page.getByRole("heading", { name: "QA Academy", level: 1 })).toBeVisible();
+
+  const sitemap = await (await page.request.get("/sitemap.xml")).text();
+  expect(sitemap).toContain("/academy");
+  expect(sitemap).toContain("/academy/fundamentals");
+  expect(sitemap).toContain("/academy/fundamentals/boundary-value-analysis");
+  // Drafts have no route, so they must not be advertised to crawlers.
+  expect(sitemap).not.toContain("/academy/istqb");
+
+  // The track page carries Course markup with the real lesson workload.
+  await page.goto("/academy/fundamentals");
+  const ld = await page.locator('script[type="application/ld+json"]').first().textContent();
+  const graph = JSON.parse(ld ?? "{}")["@graph"] as Array<Record<string, unknown>>;
+  const course = graph.find((n) => n["@type"] === "Course");
+  expect(course).toBeTruthy();
+  expect(course?.isAccessibleForFree).toBe(true);
+  expect(
+    (course?.hasCourseInstance as Record<string, string> | undefined)?.courseWorkload,
+  ).toMatch(/^PT\d+H(\d+M)?$/);
+});
+
+test(`TC-${TC}-93 Academy is reachable from the app sidebar`, async ({ page }) => {
+  await login(page);
+  await page.click('[data-testid="nav-academy"]');
+  await page.waitForURL("**/academy");
+  await expect(page.getByRole("heading", { name: "QA Academy", level: 1 })).toBeVisible();
 });
