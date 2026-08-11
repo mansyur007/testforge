@@ -5,6 +5,7 @@ import { loadStatusDefsForProjects } from "@/lib/result-status-defs";
 import { statusMeta } from "@/lib/result-statuses";
 import { bucketStatus, isMuted, NON_EXECUTED_BUCKETS } from "@/lib/mute";
 import { NOT_SANDBOX } from "@/lib/academy/sandbox";
+import { publishedLessons, publishedTracks } from "@/content/academy";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,7 @@ export default async function DashboardPage() {
     ? { user: { organizationId: me.organizationId } }
     : { userId: session.userId };
 
-  const [projects, totalCases, activeRuns, recentResults, recentLogs] =
+  const [projects, totalCases, activeRuns, recentResults, recentLogs, lessonProgress] =
     await Promise.all([
       db.project.findMany({
         where: { status: "ACTIVE", ...mine },
@@ -61,6 +62,11 @@ export default async function DashboardPage() {
         orderBy: { createdAt: "desc" },
         take: 8,
       }),
+      // A-05: for the "Continue learning" widget below.
+      db.lessonProgress.findMany({
+        where: { userId: session.userId },
+        select: { lessonSlug: true, trackSlug: true, completedAt: true, createdAt: true },
+      }),
     ]);
 
   // F-14: per-project status defs (colors for the run bars, kinds for the KPI).
@@ -85,6 +91,37 @@ export default async function DashboardPage() {
     else if (kind === "FAIL") failedCount++;
   }
   const passRate = executed ? Math.round((passedCount / executed) * 100) : 0;
+
+  // A-05: "Continue learning" — the track most recently touched that isn't
+  // finished, falling back to the first published track with any lessons at
+  // all for someone who has never opened Academy. `content/academy` gives the
+  // lesson lists (content lives in git); `lessonProgress` gives which of them
+  // are done (DB, this user only).
+  const doneSlugs = new Set(lessonProgress.map((r) => r.lessonSlug));
+  const tracksInfo = publishedTracks()
+    .map((track) => {
+      const lessons = publishedLessons(track);
+      const done = lessons.filter((l) => doneSlugs.has(l.slug)).length;
+      return { track, lessons, done, total: lessons.length };
+    })
+    .filter((t) => t.total > 0);
+  const lastRow = lessonProgress.reduce<(typeof lessonProgress)[number] | null>(
+    (latest, r) => {
+      if (!latest) return r;
+      const t = r.completedAt ?? r.createdAt;
+      const lt = latest.completedAt ?? latest.createdAt;
+      return t > lt ? r : latest;
+    },
+    null,
+  );
+  const continueTrack =
+    tracksInfo.find((t) => t.track.slug === lastRow?.trackSlug && t.done < t.total) ??
+    tracksInfo.find((t) => t.done > 0 && t.done < t.total) ??
+    tracksInfo.find((t) => t.done === 0) ??
+    tracksInfo[0];
+  const resumeLesson = continueTrack
+    ? (continueTrack.lessons.find((l) => !doneSlugs.has(l.slug)) ?? continueTrack.lessons[0])
+    : null;
 
   const stats = [
     { label: "Active Projects", value: projects.length },
@@ -234,6 +271,35 @@ export default async function DashboardPage() {
           )}
         </div>
       </section>
+
+      {/* A-05: "Continue learning" — reuses the same card shape as the
+          sections above rather than a new widget system (there isn't one to
+          reuse; docs/QA-ACADEMY.md's work order named "the DashboardWidgets
+          pattern" loosely, meaning this file's existing section styling). */}
+      {continueTrack && resumeLesson && (
+        <section
+          className="rounded-xl border border-hairline bg-surface p-6"
+          data-testid="dashboard-academy-widget"
+        >
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="font-semibold">Continue learning</h2>
+            <Link href="/academy/me" className="text-sm text-accent-text hover:underline">
+              My progress →
+            </Link>
+          </div>
+          <p className="text-sm text-content">
+            <strong>{continueTrack.track.title}</strong> — {continueTrack.done} of{" "}
+            {continueTrack.total} lessons done
+          </p>
+          <Link
+            href={`/academy/${continueTrack.track.slug}/${resumeLesson.slug}`}
+            data-testid="dashboard-academy-resume"
+            className="mt-3 inline-flex min-h-[36px] items-center rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+          >
+            {continueTrack.done > 0 ? "Continue" : "Start"} {continueTrack.track.title}
+          </Link>
+        </section>
+      )}
     </div>
   );
 }

@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import {
   PROGRESS_EVENT,
   countDone,
+  ensureSynced,
+  isAuthed,
   markDone,
   markNotDone,
   readProgress,
@@ -15,12 +17,21 @@ import {
  * render their server-safe shape first and fill in after mount. `mounted` is
  * the flag; there is no way around it short of moving progress to a cookie,
  * which would send it on every request for no benefit.
+ *
+ * A-05: the same mount effect kicks off `ensureSynced()` — cached at module
+ * scope, so with both `TrackProgress` and `LessonDoneToggle` mounted on a
+ * page (or several instances of either), the DB round trip still happens
+ * once. `ensureSynced()` writes straight into `localStorage` and dispatches
+ * `PROGRESS_EVENT` itself, so the re-render this hook already listens for is
+ * what picks up the DB's answer once it lands — no separate "loading from
+ * DB" state to thread through every consumer.
  */
 function useProgressTick(): boolean {
   const [mounted, setMounted] = useState(false);
   const [, force] = useState(0);
   useEffect(() => {
     setMounted(true);
+    ensureSynced();
     const onChange = () => force((n) => n + 1);
     window.addEventListener(PROGRESS_EVENT, onChange);
     window.addEventListener("storage", onChange); // other tabs
@@ -68,15 +79,24 @@ export function TrackProgress({
       </div>
       {mounted && (
         <p className="mt-1.5 text-[11px] text-content-subtle">
-          Saved in this browser only. Sign-in sync is coming.
+          {isAuthed()
+            ? "Saved to your account."
+            : "Saved in this browser only — sign in to keep it."}
         </p>
       )}
     </div>
   );
 }
 
-/** "Mark as done" for one lesson. */
-export function LessonDoneToggle({ lessonSlug }: { lessonSlug: string }) {
+/** "Mark as done" for one lesson. `trackSlug` is only needed for the DB
+ *  write (A-05) — an anonymous toggle never reaches past `localStorage`. */
+export function LessonDoneToggle({
+  lessonSlug,
+  trackSlug,
+}: {
+  lessonSlug: string;
+  trackSlug: string;
+}) {
   const mounted = useProgressTick();
   const done = mounted ? Boolean(readProgress()[lessonSlug]) : false;
 
@@ -85,7 +105,9 @@ export function LessonDoneToggle({ lessonSlug }: { lessonSlug: string }) {
       type="button"
       data-testid="lesson-done-toggle"
       aria-pressed={done}
-      onClick={() => (done ? markNotDone(lessonSlug) : markDone(lessonSlug))}
+      onClick={() =>
+        done ? markNotDone(lessonSlug) : markDone(lessonSlug, trackSlug)
+      }
       className={`inline-flex min-h-[44px] items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium ${
         done
           ? "border-accent-ring bg-accent-soft text-accent-soft-fg"

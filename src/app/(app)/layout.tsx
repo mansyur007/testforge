@@ -9,6 +9,7 @@ import { CommandPalette } from "@/components/CommandPalette";
 import { AppShell } from "@/components/AppShell";
 import { BetaChip } from "@/components/BetaChip";
 import { AcademyCoach } from "@/components/AcademyCoach";
+import { AcademySync } from "@/components/AcademySync";
 import { NOT_SANDBOX, findSandbox } from "@/lib/academy/sandbox";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { loadMyWorkCounts } from "@/lib/my-work";
@@ -93,10 +94,28 @@ export default async function AppLayout({
               {item.href === "/projects" && (
                 <SidebarProjects projects={projects} />
               )}
-              {item.href === "/academy" && sandbox && (
-                <SidebarProjects
-                  projects={[{ ...sandbox, name: "Sandbox" }]}
-                />
+              {item.href === "/academy" && (
+                <ul className="mb-1 ml-4 space-y-0.5 border-l border-sidebar-border pl-2">
+                  <li>
+                    <Link
+                      href="/academy/me"
+                      data-testid="nav-academy-me"
+                      className="block truncate rounded-md px-3 py-1.5 text-sm text-sidebar-fg hover:bg-sidebar-hover hover:text-white"
+                    >
+                      My progress
+                    </Link>
+                  </li>
+                  {sandbox && (
+                    <li>
+                      <Link
+                        href={`/projects/${sandbox.slug}`}
+                        className="block truncate rounded-md px-3 py-1.5 text-sm text-sidebar-fg hover:bg-sidebar-hover hover:text-white"
+                      >
+                        Sandbox
+                      </Link>
+                    </li>
+                  )}
+                </ul>
               )}
             </div>
           ))}
@@ -119,6 +138,9 @@ export default async function AppLayout({
           rendering here rather than per-page is what lets it stay docked
           across the whole sandbox, not just the page it was opened on. */}
       <AcademyCoach sandboxSlug={sandbox?.slug ?? null} />
+      {/* A-05: claim-at-signup, fired from every authenticated page rather
+          than just Academy's own — see AcademySync.tsx. */}
+      <AcademySync />
     </AppShell>
   );
 }

@@ -1,3 +1,5 @@
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 import { test, expect, type Page } from "@playwright/test";
 import { E2E } from "./global-setup";
 
@@ -7,12 +9,13 @@ import { E2E } from "./global-setup";
 // placement (docs/QA-ACADEMY.md §1) is that a stranger from a search result can
 // read an entire track without an account.
 const TC = (process.env.TF_PROJECT ?? "e2e").toUpperCase();
+const db = new PrismaClient();
 
 // Only TC-E2E-93 needs a session — it checks the in-app entry point.
-async function login(page: Page) {
+async function login(page: Page, email = E2E.email, password = E2E.password) {
   await page.goto("/login");
-  await page.fill('input[name="email"]', E2E.email);
-  await page.fill('input[name="password"]', E2E.password);
+  await page.fill('input[name="email"]', email);
+  await page.fill('input[name="password"]', password);
   await page.click('button[type="submit"]');
   await page.waitForURL("**/dashboard");
 }
@@ -449,4 +452,98 @@ Expected: "Over Rp 500,000" ships free; exactly 500,000 should be charged Rp 20,
     "aria-pressed",
     "true",
   );
+});
+
+test(`TC-${TC}-102 Progress finished anonymously is claimed on first sign-in, and claiming twice changes nothing`, async ({
+  page,
+}) => {
+  // A dedicated, disposable account — the claim is about "first authenticated
+  // load", and signing in triggers exactly the same AcademySync mount signup
+  // would (src/components/AcademySync.tsx), without coupling this test to the
+  // signup form / email-verification flow, which nothing else in this suite
+  // drives either.
+  const email = `academy-claim-${Date.now()}@testforge.local`;
+  const passwordHash = await bcrypt.hash("AcademyClaim123", 10);
+  await db.user.create({
+    data: {
+      name: "Academy Claim Test",
+      email,
+      passwordHash,
+      emailVerifiedAt: new Date(),
+      onboardedAt: new Date(),
+    },
+  });
+
+  // Finish two lessons signed out — the toggle, not the quiz, so this test
+  // doesn't depend on knowing any lesson's correct answers.
+  await page.goto("/academy/fundamentals/what-qa-does");
+  await page.click('[data-testid="lesson-done-toggle"]');
+  await expect(page.getByTestId("lesson-done-toggle")).toHaveAttribute("aria-pressed", "true");
+
+  await page.goto("/academy/fundamentals/sdlc-and-stlc");
+  await page.click('[data-testid="lesson-done-toggle"]');
+  await expect(page.getByTestId("lesson-done-toggle")).toHaveAttribute("aria-pressed", "true");
+
+  await login(page, email, "AcademyClaim123");
+
+  // login() lands on /dashboard, which also tries to claim (AcademySync in
+  // src/app/(app)/layout.tsx) — but signing in redirects via Next's router
+  // rather than a hard navigation, so a `goto` straight to /academy/me can
+  // outrun that attempt before it even starts. /academy/me doesn't depend on
+  // it: AcademyMeSync (src/components/AcademyMeSync.tsx) runs its own
+  // ensureSynced() and calls router.refresh() once it resolves, updating this
+  // same page in place — so a plain auto-retrying assertion on the live DOM
+  // (no further navigation) is enough, and isn't racing anything.
+  await page.goto("/academy/me");
+  await expect(page.getByTestId("me-total-progress")).toContainText("2 of", {
+    timeout: 10_000,
+  });
+
+  // Both lessons individually show done, not just the aggregate count.
+  await page.goto("/academy/fundamentals/what-qa-does");
+  await expect(page.getByTestId("lesson-done-toggle")).toHaveAttribute("aria-pressed", "true");
+  await page.goto("/academy/fundamentals/sdlc-and-stlc");
+  await expect(page.getByTestId("lesson-done-toggle")).toHaveAttribute("aria-pressed", "true");
+
+  // Claiming again — revisiting /academy/me is a fresh mount of
+  // AcademyMeSync, which re-runs ensureSynced() from scratch. localStorage
+  // still holds the same (now DB-confirmed) two entries, so this genuinely
+  // re-invokes claimAcademyProgress() a second time. Must not duplicate rows
+  // or change the count.
+  await page.goto("/academy/me");
+  await expect(page.getByTestId("me-total-progress")).toContainText("2 of");
+
+  const rows = await db.lessonProgress.count({ where: { user: { email } } });
+  expect(rows).toBe(2);
+
+  await db.user.delete({ where: { email } }); // cascades LessonProgress
+});
+
+test(`TC-${TC}-103 /academy/me and the dashboard's "Continue learning" widget reflect real DB progress`, async ({
+  page,
+}) => {
+  // Runs after TC-100/101 in this file, which already marked several
+  // fundamentals lessons done for the shared E2E user — deliberately not
+  // re-deriving an exact count here (that would just re-encode file order);
+  // the structure is what's under test.
+  await login(page);
+
+  await page.goto("/dashboard");
+  await expect(page.getByTestId("dashboard-academy-widget")).toBeVisible();
+  await expect(page.getByTestId("dashboard-academy-resume")).toBeVisible();
+  await page.click('[data-testid="dashboard-academy-resume"]');
+  await page.waitForURL(/\/academy\/fundamentals\/.+/);
+
+  await page.goto("/academy/me");
+  await expect(page.getByTestId("me-total-progress")).toContainText(
+    /\d+ of \d+ lessons done/,
+  );
+  await expect(page.getByTestId("me-track-fundamentals")).toBeVisible();
+  await expect(page.getByTestId("me-track-resume-fundamentals")).toBeVisible();
+
+  // The sidebar link reaches the same page.
+  await page.goto("/dashboard");
+  await page.click('[data-testid="nav-academy-me"]');
+  await page.waitForURL("**/academy/me");
+  await expect(page.getByRole("heading", { name: "My progress" })).toBeVisible();
 });
