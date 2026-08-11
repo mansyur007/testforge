@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
 import bcrypt from "bcryptjs";
@@ -104,16 +105,43 @@ export function clearPending2fa() {
   cookies().delete(PENDING_2FA_COOKIE);
 }
 
-export async function getSession(): Promise<Session | null> {
+// A verified JWT only proves the cookie hasn't been tampered with — it says
+// nothing about whether `payload.userId` still has a row in `User`. It won't
+// if the account was deleted, or (the common way to hit this in dev) `dev.db`
+// got reset while a browser still held an old cookie. Every write scoped to
+// `session.userId` (`db.<model>.create({ data: { userId: session.userId } }
+// )`) assumes that row exists — Prisma enforces the foreign key, so a stale
+// session doesn't silently do nothing, it throws `P2003` from deep inside
+// whatever action happened to run the write, one 500 per call site. Checking
+// existence here, once, is what lets every one of those call sites treat a
+// stale session exactly like no session at all — `getMyLessonProgress`
+// returns `{ authed: false }`, `requireSession()` redirects to `/login`, etc.
+// — without each of them needing to know this failure mode exists.
+//
+// The extra `db.user.findUnique` is a real query on top of what used to be
+// pure JWT verification, but `getSession()` is called many times over the
+// life of one request (layout, page, and any server actions it triggers), so
+// `cache()` (React's per-request memoization, not `unstable_cache` — this
+// must NOT survive past the current request) collapses that back down to at
+// most one query per request rather than one per call site.
+export const getSession = cache(async (): Promise<Session | null> => {
   const token = cookies().get(COOKIE)?.value;
   if (!token) return null;
+  let payload: Session;
   try {
-    const { payload } = await jwtVerify(token, SECRET);
-    return payload as unknown as Session;
+    payload = (await jwtVerify(token, SECRET)).payload as unknown as Session;
   } catch {
     return null;
   }
-}
+
+  const user = await db.user.findUnique({
+    where: { id: payload.userId },
+    select: { id: true },
+  });
+  if (!user) return null;
+
+  return payload;
+});
 
 export async function requireSession(): Promise<Session> {
   const session = await getSession();
