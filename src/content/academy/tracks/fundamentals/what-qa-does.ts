@@ -81,4 +81,43 @@ both the skill and something to show in an interview.
 
 **Next:** how the testing work fits into how software actually gets built.
 `,
+  selfCheck: [
+    {
+      id: "q1",
+      stem: "A stakeholder asks you to guarantee the release has no bugs. What is the honest answer?",
+      choices: [
+        { id: "a", text: "Yes, if we run the full regression suite first" },
+        { id: "b", text: "No — testing can show defects exist, never that none remain", correct: true },
+        { id: "c", text: "Yes, once automation coverage reaches 100%" },
+        { id: "d", text: "No, because the developers keep introducing new ones" },
+      ],
+      explanation:
+        "No amount of testing proves the absence of defects; it only lowers the probability of failure. Coverage numbers measure what was executed, not what is correct, and the honest reply names what was tested, what was found, and what was left uncovered.",
+    },
+    {
+      id: "q2",
+      stem: "You have two days before a checkout release. Where does the time usually belong?",
+      choices: [
+        { id: "a", text: "The happy path across six browsers" },
+        { id: "b", text: "Payment failure modes and permission boundaries in one browser", correct: true },
+        { id: "c", text: "Re-running every case in the suite regardless of the change" },
+        { id: "d", text: "Writing more test cases for the areas nobody changed" },
+      ],
+      explanation:
+        "The happy path is what the developer already tried, so it is the least likely place to find something new. Risk-based choice sends the scarce time to failure modes and permissions, where the impact is money and access, and says out loud what the browser matrix did not cover.",
+    },
+    {
+      id: "q3",
+      stem: "Which of these are testing activities, even though none of them execute a test case?",
+      multi: true,
+      choices: [
+        { id: "a", text: "Asking in refinement what happens when a card is declined mid-payment", correct: true },
+        { id: "b", text: "Reviewing a story's acceptance criteria for ambiguity", correct: true },
+        { id: "c", text: "Writing the release announcement" },
+        { id: "d", text: "Pairing with a developer on which unit tests to add", correct: true },
+      ],
+      explanation:
+        "Testing is the work of getting information about quality, and the cheapest place to get it is before code exists. Questions in refinement, reviewing criteria and shaping unit tests all prevent defects; the release announcement is communication, not testing.",
+    },
+  ],
 };

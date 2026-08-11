@@ -85,4 +85,42 @@ That sentence is the whole job.
 **Next:** the first design technique — equivalence partitioning, which is how
 you turn "10 billion combinations" into "six tests".
 `,
+  selfCheck: [
+    {
+      id: "q1",
+      stem: "Your regression suite has been green for six months. Which principle should make you uneasy?",
+      choices: [
+        { id: "a", text: "Testing shows the presence of defects" },
+        { id: "b", text: "Tests wear out — the pesticide paradox", correct: true },
+        { id: "c", text: "Testing is context dependent" },
+        { id: "d", text: "Early testing saves time and money" },
+      ],
+      explanation:
+        "A suite only catches the defects it was designed for. Perpetually green may mean the product is stable, or it may mean the suite stopped looking — which is why suites need reviewing and extending, and why some effort must stay unscripted.",
+    },
+    {
+      id: "q2",
+      stem: "You have limited regression time. Which principle tells you where to spend it?",
+      choices: [
+        { id: "a", text: "Defects cluster together", correct: true },
+        { id: "b", text: "Exhaustive testing is impossible" },
+        { id: "c", text: "Absence-of-errors is a fallacy" },
+        { id: "d", text: "Testing is context dependent" },
+      ],
+      explanation:
+        "Defects are not evenly distributed — a few modules hold most of them. Past defect data is the best available predictor of where the next one lives, so effort should follow the clusters rather than spread evenly.",
+    },
+    {
+      id: "q3",
+      stem: "The bug list is empty and the feature still isn't right for users. Which principle names this?",
+      choices: [
+        { id: "a", text: "Testing shows the presence of defects, not their absence" },
+        { id: "b", text: "Early testing saves time and money" },
+        { id: "c", text: "Absence-of-errors is a fallacy", correct: true },
+        { id: "d", text: "Exhaustive testing is impossible" },
+      ],
+      explanation:
+        "Software can be almost defect-free and still solve the wrong problem. Fitness for purpose beats defect count, which is why acceptance testing and requirement review exist alongside functional testing.",
+    },
+  ],
 };

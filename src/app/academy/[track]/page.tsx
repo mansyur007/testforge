@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Logo, TFIcon } from "@/components/icons";
 import { JsonLd } from "@/components/JsonLd";
 import { AcademyNav, SandboxBadge, formatMinutes } from "@/components/AcademyNav";
+import { TrackProgress } from "@/components/AcademyProgress";
 import {
   getTrack,
   publishedLessons,
@@ -123,6 +124,13 @@ export default function AcademyTrackPage({
               </p>
             </div>
           </div>
+
+          {/* Slugs come from the server; the counting happens in the browser,
+              because that is where the progress lives (A-02). */}
+          <TrackProgress
+            className="mt-6"
+            lessonSlugs={lessons.map((l) => l.slug)}
+          />
 
           <section className="mt-8 rounded-xl border border-hairline bg-surface p-5">
             <h2 className="font-semibold text-content-strong">

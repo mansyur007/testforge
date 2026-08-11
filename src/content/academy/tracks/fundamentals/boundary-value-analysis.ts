@@ -114,4 +114,43 @@ them earns its place.
 **Next:** decision tables, for when the rules stop being a single range and start
 combining.
 `,
+  selfCheck: [
+    {
+      id: "q1",
+      stem: "Valid quantity is 1–99. Someone tests 0, 1 and 100. Which boundary value did they miss, and why does it matter most?",
+      choices: [
+        { id: "a", text: "50 — the middle of the range is untested" },
+        { id: "b", text: "99 — the upper valid edge, the likeliest to be wrongly rejected", correct: true },
+        { id: "c", text: "-1 — negative numbers are untested" },
+        { id: "d", text: "Nothing was missed; 0, 1 and 100 is complete 2-value BVA" },
+      ],
+      explanation:
+        "Each boundary needs a value on both sides. They covered the lower edge fully and only the invalid side of the upper one, so a condition written as qty < 99 instead of qty <= 99 would pass every test they ran while silently rejecting the largest legitimate order.",
+    },
+    {
+      id: "q2",
+      stem: "The rule is \"password must be 8–64 characters\". For 3-value BVA at the lower boundary, which lengths do you test?",
+      choices: [
+        { id: "a", text: "8, 9, 10" },
+        { id: "b", text: "7, 8, 9", correct: true },
+        { id: "c", text: "6, 7, 8" },
+        { id: "d", text: "1, 8, 64" },
+      ],
+      explanation:
+        "Three-value BVA takes the value below the boundary, the boundary itself and the value above it. For a minimum of 8 that is 7, 8 and 9 — enough to catch both an off-by-one and a comparison operator written the wrong way round.",
+    },
+    {
+      id: "q3",
+      stem: "An upload is capped at 5 MB. Which of these are boundaries worth a test?",
+      multi: true,
+      choices: [
+        { id: "a", text: "A file of exactly 5 MB", correct: true },
+        { id: "b", text: "A file one byte over 5 MB", correct: true },
+        { id: "c", text: "A 0-byte file", correct: true },
+        { id: "d", text: "A file of about 2 MB" },
+      ],
+      explanation:
+        "Exactly at the limit and one byte over test the comparison itself, and zero is a boundary everyone forgets — empty input routinely takes a different code path and crashes where a small file would not. A mid-range file sits comfortably inside the partition and tells you little.",
+    },
+  ],
 };

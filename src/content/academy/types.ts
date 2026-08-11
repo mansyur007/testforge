@@ -10,6 +10,25 @@
  */
 export type ContentStatus = "draft" | "published";
 
+/**
+ * A-02: one self-check question. **`correct` and `explanation` are answer-key
+ * material** — nothing may hand a whole `SelfCheckQuestion` to the browser.
+ * `sanitizeQuestion()` in `src/lib/academy/questions.ts` is the only sanctioned
+ * way across that boundary, and `src/content/academy/index.ts` is marked
+ * `server-only` so an accidental client import is a build error rather than a
+ * silent leak. See docs/QA-ACADEMY.md §2.2.
+ */
+export type SelfCheckQuestion = {
+  /** Unique within its lesson. Stable — it is what an answer is keyed by. */
+  id: string;
+  stem: string;
+  choices: { id: string; text: string; correct?: boolean }[];
+  /** Shown after grading, whether the learner was right or wrong. */
+  explanation: string;
+  /** More than one correct choice; the UI renders checkboxes instead of radios. */
+  multi?: boolean;
+};
+
 export type Lesson = {
   slug: string;
   title: string;
@@ -26,6 +45,8 @@ export type Lesson = {
   sandbox?: boolean;
   /** GitHub-flavored markdown, rendered by <Markdown> (sanitized, no raw HTML). */
   body: string;
+  /** 3–5 questions at the end of the lesson. Absent means no quiz yet. */
+  selfCheck?: SelfCheckQuestion[];
 };
 
 export type Track = {

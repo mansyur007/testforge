@@ -109,4 +109,42 @@ an answer for R1/R5.
 **Next:** state transition testing, for behaviour that depends on what happened
 *before*.
 `,
+  selfCheck: [
+    {
+      id: "q1",
+      stem: "Four binary conditions. How many rules does the table have before any collapsing?",
+      choices: [
+        { id: "a", text: "4" },
+        { id: "b", text: "8" },
+        { id: "c", text: "16", correct: true },
+        { id: "d", text: "It depends on the actions" },
+      ],
+      explanation:
+        "Every condition doubles the combinations, so n binary conditions give 2 to the power n rules — 16 here. That growth is exactly why collapsing with don't-care entries matters once you get past four or five conditions.",
+    },
+    {
+      id: "q2",
+      stem: "Filling in the table, you find a combination the requirement never defines. What is the right move?",
+      choices: [
+        { id: "a", text: "Test what the code currently does and record that as expected" },
+        { id: "b", text: "Skip the rule — it is out of scope" },
+        { id: "c", text: "Raise it as a gap in the requirement before deciding the expected result", correct: true },
+        { id: "d", text: "Pick the outcome that seems most sensible and move on" },
+      ],
+      explanation:
+        "An undefined combination is a defect in the specification, and finding it is the most valuable thing a decision table does. Recording current behaviour as expected quietly turns whatever the code happens to do into the requirement.",
+    },
+    {
+      id: "q3",
+      stem: "What does minimum decision-table coverage mean?",
+      choices: [
+        { id: "a", text: "One test per condition" },
+        { id: "b", text: "One test per rule, i.e. per column", correct: true },
+        { id: "c", text: "One test per distinct action" },
+        { id: "d", text: "One test per condition-value pair" },
+      ],
+      explanation:
+        "The unit of coverage is the rule: one test for each column of the table. That is a far stronger answer to \"is this pricing logic covered?\" than a percentage, because anyone can point at the column a test belongs to.",
+    },
+  ],
 };

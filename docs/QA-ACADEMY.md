@@ -6,8 +6,9 @@
 >
 > **Status:** A-01 shipped 2026-08-10 (roadmap, track and lesson routes, Track 1 published);
 > A-03 shipped 2026-08-11 (sitemap, `Course` markup, landing and app entry points);
-> A-03b shipped 2026-08-11 (mobile entry points, beta labelling).
-> A-02, A-04 … A-08 planned. Created 2026-08-10.
+> A-03b shipped 2026-08-11 (mobile entry points, beta labelling);
+> A-02 shipped 2026-08-11 (39 self-check questions, anonymous progress, server-side grading).
+> A-04 … A-08 planned. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-08` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
@@ -427,15 +428,51 @@ native display and semantics from `md` up), scoped to the lesson page rather tha
 in `globals.css`, which also renders case descriptions and comments. Author-written markdown is now
 a source of layout risk in this repo; TC-E2E-91 is the guard.
 
-### A-02 — Self-check quizzes (client-side, anonymous) `[ ]`
+### A-02 — Self-check quizzes (client-side, anonymous) `[x]`
 
-In-lesson quizzes: 3–5 questions, immediate feedback with explanation, retry. Anonymous progress in
-`localStorage` (`tf_academy_progress`) with a per-track progress bar. **No answers in the client
-bundle:** the lesson page is a server component; quiz questions arrive sanitized and grading is a
-server action (`gradeSelfCheck`) even here, so the same code path serves the exam later.
+> **Status: DONE** (2026-08-11, branch `feat/academy-self-check`).
 
-**Acceptance:** grep the built `.next/static/chunks/**` for `isCorrect` → no hits (asserted by a
-unit test, not by hand).
+**Delivered:** **39 questions across all 13 T1 lessons** (3 each, single- and multi-answer), an
+in-lesson quiz with immediate per-question feedback and explanations, retry, a "Mark as done"
+toggle, and a per-track progress bar. Anonymous progress in `localStorage`
+(`tf_academy_progress`), in the flat `slug → ISO timestamp` shape A-05's claim will post.
+
+**The answer-key boundary, which is the actual work here:**
+
+- `src/content/academy/index.ts` and `src/lib/academy/questions.ts` are **`server-only`**. An
+  accidental client import is a *build error*. This replaces the ESLint `no-restricted-imports`
+  rule this work order originally specified — that rule cannot be written, because ESLint matches
+  files by path and Next has no filename convention for `"use client"`.
+- Client-safe types live in their own module (`src/lib/academy/types.ts`) so no client component
+  ever needs to import from the server-only one, not even for a type. A type-only import is erased
+  before bundling, but "safe because the compiler removes it" is a property a future edit can
+  falsify by deleting one keyword.
+- `sanitizeQuestions()` runs in the lesson's **server** component; the client receives
+  `{ id, stem, choices: [{id, text}], multi }` and nothing else. Explanations exist only in a
+  grading response.
+- Grading is the server action `gradeSelfCheck` — the path A-06's exam reuses. It deliberately
+  breaks Part IV §0.2: no `requireSession` (Academy is readable without an account), no RBAC or
+  tenant guard (it touches no tenant data), no `logAudit` (a stranger answering a quiz is traffic,
+  not a change to a project). It does rate-limit per client IP, because it is a public endpoint
+  that reads the answer key.
+
+**Verified.** `scripts/academy-bundle-check.mjs` runs as `postbuild`, so `npm run build` covers it
+with no CI change: it extracts every `explanation:` string from the lesson sources and greps the
+built client chunks for the first 40 characters — *"academy-bundle-check: OK (39 explanations, 103
+client chunks, 0 leaks)"*. Explanations are the canary rather than the `correct` flags because a
+boolean minifies to `!0` and is indistinguishable from any other boolean; a sentence of English is
+not. **The guard was proved to fail**: pasting one explanation into a built chunk makes it exit 1
+naming the chunk and the source file.
+
+**TC-E2E-96** (answer everything wrong → 0/3 with explanations and the lesson *not* marked done;
+retry clears them; answer right → 3/3, lesson marked done, survives a reload, and the track page
+reads "1 of 13 lessons done") and **TC-E2E-97** (the served document — HTML *and* the inline RSC
+payload — contains the question stems but none of the explanation text, no `correctChoiceIds`, no
+`"correct":true`).
+
+**Judgement calls worth knowing:** a perfect score marks the lesson done and anything less does
+not — the quiz is the check — but the manual toggle is always there for a learner who disagrees.
+Multi-answer questions are graded on **set equality**, so selecting everything is not a pass.
 
 ### A-03 — SEO, i18n chrome, landing & app navigation `[x]`
 

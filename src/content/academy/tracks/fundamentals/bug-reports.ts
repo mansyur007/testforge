@@ -135,4 +135,43 @@ severity you can justify.
 
 **Next:** what happens to that report after you file it.
 `,
+  selfCheck: [
+    {
+      id: "q1",
+      stem: "The company name is misspelled on the home page. How would you classify it?",
+      choices: [
+        { id: "a", text: "High severity, high priority" },
+        { id: "b", text: "Low severity, high priority", correct: true },
+        { id: "c", text: "High severity, low priority" },
+        { id: "d", text: "Low severity, low priority" },
+      ],
+      explanation:
+        "Severity measures technical impact: nothing breaks, nothing is lost, so it is low. Priority is a business call about how soon it should be fixed, and a misspelled company name on the front page is embarrassing enough to jump the queue. The two axes are independent.",
+    },
+    {
+      id: "q2",
+      stem: "Before filing, which steps make your report harder to close as \"cannot reproduce\"?",
+      multi: true,
+      choices: [
+        { id: "a", text: "Reproduce it a second time from a clean session", correct: true },
+        { id: "b", text: "Remove steps until it stops happening", correct: true },
+        { id: "c", text: "Record the exact build, browser and account used", correct: true },
+        { id: "d", text: "File it immediately so no detail is forgotten" },
+      ],
+      explanation:
+        "A clean-session repro rules out stale local state, reducing the steps localises the cause, and the environment is what lets someone else stand where you stood. Filing first and investigating later is what produces the reports that get bounced.",
+    },
+    {
+      id: "q3",
+      stem: "You saw the bug once in ten attempts. What do you do?",
+      choices: [
+        { id: "a", text: "Don't file it until it reproduces reliably" },
+        { id: "b", text: "File it and state 1 in 10, with what you think varies", correct: true },
+        { id: "c", text: "File it as though it always happens, so it gets attention" },
+        { id: "d", text: "Ask a developer to reproduce it before filing" },
+      ],
+      explanation:
+        "Intermittency is a fact about the defect, not a weakness in the report — and it is often the strongest clue, pointing at timing, concurrency or a slow network. Overstating frequency to get attention destroys the credibility you will need on the next report.",
+    },
+  ],
 };
