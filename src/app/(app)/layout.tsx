@@ -8,6 +8,7 @@ import { SidebarProjects } from "@/components/SidebarProjects";
 import { CommandPalette } from "@/components/CommandPalette";
 import { AppShell } from "@/components/AppShell";
 import { BetaChip } from "@/components/BetaChip";
+import { AcademyCoach } from "@/components/AcademyCoach";
 import { NOT_SANDBOX, findSandbox } from "@/lib/academy/sandbox";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { loadMyWorkCounts } from "@/lib/my-work";
@@ -114,6 +115,10 @@ export default async function AppLayout({
       }
     >
       {children}
+      {/* A-04b: reads its own ?academy= param and sandbox-project pathname —
+          rendering here rather than per-page is what lets it stay docked
+          across the whole sandbox, not just the page it was opened on. */}
+      <AcademyCoach sandboxSlug={sandbox?.slug ?? null} />
     </AppShell>
   );
 }

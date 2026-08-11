@@ -91,13 +91,16 @@ you can say what each one covers.
 
 ## 🛠 Your turn, in TestForge
 
-When the Academy sandbox lands, this lesson opens a real ShopMini project and
-asks you to create the quantity-field cases from the table above as proper test
-cases — one per partition, each with steps and an expected result — and then
-checks that every partition is covered.
+The sandbox exercise for this lesson uses a different field so it doesn't
+retread the quantity table above: ShopMini's **discount code** (6–10 letters or
+digits, case-insensitive). Write partition cases for it in the Checkout suite
+— valid, too short, too long, a disallowed character, expired — and the
+checker looks for at least three distinct partitions across your cases, judged
+by what each case's title and steps actually say, not exact wording.
 
-For now, write them by hand: one line per partition, with the input you'd use
-and the result you'd expect. Keep the list; you'll extend it in the next lesson.
+If you want the practice before the sandbox is open to you, write the quantity
+table above by hand first: one line per partition, with the input you'd use and
+the result you'd expect. Keep the list; you'll extend it in the next lesson.
 
 **Next:** boundary value analysis — where the same requirement gives up its real
 bugs.

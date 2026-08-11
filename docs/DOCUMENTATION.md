@@ -4160,6 +4160,47 @@ toolbar genuinely shorter on a phone means hiding rarely-used actions (Export/Pr
 a disclosure, which is the same "invent an interaction" call deferred in F-43/F-44 and belongs
 with the `SuiteFolderGrid` work noted above.
 
+#### A-01 … A-04b — TestForge QA Academy (in progress)
+
+> **Full work-order detail lives in [`docs/QA-ACADEMY.md`](QA-ACADEMY.md)** — Academy is a
+> subsystem delivered over several PRs rather than one feature (per that doc's header), so its
+> `A-xx` numbering, curriculum, data model and per-PR "Delivered/Verified/deviations" writeups
+> stay there. This entry is the one-line-per-PR pointer this section's convention asks for.
+
+- **A-01** `[x]` (2026-08-10) — Academy shell: `/academy`, `/academy/[track]`,
+  `/academy/[track]/[lesson]`, all public and prerendered; Track 1 (QA Fundamentals) written and
+  published, 13 lessons.
+- **A-02** `[x]` (2026-08-11) — Self-check quizzes: 39 questions, server-side grading, anonymous
+  progress in `localStorage`, answer key never reaches the client bundle.
+- **A-03** `[x]` (2026-08-11) — SEO (sitemap, `Course` JSON-LD) and entry points (landing nav,
+  footer, app sidebar).
+- **A-03b** `[x]` (2026-08-11) — Mobile entry points (a phone had none — the header nav is
+  `hidden md:flex`) and beta labelling across every entry point.
+- **A-04a** `[x]` (2026-08-11, [PR #158](https://github.com/mansyur007/testforge/pull/158)) — Academy
+  sandbox: `Project.kind` (`NORMAL | ACADEMY_SANDBOX`), `ensureSandbox()`/`seedSandbox()`/
+  `resetSandbox()`, the ShopMini fixture, and `NOT_SANDBOX` filtering the sandbox out of every
+  surface that lists a learner's real work.
+- **A-04b** `[x]` (2026-08-11, branch `feat/academy-coach`) — Coach overlay and the first five
+  sandbox-task checkers (test case anatomy, boundary value analysis, equivalence partitioning,
+  decision tables, bug reports). `AcademyCoach` docks over the real app (`?academy=<lessonSlug>`)
+  and survives the redirect a saved case causes by mirroring the active exercise into
+  `sessionStorage`, not just the URL. Checkers are pure functions in
+  `src/lib/academy/checks-core.mjs` (plain ESM, unit-tested with no database by
+  `scripts/academy-checks-selftest.mjs`, run in `prebuild`); `src/lib/academy/checks.ts` is the
+  typed wrapper that fetches real sandbox rows and hands them to the matching function. "Mark done
+  anyway" is always available — a checker that can't be talked past would make the grader bigger
+  than the lesson. `e2e/academy.spec.ts` **TC-E2E-100** (bad submission → specific feedback, coach
+  survives the case-save redirect; a second, complete submission → passes, lesson marked done) and
+  **TC-E2E-101** (the defect-based checker, whose form doesn't redirect so `?academy=` survives on
+  its own; "Mark done anyway" on an untouched exercise).
+- **A-04b's one deviation:** the illustrative example in `docs/QA-ACADEMY.md` §6.2 named "the
+  Checkout suite" for the boundary-value-analysis task; it ships against **Cart** instead, because
+  that is where the fixture's own reference case for the same field already lives — and it keeps
+  the BVA and "writing test cases" checkers scoped to different suites so neither can pass by
+  reading the other's work.
+- **A-05 … A-08** `[ ]` not started — persistence, the ISTQB practice exam, certificates, content
+  build-out. See `docs/QA-ACADEMY.md` §8.
+
 ---
 
 *End of document. When a feature ships: tick its checkbox here, flip the cell in
