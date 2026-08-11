@@ -27,7 +27,7 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   block on, plus an embeddable live quality badge.
 - **Cases as code** — sync a `tests/` folder of YAML with the server so test
   cases get reviewed in pull requests like the rest of your code.
-- **QA Academy** — a free roadmap from zero to professional QA at `/academy`:
+- **QA Academy** (beta) — a free roadmap from zero to professional QA at `/academy`:
   testing fundamentals, manual QA at work, automation, and Foundation Level exam
   prep, practised in a real project ([plan](docs/QA-ACADEMY.md)).
 - **Self-hosted and free** — one `docker compose up`, SQLite or PostgreSQL,

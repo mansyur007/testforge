@@ -6,7 +6,9 @@ import { dict, resolveLang, LANG_COOKIE } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { Logo, TFIcon, BrandIcon } from "@/components/icons";
+import { BetaChip } from "@/components/BetaChip";
 import { JsonLd } from "@/components/JsonLd";
+import { TRACKS, publishedLessons } from "@/content/academy";
 import {
   canonical,
   faqLd,
@@ -170,8 +172,12 @@ export default async function HomePage() {
             <a href="#integrations" className="hover:text-content-strong">{t.nav.integrations}</a>
             {/* A-03: the only real route among the anchors — /academy is the
                 organic entry point, so it needs a link from the page crawlers
-                actually reach. */}
-            <Link href="/academy" className="hover:text-content-strong">{t.nav.academy}</Link>
+                actually reach. This nav is `hidden md:flex`, so the hero link
+                and the Academy section below are what carry it on a phone. */}
+            <Link href="/academy" className="flex items-center gap-1.5 hover:text-content-strong">
+              {t.nav.academy}
+              <BetaChip />
+            </Link>
             <a href="#faq" className="hover:text-content-strong">{t.nav.faq}</a>
           </nav>
           <div className="flex items-center gap-2">
@@ -231,6 +237,18 @@ export default async function HomePage() {
                 {t.hero.ctaSecondary}
               </Link>
             </div>
+            {/* A-03b: the phone's first sight of Academy — the header nav that
+                carries it on desktop is `hidden md:flex`, and the landing has
+                no hamburger, so without this a mobile visitor would have to
+                reach the footer to find it at all. */}
+            <Link
+              href="/academy"
+              data-testid="hero-academy-link"
+              className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-accent-text hover:underline"
+            >
+              {t.hero.academyLink}
+              <BetaChip />
+            </Link>
             {/* Trust badges (PRD §11.3.1) */}
             <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-content-muted">
               {t.hero.badges.map((b) => (
@@ -286,6 +304,71 @@ export default async function HomePage() {
               <p className="mt-2 text-sm text-content-muted">{f.desc}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* 4b. QA Academy (A-03b). Track titles come from src/content/academy so
+          this section can never drift from what /academy actually offers — the
+          lesson counts and the published/draft split are read, not retyped. */}
+      <section id="academy" className="scroll-mt-20 bg-canvas py-16">
+        <div className="mx-auto max-w-6xl px-4">
+          <SectionTitle kicker={t.academy.kicker} title={t.academy.title} />
+          <p className="-mt-6 mb-8 text-center text-content-muted">
+            {t.academy.body}
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {TRACKS.map((track) => {
+              const live = track.status === "published";
+              const count = live
+                ? publishedLessons(track).length
+                : track.lessons.length;
+              return (
+                <div
+                  key={track.slug}
+                  className={`rounded-2xl border p-5 ${
+                    live
+                      ? "border-hairline bg-surface"
+                      : "border-dashed border-hairline bg-surface/60"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <span
+                      className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${
+                        live ? "bg-accent-soft" : "bg-surface-muted"
+                      }`}
+                    >
+                      <TFIcon name={track.icon} className="h-5 w-5" />
+                    </span>
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-content-strong">
+                        {track.title}
+                      </h3>
+                      <p className="mt-0.5 text-xs text-content-muted">
+                        {track.level}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-sm text-content-muted">
+                    {count} {t.academy.lessons} ·{" "}
+                    {live ? t.academy.available : t.academy.inProgress}
+                  </p>
+                </div>
+              );
+            })}
+            <div className="flex flex-col justify-center rounded-2xl border border-hairline bg-surface p-5">
+              <Link
+                href="/academy"
+                data-testid="landing-academy-cta"
+                className={`rounded-lg bg-accent px-5 py-3 text-center font-medium text-white hover:bg-accent-hover ${CTA_MOTION}`}
+              >
+                {t.academy.cta}
+              </Link>
+              <p className="mt-3 flex items-start gap-2 text-xs text-content-muted">
+                <BetaChip className="mt-px" />
+                <span>{t.academy.betaNote}</span>
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -463,7 +546,7 @@ export default async function HomePage() {
               <li><a href="#features" className="hover:text-content-strong">{t.footer.features}</a></li>
               <li><a href="#comparison" className="hover:text-content-strong">{t.footer.comparison}</a></li>
               <li><Link href="/docs/self-hosting" className="hover:text-content-strong">{t.footer.selfHosting}</Link></li>
-              <li><Link href="/academy" className="hover:text-content-strong">{t.footer.academy}</Link></li>
+              <li><Link href="/academy" className="inline-flex items-center gap-1.5 hover:text-content-strong">{t.footer.academy}<BetaChip /></Link></li>
               <li><Link href="/signup" className="hover:text-content-strong">{t.footer.signup}</Link></li>
             </ul>
           </div>

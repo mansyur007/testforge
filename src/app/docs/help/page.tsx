@@ -56,6 +56,10 @@ export default function HelpIndexPage() {
         <Link href="/docs/api" className="text-accent-text hover:underline">
           API reference
         </Link>
+        . Learning to test rather than learning the tool? That&rsquo;s{" "}
+        <Link href="/academy" className="text-accent-text hover:underline">
+          QA Academy
+        </Link>
         .
       </p>
 
