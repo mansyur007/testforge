@@ -84,12 +84,12 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "Because it targets the edges of the same partitions equivalence partitioning identifies, where defects are statistically more likely",
+        text: "Because it targets the edges of the same partitions, where defects cluster",
         correct: true,
       },
-      { id: "b", text: "Because it replaces the need to identify partitions at all" },
-      { id: "c", text: "Because it only applies to string inputs, never numeric ones" },
-      { id: "d", text: "Because it requires a state diagram to be drawn first" },
+      { id: "b", text: "Because it replaces the need to identify any partitions at all" },
+      { id: "c", text: "Because it applies only to string inputs and never to numeric ones" },
+      { id: "d", text: "Because it requires that a state diagram be drawn for the input first" },
     ],
     explanation:
       "BVA is applied to the boundaries of the partitions already identified by equivalence partitioning — off-by-one defects cluster at exactly these edges, which is why testing them is disproportionately effective.",
@@ -118,12 +118,12 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "It systematically covers combinations of conditions, which is exactly where logic-heavy business rules tend to hide defects",
+        text: "It covers combinations of conditions, where logic-heavy rules hide defects",
         correct: true,
       },
-      { id: "b", text: "It never requires more than two test cases" },
-      { id: "c", text: "It only works on numeric ranges" },
-      { id: "d", text: "It avoids the need to know the expected result" },
+      { id: "b", text: "It never requires more than two test cases, whatever the rule's shape" },
+      { id: "c", text: "It works only on numeric ranges, and not on boolean conditions" },
+      { id: "d", text: "It avoids the need to know the expected result for each combination" },
     ],
     explanation:
       "Decision tables are built for testing combinations of conditions and their resulting actions — the kind of rule-based logic ('if this AND that, then...') where equivalence partitioning, which looks at one input at a time, is more likely to miss an interaction defect.",
@@ -137,12 +137,12 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "That the system correctly rejects or ignores an event that is not allowed in the current state",
+        text: "That the system rejects an event not allowed in the current state",
         correct: true,
       },
-      { id: "b", text: "That every valid state can be reached at least once" },
-      { id: "c", text: "That the system's response time stays under one second" },
-      { id: "d", text: "That the UI layout matches the design mockup" },
+      { id: "b", text: "That every valid state in the model can be reached at least once" },
+      { id: "c", text: "That the system's response time stays under one second per transition" },
+      { id: "d", text: "That the UI layout matches the design mockup in every state" },
     ],
     explanation:
       "State transition testing includes deliberately triggering events that shouldn't be possible from the current state (e.g. 'ship' an order that was never paid) to confirm the system correctly refuses or handles the invalid transition rather than silently corrupting state.",
@@ -169,14 +169,14 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     syllabusRef: "FL-4.2.5",
     stem: "Use case testing derives test cases primarily from:",
     choices: [
-      { id: "a", text: "The internal source code structure" },
+      { id: "a", text: "The internal structure of the source code that implements the feature" },
       {
         id: "b",
-        text: "Documented interactions between an actor and the system, including the main flow and its alternative/exception flows",
+        text: "Documented interactions between an actor and the system, flow by flow",
         correct: true,
       },
-      { id: "c", text: "Random input generation" },
-      { id: "d", text: "Cyclomatic complexity scores" },
+      { id: "c", text: "Randomly generated input, sampled across the whole input domain" },
+      { id: "d", text: "Cyclomatic complexity scores taken from a static analysis tool" },
     ],
     explanation:
       "Use cases describe a sequence of interactions between an actor (user or external system) and the system to achieve a goal, including its main success scenario and alternative/exception paths — use case testing exercises these end-to-end flows, which is valuable for finding integration-level and business-process defects.",
@@ -226,7 +226,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "The test basis and knowledge each draws test cases from — black-box uses only the specification, white-box uses the internal structure, and experience-based draws on the tester's own knowledge and intuition",
+        text: "The test basis each draws from — the specification, the code, or the tester",
         correct: true,
       },
       { id: "b", text: "The test level each is restricted to — black-box only at system level, white-box only at unit level" },
@@ -339,10 +339,10 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     syllabusRef: "FL-4.2.4",
     stem: "In the order state model PENDING → PAID → SHIPPED → DELIVERED, with CANCELLED reachable from PENDING or PAID, a tester attempts to move a DELIVERED order directly back to PENDING. What is this test checking?",
     choices: [
-      { id: "a", text: "An invalid transition ('sneak path') — that the system correctly refuses a transition the model does not define", correct: true },
-      { id: "b", text: "0-switch coverage of the PENDING → PAID transition" },
-      { id: "c", text: "1-switch coverage of two consecutive valid transitions" },
-      { id: "d", text: "That every reachable state has been visited at least once" },
+      { id: "a", text: "An invalid transition — a 'sneak path' the model does not define", correct: true },
+      { id: "b", text: "0-switch coverage of the PENDING → PAID transition in the model" },
+      { id: "c", text: "1-switch coverage of two consecutive valid transitions in the model" },
+      { id: "d", text: "That every reachable state in the model has been visited at least once" },
     ],
     explanation:
       "DELIVERED → PENDING is not a transition the model defines, so exercising it is a negative test for a 'sneak path' — confirming the system rejects or ignores an event that isn't valid from the current state, rather than exercising a defined transition.",
@@ -483,7 +483,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "A tester designs and executes tests to cover the items of a checklist built from experience, knowledge of the application, or common failure modes",
+        text: "A tester covers the items of a checklist built from past experience",
         correct: true,
       },
       { id: "b", text: "A tester follows a fully detailed, step-by-step script with expected results for every step" },
@@ -520,9 +520,9 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     syllabusRef: "FL-4.5.1",
     stem: "In collaborative user story writing (e.g. 'three amigos' sessions), why are business, development, and testing perspectives brought together before a story is built?",
     choices: [
-      { id: "a", text: "To surface ambiguities, missing detail, and edge cases early, before they turn into defects found later in development", correct: true },
-      { id: "b", text: "Because exactly three people are required to sign off on every story" },
-      { id: "c", text: "To replace the need for any acceptance criteria" },
+      { id: "a", text: "To surface ambiguities and missing detail before they become defects", correct: true },
+      { id: "b", text: "Because exactly three people must sign off on every story before it is built" },
+      { id: "c", text: "To replace the need to write any acceptance criteria for the story" },
       { id: "d", text: "Because testers are not permitted to see requirements before coding begins" },
     ],
     explanation:
@@ -537,12 +537,12 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "Testability concerns and technical constraints that a developer or tester would normally flag go unnoticed until later in development",
+        text: "Testability concerns and technical constraints go unnoticed until later",
         correct: true,
       },
-      { id: "b", text: "The story will automatically fail static analysis" },
-      { id: "c", text: "The story cannot be estimated by the team" },
-      { id: "d", text: "The story becomes a formal legal contract" },
+      { id: "b", text: "The story will automatically fail the team's static analysis gate" },
+      { id: "c", text: "The story cannot be estimated by the team at all until it is built" },
+      { id: "d", text: "The story becomes a formal legal contract with the customer's business" },
     ],
     explanation:
       "Collaborative story writing exists precisely to catch what a single perspective misses; skipping the development and testing viewpoints means testability gaps, technical constraints, and edge cases they would normally raise are more likely to surface later, when they are costlier to fix.",
@@ -556,12 +556,12 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "To define specific, testable conditions the story must satisfy to be considered done, and to serve as the basis for acceptance tests",
+        text: "To define the testable conditions the story must satisfy to be done",
         correct: true,
       },
-      { id: "b", text: "To describe the internal code structure that will implement the story" },
+      { id: "b", text: "To describe the internal code structure that is going to implement the story" },
       { id: "c", text: "To replace the need for any collaboration between business and development" },
-      { id: "d", text: "To record the estimated effort for the story in story points" },
+      { id: "d", text: "To record the effort the team estimated for the story, in story points" },
     ],
     explanation:
       "Acceptance criteria spell out concrete, checkable conditions a story must meet — they give 'done' a testable definition and are what acceptance tests are written against, rather than describing implementation detail or effort estimates.",

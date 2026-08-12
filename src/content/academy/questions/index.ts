@@ -27,9 +27,10 @@ import { CH6_TOOLS } from "./ch6-tools";
 // drawing 8 from a pool of 12. Every question here carries a real
 // `syllabusRef` for a reviewer to check against the objective, per §7.2.
 //
-// **On answer positions.** The correct answer is `a` or `b` in 66 of these 70
-// questions (`d` is never correct, `c` four times), so as authored, two of the
-// four options are dead on almost every question. A-10a fixed the consequence
+// **On answer positions.** The correct answer is authored first or second in
+// 127 of the 133 single-answer questions (`d` is still never correct in the
+// array, `c` six times), so on the page, as authored, two of the four options
+// would be dead on almost every question. A-10a fixed the consequence
 // rather than the content: `presentPaper` in src/lib/academy/exam-core.mjs
 // shuffles each question's choices per attempt, so position now carries no
 // information and it does not matter where in the array a new question puts
@@ -38,15 +39,23 @@ import { CH6_TOOLS } from "./ch6-tools";
 // What still matters when adding questions is everything shuffling can't fix.
 // Chief among them, and the one this comment used to note in passing without
 // measuring: **the correct answer being the longest option.** A-10d's third
-// slice priced it — always picking the longest choice scored 70.9% against the
-// bank as it stood, above the 65% pass line, which made it a strictly better
-// exploit than the answer-position bias A-10a was written to kill. It is a
-// content property, so there is no `presentPaper` fix; write the distractors
-// as carefully as the key. academy-bank-check.mjs now simulates it, reports it
-// per chapter, and ratchets: the build fails if a new question makes it worse.
-// The same script also reports pool sizes below 5x their blueprint weight and
-// the multi-answer count, and asserts that multi questions vary how many
-// choices they key.
+// slice priced it — always picking the longest choice scored 65.2% on whole
+// papers, above the pass line, a strictly better exploit than the answer
+// position bias A-10a was written to kill. The fourth slice rewrote 204 choice
+// texts across all six chapters and took it to 31.4%, passing no paper.
+//
+// So, when writing a question: **keep the key to the claim and let
+// `explanation` carry the reasoning**, and give every distractor enough
+// substance to be worth reading. Two failure modes to avoid, neither of which
+// `presentPaper` can launder:
+//   - the key is the only option long enough to be a real answer;
+//   - a distractor is a joke ("the office's electricity usage"), which quietly
+//     turns a four-choice question into a two-choice one.
+// academy-bank-check.mjs simulates the length strategy against the real draw,
+// asserts it stays near chance and never passes a paper, and prints the
+// per-chapter breakdown on every build. It also reports pool sizes below 5x
+// their blueprint weight and the multi-answer count, and asserts that multi
+// questions vary how many choices they key.
 export const QUESTION_BANK: ExamQuestion[] = [
   ...CH1_FUNDAMENTALS,
   ...CH2_SDLC,

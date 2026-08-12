@@ -14,12 +14,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "The scope, objectives, approach, resources, and schedule of the test activities for a project or feature",
+        text: "The scope, objectives, approach, resources and schedule of the testing",
         correct: true,
       },
-      { id: "b", text: "The exact steps of every individual test case" },
-      { id: "c", text: "Only the defects found so far" },
-      { id: "d", text: "The production deployment schedule" },
+      { id: "b", text: "The exact steps, test data and expected result of every individual test case" },
+      { id: "c", text: "A running list of the defects found so far, with the status of each one" },
+      { id: "d", text: "The production deployment schedule and the rollback plan that accompanies it" },
     ],
     explanation:
       "A test plan sets out what will be tested, why, how, by whom, with what resources, and on what schedule — the strategic and organizational picture, not the step-by-step content of individual test cases (that lives in the test cases themselves).",
@@ -112,12 +112,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "Severity reflects the technical/business impact of the defect; priority reflects how urgently it should be fixed — the checkout defect is likely high on both, the tooltip low on both, but the two dimensions can diverge",
+        text: "Severity reflects the defect's impact; priority reflects how urgently it is fixed",
         correct: true,
       },
-      { id: "b", text: "Severity and priority always mean exactly the same thing" },
-      { id: "c", text: "Priority is decided only by the tester who found the bug" },
-      { id: "d", text: "Severity is irrelevant once a defect is logged" },
+      { id: "b", text: "Severity and priority always carry the same meaning, so recording both is redundant" },
+      { id: "c", text: "Priority is set by whoever found the defect, and severity by whoever will fix it" },
+      { id: "d", text: "Severity stops being relevant as soon as the defect has been logged and triaged" },
     ],
     explanation:
       "Severity is about impact (how bad is it), priority is about urgency (how soon must it be fixed) — they usually move together but can diverge, e.g. a cosmetic defect on the CEO's favourite screen might get high priority despite low severity.",
@@ -149,9 +149,9 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     stem: "Which metric is most useful for tracking whether test execution is on schedule during a test cycle?",
     choices: [
       { id: "a", text: "Number of test cases executed vs. planned, over time", correct: true },
-      { id: "b", text: "The office's total electricity usage" },
-      { id: "c", text: "The number of team lunches held" },
-      { id: "d", text: "The color scheme of the test management tool" },
+      { id: "b", text: "Defect reports closed last quarter" },
+      { id: "c", text: "Test cases written before execution began" },
+      { id: "d", text: "Automated tests added this sprint" },
     ],
     explanation:
       "Progress metrics like executed-vs-planned test case counts (often shown as a burn-down/burn-up) directly answer 'are we on track', which is exactly what test monitoring and control needs to decide whether to adjust the plan.",
@@ -165,12 +165,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "It says nothing about what the failing 8% covers, how severe those failures are, or how much of the risk area was even tested",
+        text: "It hides what the failing 8% covers and how much was never tested at all",
         correct: true,
       },
-      { id: "b", text: "Because pass rates are never accurate" },
-      { id: "c", text: "Because 92% is mathematically impossible" },
-      { id: "d", text: "Because only automated tests can produce a pass rate" },
+      { id: "b", text: "Because a pass rate measured before a cycle ends is never accurate enough to publish" },
+      { id: "c", text: "Because a pass rate above 90% is not mathematically achievable on a large suite" },
+      { id: "d", text: "Because only a fully automated suite can produce a pass rate worth reporting" },
     ],
     explanation:
       "A single aggregate percentage hides which tests failed and why, whether high-risk areas were even covered, and whether the passing 92% tested anything meaningful — 'pass-rate theatre' is exactly the failure mode of reporting a number instead of a picture.",
@@ -201,13 +201,13 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "A test policy states the organization's general principles and objectives for testing; a test plan works out the scope, approach and schedule for one specific project, release or test level",
+        text: "A policy states the organization's testing principles; a plan covers one project",
         correct: true,
       },
-      { id: "b", text: "A test policy is written by testers; a test plan is written by developers" },
-      { id: "c", text: "A test policy lists individual test cases; a test plan lists defects" },
-      { id: "d", text: "They are the same document under two names, depending on the industry" },
-      { id: "e", text: "A test policy applies only to automated testing; a test plan only to manual testing" },
+      { id: "b", text: "A policy is written and owned by testers, and a plan by the development team" },
+      { id: "c", text: "A policy lists the test cases to be run, and a plan lists the defects they found" },
+      { id: "d", text: "They are the same document under two names, and usage depends on the industry" },
+      { id: "e", text: "A policy applies only to automated testing, and a plan only to manual testing" },
     ],
     explanation:
       "A test policy sits above any single project — it expresses how the organization thinks about testing at all. A test plan is the project-level instrument that turns those principles into concrete scope, approach, resources and dates for a particular piece of work.",
@@ -238,12 +238,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "Assessing the testability of the proposed features and identifying the risks and test effort each will carry, so the release scope is set with that visible",
+        text: "Assessing the testability of the proposed features and the risks each carries",
         correct: true,
       },
-      { id: "b", text: "Writing the detailed test scripts for every feature in the release before scope is agreed" },
-      { id: "c", text: "Deciding unilaterally which features are cut from the release" },
-      { id: "d", text: "Waiting until scope is fixed, then reporting how long testing will take" },
+      { id: "b", text: "Writing the detailed test scripts for every feature before the scope is agreed" },
+      { id: "c", text: "Deciding unilaterally which of the proposed features are cut from the release" },
+      { id: "d", text: "Waiting until the scope is fixed, then reporting how long the testing will take" },
     ],
     explanation:
       "Release planning is where scope is still negotiable, so the tester's leverage is information: which features will be hard to test, what risks they carry, and roughly what they will cost to verify. Writing scripts against unagreed scope is waste, and reporting a duration after the fact gives the plan nothing it could have acted on.",
@@ -257,12 +257,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "Iteration planning works at the story level — breaking down stories, estimating their test effort and detailing risks — while release planning works at the feature and product level",
+        text: "Iteration planning works at story level, release planning at feature level",
         correct: true,
       },
-      { id: "b", text: "Testers contribute to release planning only; iteration planning is for developers" },
-      { id: "c", text: "Iteration planning is where the test policy is written" },
-      { id: "d", text: "There is no difference; the same activities happen at both" },
+      { id: "b", text: "Testers contribute to release planning only, and iteration planning is for developers" },
+      { id: "c", text: "Iteration planning is the activity in which the organization's test policy is set" },
+      { id: "d", text: "There is no difference — the same activities happen at both, on different dates" },
     ],
     explanation:
       "Both are planning, but at different granularity and horizon. Iteration planning is concrete and near-term — this story, its acceptance criteria, its test effort. Release planning is coarser and further out, concerned with features, overall risk and the shape of the release.",
@@ -326,12 +326,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "Metrics-based estimation extrapolates from historical data about comparable past work; expert-based estimation draws on the judgement of the people who understand or will do the work",
+        text: "Metrics-based extrapolates from past data; expert-based draws on judgement",
         correct: true,
       },
-      { id: "b", text: "Metrics-based estimation is always more accurate than expert-based estimation" },
-      { id: "c", text: "Expert-based estimation can only be used on agile projects" },
-      { id: "d", text: "Metrics-based estimation does not require any data to be collected" },
+      { id: "b", text: "Metrics-based estimation is always more accurate than the expert-based kind" },
+      { id: "c", text: "Expert-based estimation can only be applied on projects that follow agile methods" },
+      { id: "d", text: "Metrics-based estimation needs no data to be collected before it can be applied" },
     ],
     explanation:
       "The two families differ in where the number comes from: recorded history in one case, informed human judgement in the other. Neither is universally more accurate — historical data is only as good as its comparability, and expert judgement is only as good as the expert's experience of similar work.",
@@ -360,12 +360,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "To stop the first or most senior estimate from anchoring everyone else's, so genuine disagreement surfaces and gets discussed",
+        text: "To stop the first or most senior estimate from anchoring everyone else's",
         correct: true,
       },
-      { id: "b", text: "To make the session finish faster" },
-      { id: "c", text: "Because the rules require an odd number of participants" },
-      { id: "d", text: "To ensure the highest estimate is always chosen" },
+      { id: "b", text: "To make the session finish faster than a round-by-round discussion would" },
+      { id: "c", text: "Because the technique requires an odd number of participants to break ties" },
+      { id: "d", text: "To make sure the highest estimate in the room is the one that gets adopted" },
     ],
     explanation:
       "Simultaneous reveal is the whole mechanism: it prevents anchoring. When estimates then diverge widely, that divergence is the useful signal — it usually means people are holding different assumptions about the work, and the conversation that follows is worth more than the number.",
@@ -379,12 +379,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "Metrics-based — it is only as sound as the assumption that the new stories really are comparable to the historical ones",
+        text: "Metrics-based — it assumes the new stories really are comparable to the old",
         correct: true,
       },
-      { id: "b", text: "Expert-based — it relies entirely on individual judgement rather than recorded data" },
-      { id: "c", text: "Three-point — it combines an optimistic, most likely and pessimistic figure" },
-      { id: "d", text: "Risk-based — it allocates effort according to likelihood and impact" },
+      { id: "b", text: "Expert-based — it relies on individual judgement rather than on recorded history" },
+      { id: "c", text: "Three-point — it combines an optimistic, a most likely and a pessimistic figure" },
+      { id: "d", text: "Risk-based — it allocates the effort according to likelihood and to impact" },
     ],
     explanation:
       "Extrapolating 4 test-days per story from four past features is metrics-based estimation. Its weak point is always comparability: if the new stories touch an unfamiliar integration or a riskier area, the historical rate quietly stops applying and the estimate inherits an assumption nobody stated.",
@@ -413,12 +413,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "The areas the hotfix touches plus the highest-risk core flows, accepting that the rest of the suite is deferred and saying so in the release note",
+        text: "The areas the hotfix touches, plus the highest-risk core flows",
         correct: true,
       },
-      { id: "b", text: "The tests that run fastest, to maximise how many complete within two hours" },
-      { id: "c", text: "The tests that have passed most consistently in recent runs" },
-      { id: "d", text: "A random sample of the suite, to keep the selection unbiased" },
+      { id: "b", text: "The tests that run fastest, to maximise how many complete within the two hours" },
+      { id: "c", text: "The tests that have passed most consistently across recent regression runs" },
+      { id: "d", text: "A random sample of the whole suite, so that the selection stays unbiased" },
     ],
     explanation:
       "Under a hard time box, value comes from covering what the change could have broken and what would hurt most if broken — and from being explicit that the remainder was skipped. Optimising for test count, or for tests that reliably pass, deliberately selects the runs least likely to tell you anything new.",
@@ -449,12 +449,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "They integrate more of the system, so they run more slowly, cost more to maintain, and localise a failure less precisely",
+        text: "They integrate more of the system, so they are slower and less precise",
         correct: true,
       },
-      { id: "b", text: "They become cheaper to write and faster to run" },
-      { id: "c", text: "They test smaller units of code in greater isolation" },
-      { id: "d", text: "They become less likely to find any defects at all" },
+      { id: "b", text: "They become cheaper to write and faster to run than the levels below them" },
+      { id: "c", text: "They exercise smaller units of code, in greater isolation from each other" },
+      { id: "d", text: "They become progressively less likely to find any defect worth reporting" },
     ],
     explanation:
       "Higher levels exercise more of the system at once. That buys realism, but the tests get slower, more brittle and less precise about where a failure came from — which is why the shape argues for many cheap tests underneath and comparatively few at the top, not for skipping the top.",
@@ -468,12 +468,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "The pyramid is inverted — the bulk of the coverage sits at the slowest, most brittle, least diagnostic level, which is exactly what produces long runs and unlocalised failures",
+        text: "The pyramid is inverted — the bulk of the coverage sits at the worst level",
         correct: true,
       },
-      { id: "b", text: "The suite has too few tests overall and needs more of every kind" },
-      { id: "c", text: "The unit tests are the cause of the intermittency and should be removed" },
-      { id: "d", text: "End-to-end tests cannot fail intermittently, so the problem must be the test data" },
+      { id: "b", text: "The suite has too few tests overall and needs more of every kind of test" },
+      { id: "c", text: "The unit tests are causing the intermittency and should be removed first" },
+      { id: "d", text: "End-to-end tests cannot fail intermittently, so the test data must be at fault" },
     ],
     explanation:
       "This is the inverted pyramid (sometimes the 'ice cream cone'). Both symptoms follow directly from the shape: end-to-end tests are slow and involve enough moving parts to flake, and when one fails it implicates the whole stack rather than a component. The fix is to push coverage down, not to add more at the top.",
@@ -487,12 +487,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "Whether the test is business-facing or technology-facing, and whether it supports the team or critiques the product",
+        text: "Business-facing or technology-facing, and supporting or critiquing",
         correct: true,
       },
-      { id: "b", text: "Whether the test is manual or automated, and whether it is functional or non-functional" },
-      { id: "c", text: "Whether the test is written before or after the code, and how long it takes to run" },
-      { id: "d", text: "Whether the test is run by a tester or a developer, and which test level it belongs to" },
+      { id: "b", text: "Whether the test is manual or automated, and functional or non-functional" },
+      { id: "c", text: "Whether the test is written before or after the code, and how long it runs" },
+      { id: "d", text: "Whether a tester or a developer runs it, and which level it belongs to" },
     ],
     explanation:
       "The quadrants cross two questions: who the test speaks to (business or technology), and what it is for (guiding the team as it builds, or critiquing what has been built). Automation status cuts across the quadrants rather than defining them — some quadrants are heavily automated, others necessarily manual.",
@@ -521,12 +521,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "A product risk is the possibility that the delivered software itself falls short in some way; a project risk threatens the project's ability to deliver at all",
+        text: "A product risk is a shortfall in the software; a project risk threatens delivery",
         correct: true,
       },
-      { id: "b", text: "A product risk is always more severe than a project risk" },
-      { id: "c", text: "Product risks are identified by developers, project risks by managers" },
-      { id: "d", text: "A product risk applies before release and a project risk only afterwards" },
+      { id: "b", text: "A product risk is always more severe than a project risk on the same project" },
+      { id: "c", text: "Product risks are identified by the developers and project risks by the managers" },
+      { id: "d", text: "A product risk applies before release, and a project risk only after release" },
     ],
     explanation:
       "The distinction is about what is at stake. Product risks concern the quality of the thing being built — it might be slow, wrong, or insecure. Project risks concern the endeavour — staff leaving, environments arriving late, a supplier slipping. Testing addresses product risks directly and surfaces information about project ones.",
@@ -587,12 +587,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "Because risks change as the product and its context change — new ones appear, and existing ones shift in likelihood or impact as work and test results come in",
+        text: "Because risks change as the product and its context change during the work",
         correct: true,
       },
-      { id: "b", text: "Because the initial analysis is normally discarded and redone from scratch each time" },
-      { id: "c", text: "Because auditors require the analysis to be re-signed monthly" },
-      { id: "d", text: "Because risk levels must be recalculated whenever the team's size changes" },
+      { id: "b", text: "Because the initial analysis is normally discarded and redone from scratch" },
+      { id: "c", text: "Because auditors require the analysis to be re-signed at the end of each month" },
+      { id: "d", text: "Because risk levels have to be recalculated whenever the team's size changes" },
     ],
     explanation:
       "A risk analysis is a snapshot of what the team believed at one moment. Testing then produces exactly the evidence that should change those beliefs — an area that keeps failing was riskier than assumed, one that holds up may be less so — so revisiting the analysis periodically is how the test effort stays pointed at where the risk actually is.",
@@ -637,12 +637,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "It is consistent with the tested areas stabilising, but also with the tests having stopped exploring anything new — it needs corroborating with what is being covered",
+        text: "It fits the tested areas stabilising, but also the tests exploring nothing new",
         correct: true,
       },
-      { id: "b", text: "The product is now defect-free and testing can stop" },
-      { id: "c", text: "The testers have become less effective and should be replaced" },
-      { id: "d", text: "The curve is meaningless because defect counts vary naturally" },
+      { id: "b", text: "The product is now defect-free, so the test execution can safely be stopped" },
+      { id: "c", text: "The testers have become less effective and should be replaced on this project" },
+      { id: "d", text: "The curve carries no meaning, because defect counts vary naturally week to week" },
     ],
     explanation:
       "A flattening curve is genuinely ambiguous: it looks the same whether the code has stabilised or the suite has run out of new ground to cover. That is why it is read alongside coverage and what is actually being executed, rather than treated as a finish line on its own.",
@@ -656,12 +656,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "A progress report is issued during the activity to support ongoing control decisions; a completion report is issued at the end and summarises what was done and what it means for the release",
+        text: "A progress report supports control during the work; a completion report sums it up",
         correct: true,
       },
-      { id: "b", text: "A progress report is for testers and a completion report is for developers" },
-      { id: "c", text: "A progress report contains metrics and a completion report contains none" },
-      { id: "d", text: "They differ only in length" },
+      { id: "b", text: "A progress report is written for testers and a completion report for developers" },
+      { id: "c", text: "A progress report contains metrics, and a completion report contains none at all" },
+      { id: "d", text: "They differ only in length, and either can be issued at any point in the work" },
     ],
     explanation:
       "The difference is timing and purpose. A progress report exists to let someone steer while the work is still running — reallocate effort, adjust scope. A completion report closes the activity out: what was covered, what was found, what residual risk the release carries.",
@@ -693,12 +693,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "The report is not adapted to its audience — the sponsor needs risk and readiness at a decision level, not a defect-by-defect account",
+        text: "The report is not adapted to its audience; the sponsor needs risk and readiness",
         correct: true,
       },
-      { id: "b", text: "Executives should never receive test reports" },
-      { id: "c", text: "Defect details are confidential and cannot be shared outside the team" },
-      { id: "d", text: "There is no problem; a single report for all audiences is the recommended practice" },
+      { id: "b", text: "Executives should never be sent test reports of any kind during a release" },
+      { id: "c", text: "Defect details are confidential and cannot be shared outside the test team" },
+      { id: "d", text: "There is no problem — one report for every audience is the recommended practice" },
     ],
     explanation:
       "Communicating test status means shaping the same underlying information for what each audience must decide. The development team acts on specifics; a sponsor is deciding whether to ship, and needs risk, coverage and readiness. Sending both the same document usually means one of them stops reading it.",
@@ -712,12 +712,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "To track each defect from discovery to resolution so that none is silently lost, and to make the resulting information usable for analysis",
+        text: "To track each defect from discovery to resolution, so that none is lost",
         correct: true,
       },
-      { id: "b", text: "To determine which team member is responsible for each defect" },
-      { id: "c", text: "To ensure every defect found is fixed before release, without exception" },
-      { id: "d", text: "To count defects so testers can be measured on how many they find" },
+      { id: "b", text: "To determine which member of the team is responsible for each defect found" },
+      { id: "c", text: "To ensure that every defect found is fixed before release, without exception" },
+      { id: "d", text: "To count defects, so that testers can be measured on how many they report" },
     ],
     explanation:
       "Defect management exists so that a defect, once found, has a definite state and a definite owner until it is resolved or consciously deferred — and so the accumulated record can support analysis later. Not every defect gets fixed; that is a prioritization decision, and the process is what makes deferral explicit rather than accidental.",
@@ -731,12 +731,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "Steps to reproduce, with the expected and actual results — without them nobody can confirm the defect or know when it is fixed",
+        text: "Steps to reproduce, with the expected and the actual result",
         correct: true,
       },
-      { id: "b", text: "The name of the developer who wrote the export feature" },
-      { id: "c", text: "A suggested code change to resolve it" },
-      { id: "d", text: "The total number of other defects found that day" },
+      { id: "b", text: "The name of the developer who originally wrote the export feature" },
+      { id: "c", text: "A suggested code change that would resolve the reported problem" },
+      { id: "d", text: "The total number of other defects that were found on the same day" },
     ],
     explanation:
       "Everything a defect report does downstream depends on reproduction: a developer cannot investigate what they cannot trigger, and nobody can tell whether a fix worked without knowing what 'working' looks like. Attribution and proposed fixes are optional at best, and naming a culprit tends to make reports worse rather than better.",
@@ -750,12 +750,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "Report it, stating explicitly that it is intermittent, with the observed frequency and everything captured from the occurrences seen — logs, timestamps, environment, what was being done",
+        text: "Report it as intermittent, with the observed frequency and what was captured",
         correct: true,
       },
-      { id: "b", text: "Do not report it until reliable reproduction steps have been found" },
-      { id: "c", text: "Report it as a fully reproducible defect and let the developer discover otherwise" },
-      { id: "d", text: "Report it verbally, since intermittent defects should not be recorded in the tracker" },
+      { id: "b", text: "Do not report it at all until reliable reproduction steps have been found" },
+      { id: "c", text: "Report it as fully reproducible, and let the developer discover otherwise" },
+      { id: "d", text: "Report it verbally, since intermittent defects do not belong in the tracker" },
     ],
     explanation:
       "Intermittent defects are often the serious ones — races, leaks, state dependence — so suppressing the report until it reproduces cleanly can bury the worst bug in the release. What makes such a report useful is honesty about the frequency plus every scrap of context from the occurrences that were seen; overstating reproducibility just costs the developer a wasted afternoon.",
@@ -785,12 +785,12 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "It keeps every test item and testware uniquely identified and version-controlled, so a result can be tied to exactly what was tested",
+        text: "It keeps test items and testware identified and version-controlled",
         correct: true,
       },
-      { id: "b", text: "It automatically generates test cases from the source code" },
-      { id: "c", text: "It replaces the need for a defect tracking system" },
-      { id: "d", text: "It measures how much of the code the tests cover" },
+      { id: "b", text: "It generates the test cases automatically from the module's source code" },
+      { id: "c", text: "It removes the need for a separate defect tracking system on the project" },
+      { id: "d", text: "It measures how much of the code the executed tests actually cover" },
     ],
     explanation:
       "Configuration management is what makes a test result mean something: it establishes which version of which item produced it, and keeps tests, test data and the software under test in step. Without that, a pass or fail is attached to an unknown thing.",

@@ -240,19 +240,21 @@ if (multiQs.length >= 3) {
 //
 // Length is a *content* property, so unlike position there is no code fix:
 // `presentPaper` randomises the order of the choices, not their word count.
-// The only remedy is writing distractors as carefully as keys, chapter by
-// chapter — the same "weeks of writing" the pools need. So this is a ratchet
-// rather than a target: measure the strategy end to end against the real draw,
-// and fail the build if it gets *worse* than the recorded ceiling. Every slice
-// that rebalances a chapter lowers CEILING to whatever it then measures; the
-// number stops being interesting when the *paper* pass rate reaches 0 and this
-// can become a flat "never passes" assertion like the one above.
+// The only remedy is writing distractors as carefully as keys. The fourth
+// slice did that pass over all six chapters — 204 choice texts rewritten,
+// keys trimmed to a claim and distractors given enough substance to be worth
+// reading — and the strategy now scores **31.4% and passes 0 of 300 papers**,
+// against a 25% floor for a four-choice question. Every chapter individually
+// lands between 25% and 31%.
 //
-// Measured 63.3% at the ceiling below, after chapter 4's build-out took that
-// chapter to 21 of 46 (the new 16 single-answer questions are 4 of 16, i.e. at
-// chance). Chapters 3, 5 and 6 are all above 80% and are what is holding the
-// number up.
-const LONGEST_CEILING_PCT = 64;
+// So this is no longer a ratchet on a live exploit; it is a regression guard on
+// a closed one, in the same shape as the first-choice assertions above: a
+// ceiling with room for the bank to grow, plus a hard "never passes a paper".
+// The ceiling is deliberately not pinned to 31.4% — the pools are still being
+// written, and a chapter whose new questions happen to run a few points high
+// should not fail the build until it puts the paper score somewhere a
+// candidate could exploit.
+const LONGEST_CEILING_PCT = 40;
 let longestWins = 0;
 let longestSeen = 0;
 let longestPapersPassed = 0;
@@ -280,11 +282,16 @@ for (let i = 0; i < SEEDS; i++) {
 }
 const longestRate = (longestWins / longestSeen) * 100;
 assert(
-  "guessing the longest choice is no better than the recorded ceiling",
+  "guessing the longest choice scores near chance, not at the authored length bias",
   longestRate <= LONGEST_CEILING_PCT,
-  `${longestRate.toFixed(1)}% over ${SEEDS} papers, ceiling ${LONGEST_CEILING_PCT}% — a new question ` +
-    `whose correct answer is its longest choice made this worse. Lengthen the distractors, ` +
-    `or trim the key; the ceiling only ever moves down`,
+  `${longestRate.toFixed(1)}% over ${SEEDS} papers, ceiling ${LONGEST_CEILING_PCT}% (~65% as ` +
+    `authored, before the length pass) — new questions are making the key the longest choice again. ` +
+    `Lengthen the distractors, or trim the key to the claim and let the explanation carry the rest`,
+);
+assert(
+  "guessing the longest choice never passes the paper",
+  longestPapersPassed === 0,
+  `${longestPapersPassed} of ${SEEDS} papers passed at ${PASS_PCT}%`,
 );
 
 // ---------------------------------------------------------------------------
