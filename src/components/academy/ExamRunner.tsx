@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   startExamAction,
@@ -8,6 +8,14 @@ import {
   type SubmitExamResult,
 } from "@/app/actions/academy";
 import type { PublicQuestion } from "@/lib/academy/types";
+import {
+  AUTO_SUBMIT_BACKOFF_MS,
+  answeredCount as snapshotAnsweredCount,
+  clearSnapshot,
+  readSnapshot,
+  writeSnapshot,
+  type ExamSnapshot,
+} from "@/lib/academy/exam-session";
 
 // A-06: the exam UI — one component that runs both the full ISTQB practice
 // exam and each untimed chapter quiz (docs/QA-ACADEMY.md §5.2: "reusing the
@@ -15,6 +23,12 @@ import type { PublicQuestion } from "@/lib/academy/types";
 // it may run comes back from the server inside the signed ticket
 // (`startExamAction`) and is never recomputed from the client's own clock —
 // see src/lib/academy/exam.ts for why.
+//
+// A-10c: an attempt in progress is mirrored into `sessionStorage` on every
+// change (`src/lib/academy/exam-session.ts`) and offered back on mount, so a
+// reload no longer discards 40 minutes of answers along with the ticket that
+// was the only way back into them. Auto-submit at the deadline fires once and
+// backs off instead of retrying every second into a rate-limited endpoint.
 
 type ChapterWeight = { chapter: number; topic: string; count: number };
 
@@ -70,6 +84,53 @@ export function ExamRunner({
 
   const [result, setResult] = useState<SubmitExamResult | null>(null);
 
+  // A-10c: an attempt recovered from sessionStorage, offered on the start
+  // screen rather than resumed silently — someone who deliberately went back to
+  // start a fresh paper should not be dropped into the old one.
+  const [resumable, setResumable] = useState<ExamSnapshot | null>(null);
+  const [autoGaveUp, setAutoGaveUp] = useState(false);
+
+  // `pending` and `answers` are read from inside the one-second timer, which
+  // must not be torn down and rebuilt on every keystroke — and a `pending`
+  // guard that only sees a render-old value is exactly how A-06's auto-submit
+  // managed to fire again while the previous request was still in flight.
+  const pendingRef = useRef(false);
+  const answersRef = useRef(answers);
+  answersRef.current = answers;
+  const autoSubmitRef = useRef({ tries: 0, nextAt: 0, done: false });
+
+  useEffect(() => {
+    const found = readSnapshot(templateSlug);
+    if (found) setResumable(found);
+  }, [templateSlug]);
+
+  // What the server said about this attempt's clock. Kept in refs rather than
+  // state because nothing renders from them directly — `deadline` is the
+  // rendered form — but the snapshot has to carry them so a resumed attempt
+  // rebuilds the same countdown.
+  const startedAtRef = useRef<number | null>(null);
+  const durationSecRef = useRef(baseDurationSec);
+
+  // Mirror every change while an attempt is live. Cheap (a JSON write of a
+  // paper that is 40 questions at its largest) and the alternative is losing
+  // the lot, which is what A-10c exists to fix.
+  useEffect(() => {
+    if (phase !== "taking" || !ticket || questions.length === 0) return;
+    if (startedAtRef.current === null) return;
+    writeSnapshot({
+      v: 1,
+      templateSlug,
+      ticket,
+      questions,
+      answers,
+      flagged: Array.from(flagged),
+      index,
+      startedAt: startedAtRef.current,
+      durationSec: durationSecRef.current,
+      timed,
+    });
+  }, [phase, ticket, questions, answers, flagged, index, templateSlug, timed]);
+
   async function begin() {
     setPending(true);
     setError(null);
@@ -79,6 +140,11 @@ export function ExamRunner({
         setError(started.error);
         return;
       }
+      startedAtRef.current = started.startedAt;
+      durationSecRef.current = started.durationSec;
+      autoSubmitRef.current = { tries: 0, nextAt: 0, done: false };
+      setAutoGaveUp(false);
+      setResumable(null);
       setTicket(started.ticket);
       setQuestions(started.questions);
       setDeadline(timed ? started.startedAt + started.durationSec * 1000 : null);
@@ -86,6 +152,18 @@ export function ExamRunner({
       setFlagged(new Set());
       setIndex(0);
       setPhase("taking");
+      writeSnapshot({
+        v: 1,
+        templateSlug,
+        ticket: started.ticket,
+        questions: started.questions,
+        answers: {},
+        flagged: [],
+        index: 0,
+        startedAt: started.startedAt,
+        durationSec: started.durationSec,
+        timed,
+      });
     } catch {
       setError("Couldn't reach the server. Try again.");
     } finally {
@@ -93,17 +171,69 @@ export function ExamRunner({
     }
   }
 
-  const doSubmit = useMemo(
-    () => async () => {
-      if (!ticket || pending) return;
+  function resume(snapshot: ExamSnapshot) {
+    startedAtRef.current = snapshot.startedAt;
+    durationSecRef.current = snapshot.durationSec;
+    autoSubmitRef.current = { tries: 0, nextAt: 0, done: false };
+    setAutoGaveUp(false);
+    setError(null);
+    setTicket(snapshot.ticket);
+    setQuestions(snapshot.questions);
+    setDeadline(
+      snapshot.timed ? snapshot.startedAt + snapshot.durationSec * 1000 : null,
+    );
+    setAnswers(snapshot.answers);
+    setFlagged(new Set(snapshot.flagged));
+    setIndex(snapshot.index);
+    setResumable(null);
+    setPhase("taking");
+    // A timed attempt whose deadline passed while the tab was gone needs no
+    // special case: the countdown effect below runs on mount, sees zero left,
+    // and auto-submits what was recovered. Grading a late paper exactly as
+    // answered is already the server's behaviour (§2.3), and it beats the
+    // alternative of discarding answers nobody got to submit.
+  }
+
+  function discardResumable() {
+    clearSnapshot(templateSlug);
+    setResumable(null);
+  }
+
+  const doSubmit = useCallback(
+    async (kind: "manual" | "auto" = "manual") => {
+      if (!ticket || pendingRef.current) return;
+      pendingRef.current = true;
       setPending(true);
       setError(null);
+
+      // Only an auto-submit backs off — a manual press is a person who has
+      // just been told to try again, and gating that behind a timer would be
+      // the same lockout in a different costume.
+      const noteAutoFailure = () => {
+        if (kind !== "auto") return;
+        const auto = autoSubmitRef.current;
+        const delay = AUTO_SUBMIT_BACKOFF_MS[auto.tries];
+        auto.tries += 1;
+        if (delay === undefined) {
+          auto.done = true;
+          setAutoGaveUp(true);
+        } else {
+          auto.nextAt = Date.now() + delay;
+        }
+      };
+
       try {
-        const res = await submitExamAction(ticket, answers);
+        const res = await submitExamAction(ticket, answersRef.current);
         if ("error" in res) {
           setError(res.error);
+          noteAutoFailure();
           return;
         }
+        // Graded. The ticket is spent (A-10b) and the mirror describes an
+        // attempt that is over — keeping it would offer a resume that can only
+        // ever resolve to the result already on screen.
+        autoSubmitRef.current.done = true;
+        clearSnapshot(templateSlug);
         if (res.attemptId) {
           router.push(`/academy/istqb/practice-exam/${res.attemptId}`);
           return;
@@ -111,13 +241,17 @@ export function ExamRunner({
         setResult(res);
         setPhase("result");
       } catch {
-        setError("Couldn't reach the server. Your answers are still on this page — try submitting again.");
+        setError(
+          "Couldn't reach the server. Your answers are still on this page — try submitting again.",
+        );
+        noteAutoFailure();
       } finally {
+        pendingRef.current = false;
         setPending(false);
         setConfirmOpen(false);
       }
     },
-    [ticket, answers, pending, router],
+    [ticket, router, templateSlug],
   );
 
   // Countdown — purely a display; the server's own clock is what actually
@@ -128,7 +262,10 @@ export function ExamRunner({
     const tick = () => {
       const left = (deadline - Date.now()) / 1000;
       setRemainingSec(left);
-      if (left <= 0) doSubmit();
+      if (left > 0) return;
+      const auto = autoSubmitRef.current;
+      if (auto.done || pendingRef.current || Date.now() < auto.nextAt) return;
+      void doSubmit("auto");
     };
     tick();
     const id = setInterval(tick, 1000);
@@ -172,6 +309,41 @@ export function ExamRunner({
         className="rounded-2xl border border-hairline bg-surface p-6"
       >
         <h1 className="text-xl font-semibold text-content-strong">{title}</h1>
+
+        {resumable && (
+          <div
+            data-testid="exam-resume-banner"
+            className="mt-4 rounded-xl border border-warning-border bg-warning-soft p-4"
+          >
+            <p className="text-sm font-medium text-warning-soft-fg">
+              You have an attempt in progress
+            </p>
+            <p className="mt-1 text-sm text-warning-soft-fg">
+              {snapshotAnsweredCount(resumable)} of {resumable.questions.length} questions
+              answered. Resuming keeps the same paper and the same clock — starting over
+              draws a new one and those answers are gone.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-3">
+              <button
+                type="button"
+                data-testid="exam-resume"
+                onClick={() => resume(resumable)}
+                className="min-h-[44px] rounded-lg bg-accent px-5 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+              >
+                Resume attempt
+              </button>
+              <button
+                type="button"
+                data-testid="exam-resume-discard"
+                onClick={discardResumable}
+                className="min-h-[44px] rounded-lg border border-hairline px-4 py-2 text-sm font-medium text-content hover:bg-surface-muted"
+              >
+                Start over
+              </button>
+            </div>
+          </div>
+        )}
+
         <dl className="mt-4 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
           <div>
             <dt className="text-content-muted">Questions</dt>
@@ -274,7 +446,7 @@ export function ExamRunner({
             </p>
           )}
 
-          <p className="mt-4 font-medium text-content-strong">
+          <p data-testid="exam-stem" className="mt-4 font-medium text-content-strong">
             {q.stem}
             {q.multi && (
               <span className="ml-2 text-xs font-normal text-content-muted">
@@ -355,6 +527,29 @@ export function ExamRunner({
               {error}
             </p>
           )}
+
+          {/* A-10c: auto-submit has stopped retrying. Never leave a candidate
+              at zero on the clock with no way to hand the paper in. */}
+          {autoGaveUp && (
+            <div
+              data-testid="exam-autosubmit-failed"
+              className="mt-4 rounded-lg border border-danger-border bg-danger-soft p-3"
+            >
+              <p className="text-sm text-danger-soft-fg">
+                Time&rsquo;s up, and we couldn&rsquo;t submit automatically. Your answers
+                are still here. Check your connection and submit.
+              </p>
+              <button
+                type="button"
+                data-testid="exam-manual-submit"
+                disabled={pending}
+                onClick={() => doSubmit("manual")}
+                className="mt-3 min-h-[44px] rounded-lg bg-accent px-5 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {pending ? "Submitting…" : "Submit now"}
+              </button>
+            </div>
+          )}
         </div>
 
         <nav
@@ -418,7 +613,7 @@ export function ExamRunner({
                   type="button"
                   data-testid="exam-confirm-submit-btn"
                   disabled={pending}
-                  onClick={doSubmit}
+                  onClick={() => doSubmit("manual")}
                   className="min-h-[44px] rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {pending ? "Submitting…" : "Submit"}

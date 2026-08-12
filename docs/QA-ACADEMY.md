@@ -14,8 +14,9 @@
 > A-06 shipped 2026-08-11 (exam engine, ISTQB question bank, practice exam + chapter quizzes).
 > A-09 shipped 2026-08-12 (session-aware shell on /academy and /docs/help).
 > A-10b shipped 2026-08-12 (single-use exam tickets);
-> A-10a shipped 2026-08-12 (per-attempt choice shuffling, real-bank content guard).
-> A-07 … A-08 planned; A-10c / A-10d planned (exam integrity — opened 2026-08-12 from an audit of
+> A-10a shipped 2026-08-12 (per-attempt choice shuffling, real-bank content guard);
+> A-10c shipped 2026-08-12 (resumable attempts, bounded auto-submit).
+> A-07 … A-08 planned; A-10d planned (question-bank build-out — opened 2026-08-12 from an audit of
 > what A-06 actually shipped, see §8). Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
@@ -870,7 +871,7 @@ no Sign up link), **TC-E2E-110** (guest at `/academy` sees Log in/Sign up, no `a
 `eslint`, and `next build` are clean, and `next build`'s route table confirms `/academy` and
 `/docs/help` moved from prerendered to `ƒ` (dynamic), as expected.
 
-### A-10 — Exam integrity: answer-key balance, single-use tickets, resumable attempts `[ ]`
+### A-10 — Exam integrity: answer-key balance, single-use tickets, resumable attempts `[x]` (code) / `[ ]` (content)
 
 > **Opened 2026-08-12** from an audit of what A-06 actually shipped, run against the real bank and
 > the real `drawQuestionIds` rather than against this document's account of them. Every number below
@@ -1048,7 +1049,10 @@ the unique index dropped, the replay writes a second row carrying the identical 
 the vulnerability, reproduced. All 23 specs in `e2e/academy.spec.ts` pass together; `tsc --noEmit`
 and `next lint` clean.
 
-#### A-10c — Resumable attempts and submit robustness `[ ]`
+#### A-10c — Resumable attempts and submit robustness `[x]`
+
+> **Status: DONE** (2026-08-12, branch `feat/academy-a10c-resumable-attempts`). Closes the code
+> half of A-10; what remains under it is A-10d, which is writing.
 
 **The finding.** `ExamRunner` holds the ticket, the answers, the flags and the current index in
 React state and nothing else. A reload, a back-navigation, a phone locking, or a tab crash **40
@@ -1073,6 +1077,72 @@ once, then back off and surface a manual retry.
 **Acceptance:** an attempt survives a full page reload with answers and remaining time intact; a
 failed auto-submit retries at most a few times with backoff and leaves the candidate able to submit
 manually; the server-authoritative timer and grading behaviour of §2.3 are unchanged.
+
+**Delivered.** `src/lib/academy/exam-session.ts` — the browser-side mirror (ticket, sanitized
+questions, answers, flags, current index, and the ticket's own `startedAt`/`durationSec`), keyed
+`tf_academy_exam:<templateSlug>` in `sessionStorage` so a chapter quiz opened in the same tab can't
+clobber the full paper. `ExamRunner` writes it on every change, offers it back on mount as a
+**resume banner on the start screen**, and clears it the moment an attempt is graded. Resuming is
+offered, never automatic: someone who deliberately navigated back to start a fresh paper should not
+be dropped into the old one, so the banner carries **Start over** next to **Resume attempt** and
+says how many answers each choice keeps or discards.
+
+**No trust boundary moved, and that is worth being explicit about.** Everything stored either came
+from the client already (answers, flags, which question is on screen) or is in its hands anyway (the
+signed ticket, the sanitized questions). `startedAt`/`durationSec` drive the countdown *display*
+exactly as they did in React state; `submitExamAction` still re-derives both from the ticket's signed
+payload, so §2.3's server-authoritative clock is untouched. The one rule that had to hold is that
+nothing the server strips can re-enter through client-visible storage, so `readSnapshot` **rebuilds
+each question field by field** rather than trusting the parse — a snapshot hand-edited to carry
+`correct: true` still hydrates to a plain `PublicQuestion`. TC-E2E-115 asserts the stored JSON
+carries no `"correct"`, `"explanation"` or `"chapter"` key.
+
+**Two things the plan didn't call out, both decided while building.**
+
+1. **A timed attempt whose deadline passed while the tab was gone needs no special case.** Resume
+   drops into the taking phase, the countdown effect runs on mount, sees zero left, and auto-submits
+   what was recovered — graded late, exactly as answered, which is already what §2.3 says the server
+   does. The alternative (refusing to resume an expired attempt) throws away answers nobody ever got
+   to submit, which is the same defect this work order exists to fix.
+2. **The `pending` guard had to move into a ref.** `doSubmit` was a `useMemo` over `[…, pending, …]`,
+   so its identity changed on every keystroke *and* every submit, tearing down and rebuilding the
+   one-second interval each time; and a `pending` value read from a render-old closure is exactly how
+   an auto-submit fires while the previous request is still in flight. `pendingRef` + `answersRef`
+   make `doSubmit` depend only on `[ticket, router, templateSlug]`.
+
+**Auto-submit now fires once and backs off** — `AUTO_SUBMIT_BACKOFF_MS = [2s, 6s, 18s]`, then it
+gives up and renders a message plus a **Submit now** button. Four requests over ~26 seconds instead
+of one a second, which leaves room in the 20/minute limit for the manual retry that follows. Only
+the *auto* path backs off; a manual press is a person who has just been told to try again, and
+gating that behind a timer would be the same lockout in a different costume.
+
+**Verified.** `e2e/academy.spec.ts` **TC-E2E-115** (answer 1 and 3, flag 2, reload; the banner reads
+"3 of 40 questions answered", resuming restores the same paper, the same question on screen, the
+same checked choice, the same flag, and a clock that has *kept running* rather than reset to 60
+minutes; "Start over" really does drop it) and **TC-E2E-116** (with the connection cut at the
+deadline: bounded retries, the give-up UI, then the manual submit grading the paper and clearing the
+mirror). Both **proved to fail**: disabling the per-change mirror leaves the banner at "0 of 40", and
+restoring A-06's per-tick retry fails TC-E2E-116 with *"auto-submit's 4 requests spanned only 3.0s —
+it is retrying on the tick, not backing off"*.
+
+> **The first version of TC-E2E-116 didn't discriminate, and only the deliberate break showed it.**
+> It asserted the request *count* (≤ 5), which the backoff array bounds whether or not the delays are
+> honoured — the broken build sent the same four requests, just inside three seconds, and the test
+> passed. What separates backing off from hammering is *when* the retries land, so the assertion is
+> now the span between the first and last request. Same lesson as A-10a's flaky first draft of
+> TC-E2E-114: a guard is not a guard until it has been watched to fail.
+
+**Clock injection, and why not `page.clock`.** TC-E2E-116 skews only the page's `Date.now` by an
+init script, leaving `setInterval` on the real clock. Playwright's `page.clock` would have frozen the
+one-second tick this test is entirely about — timers only advance under manual control, and the
+submit requests it triggers need real time to settle. The server's clock is untouched either way,
+which is the point: it is the only one that decides "late".
+
+**Not fixed here, and still open:** A-10b's note that the chapter quizzes claim a 24-hour
+`durationSec` while the ticket's own `exp` bounds them at 6 hours. It stays a content/config
+decision about which bound is real, not part of making an attempt survive its tab. `readSnapshot`
+mirrors the 6-hour figure and says so — a stale copy only decides whether a resume is *offered*,
+and the server rejects an expired ticket regardless.
 
 #### A-10d — Question-bank build-out `[ ]`
 
@@ -1110,7 +1180,7 @@ progress work rather than here.
 
 ### Testing (applies to all)
 
-Playwright specs in `e2e/academy.spec.ts`, continuing the `TC-E2E-*` sequence (last used 112,
+Playwright specs in `e2e/academy.spec.ts`, continuing the `TC-E2E-*` sequence (last used 116,
 global across all `e2e/*.spec.ts` files, per F-45): roadmap → lesson → quiz pass/fail; anonymous
 progress survives reload; claim-at-signup; sandbox provisioning and one checker end to end; a full
 exam run including auto-submit at timeout (clock injected, not waited out); session-aware shell on

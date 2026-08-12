@@ -841,3 +841,154 @@ test(`TC-${TC}-114 A question's choices are presented in a different order acros
     `all ${shared.length} shared questions were laid out identically in both attempts`,
   ).toBeGreaterThan(0);
 });
+
+// ---------------------------------------------------------------------------
+// A-10c: an attempt survives the tab, and the deadline can't lock anyone out.
+// ---------------------------------------------------------------------------
+
+/** "59:41" → 3581. The runner renders m:ss, clamped at zero. */
+function clockToSeconds(text: string): number {
+  const [m, s] = text.trim().split(":");
+  return Number(m) * 60 + Number(s);
+}
+
+test(`TC-${TC}-115 An exam attempt survives a full page reload with its answers, flags and clock`, async ({
+  page,
+}) => {
+  await page.goto("/academy/istqb/practice-exam");
+  await expect(page.getByTestId("exam-start")).toBeVisible();
+  await page.click('[data-testid="exam-begin"]');
+  await expect(page.getByTestId("exam-taking")).toBeVisible({ timeout: 30_000 });
+
+  // Answer 1 and 3, flag 2 — three distinct bits of state, only one of which
+  // (the answer) is what a naive "just save the answers" fix would keep.
+  await answerCurrentQuestion(page);
+  await page.click('[data-testid="exam-next"]');
+  await answerCurrentQuestion(page);
+  await page.click('[data-testid="exam-flag"]');
+  await page.click('[data-testid="exam-next"]');
+  await answerCurrentQuestion(page);
+
+  const stemBefore = await page.getByTestId("exam-stem").innerText();
+  const clockBefore = clockToSeconds(await page.getByTestId("exam-timer").innerText());
+  expect(clockBefore).toBeGreaterThan(3500); // a 60-minute paper, barely started
+
+  // The mirror is client-visible storage, so the answer-key boundary of §2.2
+  // has to hold there too — the runner re-sanitizes on the way back in, and
+  // nothing should have been written that needs it.
+  const stored = await page.evaluate(() =>
+    window.sessionStorage.getItem("tf_academy_exam:ctfl-v4-full"),
+  );
+  expect(stored).not.toBeNull();
+  expect(stored).not.toContain('"correct"');
+  expect(stored).not.toContain('"explanation"');
+  expect(stored).not.toContain('"chapter"');
+
+  // The whole point: before A-10c this threw the attempt away, ticket included.
+  await page.reload();
+
+  await expect(page.getByTestId("exam-start")).toBeVisible();
+  await expect(page.getByTestId("exam-resume-banner")).toContainText("3 of 40 questions");
+  await page.click('[data-testid="exam-resume"]');
+
+  await expect(page.getByTestId("exam-taking")).toBeVisible();
+  // Same paper, same position in it, same answers, same flag.
+  await expect(page.getByTestId("exam-taking")).toContainText("Question 3 of 40");
+  await expect(page.getByTestId("exam-stem")).toHaveText(stemBefore);
+  await expect(page.getByTestId("exam-navigator")).toContainText("3 answered · 1 flagged");
+  await expect(page.locator('[data-testid^="exam-choice-"] input:checked')).toHaveCount(1);
+
+  await page.click('[data-testid="exam-nav-2"]');
+  await expect(page.getByTestId("exam-flag")).toHaveText("Flagged for review");
+
+  // The clock is the resumed attempt's own, not a fresh 60 minutes — it comes
+  // back from the ticket's server-set `startedAt`, so it has kept running.
+  const clockAfter = clockToSeconds(await page.getByTestId("exam-timer").innerText());
+  expect(clockAfter).toBeLessThanOrEqual(clockBefore);
+  expect(clockBefore - clockAfter).toBeLessThan(120);
+
+  // Starting over is still offered, and it really does drop the attempt.
+  await page.reload();
+  await page.click('[data-testid="exam-resume-discard"]');
+  await expect(page.getByTestId("exam-resume-banner")).toBeHidden();
+  await page.reload();
+  await expect(page.getByTestId("exam-start")).toBeVisible();
+  await expect(page.getByTestId("exam-resume-banner")).toBeHidden();
+});
+
+test(`TC-${TC}-116 A failing auto-submit backs off instead of burning the rate limit, and manual submit still works`, async ({
+  page,
+}) => {
+  // ~26s of backoff plus a real submit at the end; the suite's 60s default is
+  // cutting it close enough to be a flake.
+  test.setTimeout(120_000);
+
+  // Skew only the *page's* notion of now, leaving `setInterval` on the real
+  // clock — Playwright's `page.clock` would freeze the one-second tick this
+  // test is entirely about, and the server's clock (the only one that decides
+  // "late", §2.3) is untouched either way.
+  await page.addInitScript(() => {
+    const realNow = Date.now.bind(Date);
+    let skew = 0;
+    (window as unknown as { __tfSkewClock: (ms: number) => void }).__tfSkewClock = (ms) => {
+      skew += ms;
+    };
+    Date.now = () => realNow() + skew;
+  });
+
+  await page.goto("/academy/istqb/practice-exam");
+  await expect(page.getByTestId("exam-start")).toBeVisible();
+  await page.click('[data-testid="exam-begin"]');
+  await expect(page.getByTestId("exam-taking")).toBeVisible({ timeout: 30_000 });
+  await answerCurrentQuestion(page);
+
+  // Only now — `begin` posts to this same URL. Timestamps, not just a count:
+  // what separates backoff from hammering is *when* the retries land, and a
+  // per-tick loop that happened to stop after four tries would satisfy a count
+  // bound while still spending four requests in four seconds.
+  const submitAt: number[] = [];
+  await page.route("**/academy/istqb/practice-exam", async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    submitAt.push(Date.now());
+    return route.abort("connectionfailed");
+  });
+
+  // Deadline passes while the connection is down: the exact moment A-06 would
+  // start hammering a 20/minute endpoint once a second.
+  await page.evaluate(() =>
+    (window as unknown as { __tfSkewClock: (ms: number) => void }).__tfSkewClock(61 * 60 * 1000),
+  );
+
+  await expect(page.getByTestId("exam-autosubmit-failed")).toBeVisible({ timeout: 60_000 });
+
+  // One try plus the three backed-off retries, spread over 2s + 6s + 18s of
+  // waiting. A-06's version fired from every one-second tick, which puts the
+  // same handful of requests inside four seconds on the way to spending the
+  // whole 20/minute budget — so the span is the assertion that discriminates,
+  // and the count is what keeps it from creeping back up.
+  expect(
+    submitAt.length,
+    `auto-submit sent ${submitAt.length} requests; it must fire once, then back off`,
+  ).toBeLessThanOrEqual(5);
+  expect(submitAt.length).toBeGreaterThanOrEqual(2);
+
+  const spanSec = (submitAt[submitAt.length - 1] - submitAt[0]) / 1000;
+  expect(
+    spanSec,
+    `auto-submit's ${submitAt.length} requests spanned only ${spanSec.toFixed(1)}s — it is retrying on the tick, not backing off`,
+  ).toBeGreaterThan(20);
+
+  // And the candidate is not stuck: the connection comes back, they press the
+  // button, the paper is graded.
+  await page.unroute("**/academy/istqb/practice-exam");
+  await page.click('[data-testid="exam-manual-submit"]');
+
+  await expect(page.getByTestId("exam-result")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId("exam-result-headline")).toContainText("/ 40");
+
+  // Graded and done, so nothing is left to resume back into.
+  const stored = await page.evaluate(() =>
+    window.sessionStorage.getItem("tf_academy_exam:ctfl-v4-full"),
+  );
+  expect(stored).toBeNull();
+});
