@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/totp-selftest.mjs && node scripts/backup-selfcheck.mjs && node scripts/academy-checks-selftest.mjs && node scripts/academy-exam-selftest.mjs",
+    "prebuild": "node scripts/totp-selftest.mjs && node scripts/backup-selfcheck.mjs && node scripts/academy-checks-selftest.mjs && node scripts/academy-exam-selftest.mjs && node scripts/academy-bank-check.mjs",
     "check:theme": "node scripts/check-theme-tokens.mjs",
     "build": "next build",
     "postbuild": "node scripts/academy-bundle-check.mjs",

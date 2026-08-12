@@ -5,7 +5,21 @@ import { QUESTION_BANK, getQuestions } from "@/content/academy/questions";
 import { getBlueprint } from "@/content/academy/exams";
 import type { ExamBlueprint } from "@/content/academy/types";
 import type { PublicQuestion } from "./types";
-import { drawQuestionIds, gradeAttempt as gradeAttemptCore, isLate } from "./exam-core.mjs";
+import {
+  drawQuestionIds,
+  gradeAttempt as gradeAttemptCore,
+  isLate,
+  presentPaper as presentPaperCore,
+} from "./exam-core.mjs";
+
+// `exam-core.mjs` is plain ESM with no types of its own, so pin the one shape
+// this file needs rather than letting it degrade to `any` (same reasoning as
+// the casts in `src/lib/academy/checks.ts`).
+type BankQuestion = ReturnType<typeof getQuestions>[number];
+const presentPaper = presentPaperCore as (
+  questions: BankQuestion[],
+  seed: string,
+) => BankQuestion[];
 
 // A-06: the exam engine. `server-only` — this module can see `correct`
 // answers via the question bank, so an accidental client import is a build
@@ -109,7 +123,12 @@ export async function beginAttempt(
     timed: blueprint.timed,
     startedAt,
     durationSec,
-    questions: getQuestions(questionIds).map(sanitizeExamQuestion),
+    // A-10a: `presentPaper` shuffles each question's choices (see its comment
+    // in exam-core.mjs for why). Safe because nothing downstream depends on
+    // order: grading is set equality over choice *ids* (`gradeAttempt`), and
+    // `ExamRunner` renders `c.text` with no position label, so a learner never
+    // sees a letter to begin with.
+    questions: presentPaper(getQuestions(questionIds), seed).map(sanitizeExamQuestion),
   };
 }
 

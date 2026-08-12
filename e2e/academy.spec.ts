@@ -783,3 +783,50 @@ test(`TC-${TC}-113 Replaying an exam submission cannot mint a second attempt`, a
 
   await db.user.delete({ where: { email } }); // cascades ExamAttempt
 });
+
+// ---------------------------------------------------------------------------
+// A-10a: choice order is shuffled per attempt. `scripts/academy-bank-check.mjs`
+// measures the statistical property against the real bank; this is the part it
+// cannot see — that `beginAttempt` actually calls `presentPaper` on the way
+// out. Delete the shuffle from the wrapper and the script still passes; this
+// fails.
+// ---------------------------------------------------------------------------
+
+/** The choice texts, in the order rendered, for the question on screen. */
+async function renderedChoices(page: Page): Promise<string[]> {
+  return page.locator('[data-testid^="exam-choice-"]').allInnerTexts();
+}
+
+test(`TC-${TC}-114 A question's choices are presented in a different order across attempts`, async ({
+  page,
+}) => {
+  // Chapter 6 draws 8 of its 12 questions, so two attempts always share
+  // several — enough that the first question of one shows up somewhere in the
+  // other. Collect first-screen choice orders across a handful of attempts and
+  // require that the same question isn't always laid out identically.
+  const seen = new Map<string, Set<string>>();
+  for (let attempt = 0; attempt < 6; attempt++) {
+    await page.goto("/academy/istqb/practice-exam/chapter/6");
+    await page.click('[data-testid="exam-begin"]');
+    await expect(page.getByTestId("exam-taking")).toBeVisible();
+
+    const first = page.locator('[data-testid^="exam-choice-"]').first();
+    // data-testid is `exam-choice-<questionId>-<choiceId>`.
+    const testId = (await first.getAttribute("data-testid")) ?? "";
+    const questionId = testId.split("-").slice(2, -1).join("-");
+    const order = (await renderedChoices(page)).join(" | ");
+
+    const orders = seen.get(questionId) ?? new Set<string>();
+    orders.add(order);
+    seen.set(questionId, orders);
+  }
+
+  // At least one question was drawn first more than once, and when it was, the
+  // options were not always in the same order. With four choices, an unshuffled
+  // build produces exactly one order per question and fails here.
+  const repeated = Array.from(seen.values()).filter((orders) => orders.size > 1);
+  expect(
+    repeated.length,
+    "no question was presented with two different choice orders across 6 attempts",
+  ).toBeGreaterThan(0);
+});
