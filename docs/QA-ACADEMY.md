@@ -22,7 +22,10 @@
 > corrected the same day — the new multi-answer questions had a learnable answer-set size, and the
 > bank-check was structurally blind to it. Second slice 2026-08-12: chapter 5 completed 10→45, the
 > first chapter to reach its 5× target since ch6, plus a build assertion against answers quoted in
-> their own stems. Chapters 1, 2 and 3 remain untouched, and chapter 4 is still mid-build at 36/55.
+> their own stems. Third slice 2026-08-12: chapter 4 completed 36→55, and the longest-answer tell
+> measured for the first time — it scored 65.2% on whole papers, **above the 65% pass line**, so it
+> was a working exploit; the slice's own questions bring it to 63.3% and the build now ratchets it.
+> Chapters 1, 2 and 3 remain untouched at 12 questions each.
 > A-07 … A-08 planned. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
@@ -1249,24 +1252,67 @@ choices too.
 > Verified by re-injecting the defect and watching the build fail. Shuffling is no defence here —
 > `presentPaper` randomises position, never text.
 
+**Third slice, 2026-08-12: chapter 4 complete.** 19 new questions (`ch4-q37`…`ch4-q55`) close
+chapter 4 at its full 55-question target, leaving chapters 1, 2 and 3 as the entire remaining pool
+debt. New ground: `FL-4.1.1` grows from 1 question to 3 (which category of technique the available
+documentation actually permits, and what legitimately drives technique selection), and **`FL-4.3.3`
+— the value of white-box testing — gets its first 3 questions**, having been the one chapter 4
+objective with no coverage at all. The rest deepens the techniques the blueprint leans on: output
+partitioning and why invalid partitions are covered one field at a time, three-value BVA, decision
+table coverage as a percentage of rules, 0-switch coverage arithmetic, state tables versus diagrams,
+use case flow coverage, why 100% statement coverage cannot see a requirement nobody implemented, and
+the branch-implies-statement direction. Refs go 14 → 15 distinct, all 15 of chapter 4's objectives
+now covered; K-levels land K2 32 / K3 23.
+
+> **The longest answer was worth a pass, and nobody had checked.** `questions/index.ts` has carried a
+> line since A-10a noting that the correct answer is the longest option in 76% of the bank, filed as
+> one of the things shuffling cannot fix. This slice finally measured what that is worth: **a
+> candidate who always picks the longest choice was right on 70.9% of the bank's single-answer
+> questions and scored 65.2% over whole simulated papers — a pass, against a 65% line.** That is a
+> *better* exploit than the answer-position bias A-10a was written to remove, which topped out at
+> ~47% and never passed a paper — and unlike position, it had been sitting in the bank with a comment
+> pointing straight at it for two slices.
+>
+> There is no code fix. `presentPaper` randomises where the choices appear, not how many words they
+> contain, so the only remedy is writing distractors with the same care as keys, chapter by chapter.
+> What ships here is therefore a **ratchet, not a cure**: `academy-bank-check.mjs` now runs the
+> strategy end to end against the real blueprint draw (longest choice for single-answer, the modal
+> key count's worth of longest choices for multi) and fails the build if the score rises above a
+> recorded ceiling. The ceiling only ever moves down, and the assertion becomes a flat "never passes"
+> once the paper pass rate reaches zero. Verified the way A-10a's assertions were: run against the
+> pre-slice chapter 4 with the new ceiling in place, the build fails at 65.2%.
+>
+> Chapter 4's 19 new questions are the first batch written against the tell — 4 of their 16
+> single-answer questions have the longest choice correct, which is chance at four choices — and that
+> alone took the whole-paper score from 65.2% to **63.3%**, now under the pass line. It still passes
+> **149 of 300 papers**, because a mean under 65% with this much variance still clears the bar half
+> the time. So this is not closed; see the debt list below.
+
 Remaining debt, current as of the same date:
 
-- **Pools to ≥5× their blueprint weight.** ch1 12/40, ch2 12/30, ch3 12/20, ch4 **36/55**, ch5
-  **45/45 done**, ch6 12/10 (done). Chapter 4 is now the only partially-built chapter; chapter 1 is
-  the sharpest untouched one, drawing 8 of the paper's 40 questions from a pool of 12.
-- **Multi-answer questions.** 12 of 129, split 6 in chapter 4 and 6 in chapter 5, spanning 2/3/4
+- **The longest-answer tell.** Per chapter, the longest choice is the correct one in: ch1 58%, ch2
+  58%, ch3 83%, ch4 46%, ch5 82%, ch6 83%. Chapter 5 is the one to fix first — it is the second
+  heaviest chapter on the blueprint (9 of 40) *and* one of the three worst offenders, so it carries
+  more of the 63.3% than any other. Chapters 3 and 6 are equally skewed but draw only 4 and 2. The
+  bank-check prints this line on every build; lower `LONGEST_CEILING_PCT` with each pass.
+- **Pools to ≥5× their blueprint weight.** ch1 12/40, ch2 12/30, ch3 12/20, ch4 **55/55 done**, ch5
+  45/45 (done), ch6 12/10 (done). Chapter 1 is the sharpest of the three left, drawing 8 of the
+  paper's 40 questions from a pool of 12; the three together supply 18 of 40.
+- **Multi-answer questions.** 15 of 148, split 9 in chapter 4 and 6 in chapter 5, spanning 2/3/4
   correct answers across 4-, 5- and 6-choice questions. Chapters 1, 2, 3 and 6 still have none,
   though the real paper draws them from any chapter — and each should vary its own shapes rather
   than settling on one, or the build fails (see the correction above).
 - **`kLevel` against the objective's own level.** Unverified, and it needs the same human pass §5.1
   asks for. `ch4-q34` is tagged K3 on `FL-4.5.2` while `ch4-q35`/`ch4-q36` are K2 on `FL-4.5.3`; if
-  the syllabus rates those objectives K2 and K3 respectively, all three are inverted. Nothing in the
-  bank-check can decide this — it is a read-the-syllabus task, filed with the §5.1 verification below
-  rather than guessed at here.
-- **K-level balance.** K1 28 / K2 73 / **K3 28**. The original 28/36/6 split is well behind us, but
+  the syllabus rates those objectives K2 and K3 respectively, all three are inverted. The third slice
+  adds a second instance of the same doubt: `ch4-q50` is tagged K2 on `FL-4.3.2` where the existing
+  `ch4-q24` is K3 on the same ref, because one asks for a relationship and the other for a
+  calculation. Nothing in the bank-check can decide either — it is a read-the-syllabus task, filed
+  with the §5.1 verification below rather than guessed at here.
+- **K-level balance.** K1 28 / K2 85 / **K3 35**. The original 28/36/6 split is well behind us, but
   every K3 question added so far sits in chapter 4 or 5 — chapters 1, 2, 3 and 6 still carry the
   authored-in-A-06 mix and none of the growth.
-- **`syllabusRef` spread.** 60 distinct refs across 129 questions. `FL-6.1.1` still alone carries 6
+- **`syllabusRef` spread.** 61 distinct refs across 148 questions. `FL-6.1.1` still alone carries 6
   of chapter 6's 12; chapter 6 has had no slice yet.
 
 When the pools grow, turn the bank-check's *reported* debt lines into *asserted* ones — the script

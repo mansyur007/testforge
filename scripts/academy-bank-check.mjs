@@ -223,6 +223,71 @@ if (multiQs.length >= 3) {
 }
 
 // ---------------------------------------------------------------------------
+// The other guessing strategy: always pick the longest choice
+// ---------------------------------------------------------------------------
+//
+// A-10d, third slice. `src/content/academy/questions/index.ts` has said since
+// A-10a that "the correct answer being the longest option (true of 76% here)"
+// is one of the things shuffling cannot fix — but nobody had measured what it
+// is worth, and the answer turned out to be: a pass. Before this slice, always
+// picking the longest choice was right on 70.9% of the bank's single-answer
+// questions and scored 65.2% over whole papers here — above the 65% line, so a
+// candidate who never opened the syllabus could sit the paper and be told they
+// were ready for the real one. That is a strictly worse exploit than the
+// answer-position bias A-10a was written for (which topped out at ~47%, under
+// the line), and it had been sitting in the bank the whole time with a comment
+// pointing straight at it.
+//
+// Length is a *content* property, so unlike position there is no code fix:
+// `presentPaper` randomises the order of the choices, not their word count.
+// The only remedy is writing distractors as carefully as keys, chapter by
+// chapter — the same "weeks of writing" the pools need. So this is a ratchet
+// rather than a target: measure the strategy end to end against the real draw,
+// and fail the build if it gets *worse* than the recorded ceiling. Every slice
+// that rebalances a chapter lowers CEILING to whatever it then measures; the
+// number stops being interesting when the *paper* pass rate reaches 0 and this
+// can become a flat "never passes" assertion like the one above.
+//
+// Measured 63.3% at the ceiling below, after chapter 4's build-out took that
+// chapter to 21 of 46 (the new 16 single-answer questions are 4 of 16, i.e. at
+// chance). Chapters 3, 5 and 6 are all above 80% and are what is holding the
+// number up.
+const LONGEST_CEILING_PCT = 64;
+let longestWins = 0;
+let longestSeen = 0;
+let longestPapersPassed = 0;
+for (let i = 0; i < SEEDS; i++) {
+  const seed = `length-${i}`;
+  const paper = drawQuestionIds(drawInput, FULL_EXAM_CHAPTERS, seed);
+  const shown = presentPaper(
+    paper.map((qid) => byId.get(qid)),
+    seed,
+  );
+  let score = 0;
+  for (const q of shown) {
+    const want = q.choices.filter((c) => c.correct).map((c) => c.id);
+    // Ties broken by the shuffled order, which is the same coin-flip the
+    // candidate faces when two choices are the same length on screen.
+    const got = [...q.choices]
+      .sort((a, b) => b.text.length - a.text.length)
+      .slice(0, q.multi ? kModal : 1)
+      .map((c) => c.id);
+    if (want.length === got.length && want.every((id) => got.includes(id))) score++;
+    longestSeen++;
+  }
+  longestWins += score;
+  if (score / paper.length >= PASS_PCT / 100) longestPapersPassed++;
+}
+const longestRate = (longestWins / longestSeen) * 100;
+assert(
+  "guessing the longest choice is no better than the recorded ceiling",
+  longestRate <= LONGEST_CEILING_PCT,
+  `${longestRate.toFixed(1)}% over ${SEEDS} papers, ceiling ${LONGEST_CEILING_PCT}% — a new question ` +
+    `whose correct answer is its longest choice made this worse. Lengthen the distractors, ` +
+    `or trim the key; the ceiling only ever moves down`,
+);
+
+// ---------------------------------------------------------------------------
 // Reported, not asserted: the content debt A-10a's later PRs still owe.
 // ---------------------------------------------------------------------------
 
@@ -232,6 +297,18 @@ const thin = FULL_EXAM_CHAPTERS.filter((c) => (perChapter[c.chapter] ?? 0) < c.c
   .map((c) => `ch${c.chapter} ${perChapter[c.chapter] ?? 0}/${c.count * 5}`)
   .join(", ");
 const multiCount = bank.filter((q) => q.multi).length;
+
+// Which chapters the length tell lives in, so the next slice knows where to
+// point. Single-answer questions only: for a multi question "the longest
+// choices" is a set, and the paper-level simulation above already prices it.
+const lengthDebt = FULL_EXAM_CHAPTERS.map((c) => {
+  const singles = bank.filter((q) => q.chapter === c.chapter && !q.multi);
+  const wins = singles.filter((q) => {
+    const max = Math.max(...q.choices.map((ch) => ch.text.length));
+    return q.choices.filter((ch) => ch.text.length === max).every((ch) => ch.correct);
+  }).length;
+  return `ch${c.chapter} ${Math.round((wins / singles.length) * 100)}%`;
+}).join(", ");
 
 if (failed > 0) {
   console.error(`academy-bank-check: FAILED (${failed} assertion(s))`);
@@ -244,4 +321,9 @@ console.log(
 console.log(
   `academy-bank-check: content debt — pools below 5x blueprint weight: ${thin || "none"}; ` +
     `multi-answer questions: ${multiCount}`,
+);
+console.log(
+  `academy-bank-check: longest-choice guessing scores ${longestRate.toFixed(1)}% ` +
+    `(ceiling ${LONGEST_CEILING_PCT}%) and passes ${longestPapersPassed}/${SEEDS} papers; ` +
+    `per chapter, the longest choice is the answer in ${lengthDebt}`,
 );
