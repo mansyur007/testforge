@@ -144,15 +144,15 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     chapter: 4,
     kLevel: "K3",
     syllabusRef: "FL-4.2.4",
-    stem: "An order can move PENDING → PAID → SHIPPED, or PENDING → CANCELLED. Which sequence, tested as a single case, gives 0-switch coverage of the PAID → SHIPPED transition specifically?",
+    stem: "An order model defines exactly three transitions: PENDING → PAID, PAID → SHIPPED, and PENDING → CANCELLED. A suite runs one test case, which takes an order from PENDING through PAID to SHIPPED. What 0-switch coverage has that suite achieved?",
     choices: [
-      { id: "a", text: "PENDING → CANCELLED" },
-      { id: "b", text: "PENDING → PAID → SHIPPED", correct: true },
-      { id: "c", text: "PENDING → PAID → CANCELLED" },
-      { id: "d", text: "SHIPPED → PENDING" },
+      { id: "a", text: "67% — it exercises two of the model's three transitions", correct: true },
+      { id: "b", text: "100% — the test reaches a state from which nothing further is defined" },
+      { id: "c", text: "33% — a single test case can only ever count as one transition" },
+      { id: "d", text: "100% — every transition the test passes through is covered, so the model is covered" },
     ],
     explanation:
-      "0-switch (single transition) coverage means exercising one valid transition per test. PENDING → PAID → SHIPPED includes the PAID → SHIPPED edge; the cancellation path never reaches SHIPPED at all.",
+      "0-switch coverage is the proportion of individual valid transitions the suite exercises. This test covers PENDING → PAID and PAID → SHIPPED, two of the three the model defines, so 2/3 ≈ 67%. The PENDING → CANCELLED transition is never taken, and reaching a terminal state says nothing about the branches left unvisited.",
   },
   {
     id: "ch4-q10",
