@@ -89,6 +89,29 @@ for (const q of bank) {
     `${q.id}: has a real explanation`,
     typeof q.explanation === "string" && q.explanation.trim().length >= 40,
   );
+  // A-10d: the answer must not be sitting in the stem. `ch4-q9` asked which
+  // sequence gives 0-switch coverage of a transition and described the model
+  // as "PENDING → PAID → SHIPPED", which was also, verbatim, the correct
+  // choice — so string matching beat knowing the technique. Shuffling cannot
+  // help with this one: position is randomised, the text is not. It survived
+  // the original authoring, the A-10a audit and the A-10d review before a
+  // scan caught it, which is the argument for having the build do the scan.
+  //
+  // Normalised to letters, digits and single spaces so punctuation and arrow
+  // glyphs can't hide an overlap. The 16-character floor keeps short factual
+  // answers ("67%", "16 days") from tripping it when the stem happens to
+  // contain the same number — those are legitimately unguessable from the
+  // wording, and the whole bank passes at this threshold today.
+  const flatten = (s) => s.toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim();
+  const flatStem = flatten(q.stem);
+  for (const c of correct) {
+    const flatChoice = flatten(c.text);
+    assert(
+      `${q.id}: correct answer is not quoted verbatim in the stem`,
+      !(flatChoice.length >= 16 && flatStem.includes(flatChoice)),
+      `choice ${c.id} appears in the stem: "${flatChoice.slice(0, 60)}"`,
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------

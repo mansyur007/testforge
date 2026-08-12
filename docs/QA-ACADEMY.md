@@ -20,8 +20,9 @@
 > its 55-question 5x target; 6 multi-answer questions added bank-wide, was 0; chapter 4's K-level mix
 > shifted toward K3; syllabusRef spread widened to FL-4.1 and FL-4.5, previously uncovered), then
 > corrected the same day — the new multi-answer questions had a learnable answer-set size, and the
-> bank-check was structurally blind to it. Chapters 1, 2, 3 and 5 remain untouched — still the bulk
-> of the work.
+> bank-check was structurally blind to it. Second slice 2026-08-12: chapter 5 completed 10→45, the
+> first chapter to reach its 5× target since ch6, plus a build assertion against answers quoted in
+> their own stems. Chapters 1, 2 and 3 remain untouched, and chapter 4 is still mid-build at 36/55.
 > A-07 … A-08 planned. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
@@ -1197,25 +1198,76 @@ work — chapter 5 in particular, which shares chapter 4's priority but wasn't t
 > touches.** Anything else an author does uniformly across a batch — subset size, choice count, stem
 > phrasing, which distractor is the joke one — stays learnable, and `presentPaper` will not save it.
 
+**Second slice, 2026-08-12: chapter 5 complete.** 35 new questions (`ch5-q11`…`ch5-q45`) take chapter
+5 from 10 to its full 45-question target — the first chapter to clear 5× its blueprint weight since
+chapter 6, and the one that most needed it: 9 of the paper's 40 questions were being drawn from a
+pool of 10, so two papers shared nearly all their chapter 5 content. New ground covered: iteration
+and release planning, definition of ready, three-point and metrics-based estimation, planning poker,
+test case prioritization, the test pyramid, the testing quadrants, product versus project risk, risk
+control, defect density and DDP, progress versus completion reports, audience-appropriate status
+communication, and configuration management. Refs go from 6 distinct to 19; K-levels land K1 4 / K2
+29 / K3 12. Shapes follow the correction above from the start — 6 multi questions spanning 2/3/4
+correct answers across 4-, 5- and 6-choice questions, with single-answer questions at 4 and 5
+choices too.
+
+> **`syllabusRef` in chapter 5 — read this before the §5.1 verification pass.** This chapter's refs
+> are *topic-sequential in authoring order*, not structural: `FL-5.1.2` is risk-based testing,
+> `FL-5.2.1` is entry/exit criteria, `FL-5.3.1` is defect reporting, `FL-5.4.1` estimation, `FL-5.5.1`
+> metrics. Chapter 4's refs, by contrast, do track the syllabus's own section structure. The new
+> questions **extend chapter 5's existing scheme rather than realigning it**, deliberately: §8 "Not in
+> A-10, deliberately" rules that syllabus verification gets its own pass and that folding it into a
+> code PR would bury it. So the divergence is preserved, not compounded — and the table below makes
+> the eventual realignment a mechanical find-and-replace per ref rather than a re-read of 45
+> questions.
+>
+> | Ref | Topic | Qs | Ref | Topic | Qs |
+> |---|---|---|---|---|---|
+> | `FL-5.1.1` | Test plan purpose & content | 3 | `FL-5.2.2` | Definition of ready | 1 |
+> | `FL-5.1.2` | Risk-based testing, risk level | 3 | `FL-5.3.1` | Defect reports | 5 |
+> | `FL-5.1.3` | Iteration & release planning | 2 | `FL-5.3.2` | Defect management process | 1 |
+> | `FL-5.1.4` | Product vs project risk | 2 | `FL-5.4.1` | Estimation, general | 3 |
+> | `FL-5.1.5` | Risk analysis & control | 2 | `FL-5.4.2` | Three-point estimation | 1 |
+> | `FL-5.1.6` | Test pyramid | 2 | `FL-5.4.3` | Planning poker | 1 |
+> | `FL-5.1.7` | Testing quadrants | 2 | `FL-5.5.1` | Test metrics | 5 |
+> | `FL-5.1.8` | Test case prioritization | 3 | `FL-5.5.2` | Test reports | 2 |
+> | `FL-5.2.1` | Entry & exit criteria | 4 | `FL-5.5.3` | Communicating status | 1 |
+> | | | | `FL-5.6.1` | Configuration management | 2 |
+
+> **Corrected 2026-08-12, auditing chapter 5 on the way in.** Running the same audit over the whole
+> bank before opening the PR caught a tautology that predates A-10d entirely: `ch4-q9`, authored in
+> A-06, described its state model as "PENDING → PAID → SHIPPED" and offered that exact string as the
+> correct choice, so a candidate could match text without knowing what 0-switch coverage is. It is the
+> same defect the correction above removed from `ch4-q21` — and `ch4-q21` was flagged *as q9's twin*
+> at the time, yet q9 itself was left standing. Now reframed as a coverage-percentage question (2 of 3
+> transitions = 67%).
+>
+> Having survived the original authoring, the A-10a audit, the A-10d review and a PR that explicitly
+> named it, this one graduated from "fix it" to "make the build do it": `academy-bank-check.mjs` now
+> asserts that no correct choice appears verbatim inside its own stem, normalised to letters and
+> digits so punctuation and arrow glyphs can't hide the overlap, with a 16-character floor so short
+> factual answers ("67%", "16 days") don't trip on a number that legitimately appears in the question.
+> Verified by re-injecting the defect and watching the build fail. Shuffling is no defence here —
+> `presentPaper` randomises position, never text.
+
 Remaining debt, current as of the same date:
 
 - **Pools to ≥5× their blueprint weight.** ch1 12/40, ch2 12/30, ch3 12/20, ch4 **36/55**, ch5
-  10/45, ch6 12/10 (the only one already there). Chapter 5 is now the sharpest gap — it still draws
-  90% of its pool per paper, same as before this slice.
-- **Multi-answer questions.** 6 of 94, all in chapter 4, now spanning 2/3/4 correct answers over
-  five distinct (choices, keys) shapes. The other five chapters still have none, though the real
-  paper draws them from any chapter — and each should vary its own shapes rather than settling on
-  one, or the build now fails (see the correction above).
+  **45/45 done**, ch6 12/10 (done). Chapter 4 is now the only partially-built chapter; chapter 1 is
+  the sharpest untouched one, drawing 8 of the paper's 40 questions from a pool of 12.
+- **Multi-answer questions.** 12 of 129, split 6 in chapter 4 and 6 in chapter 5, spanning 2/3/4
+  correct answers across 4-, 5- and 6-choice questions. Chapters 1, 2, 3 and 6 still have none,
+  though the real paper draws them from any chapter — and each should vary its own shapes rather
+  than settling on one, or the build fails (see the correction above).
 - **`kLevel` against the objective's own level.** Unverified, and it needs the same human pass §5.1
   asks for. `ch4-q34` is tagged K3 on `FL-4.5.2` while `ch4-q35`/`ch4-q36` are K2 on `FL-4.5.3`; if
   the syllabus rates those objectives K2 and K3 respectively, all three are inverted. Nothing in the
   bank-check can decide this — it is a read-the-syllabus task, filed with the §5.1 verification below
   rather than guessed at here.
-- **K-level balance.** K1 28 / K2 50 / **K3 16**. Better than the 28/36/6 split this section
-  originally recorded, but still light outside chapter 4 — chapters 1, 2, 3 and 5 carried none of
-  this slice's K3 additions.
-- **`syllabusRef` spread.** 47 distinct refs across 94 questions. `FL-6.1.1` still alone carries 6 of
-  chapter 6's 12 — chapter 6 wasn't part of this slice either.
+- **K-level balance.** K1 28 / K2 73 / **K3 28**. The original 28/36/6 split is well behind us, but
+  every K3 question added so far sits in chapter 4 or 5 — chapters 1, 2, 3 and 6 still carry the
+  authored-in-A-06 mix and none of the growth.
+- **`syllabusRef` spread.** 60 distinct refs across 129 questions. `FL-6.1.1` still alone carries 6
+  of chapter 6's 12; chapter 6 has had no slice yet.
 
 When the pools grow, turn the bank-check's *reported* debt lines into *asserted* ones — the script
 is written so that is a one-line change per check, and until then a build that fails on content the
