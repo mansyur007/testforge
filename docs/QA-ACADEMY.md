@@ -12,8 +12,9 @@
 > A-04b shipped 2026-08-11 (coach overlay, five sandbox-task checkers);
 > A-05 shipped 2026-08-11 (persistence, claim-at-signup, `/academy/me`).
 > A-06 shipped 2026-08-11 (exam engine, ISTQB question bank, practice exam + chapter quizzes).
+> A-09 shipped 2026-08-12 (session-aware shell on /academy and /docs/help).
 > A-07 … A-08 planned. Created 2026-08-10.
-> Work orders are numbered `A-01 … A-08` (a new track alongside `F-xx`/`L-xx` in
+> Work orders are numbered `A-01 … A-09` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
 > `[x]` shipped. **Part IV §0 (repo conventions) and §1 (Definition of Done) are normative here** —
@@ -811,12 +812,62 @@ T2/T3/T4 to `published`; the remaining sandbox checkers; the T3 CI capstone;
 Indonesian lesson bodies; and — if ID organic traffic justifies it — `/id/academy/**` with
 `hreflang`, decided on A-03's measured numbers rather than up front.
 
+### A-09 — Session-aware shell on `/academy` and `/docs/help` `[x]`
+
+> **Status: DONE** (2026-08-12, branch `feat/academy-help-authed-shell`). Follow-up to A-03: that
+> work order gave Academy (and Help, which shares its placement — A-03's rationale, §"Academy sits
+> with Help") standalone public chrome, same shape as a marketing page. A user raised a fair
+> objection: click **Academy** from inside the app and the whole shell — sidebar, project list,
+> search — disappears, replaced by a disconnected-looking page with its own header. Every other
+> in-app destination stays inside the shell; Academy and Help didn't.
+
+**Why they couldn't simply move into the `(app)` route group:** that group's `layout.tsx` calls
+`requireSession()`, which redirects an anonymous visitor to `/login` before any page under it can
+render. Academy and Help are deliberately readable without an account (A-03 §1) and need to stay
+indexable by search engines — both requirements a hard login gate breaks. Next.js route groups are
+also transparent to the URL, so `src/app/academy/page.tsx` and a hypothetical
+`src/app/(app)/academy/page.tsx` would collide on the same `/academy` path — two real files can't
+both own one route.
+
+**What shipped instead:** the sidebar/`AppShell` wiring that used to live only in
+`src/app/(app)/layout.tsx` was extracted into `src/components/AuthedAppShell.tsx`, a server
+component taking `{ session, children }`. `(app)/layout.tsx` now just calls `requireSession()` and
+renders it — zero behavioural change for every existing in-app route. `src/app/academy/page.tsx`
+and `src/app/docs/help/page.tsx` stayed outside the `(app)` group (so a session is optional, not
+required) but now call `getSession()` — the existing non-redirecting lookup, already used
+elsewhere — and branch: signed in renders `<AuthedAppShell>` around the same content, so the page
+is indistinguishable from any other in-app destination; signed out renders the original standalone
+chrome, with its "Back to app" link swapped for **Log in** / **Sign up**, since a guest was never
+"in the app" to begin with. The SEO metadata (`robots`, `Course`/`ItemList` JSON-LD, sitemap entry)
+is unchanged either way — it's a `<head>` concern set once per page, independent of which shell
+wraps the body.
+
+**Cost paid knowingly:** reading `getSession()` reads the session cookie, which forces both routes
+to dynamic rendering (`export const dynamic = "force-dynamic"`) — `/academy` was previously
+prerenderable and is not anymore. Traffic is low enough in beta that this wasn't worth the
+alternative (a middleware rewrite to two physically separate route files, which would have kept
+static generation for the guest path at the cost of a second shell implementation to keep in sync).
+
+**Deliberately out of scope:** track pages (`/academy/[track]`), lesson pages
+(`/academy/[track]/[lesson]`), and Help topic pages (`/docs/help/[slug]`) keep their existing
+standalone reading-mode chrome. Only the two index/landing pages changed — that's where the
+disconnect was actually felt (an in-app user landing on an unfamiliar page), and it keeps this
+change reviewable instead of touching Academy's entire route tree.
+
+**Verified:** **TC-E2E-109** (signed-in visitor at `/academy` sees `app-sidebar` and `nav-academy`,
+no Sign up link), **TC-E2E-110** (guest at `/academy` sees Log in/Sign up, no `app-sidebar`),
+**TC-E2E-111**/**TC-E2E-112** (same pair for `/docs/help`). Full regression: all of
+`e2e/academy.spec.ts` and `e2e/help-center.spec.ts` (25 specs) pass together; `tsc --noEmit`,
+`eslint`, and `next build` are clean, and `next build`'s route table confirms `/academy` and
+`/docs/help` moved from prerendered to `ƒ` (dynamic), as expected.
+
 ### Testing (applies to all)
 
-Playwright specs in `e2e/academy.spec.ts`, continuing the `TC-E2E-*` sequence (last used 87, per
-F-45): roadmap → lesson → quiz pass/fail; anonymous progress survives reload; claim-at-signup;
-sandbox provisioning and one checker end to end; a full exam run including auto-submit at timeout
-(clock injected, not waited out). Unit tests for `draw()`, ticket verification, every checker, and
+Playwright specs in `e2e/academy.spec.ts`, continuing the `TC-E2E-*` sequence (last used 112,
+global across all `e2e/*.spec.ts` files, per F-45): roadmap → lesson → quiz pass/fail; anonymous
+progress survives reload; claim-at-signup; sandbox provisioning and one checker end to end; a full
+exam run including auto-submit at timeout (clock injected, not waited out); session-aware shell on
+`/academy` and `/docs/help` (A-09). Unit tests for `draw()`, ticket verification, every checker, and
 the no-answers-in-bundle assertion. Per Part IV §1, no `A-xx` merges without its e2e.
 
 ---

@@ -36,3 +36,25 @@ test(`TC-${TC}-27 Help nav link opens the index, a topic renders markdown`, asyn
   await page.getByRole("link", { name: "Back to app" }).click();
   await page.waitForURL("**/dashboard");
 });
+
+// A-09: /docs/help gets the same treatment as /academy — public route, two
+// shells depending on session. See docs/QA-ACADEMY.md A-09.
+test(`TC-${TC}-111 A signed-in visitor gets the app shell on /docs/help`, async ({ page }) => {
+  await login(page);
+  await page.goto("/docs/help");
+  await expect(page.getByRole("heading", { name: "Help", exact: true })).toBeVisible();
+  await expect(page.getByTestId("app-sidebar")).toBeVisible();
+  await expect(page.getByTestId("nav-help")).toBeVisible();
+});
+
+test(`TC-${TC}-112 A guest on /docs/help sees Log in and Sign up, and no app shell`, async ({
+  page,
+}) => {
+  await page.goto("/docs/help");
+  await expect(page.getByTestId("app-sidebar")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Log in" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Sign up", exact: true })).toHaveAttribute(
+    "href",
+    "/signup",
+  );
+});

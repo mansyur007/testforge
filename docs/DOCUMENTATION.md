@@ -4160,7 +4160,7 @@ toolbar genuinely shorter on a phone means hiding rarely-used actions (Export/Pr
 a disclosure, which is the same "invent an interaction" call deferred in F-43/F-44 and belongs
 with the `SuiteFolderGrid` work noted above.
 
-#### A-01 … A-06 — TestForge QA Academy (in progress)
+#### A-01 … A-09 — TestForge QA Academy (in progress)
 
 > **Full work-order detail lives in [`docs/QA-ACADEMY.md`](QA-ACADEMY.md)** — Academy is a
 > subsystem delivered over several PRs rather than one feature (per that doc's header), so its
@@ -4233,6 +4233,15 @@ with the `SuiteFolderGrid` work noted above.
   § A-06 for the full writeup, including a stale-session-cookie edge case found while manually
   walking the flow (pre-existing app-wide behaviour, not a regression, not fixed in this PR).
 - **A-07 … A-08** `[ ]` not started — certificates, content build-out. See `docs/QA-ACADEMY.md` §8.
+- **A-09** `[x]` (2026-08-12, branch `feat/academy-help-authed-shell`) — Session-aware shell on
+  `/academy` and `/docs/help`: a signed-in visitor now gets the same sidebar/`AppShell` as the rest
+  of the app (extracted into `src/components/AuthedAppShell.tsx`, reused by `(app)/layout.tsx`
+  unchanged) instead of a disconnected-looking standalone page; a guest keeps the original public
+  chrome with Log in/Sign up in place of "Back to app". SEO metadata is unaffected either way. Cost:
+  both routes lost static prerendering (now `force-dynamic`, since they read the session cookie).
+  `e2e/academy.spec.ts` **TC-E2E-109/110** and `e2e/help-center.spec.ts` **TC-E2E-111/112**. See
+  `docs/QA-ACADEMY.md` § A-09 for the full writeup, including why the two pages couldn't just move
+  into the `(app)` route group.
 
 ---
 

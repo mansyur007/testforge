@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getSession } from "@/lib/auth";
+import { AuthedAppShell } from "@/components/AuthedAppShell";
 import { Logo, TFIcon } from "@/components/icons";
 import { BetaChip } from "@/components/BetaChip";
 import { JsonLd } from "@/components/JsonLd";
@@ -34,43 +36,48 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AcademyIndexPage() {
+// A-09: this route stays outside the (app) group so it's reachable without a
+// session (Google's crawler and a signed-out learner both need that) — see
+// docs/QA-ACADEMY.md A-09. It now reads the session itself, optionally: a
+// signed-in visitor gets the same shell as the rest of the app instead of a
+// second, disconnected-looking page; a guest gets the public chrome with a
+// way in. Reading the session cookie makes this route dynamic per request,
+// same as every page under (app) — there's nothing left here to prerender.
+export const dynamic = "force-dynamic";
+
+export default async function AcademyIndexPage() {
+  const session = await getSession();
   const published = TRACKS.filter((t) => t.status === "published");
   const totalLessons = published.reduce(
     (n, t) => n + publishedLessons(t).length,
     0,
   );
 
-  return (
-    <main className="mx-auto max-w-5xl px-4 py-12">
-      <JsonLd
-        data={ldGraph(
-          breadcrumbLd([
-            { name: "TestForge", path: "/" },
-            { name: "QA Academy", path: "/academy" },
-          ]),
-          {
-            "@type": "ItemList",
-            name: "TestForge QA Academy tracks",
-            itemListElement: TRACKS.map((t, i) => ({
-              "@type": "ListItem",
-              position: i + 1,
-              name: t.title,
-              ...(t.status === "published"
-                ? { url: absoluteUrl(`/academy/${t.slug}`) }
-                : {}),
-            })),
-          },
-        )}
-      />
+  const jsonLd = (
+    <JsonLd
+      data={ldGraph(
+        breadcrumbLd([
+          { name: "TestForge", path: "/" },
+          { name: "QA Academy", path: "/academy" },
+        ]),
+        {
+          "@type": "ItemList",
+          name: "TestForge QA Academy tracks",
+          itemListElement: TRACKS.map((t, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            name: t.title,
+            ...(t.status === "published"
+              ? { url: absoluteUrl(`/academy/${t.slug}`) }
+              : {}),
+          })),
+        },
+      )}
+    />
+  );
 
-      <div className="mb-8 flex items-center justify-between">
-        <Logo size="sm" />
-        <Link href="/dashboard" className="text-sm text-accent-text hover:underline">
-          Back to app
-        </Link>
-      </div>
-
+  const body = (
+    <>
       <h1 className="flex flex-wrap items-center gap-3 text-3xl font-bold text-content-strong sm:text-4xl">
         QA Academy
         <BetaChip className="translate-y-1" />
@@ -198,20 +205,54 @@ export default function AcademyIndexPage() {
             Lessons marked <strong>Hands-on</strong> come with an exercise you do
             in a real TestForge project, not a quiz.
           </li>
-          <li>
-            You don&rsquo;t need an account to read anything. Create one when you
-            want your work and your progress saved —{" "}
-            <Link href="/signup" className="text-accent-text hover:underline">
-              it&rsquo;s free
-            </Link>
-            .
-          </li>
+          {!session && (
+            <li>
+              You don&rsquo;t need an account to read anything. Create one when
+              you want your work and your progress saved —{" "}
+              <Link href="/signup" className="text-accent-text hover:underline">
+                it&rsquo;s free
+              </Link>
+              .
+            </li>
+          )}
         </ul>
       </section>
 
       <p className="mt-8 text-xs leading-relaxed text-content-muted">
         {ISTQB_DISCLAIMER}
       </p>
+    </>
+  );
+
+  if (session) {
+    return (
+      <AuthedAppShell session={session}>
+        {jsonLd}
+        <div className="mx-auto max-w-5xl">{body}</div>
+      </AuthedAppShell>
+    );
+  }
+
+  return (
+    <main className="mx-auto max-w-5xl px-4 py-12">
+      {jsonLd}
+
+      <div className="mb-8 flex items-center justify-between">
+        <Logo size="sm" />
+        <div className="flex items-center gap-4 text-sm">
+          <Link href="/login" className="text-accent-text hover:underline">
+            Log in
+          </Link>
+          <Link
+            href="/signup"
+            className="rounded-lg bg-accent px-3 py-1.5 font-medium text-white hover:bg-accent-hover"
+          >
+            Sign up
+          </Link>
+        </div>
+      </div>
+
+      {body}
     </main>
   );
 }
