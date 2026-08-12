@@ -12,18 +12,19 @@ import { CH6_TOOLS } from "./ch6-tools";
 // `explanation` never reach a client bundle except through
 // `sanitizeQuestion()`/the grading action. See docs/QA-ACADEMY.md §2.2, §5.1.
 //
-// **Content status (2026-08-12, corrected by the A-10 audit).** The plan's bank
-// target is ≥300 questions, ≥5x the per-chapter draw count. This holds **70** —
-// 12 per chapter except chapter 5, which has 10. (This comment previously said
-// 72 (12/chapter); it was wrong, and nothing caught it because
-// scripts/academy-exam-selftest.mjs runs against a synthetic 12-per-chapter
-// bank rather than this file.)
+// **Content status (2026-08-12, A-10d's third slice).** The plan's bank target
+// is ≥300 questions, ≥5x the per-chapter draw count. This holds **148**:
+// chapters 4 (55), 5 (45) and 6 (12) are at or past their targets, chapters 1,
+// 2 and 3 are untouched at 12 each and are the whole of the remaining debt.
+// (Before A-10d this comment said 72, then 70; both were wrong, and nothing
+// caught it because scripts/academy-exam-selftest.mjs runs against a synthetic
+// 12-per-chapter bank rather than this file. scripts/academy-bank-check.mjs
+// now reads the real bank and prints the counts on every build, so the number
+// above is a convenience rather than the source of truth.)
 //
-// That is enough to draw the full blueprint (max weight is chapter 4's 11) and
-// every chapter quiz (8/chapter) without repeats within one paper, but well
-// short of 5x, and the shortfall sits on the chapter the blueprint draws 9
-// from: measured over 200 seeds, two papers share 28.2 of 40 questions on
-// average and never fewer than 23. Every question here still carries a real
+// The shortfall now sits entirely on the three unbuilt chapters, which the
+// blueprint draws 18 of a paper's 40 questions from — chapter 1 the sharpest,
+// drawing 8 from a pool of 12. Every question here carries a real
 // `syllabusRef` for a reviewer to check against the objective, per §7.2.
 //
 // **On answer positions.** The correct answer is `a` or `b` in 66 of these 70
@@ -34,10 +35,18 @@ import { CH6_TOOLS } from "./ch6-tools";
 // information and it does not matter where in the array a new question puts
 // its answer. Write them wherever reads most naturally.
 //
-// What still matters when adding questions is everything shuffling can't fix:
-// the correct answer being the longest option (true of 76% here), pool sizes
-// below 5x their blueprint weight, and the total absence of multi-answer
-// questions. scripts/academy-bank-check.mjs reports all three on every build.
+// What still matters when adding questions is everything shuffling can't fix.
+// Chief among them, and the one this comment used to note in passing without
+// measuring: **the correct answer being the longest option.** A-10d's third
+// slice priced it — always picking the longest choice scored 70.9% against the
+// bank as it stood, above the 65% pass line, which made it a strictly better
+// exploit than the answer-position bias A-10a was written to kill. It is a
+// content property, so there is no `presentPaper` fix; write the distractors
+// as carefully as the key. academy-bank-check.mjs now simulates it, reports it
+// per chapter, and ratchets: the build fails if a new question makes it worse.
+// The same script also reports pool sizes below 5x their blueprint weight and
+// the multi-answer count, and asserts that multi questions vary how many
+// choices they key.
 export const QUESTION_BANK: ExamQuestion[] = [
   ...CH1_FUNDAMENTALS,
   ...CH2_SDLC,

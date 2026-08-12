@@ -5,6 +5,14 @@ import type { ExamQuestion } from "../types";
 // decision tables, state transition testing, use case testing), white-box
 // coverage (statement/branch), and experience-based techniques. See
 // docs/QA-ACADEMY.md §7.2 — no question copied or reworded from a real paper.
+//
+// A-10d grew this chapter 12 → 36 → 55, its full 5x blueprint target. The
+// third slice (q37–q55) added the collaboration-based questions' missing
+// company at FL-4.1.1 and the whole of FL-4.3.3 (the value of white-box
+// testing), which no question had covered. It is also the first batch written
+// against the length tell: across its 16 single-answer questions the correct
+// choice is the longest 4 times, which is chance for a 4-choice question. See
+// scripts/academy-bank-check.mjs — the build now ratchets that number.
 
 export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
@@ -608,5 +616,301 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     ],
     explanation:
       "ATDD derives acceptance tests from the acceptance criteria before coding — a defect-prevention move rather than a detection one — and overlaps closely with BDD's Given/When/Then style. It is collaborative by definition, so tests written by the tester alone after estimation is the opposite of the approach; it is also distinct from unit-level TDD (different scope, different authors) and does not rule out manual testing elsewhere in the story's lifecycle.",
+  },
+  {
+    id: "ch4-q37",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.1.1",
+    stem: "A team must design tests for a payment module. The detailed design and the source code are unavailable to them, but a signed-off requirements specification is. Which category of technique are they best placed to apply?",
+    choices: [
+      { id: "a", text: "Black-box techniques, which derive tests from the specified behaviour of the test object", correct: true },
+      { id: "b", text: "White-box techniques, which derive tests from the internal structure of the test object" },
+      { id: "c", text: "Coverage-based techniques, which need an instrumented build and a coverage report first" },
+      { id: "d", text: "Structural techniques, which need the module's call graph before any test can be designed" },
+    ],
+    explanation:
+      "Black-box techniques work from a description of what the test object should do — a specification, a model, a user story — and need no visibility of the code. White-box and structural techniques both require the internal structure, which this team does not have.",
+  },
+  {
+    id: "ch4-q38",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.1.1",
+    multi: true,
+    stem: "Which of the following legitimately influence the choice of test techniques for a given test object? (Select all that apply.)",
+    choices: [
+      { id: "a", text: "The type of component or system under test, and the risks associated with it", correct: true },
+      { id: "b", text: "The knowledge and experience of the testers available to do the work", correct: true },
+      { id: "c", text: "The alphabetical order of the technique names in the organisation's test policy" },
+      { id: "d", text: "A rule that each project must apply exactly one technique, chosen at kickoff" },
+      { id: "e", text: "A rule that black-box techniques may only be used once the code is complete" },
+      { id: "f", text: "A prohibition on combining experience-based techniques with any other category" },
+    ],
+    explanation:
+      "Technique selection is driven by the test object and its risks, by the available documentation, regulatory demands, contract, lifecycle model, and by what the team actually knows how to do. The other options are invented constraints: techniques are routinely combined, more than one is normally used per object, and black-box design can start as soon as the specification exists.",
+  },
+  {
+    id: "ch4-q39",
+    chapter: 4,
+    kLevel: "K3",
+    syllabusRef: "FL-4.2.1",
+    stem: "A shipping-cost function returns 'free' for order totals of $50 or more, a flat fee for totals from $0.01 to $49.99, and an error for a total of zero or less. Partitioning on the function's *output* rather than its input, how many partitions are there?",
+    choices: [
+      { id: "a", text: "Three — one for each distinct outcome the function can produce", correct: true },
+      { id: "b", text: "Two — an output is only ever partitioned into valid and invalid" },
+      { id: "c", text: "Five — one partition for each numeric value named in the rule" },
+      { id: "d", text: "One — output partitioning only applies to boolean-valued functions" },
+    ],
+    explanation:
+      "Equivalence partitioning applies to outputs as readily as to inputs: each distinct outcome the function can produce is one partition, so 'free', 'flat fee' and 'error' give three. The valid/invalid split is a property of input partitions, not a limit on how many output partitions may exist.",
+  },
+  {
+    id: "ch4-q40",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.2.1",
+    stem: "A form has three fields, each with its own valid and invalid partitions. Why do test designers usually cover invalid partitions one field at a time, rather than combining several invalid values into a single test?",
+    choices: [
+      { id: "a", text: "Because one rejected value can mask another, leaving the second defect undetected", correct: true },
+      { id: "b", text: "Because combining them is forbidden by every recognised testing standard" },
+      { id: "c", text: "Because invalid partitions are only ever exercised after a release goes live" },
+      { id: "d", text: "Because a test carrying two bad values takes twice as long for a tool to run" },
+      { id: "e", text: "Because invalid partitions cannot be identified until the valid ones all pass" },
+    ],
+    explanation:
+      "A system that rejects the first invalid value it meets may never evaluate the second, so a test carrying two of them can pass while a defect in the second field's handling goes unseen. Valid partitions, by contrast, are routinely combined across fields because all of them are expected to be processed.",
+  },
+  {
+    id: "ch4-q41",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.2.2",
+    stem: "How does the three-value approach to boundary value analysis differ from the two-value approach?",
+    choices: [
+      { id: "a", text: "It replaces the boundary value itself with the two nearest neighbouring values" },
+      { id: "b", text: "It also exercises the value just inside the boundary, not only the boundary and its outside neighbour", correct: true },
+      { id: "c", text: "It applies only where two valid partitions meet, and never at the edge of an invalid one" },
+      { id: "d", text: "It requires that three separate testers independently agree where each boundary lies" },
+    ],
+    explanation:
+      "The two-value approach tests the boundary and its nearest neighbour on the other side of it. The three-value approach adds the nearest neighbour on the same side, so for a lower boundary of 1 it covers 0, 1 and 2 — stronger coverage at the cost of a third test per boundary.",
+  },
+  {
+    id: "ch4-q42",
+    chapter: 4,
+    kLevel: "K3",
+    syllabusRef: "FL-4.2.2",
+    stem: "A password field accepts between 8 and 20 characters inclusive. Which set of lengths gives two-value boundary coverage of both boundaries?",
+    choices: [
+      { id: "a", text: "8, 9, 19 and 20" },
+      { id: "b", text: "7, 8, 20 and 21", correct: true },
+      { id: "c", text: "1, 8, 20 and 50" },
+      { id: "d", text: "8 and 20 only" },
+    ],
+    explanation:
+      "Two-value BVA takes the boundary and its nearest neighbour on the invalid side: 8 and 7 at the lower boundary, 20 and 21 at the upper. Lengths 9 and 19 sit inside the valid partition, and 1 and 50 are ordinary invalid-partition representatives rather than boundary neighbours.",
+  },
+  {
+    id: "ch4-q43",
+    chapter: 4,
+    kLevel: "K3",
+    syllabusRef: "FL-4.2.3",
+    stem: "A refund rule depends on four independent yes/no conditions. How many columns does its full decision table have, before any collapsing?",
+    choices: [
+      { id: "a", text: "8" },
+      { id: "b", text: "16", correct: true },
+      { id: "c", text: "4" },
+      { id: "d", text: "32" },
+    ],
+    explanation:
+      "A full decision table enumerates every combination of its conditions, so n binary conditions give 2^n columns — here 2^4 = 16. Collapsing rules that share an action with 'don't care' values reduces that number afterwards, but the full table is the starting point.",
+  },
+  {
+    id: "ch4-q44",
+    chapter: 4,
+    kLevel: "K3",
+    syllabusRef: "FL-4.2.3",
+    stem: "A discount rule has three yes/no conditions: member, order of $50 or more, promo code entered. The team has run tests for the combinations Y/Y/Y, Y/N/N, N/Y/N and N/N/Y. What is their decision table coverage?",
+    choices: [
+      { id: "a", text: "50%, since four of the eight possible condition combinations have been tested", correct: true },
+      { id: "b", text: "100%, because every individual condition has been both true and false at least once" },
+      { id: "c", text: "25%, because only one of the four tested combinations actually produces a discount" },
+      { id: "d", text: "Not expressible as a percentage; a decision table is either complete or it is not" },
+    ],
+    explanation:
+      "Decision table coverage is the proportion of the table's rules (columns) exercised by at least one test. Three binary conditions give eight rules, four of which have been covered, so coverage is 50%. Exercising each condition both ways is a weaker criterion and does not imply full rule coverage.",
+  },
+  {
+    id: "ch4-q45",
+    chapter: 4,
+    kLevel: "K3",
+    syllabusRef: "FL-4.2.4",
+    stem: "A state model defines six valid transitions. A test suite exercises four of them at least once, and attempts no invalid ones. What 0-switch coverage has the suite achieved?",
+    choices: [
+      { id: "a", text: "100%" },
+      { id: "b", text: "67%", correct: true },
+      { id: "c", text: "40%" },
+      { id: "d", text: "0%, because no invalid transitions were attempted" },
+    ],
+    explanation:
+      "0-switch coverage counts single valid transitions exercised as a proportion of all valid transitions in the model: 4 of 6, or about 67%. Invalid transitions are worth testing but are not part of this measure — attempting none of them does not reduce it.",
+  },
+  {
+    id: "ch4-q46",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.2.4",
+    stem: "What does a state table make visible that a state transition diagram typically does not?",
+    choices: [
+      { id: "a", text: "The order in which a tester should execute the resulting test cases at run time" },
+      { id: "b", text: "Every state/event pair, including those for which no transition is defined", correct: true },
+      { id: "c", text: "The number of defects historically reported against each state in the product" },
+      { id: "d", text: "The source code of the handler implementing each of the modelled transitions" },
+      { id: "e", text: "The elapsed time the system should spend in each state before it moves on" },
+    ],
+    explanation:
+      "A state table has a row per state and a column per event, so the empty cells are explicit: those are the sneak paths a negative test can aim at. A diagram usually draws only the defined transitions, which makes the undefined ones easy to overlook.",
+  },
+  {
+    id: "ch4-q47",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.2.4",
+    multi: true,
+    stem: "Which of the following are true of state transition testing? (Select all that apply.)",
+    choices: [
+      { id: "a", text: "A transition is triggered by an event and may be subject to a guard condition", correct: true },
+      { id: "b", text: "The same event can cause different transitions depending on the current state", correct: true },
+      { id: "c", text: "0-switch coverage is reached once every valid transition has been exercised", correct: true },
+      { id: "d", text: "It applies only to embedded systems with physically distinct hardware modes" },
+      { id: "e", text: "A state table is only valid once the implementation's source code is reviewed" },
+    ],
+    explanation:
+      "A state model's transitions are driven by events, optionally guarded by conditions, and the response to an event depends on the state the system is in — which is the whole point of the model. 0-switch coverage is exactly the 'every valid transition once' criterion. The technique is a black-box one and applies to any stateful behaviour, from an order workflow to a login lockout, with no need to read the code.",
+  },
+  {
+    id: "ch4-q48",
+    chapter: 4,
+    kLevel: "K3",
+    syllabusRef: "FL-4.2.5",
+    stem: "A 'withdraw cash' use case has a main flow, an alternative flow for a wrong PIN on the first attempt, and an exception flow for a card retained after three wrong PINs. A tester runs one test that enters the correct PIN and takes the cash. What can be said about their use case coverage?",
+    choices: [
+      { id: "a", text: "Only the main flow is covered; the alternative and exception flows are untested", correct: true },
+      { id: "b", text: "All flows are covered, since the alternative and exception flows share the main path" },
+      { id: "c", text: "Coverage is complete once the actor reaches any documented end state of the case" },
+      { id: "d", text: "Use case coverage counts the defects that were found, not the flows exercised" },
+    ],
+    explanation:
+      "Use case coverage is measured by the proportion of the use case's flows exercised. A single happy-path test covers the main flow only; the alternative and exception flows each need their own test, and they are usually where the interesting defects live.",
+  },
+  {
+    id: "ch4-q49",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.3.1",
+    stem: "A function was specified to log a warning when a discount exceeds 50%, but the developer omitted that logic entirely. A test suite achieves 100% statement coverage of the function as written. Why does that not detect the omission?",
+    choices: [
+      { id: "a", text: "Statement coverage counts each statement twice, which conceals any left out" },
+      { id: "b", text: "Statement coverage is measured against the specification, not the delivered code" },
+      { id: "c", text: "Statement coverage can only exercise code that exists, so absent logic is never counted", correct: true },
+      { id: "d", text: "Statement coverage reports a percentage only once every branch has been exercised" },
+    ],
+    explanation:
+      "White-box coverage measures what proportion of the code that was written has been executed. Code that was never written contributes nothing to the denominator, so a missing requirement can coexist with 100% statement coverage — which is why specification-based techniques are needed alongside it.",
+  },
+  {
+    id: "ch4-q50",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.3.2",
+    stem: "Which statement correctly describes the relationship between statement coverage and branch coverage?",
+    choices: [
+      { id: "a", text: "100% statement coverage guarantees 100% branch coverage, but not the reverse" },
+      { id: "b", text: "100% branch coverage guarantees 100% statement coverage, but not the reverse", correct: true },
+      { id: "c", text: "Each guarantees the other; they differ only in how the tool presents them" },
+      { id: "d", text: "Neither implies the other, since they are computed from unrelated models" },
+    ],
+    explanation:
+      "Exercising every branch outcome necessarily executes every statement, so branch coverage is the stronger criterion. The reverse fails on an `if` with no `else`: running the statements inside it gives 100% statement coverage while the false outcome of the decision is never taken.",
+  },
+  {
+    id: "ch4-q51",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.3.3",
+    stem: "What does white-box testing provide that black-box testing of the same test object cannot?",
+    choices: [
+      { id: "a", text: "Assurance that the specified behaviour matches what the customer asked for" },
+      { id: "b", text: "Evidence about parts of the implementation that no specified behaviour reaches", correct: true },
+      { id: "c", text: "A measure of how many requirements the delivered increment has satisfied" },
+      { id: "d", text: "Confidence that the system performs acceptably under production load" },
+    ],
+    explanation:
+      "Because it works from the structure rather than the specification, white-box testing can show which code the specification-based tests never touch — dead code, defensive branches, undocumented shortcuts. Requirements satisfaction and performance under load are answered by other techniques and test types.",
+  },
+  {
+    id: "ch4-q52",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.3.3",
+    multi: true,
+    stem: "Which of the following are genuine benefits of white-box testing? (Select all that apply.)",
+    choices: [
+      { id: "a", text: "It can reveal code that no specification-based test would ever execute", correct: true },
+      { id: "b", text: "Coverage measurement gives an objective figure for how much code is reached", correct: true },
+      { id: "c", text: "Defects can be found without a complete or up-to-date specification", correct: true },
+      { id: "d", text: "It can expose implementation shortcuts the specification says nothing about", correct: true },
+      { id: "e", text: "It removes the need for specification-based testing of the same object" },
+      { id: "f", text: "It proves the absence of defects in any line the test suite has executed" },
+    ],
+    explanation:
+      "White-box testing reaches code that no specified behaviour exercises, measures coverage objectively, works even where the specification is thin or stale, and surfaces shortcuts an implementer took silently. What it cannot do is replace specification-based testing — it says nothing about missing functionality — or prove any line defect-free, since executing a line is not the same as checking every outcome it can produce.",
+  },
+  {
+    id: "ch4-q53",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.3.3",
+    stem: "A team reports 100% branch coverage on a module and concludes from it that the module is defect-free. Why is that conclusion unsound?",
+    choices: [
+      { id: "a", text: "Branch coverage above 90% is unreliable on any module over 100 lines long" },
+      { id: "b", text: "Coverage figures count only when produced by a tool the vendor has certified" },
+      { id: "c", text: "Coverage shows the tests reached the code, not that they checked the results", correct: true },
+      { id: "d", text: "Defect-freedom follows from branch coverage only if the module has no loops" },
+      { id: "e", text: "They should have measured statement coverage, which subsumes branch coverage" },
+    ],
+    explanation:
+      "Coverage is a measure of execution, not of verification: a suite with weak or missing assertions can execute every branch and notice nothing. Coverage also cannot speak to functionality that was never implemented, and testing shows the presence of defects rather than their absence.",
+  },
+  {
+    id: "ch4-q54",
+    chapter: 4,
+    kLevel: "K3",
+    syllabusRef: "FL-4.4.1",
+    stem: "Before testing a new file-import feature, a tester lists the failures the team has hit in previous importers — truncated last row, wrong delimiter silently accepted, empty file failing without a message — and designs a test for each. What is this an example of?",
+    choices: [
+      { id: "a", text: "Boundary value analysis over the import file's permitted size partitions" },
+      { id: "b", text: "Error guessing, driven by a defect list built from previous experience", correct: true },
+      { id: "c", text: "Checklist-based testing against a standard published by an external body" },
+      { id: "d", text: "Exploratory testing under a time-boxed charter agreed with the test manager" },
+    ],
+    explanation:
+      "Error guessing anticipates the errors, defects and failures that experience says are likely for this kind of test object, often through a defect list drawn from past projects, and designs tests to expose them. There is no partitioning of an input range here, no externally published checklist, and no time-boxed session with concurrent design and execution.",
+  },
+  {
+    id: "ch4-q55",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.4.2",
+    stem: "A manager asks why an exploratory session's results are harder to hand to an auditor than the scripted suite's. What is the fair answer?",
+    choices: [
+      { id: "a", text: "The tests were designed and executed together, so the record is the session notes", correct: true },
+      { id: "b", text: "Exploratory testing produces no defect reports that an auditor would be able to review" },
+      { id: "c", text: "Exploratory sessions run without a charter, so nothing about them can be planned ahead" },
+      { id: "d", text: "The results cannot be reproduced by anybody, because each session is entirely random" },
+    ],
+    explanation:
+      "In exploratory testing, design, execution and logging happen together, so the evidence trail is the session sheet and notes rather than a pre-written script with recorded results. Sessions are still chartered and time-boxed, they still yield defect reports, and good notes keep findings reproducible — the difference is the form the record takes.",
   },
 ];
