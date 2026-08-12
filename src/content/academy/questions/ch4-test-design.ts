@@ -203,4 +203,414 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     explanation:
       "Exploratory testing is an experience-based technique where test design and execution happen together, with each test informing the next — well suited to unfamiliar areas, weak or missing documentation, and finding defects structured techniques might not anticipate.",
   },
+
+  // A-10d: first slice of the question-bank build-out (docs/QA-ACADEMY.md
+  // §A-10d). Chapter 4 first — it carries the most exam weight and the
+  // sharpest K-level gap. Widens syllabusRef coverage to FL-4.1 and FL-4.5
+  // (previously untouched), adds multi-answer questions, and skews new
+  // content toward K3 since the existing 12 were mostly K1/K2.
+  {
+    id: "ch4-q13",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.1.1",
+    stem: "What best distinguishes black-box, white-box, and experience-based test techniques from one another?",
+    choices: [
+      {
+        id: "a",
+        text: "The test basis and knowledge each draws test cases from — black-box uses only the specification, white-box uses the internal structure, and experience-based draws on the tester's own knowledge and intuition",
+        correct: true,
+      },
+      { id: "b", text: "The test level each is restricted to — black-box only at system level, white-box only at unit level" },
+      { id: "c", text: "Whether the technique can be automated — only white-box techniques support automated execution" },
+      { id: "d", text: "The number of testers required to run them — white-box techniques always require pair testing" },
+    ],
+    explanation:
+      "The three categories are defined by what they derive test cases from: black-box (specification-based) needs no knowledge of internals, white-box (structure-based) is built on the code or design structure, and experience-based leans on the tester's history with similar systems. None of the three is tied to a single test level or to automation status.",
+  },
+  {
+    id: "ch4-q14",
+    chapter: 4,
+    kLevel: "K3",
+    syllabusRef: "FL-4.2.1",
+    stem: "A discount-code field accepts strings of exactly 8 alphanumeric characters; anything shorter or longer is rejected. Which pair of test values, alongside one valid 8-character code, completes equivalence partitioning coverage of this field?",
+    choices: [
+      { id: "a", text: "A 7-character code and a 9-character code", correct: true },
+      { id: "b", text: "Two more valid 8-character codes" },
+      { id: "c", text: "A 5-character code and a 6-character code" },
+      { id: "d", text: "A 10-character code and a 12-character code" },
+    ],
+    explanation:
+      "There are three partitions here: too short (<8), valid (=8), and too long (>8). Coverage needs one representative from each. A 7-character code represents the too-short partition and a 9-character code the too-long partition; the other options each draw both values from the same partition and leave one partition untested.",
+  },
+  {
+    id: "ch4-q15",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.2.1",
+    multi: true,
+    stem: "Which of the following statements about equivalence partitioning are correct? (Select all that apply.)",
+    choices: [
+      { id: "a", text: "Invalid partitions need test coverage too, not only valid ones", correct: true },
+      { id: "b", text: "A value from a partition is assumed to be representative of every other value in that partition", correct: true },
+      { id: "c", text: "Equivalence partitioning can define partitions for output values as well as input values", correct: true },
+      { id: "d", text: "Equivalence partitioning guarantees that all boundary-related defects will be found" },
+      { id: "e", text: "Equivalence partitioning can only be applied to numeric input fields" },
+    ],
+    explanation:
+      "Equivalence partitioning covers both valid and invalid partitions, relies on the assumption that one representative stands in for its whole partition, and can be applied to outputs and non-numeric data alike. Finding boundary defects specifically is what boundary value analysis adds on top of it.",
+  },
+  {
+    id: "ch4-q16",
+    chapter: 4,
+    kLevel: "K3",
+    syllabusRef: "FL-4.2.2",
+    stem: "A booking form accepts a travel date from today up to 365 days in the future (inclusive). Using the three-value boundary value analysis approach, which three values test the upper boundary?",
+    choices: [
+      { id: "a", text: "Day 364, day 365, day 366", correct: true },
+      { id: "b", text: "Day 365, day 366, day 367" },
+      { id: "c", text: "Day 1, day 365, day 366" },
+      { id: "d", text: "Day 363, day 364, day 365" },
+    ],
+    explanation:
+      "The three-value approach at a boundary tests the value just inside it, the value on it, and the value just outside it. For an upper boundary of day 365, that is day 364 (just inside), day 365 (on the boundary), and day 366 (just outside, invalid).",
+  },
+  {
+    id: "ch4-q17",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.2.2",
+    multi: true,
+    stem: "Which of the following statements about boundary value analysis (BVA) are correct? (Select all that apply.)",
+    choices: [
+      { id: "a", text: "BVA is applied to the boundaries of the partitions already identified by equivalence partitioning", correct: true },
+      { id: "b", text: "BVA can be applied to output values, not only input values", correct: true },
+      { id: "c", text: "BVA works well on ordered ranges such as numbers and dates", correct: true },
+      { id: "d", text: "BVA is equally effective on partitions with no natural ordering, such as a set of colour names" },
+      { id: "e", text: "The two-value approach tests four values per boundary" },
+    ],
+    explanation:
+      "BVA extends equivalence partitioning by targeting partition edges, applies to outputs as well as inputs, and needs an ordered range to have a meaningful boundary — an unordered set like colour names has no 'edge' to test. The two-value approach tests two values per boundary (on it and just outside), not four.",
+  },
+  {
+    id: "ch4-q18",
+    chapter: 4,
+    kLevel: "K3",
+    syllabusRef: "FL-4.2.3",
+    stem: "A loan-approval rule has three conditions: (credit score ≥ 650), (income verified), and (existing default on file). The action 'reject' fires whenever there is an existing default, regardless of the other two conditions. Collapsing the decision table on this basis, how many rules does the 'existing default' branch need to represent every combination of the other two conditions?",
+    choices: [
+      { id: "a", text: "1 — the other two conditions become 'don't care' since the outcome is the same either way", correct: true },
+      { id: "b", text: "2 — one for each remaining condition" },
+      { id: "c", text: "4 — the full combination of the other two conditions must still be listed" },
+      { id: "d", text: "8 — all three conditions must be combined in full" },
+    ],
+    explanation:
+      "When an action's outcome does not depend on a condition, that condition's value is marked 'don't care' and the rules that differ only in it can be collapsed into one. Since 'reject' fires on an existing default no matter what the other two conditions are, all four combinations of those two conditions collapse into a single rule.",
+  },
+  {
+    id: "ch4-q19",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.2.3",
+    multi: true,
+    stem: "Which of the following statements about decision table testing are correct? (Select all that apply.)",
+    choices: [
+      { id: "a", text: "A full decision table lists every possible combination of the conditions", correct: true },
+      {
+        id: "b",
+        text: "Decision tables are well suited to testing combinations of business rules, where equivalence partitioning taken one input at a time is likely to miss an interaction defect",
+        correct: true,
+      },
+      { id: "c", text: "Rules that produce the same action can sometimes be collapsed using 'don't care' values", correct: true },
+      { id: "d", text: "Every decision table must include at least four conditions to be valid" },
+      { id: "e", text: "A decision table can only represent binary (true/false) conditions" },
+    ],
+    explanation:
+      "Decision tables enumerate condition combinations, target the interaction defects that single-input techniques miss, and can be collapsed with 'don't care' values where an action doesn't depend on a condition. There is no minimum of four conditions — a table with two conditions is just as valid — and conditions are not limited to binary values.",
+  },
+  {
+    id: "ch4-q20",
+    chapter: 4,
+    kLevel: "K3",
+    syllabusRef: "FL-4.2.4",
+    stem: "In the order state model PENDING → PAID → SHIPPED → DELIVERED, with CANCELLED reachable from PENDING or PAID, a tester attempts to move a DELIVERED order directly back to PENDING. What is this test checking?",
+    choices: [
+      { id: "a", text: "An invalid transition ('sneak path') — that the system correctly refuses a transition the model does not define", correct: true },
+      { id: "b", text: "0-switch coverage of the PENDING → PAID transition" },
+      { id: "c", text: "1-switch coverage of two consecutive valid transitions" },
+      { id: "d", text: "That every reachable state has been visited at least once" },
+    ],
+    explanation:
+      "DELIVERED → PENDING is not a transition the model defines, so exercising it is a negative test for a 'sneak path' — confirming the system rejects or ignores an event that isn't valid from the current state, rather than exercising a defined transition.",
+  },
+  {
+    id: "ch4-q21",
+    chapter: 4,
+    kLevel: "K3",
+    syllabusRef: "FL-4.2.4",
+    stem: "Using the same order model (PENDING → PAID → SHIPPED → DELIVERED, CANCELLED from PENDING or PAID), which single test sequence gives 1-switch coverage of the pair PENDING → PAID → SHIPPED?",
+    choices: [
+      { id: "a", text: "PENDING → PAID → SHIPPED", correct: true },
+      { id: "b", text: "PENDING → PAID" },
+      { id: "c", text: "PENDING → CANCELLED" },
+      { id: "d", text: "SHIPPED → DELIVERED" },
+    ],
+    explanation:
+      "1-switch coverage exercises two consecutive transitions in a single test. PENDING → PAID → SHIPPED covers both the PENDING → PAID and PAID → SHIPPED transitions back to back; the other options exercise only a single transition or the wrong pair.",
+  },
+  {
+    id: "ch4-q22",
+    chapter: 4,
+    kLevel: "K3",
+    syllabusRef: "FL-4.2.5",
+    stem: "A 'place order' use case has a main flow ending in payment confirmation, and an alternative flow triggered when the customer's saved card is declined, which redirects them to add a new payment method before rejoining the main flow. Which test exercises this alternative flow specifically?",
+    choices: [
+      { id: "a", text: "Checking out with a card that will be declined, then completing payment with a newly added card", correct: true },
+      { id: "b", text: "Checking out with a valid saved card and confirming the order total" },
+      { id: "c", text: "Checking that the cart page displays the correct item count" },
+      { id: "d", text: "Checking that the order confirmation email is sent after a successful main-flow checkout" },
+    ],
+    explanation:
+      "The alternative flow is specifically the declined-card path that detours through adding a new payment method before rejoining the main flow — only a test that triggers the decline and follows that detour exercises it. The other options exercise the main flow or an unrelated part of the system.",
+  },
+  {
+    id: "ch4-q23",
+    chapter: 4,
+    kLevel: "K3",
+    syllabusRef: "FL-4.3.1",
+    stem: "A function has 20 executable statements. A test suite executes 16 of them at least once. What is the statement coverage?",
+    choices: [
+      { id: "a", text: "80%", correct: true },
+      { id: "b", text: "16%" },
+      { id: "c", text: "20%" },
+      { id: "d", text: "125%" },
+    ],
+    explanation:
+      "Statement coverage is the percentage of executable statements exercised at least once: 16 of 20 statements is 16/20 = 80%.",
+  },
+  {
+    id: "ch4-q24",
+    chapter: 4,
+    kLevel: "K3",
+    syllabusRef: "FL-4.3.2",
+    stem: "A function contains exactly three `if` statements and no other branching, giving six possible branch outcomes in total (true and false for each). A test suite exercises 4 of those 6 outcomes. What is the branch coverage?",
+    choices: [
+      { id: "a", text: "67%", correct: true },
+      { id: "b", text: "50%" },
+      { id: "c", text: "75%" },
+      { id: "d", text: "100%" },
+    ],
+    explanation:
+      "Branch (decision) coverage is the percentage of branch outcomes exercised: 4 of 6 possible outcomes is 4/6 ≈ 67%.",
+  },
+  {
+    id: "ch4-q25",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.3.2",
+    multi: true,
+    stem: "Which of the following statements about statement and branch coverage are correct? (Select all that apply.)",
+    choices: [
+      { id: "a", text: "100% branch coverage guarantees 100% statement coverage, assuming no unreachable code", correct: true },
+      { id: "b", text: "100% statement coverage guarantees 100% branch coverage" },
+      { id: "c", text: "Branch coverage requires every decision outcome (true and false) to be exercised at least once", correct: true },
+      {
+        id: "d",
+        text: "Statement coverage only requires every executable line to run at least once, regardless of which branches were taken to get there",
+        correct: true,
+      },
+      { id: "e", text: "Both are examples of experience-based test techniques" },
+    ],
+    explanation:
+      "Branch coverage is the stronger criterion: exercising every decision outcome necessarily runs every reachable statement, but running every statement can still leave a branch outcome untaken (e.g. always taking the true side of an if). Both are white-box (structure-based) techniques, not experience-based ones.",
+  },
+  {
+    id: "ch4-q26",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.4.1",
+    stem: "A tester who has previously seen off-by-one bugs in pagination writes an extra test for 'last page with exactly one item' before the developer has even finished the feature, without following any formal input-partitioning process. This is an example of:",
+    choices: [
+      { id: "a", text: "Error guessing — using experience of common defect types to anticipate where a problem is likely to occur", correct: true },
+      { id: "b", text: "Decision table testing" },
+      { id: "c", text: "Boundary value analysis derived strictly from the specification" },
+      { id: "d", text: "Statement coverage measurement" },
+    ],
+    explanation:
+      "Error guessing is an experience-based technique where the tester uses knowledge of typical mistakes and past defects — here, a known class of off-by-one pagination bugs — to anticipate and target likely failure points, rather than deriving the test from a formal model of the specification.",
+  },
+  {
+    id: "ch4-q27",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.4.2",
+    stem: "In session-based exploratory testing, what is a 'charter'?",
+    choices: [
+      { id: "a", text: "A time-boxed mission statement that gives a session a goal and scope without prescribing the exact steps", correct: true },
+      { id: "b", text: "A fully scripted sequence of test steps and expected results" },
+      { id: "c", text: "A record of every defect found across the whole project" },
+      { id: "d", text: "A formal sign-off document required before test execution can begin" },
+    ],
+    explanation:
+      "A charter frames an exploratory session with a mission — what to explore, and roughly why — while leaving the specific steps to the tester's judgement during the session; it is not a scripted procedure or a project-wide defect log.",
+  },
+  {
+    id: "ch4-q28",
+    chapter: 4,
+    kLevel: "K3",
+    syllabusRef: "FL-4.4.2",
+    stem: "A tester is given a charter: 'Explore the new bulk-export feature, focusing on how it behaves with unusual selections.' During the session they notice exporting zero rows produces an empty file with no header, and immediately try exporting a single row to compare. What does this behaviour illustrate about exploratory testing?",
+    choices: [
+      { id: "a", text: "Test design and execution happen concurrently — each result observed informs the next test on the spot", correct: true },
+      { id: "b", text: "All test cases must be written and reviewed before any execution begins" },
+      { id: "c", text: "The tester is following a fixed decision table for export scenarios" },
+      { id: "d", text: "The session cannot be documented or reported on afterward" },
+    ],
+    explanation:
+      "The tester designed the follow-up test (single-row export) on the spot, based on what the previous result (empty file, no header) revealed — the concurrent, adaptive design-and-execution loop that defines exploratory testing. Sessions are still typically debriefed and reported afterward.",
+  },
+  {
+    id: "ch4-q29",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.4.3",
+    stem: "What best describes checklist-based testing?",
+    choices: [
+      {
+        id: "a",
+        text: "A tester designs and executes tests to cover the items of a checklist built from experience, knowledge of the application, or common failure modes",
+        correct: true,
+      },
+      { id: "b", text: "A tester follows a fully detailed, step-by-step script with expected results for every step" },
+      { id: "c", text: "A tester derives tests purely from the internal code structure" },
+      { id: "d", text: "A tester enumerates every combination of input conditions in a table" },
+    ],
+    explanation:
+      "Checklist-based testing works from a list of items, considerations, or rules — built up from experience, requirements, and knowledge of typical failures — that the tester uses to guide test design and execution, without a fully scripted procedure for each item.",
+  },
+  {
+    id: "ch4-q30",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.4.3",
+    multi: true,
+    stem: "Which of the following are true of checklist-based testing? (Select all that apply.)",
+    choices: [
+      { id: "a", text: "The checklist is typically built and refined over time from experience and knowledge of the application", correct: true },
+      {
+        id: "b",
+        text: "Because checklist items are usually high-level, different testers can interpret and execute the same item differently",
+        correct: true,
+      },
+      { id: "c", text: "It is classified as an experience-based test technique", correct: true },
+      { id: "d", text: "Checklists eliminate the need for any tester judgement during execution" },
+      { id: "e", text: "A checklist item always maps to exactly one, fully scripted test case" },
+    ],
+    explanation:
+      "Checklists accumulate and improve over time, but because their items are usually a short prompt rather than a detailed script, different testers can cover the same item differently — which is also why they are experience-based rather than a precise, repeatable procedure with no tester judgement involved.",
+  },
+  {
+    id: "ch4-q31",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.5.1",
+    stem: "In collaborative user story writing (e.g. 'three amigos' sessions), why are business, development, and testing perspectives brought together before a story is built?",
+    choices: [
+      { id: "a", text: "To surface ambiguities, missing detail, and edge cases early, before they turn into defects found later in development", correct: true },
+      { id: "b", text: "Because exactly three people are required to sign off on every story" },
+      { id: "c", text: "To replace the need for any acceptance criteria" },
+      { id: "d", text: "Because testers are not permitted to see requirements before coding begins" },
+    ],
+    explanation:
+      "Combining business, development, and testing viewpoints while a story is still being shaped surfaces gaps, ambiguity, and edge cases that any single perspective tends to miss — catching them before they become defects is cheaper than finding them after the code is written.",
+  },
+  {
+    id: "ch4-q32",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.5.1",
+    stem: "A team writes a new user story but only a business analyst is involved — no developer or tester attends. What is the main risk this creates?",
+    choices: [
+      {
+        id: "a",
+        text: "Testability concerns and technical constraints that a developer or tester would normally flag go unnoticed until later in development",
+        correct: true,
+      },
+      { id: "b", text: "The story will automatically fail static analysis" },
+      { id: "c", text: "The story cannot be estimated by the team" },
+      { id: "d", text: "The story becomes a formal legal contract" },
+    ],
+    explanation:
+      "Collaborative story writing exists precisely to catch what a single perspective misses; skipping the development and testing viewpoints means testability gaps, technical constraints, and edge cases they would normally raise are more likely to surface later, when they are costlier to fix.",
+  },
+  {
+    id: "ch4-q33",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.5.2",
+    stem: "What is the main purpose of acceptance criteria on a user story?",
+    choices: [
+      {
+        id: "a",
+        text: "To define specific, testable conditions the story must satisfy to be considered done, and to serve as the basis for acceptance tests",
+        correct: true,
+      },
+      { id: "b", text: "To describe the internal code structure that will implement the story" },
+      { id: "c", text: "To replace the need for any collaboration between business and development" },
+      { id: "d", text: "To record the estimated effort for the story in story points" },
+    ],
+    explanation:
+      "Acceptance criteria spell out concrete, checkable conditions a story must meet — they give 'done' a testable definition and are what acceptance tests are written against, rather than describing implementation detail or effort estimates.",
+  },
+  {
+    id: "ch4-q34",
+    chapter: 4,
+    kLevel: "K3",
+    syllabusRef: "FL-4.5.2",
+    stem: "Which of these is written in the scenario-oriented (Given/When/Then) style commonly used for acceptance criteria?",
+    choices: [
+      { id: "a", text: "Given a logged-in user with an empty cart, when they add one item, then the cart shows a quantity of 1", correct: true },
+      { id: "b", text: "The cart module shall use a Map keyed by product ID to store line items" },
+      { id: "c", text: "Cart total = sum of (unit price × quantity) for all line items" },
+      { id: "d", text: "Story points: 3" },
+    ],
+    explanation:
+      "The Given/When/Then form states a starting context, an action, and an expected outcome — exactly what option a does. The others describe an implementation detail, a business rule/formula, and an estimate respectively, none of which are Given/When/Then scenarios.",
+  },
+  {
+    id: "ch4-q35",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.5.3",
+    stem: "In acceptance test-driven development (ATDD), when are acceptance tests derived from the story's acceptance criteria?",
+    choices: [
+      { id: "a", text: "Collaboratively, before development of that story begins", correct: true },
+      { id: "b", text: "By the tester alone, after the feature has already been deployed to production" },
+      { id: "c", text: "Automatically generated from the production code once it is written" },
+      { id: "d", text: "Only if a defect is found during exploratory testing" },
+    ],
+    explanation:
+      "ATDD derives acceptance tests from acceptance criteria collaboratively (business, development, and testing together) before coding starts, so the tests express shared understanding of 'done' and can guide development, rather than being written after the fact or generated from the implementation.",
+  },
+  {
+    id: "ch4-q36",
+    chapter: 4,
+    kLevel: "K2",
+    syllabusRef: "FL-4.5.3",
+    multi: true,
+    stem: "Which of the following statements about acceptance test-driven development (ATDD) are correct? (Select all that apply.)",
+    choices: [
+      { id: "a", text: "It is a collaboration-based approach involving business, development, and testing perspectives", correct: true },
+      { id: "b", text: "Deriving the tests before coding starts helps prevent defects rather than only detect them after the fact", correct: true },
+      {
+        id: "c",
+        text: "It is closely related to behaviour-driven development (BDD), which often expresses acceptance criteria as Given/When/Then scenarios",
+        correct: true,
+      },
+      { id: "d", text: "It is identical to unit-level test-driven development (TDD), just under a different name" },
+      { id: "e", text: "It requires that no manual testing ever be performed on the story" },
+    ],
+    explanation:
+      "ATDD is a collaboration-based, defect-prevention approach that derives tests from acceptance criteria before coding, and it overlaps closely with BDD's Given/When/Then style. It is distinct from unit-level TDD (different scope, different authors) and does not rule out manual testing elsewhere in the story's lifecycle.",
+  },
 ];
