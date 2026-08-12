@@ -4242,7 +4242,7 @@ with the `SuiteFolderGrid` work noted above.
   `e2e/academy.spec.ts` **TC-E2E-109/110** and `e2e/help-center.spec.ts` **TC-E2E-111/112**. See
   `docs/QA-ACADEMY.md` § A-09 for the full writeup, including why the two pages couldn't just move
   into the `(app)` route group.
-- **A-10** `[ ]` not started — exam integrity, opened 2026-08-12 from an audit of what A-06 actually
+- **A-10** `[x]` code / `[ ]` content — exam integrity, opened 2026-08-12 from an audit of what A-06 actually
   shipped (measured against the real bank and the real `drawQuestionIds`, not against the docs).
   Three findings, one PR each: **A-10a** the answer key is `a` or `b` in 66 of 70 questions (`d` is
   never correct), so two of four options are dead on almost every question and noticing lifts a
@@ -4258,11 +4258,17 @@ with the `SuiteFolderGrid` work noted above.
   a `passed` attempt — blocking for A-07, which issues certificates on a passing exam, **fixed
   2026-08-12** by `@@unique([userId, seed])` on `ExamAttempt` plus a conflict path that resolves to
   the existing attempt, guarded by **TC-E2E-113** (which replays the real server-action request off
-  the wire, and was proved to fail with the index dropped); **A-10c**
-  `ExamRunner` keeps the whole attempt in React state, so a reload mid-exam discards every answer,
-  and the auto-submit retries once a second into a 20/min rate limit. A-10a also adds the selftest
-  that would have caught the chapter-5 shortfall — the existing one runs against a synthetic
-  12-per-chapter bank, so it is blind to the real content. See `docs/QA-ACADEMY.md` § A-10.
+  the wire, and was proved to fail with the index dropped); **A-10c** `ExamRunner` keeps the whole
+  attempt in React state, so a reload mid-exam discards every answer along with the ticket that was
+  the only way back into it, and the auto-submit retries once a second into a 20/min rate limit —
+  **fixed 2026-08-12** (branch `feat/academy-a10c-resumable-attempts`) by mirroring the attempt into
+  `sessionStorage` (`src/lib/academy/exam-session.ts`, re-sanitizing each question field by field on
+  the way back in) and offering it back as a resume banner, plus an auto-submit that fires once and
+  backs off 2s/6s/18s before handing over a manual **Submit now**; guarded by **TC-E2E-115** and
+  **TC-E2E-116**, both proved to fail. A-10a also adds the selftest that would have caught the
+  chapter-5 shortfall — the existing one runs against a synthetic 12-per-chapter bank, so it is blind
+  to the real content. What is left under A-10 is **A-10d**, which is writing, not code. See
+  `docs/QA-ACADEMY.md` § A-10.
 
 ---
 
