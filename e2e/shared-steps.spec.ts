@@ -64,6 +64,21 @@ test(`TC-${TC}-13 Shared steps: create, insert, expand, edit-propagates, delete-
   );
   await page.locator('[data-testid="shared-step-action"]').first().fill(`${stepA} (v2)`);
   await page.click('[data-testid="shared-group-save"]');
+  // Wait for the editor to close before trusting the text: the form unmounts
+  // only once `updateSharedGroup` has resolved ok, so this is what proves the
+  // save landed. Asserting on the text alone does not — `getByText` matches the
+  // still-open editor's <textarea> (React keeps a controlled textarea's text
+  // node in sync with its value via `defaultValue`), so it passed ~7ms after
+  // `fill()` and the navigation below aborted the in-flight save. That lost the
+  // write entirely, and the case page then rendered v1 — deterministically in
+  // CI, where the action is slow enough to lose the race.
+  // 15s, not the 5s default: saving costs two sequential POSTs (the action,
+  // then the refetch `revalidatePath` triggers), so this wait is ~2x a server
+  // action round trip on a `next dev` worker. Scoped to this one assertion —
+  // a genuinely stuck save still fails it.
+  await expect(page.locator('[data-testid="shared-group-save"]')).toHaveCount(0, {
+    timeout: 15_000,
+  });
   await expect(page.getByText(`${stepA} (v2)`).first()).toBeVisible();
 
   await page.goto(caseUrl);
