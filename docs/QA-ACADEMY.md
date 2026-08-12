@@ -13,8 +13,9 @@
 > A-05 shipped 2026-08-11 (persistence, claim-at-signup, `/academy/me`).
 > A-06 shipped 2026-08-11 (exam engine, ISTQB question bank, practice exam + chapter quizzes).
 > A-09 shipped 2026-08-12 (session-aware shell on /academy and /docs/help).
-> A-07 … A-08 planned; A-10 planned (exam integrity — opened 2026-08-12 from an audit of what
-> A-06 actually shipped, see §8). Created 2026-08-10.
+> A-10b shipped 2026-08-12 (single-use exam tickets).
+> A-07 … A-08 planned; A-10a / A-10c planned (exam integrity — opened 2026-08-12 from an audit of
+> what A-06 actually shipped, see §8). Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
@@ -932,7 +933,9 @@ seeds is below 40%; the bank contains multi-answer questions in proportion to th
 new selftest fails the build when any of those regress, **proved by breaking each one deliberately**
 (the standard `academy-bundle-check.mjs` set for itself in A-02).
 
-#### A-10b — Single-use exam tickets `[ ]`
+#### A-10b — Single-use exam tickets `[x]`
+
+> **Status: DONE** (2026-08-12, branch `feat/academy-a10b-single-use-tickets`).
 
 **The finding.** `submitExamAction` verifies the start ticket's signature and then grades it —
 but never marks it used. There is no `jti`, no consumed-ticket store, and no unique constraint on
@@ -966,6 +969,27 @@ stop claiming 24 hours.
 **Acceptance:** replaying a ticket cannot produce a second attempt row, asserted against
 `ExamAttempt.count()` rather than the UI; a legitimate double-submit resolves to the original
 attempt's result page; an anonymous submission still writes no row.
+
+**Delivered.** `@@unique([userId, seed])` on `ExamAttempt` (no migration file — the repo uses
+`prisma db push`, per A-04a), and a conflict path in `submitExamAction` that resolves to the
+attempt that already exists instead of erroring. The chapter-quiz `durationSec` inconsistency
+above is *not* fixed here and stays open — it is a content/config decision (which of the two
+bounds is the real one), not part of closing the replay hole.
+
+**One thing the plan didn't anticipate, and it changed the code.** The obvious conflict handler
+returns the existing attempt's id alongside *this* request's graded verdicts — which would describe
+an attempt that does not exist, mixing the replay's answers with the original's identity. The
+handler re-grades from the row's stored `answersJson` instead, so what comes back is the attempt
+that actually counts. The row is the record.
+
+**Verified.** `e2e/academy.spec.ts` **TC-E2E-113** replays the *real* server-action request —
+captured off the wire via `page.on("request")` and re-sent with `page.request.post`, same session
+cookies — rather than calling the action from test code, because the hole was reachable by anyone
+who could repeat an HTTP request they had just made. It asserts one row before and after, the same
+attempt id, and that the replay resolves rather than 500s. **The guard was proved to fail**: with
+the unique index dropped, the replay writes a second row carrying the identical `seed` — which is
+the vulnerability, reproduced. All 23 specs in `e2e/academy.spec.ts` pass together; `tsc --noEmit`
+and `next lint` clean.
 
 #### A-10c — Resumable attempts and submit robustness `[ ]`
 

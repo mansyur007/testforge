@@ -715,3 +715,71 @@ test(`TC-${TC}-110 A guest on /academy sees Log in and Sign up, and no app shell
     "/signup",
   );
 });
+
+// ---------------------------------------------------------------------------
+// A-10b: a start ticket buys exactly one attempt row. This replays the real
+// server-action request rather than calling the action from test code — the
+// hole was reachable by anyone who could repeat an HTTP request they had just
+// made, so that is the thing worth asserting against.
+// ---------------------------------------------------------------------------
+
+test(`TC-${TC}-113 Replaying an exam submission cannot mint a second attempt`, async ({
+  page,
+}) => {
+  const email = `academy-replay-${Date.now()}@testforge.local`;
+  const passwordHash = await bcrypt.hash("AcademyReplay123", 10);
+  await db.user.create({
+    data: {
+      name: "Academy Replay Test",
+      email,
+      passwordHash,
+      emailVerifiedAt: new Date(),
+      onboardedAt: new Date(),
+    },
+  });
+  await login(page, email, "AcademyReplay123");
+
+  // Capture the submit request as the browser actually sends it — a server
+  // action POST carries its arguments in the body and its target in the
+  // `next-action` header, so replaying it verbatim is exactly the attack:
+  // submit blank, read `correctChoiceIds` off the response, re-send with the
+  // answers filled in.
+  let submitReq: { url: string; headers: Record<string, string>; body: string } | null = null;
+  page.on("request", (req) => {
+    if (req.method() !== "POST") return;
+    const headers = req.headers();
+    if (!headers["next-action"]) return;
+    const body = req.postData();
+    if (body && body.includes("ctfl-v4-ch")) return; // the start call, not the submit
+    if (body) submitReq = { url: req.url(), headers, body };
+  });
+
+  await page.goto("/academy/istqb/practice-exam/chapter/3");
+  await page.click('[data-testid="exam-begin"]');
+  await answerAllQuestions(page, 8);
+  await page.click('[data-testid="exam-review-submit"]');
+  await page.click('[data-testid="exam-confirm-submit-btn"]');
+  await page.waitForURL(/\/academy\/istqb\/practice-exam\/[a-z0-9]+$/);
+
+  const first = await db.examAttempt.findMany({ where: { user: { email } } });
+  expect(first).toHaveLength(1);
+  expect(submitReq).not.toBeNull();
+
+  // Replay it, byte for byte, with the same session cookies.
+  const req = submitReq!;
+  const replay = await page.request.post(req.url, {
+    headers: req.headers,
+    data: req.body,
+  });
+  expect(replay.ok()).toBe(true);
+
+  const after = await db.examAttempt.findMany({ where: { user: { email } } });
+  expect(after).toHaveLength(1);
+  expect(after[0].id).toBe(first[0].id);
+  expect(after[0].score).toBe(first[0].score);
+  // The replay resolves to the attempt that already exists rather than
+  // erroring, so an honest double-submit still lands on its result page.
+  expect(await replay.text()).toContain(first[0].id);
+
+  await db.user.delete({ where: { email } }); // cascades ExamAttempt
+});

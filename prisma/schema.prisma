@@ -964,6 +964,13 @@ model ExamAttempt {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // A-10b: one attempt row per start ticket. `seed` is 16 random bytes minted
+  // per ticket, so this makes replaying a ticket a constraint violation rather
+  // than a second row — without a consumed-ticket table or any state to expire.
+  // The hole it closes: an empty submission returns the full answer key (it is
+  // the review screen), and the same ticket could then be re-submitted with
+  // those answers to mint a `passed` attempt. See docs/QA-ACADEMY.md § A-10b.
+  @@unique([userId, seed])
   @@index([userId, templateSlug])
 }
 
