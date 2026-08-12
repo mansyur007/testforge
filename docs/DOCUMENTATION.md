@@ -3338,6 +3338,40 @@ e2e `e2e/realtime-run.spec.ts` with **two Playwright contexts** (two logged-in u
 run) covering AC 1–4; AC 5 via a raw `request` call. SSE in Playwright needs no special
 handling (it's just fetch); assert on DOM effects, not the wire format.
 
+> **Fix 2026-08-12 — mounting the executor was sending a leave, so the flake was in the app,
+> not in the test.** TC-`<slug>`-48 (`TC-SUPER-ADMIN-TF-48` in CI) failed on a PR that touched
+> only academy question text ([run 31605455201](https://github.com/mansyur007/testforge/actions/runs/31605455201)),
+> waiting the full 20 s for the other session's avatar, and passed on a bare re-run. Nothing was
+> merely slow: the routes were warm (the PWA specs had driven the same executor minutes
+> earlier), and the stream itself was healthy (TC-49, which needs live result events over it,
+> passed ten seconds later). A session that had already announced itself had been **deleted**.
+>
+> React StrictMode is on by default for the app router and the suite runs against `next dev`, so
+> every effect mounts, tears down and mounts again. `useRunChannel`'s teardown fired the leave
+> beacon unconditionally, which means one ordinary page load sent the server four independent
+> requests — `heartbeat, heartbeat, LEAVE, heartbeat`. Each awaits `getSession()` plus a
+> membership query before it touches the presence map, so the order they *land* in is whichever
+> pair of promises resolves first, not the order they were sent; `sendBeacon` is also the one
+> request the browser is free to deprioritize. Whenever `LEAVE` landed last it removed a live
+> session, and the next thing that could restore it was that client's own heartbeat **20 s
+> later** — exactly the timeout the assertion had been given. The test could only lose that
+> race, never wait it out, which is why a longer timeout would have been the wrong fix.
+>
+> The fix is one line of intent — *a remount is not a leave*. The unmount beacon is deferred by
+> one task and cancelled if the same run mounts again, which is precisely what React's remount
+> does, synchronously, with no turn of the event loop in between for the timer to fire in.
+> `pagehide` still leaves immediately (a closing tab has no next task), so AC 2 is untouched.
+>
+> The spec now waits on the handshake instead of on a generous timeout: the SSE response and the
+> heartbeat POST, on both sides, registered before navigating. That leaves the avatar assertion
+> waiting for what it actually waits for — one SSE frame — and it asserts the invariant directly,
+> that no presence POST sent while mounting carries `{leave:true}`. TC-49 got the same wait for a
+> second reason: result events go to whoever is subscribed at publish time and are never replayed,
+> so asserting on one before A's stream existed was the same bug wearing a different coat.
+>
+> Pre-existing, unchanged, out of scope: presence entries are keyed by user id, so two tabs of one
+> user on one run share an entry and closing either evicts the other until its next heartbeat.
+
 #### L-05 — One-file portable backup & restore `[x]`
 
 > **Status: DONE** (2026-07-16, branch `feat/backup-restore`). Built from the Fable work order
