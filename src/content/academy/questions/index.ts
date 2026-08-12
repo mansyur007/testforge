@@ -24,8 +24,30 @@ import { CH6_TOOLS } from "./ch6-tools";
 //
 // The shortfall now sits entirely on the three unbuilt chapters, which the
 // blueprint draws 18 of a paper's 40 questions from — chapter 1 the sharpest,
-// drawing 8 from a pool of 12. Every question here carries a real
-// `syllabusRef` for a reviewer to check against the objective, per §7.2.
+// drawing 8 from a pool of 12.
+//
+// **On `syllabusRef` and `kLevel` — read before adding a question (A-10e).**
+// This comment used to end "every question here carries a real `syllabusRef`
+// for a reviewer to check against the objective, per §7.2". That was not true,
+// and could not have been checked until 2026-08-12, when the real CTFL v4.0.1
+// syllabus arrived and the whole bank was audited against it:
+//   - 26 of 148 questions cite an objective code that **does not exist** — 14
+//     invented codes. Chapter 5's numbering is wrong wholesale (its metrics and
+//     defect-report codes are swapped with each other).
+//   - 6 questions test material ISTQB **removed** from Foundation Level in
+//     v4.0 — use case testing (ch4-q10/q22/q48) and tool selection, pilots and
+//     rollout (ch6-q5/q6/q10). Correct questions, wrong syllabus.
+//   - 58 of the 122 questions on valid refs carry a `kLevel` the syllabus
+//     contradicts. The systematic one: all four `FL-4.2.x` techniques
+//     (equivalence partitioning, BVA, decision tables, state transition) are
+//     **K3**, and 10 questions here tag them K2 — so the bank has been
+//     modelling its heaviest chapter as easier than the real paper.
+// Every tag in this bank was authored from memory of the syllabus rather than
+// from the syllabus, which is the single root cause of all three. A-10e lands
+// the 64 real objectives as data in `syllabus-los.ts` and makes
+// academy-bank-check.mjs assert that a `syllabusRef` exists and a `kLevel`
+// matches its objective — so once it ships, do not hand-check these two
+// fields; the build does it. Until it ships, do not trust either field.
 //
 // **On answer positions.** The correct answer is authored first or second in
 // 127 of the 133 single-answer questions (`d` is still never correct in the
