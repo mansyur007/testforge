@@ -25,6 +25,14 @@ function fmtDate(d: Date) {
   });
 }
 
+// The audit log only records write actions, so this is "last thing they did",
+// not "last time they were online" — a reader who never writes stays frozen at
+// their login. Labelled "Last action" for that reason.
+function LastAction({ at }: { at: Date | null | undefined }) {
+  if (!at) return <span className="text-content-subtle">—</span>;
+  return <>{fmtDate(at)}</>;
+}
+
 function Stat({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="rounded-xl border border-hairline bg-surface px-5 py-4">
@@ -80,6 +88,19 @@ export default async function SuperadminUsersPage({
       take: PAGE_SIZE,
     }),
   ]);
+
+  // Second round-trip on purpose: the ids only exist once the page is sliced,
+  // and this keeps the scan to the 50 rows actually rendered.
+  const lastActions = users.length
+    ? await db.auditLog.groupBy({
+        by: ["userId"],
+        where: { userId: { in: users.map((u) => u.id) } },
+        _max: { createdAt: true },
+      })
+    : [];
+  const lastActionBy = new Map(
+    lastActions.map((a) => [a.userId, a._max.createdAt])
+  );
 
   const pages = Math.max(1, Math.ceil(matching / PAGE_SIZE));
   const qs = (p: number) =>
@@ -167,6 +188,7 @@ export default async function SuperadminUsersPage({
                 <th className="px-5 py-3">Projects</th>
                 <th className="px-5 py-3">Status</th>
                 <th className="px-5 py-3">Signed up</th>
+                <th className="px-5 py-3">Last action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-hairline-subtle">
@@ -202,12 +224,15 @@ export default async function SuperadminUsersPage({
                   <td className="whitespace-nowrap px-5 py-2.5 text-xs text-content-muted">
                     {fmtDate(u.createdAt)}
                   </td>
+                  <td className="whitespace-nowrap px-5 py-2.5 text-xs text-content-muted">
+                    <LastAction at={lastActionBy.get(u.id)} />
+                  </td>
                 </tr>
               ))}
               {users.length === 0 && (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="px-5 py-8 text-center text-content-subtle"
                   >
                     {q ? `No user matches “${q}”.` : "No users yet."}

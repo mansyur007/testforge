@@ -29,6 +29,16 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
   });
 
+  // Every user in one pass — unlike the paged console there is no id list to
+  // narrow by. Same caveat as the table: writes only, so it is "last action".
+  const lastActions = await db.auditLog.groupBy({
+    by: ["userId"],
+    _max: { createdAt: true },
+  });
+  const lastActionBy = new Map(
+    lastActions.map((a) => [a.userId, a._max.createdAt])
+  );
+
   const csv = Papa.unparse(
     users.map((u) => ({
       id: u.id,
@@ -41,6 +51,7 @@ export async function GET() {
       email_verified: u.emailVerifiedAt ? "yes" : "no",
       two_factor: u.totpEnabledAt ? "yes" : "no",
       signed_up: u.createdAt.toISOString(),
+      last_action: lastActionBy.get(u.id)?.toISOString() ?? "",
     })),
     {
       columns: [
@@ -54,6 +65,7 @@ export async function GET() {
         "email_verified",
         "two_factor",
         "signed_up",
+        "last_action",
       ],
     }
   );
