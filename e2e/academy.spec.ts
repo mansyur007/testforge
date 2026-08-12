@@ -792,41 +792,52 @@ test(`TC-${TC}-113 Replaying an exam submission cannot mint a second attempt`, a
 // fails.
 // ---------------------------------------------------------------------------
 
-/** The choice texts, in the order rendered, for the question on screen. */
-async function renderedChoices(page: Page): Promise<string[]> {
-  return page.locator('[data-testid^="exam-choice-"]').allInnerTexts();
+/**
+ * Walk one whole attempt, recording each question's choice order as rendered.
+ * `data-testid` is `exam-choice-<questionId>-<choiceId>`, so the question id
+ * comes off the first choice on each screen.
+ */
+async function choiceOrdersInAttempt(
+  page: Page,
+  questionCount: number,
+): Promise<Map<string, string>> {
+  const orders = new Map<string, string>();
+  for (let i = 0; i < questionCount; i++) {
+    const choices = page.locator('[data-testid^="exam-choice-"]');
+    const testId = (await choices.first().getAttribute("data-testid")) ?? "";
+    const questionId = testId.split("-").slice(2, -1).join("-");
+    orders.set(questionId, (await choices.allInnerTexts()).join(" | "));
+    if (i < questionCount - 1) await page.click('[data-testid="exam-next"]');
+  }
+  return orders;
 }
 
 test(`TC-${TC}-114 A question's choices are presented in a different order across attempts`, async ({
   page,
 }) => {
-  // Chapter 6 draws 8 of its 12 questions, so two attempts always share
-  // several — enough that the first question of one shows up somewhere in the
-  // other. Collect first-screen choice orders across a handful of attempts and
-  // require that the same question isn't always laid out identically.
-  const seen = new Map<string, Set<string>>();
-  for (let attempt = 0; attempt < 6; attempt++) {
+  // Compare two whole attempts, not just their first screens. Chapter 6 draws
+  // 8 of its 12 questions, so any two attempts share at least 8+8-12 = 4
+  // questions by pigeonhole — guaranteed, not likely. Keying on the first
+  // question of each attempt instead would need one to be drawn first twice,
+  // which across six attempts fails on its own ~22% of the time; a guard that
+  // cries wolf one run in four is worse than no guard.
+  const attempts: Map<string, string>[] = [];
+  for (let i = 0; i < 2; i++) {
     await page.goto("/academy/istqb/practice-exam/chapter/6");
     await page.click('[data-testid="exam-begin"]');
     await expect(page.getByTestId("exam-taking")).toBeVisible();
-
-    const first = page.locator('[data-testid^="exam-choice-"]').first();
-    // data-testid is `exam-choice-<questionId>-<choiceId>`.
-    const testId = (await first.getAttribute("data-testid")) ?? "";
-    const questionId = testId.split("-").slice(2, -1).join("-");
-    const order = (await renderedChoices(page)).join(" | ");
-
-    const orders = seen.get(questionId) ?? new Set<string>();
-    orders.add(order);
-    seen.set(questionId, orders);
+    attempts.push(await choiceOrdersInAttempt(page, 8));
   }
 
-  // At least one question was drawn first more than once, and when it was, the
-  // options were not always in the same order. With four choices, an unshuffled
-  // build produces exactly one order per question and fails here.
-  const repeated = Array.from(seen.values()).filter((orders) => orders.size > 1);
+  const shared = Array.from(attempts[0].keys()).filter((id) => attempts[1].has(id));
+  expect(shared.length, "two chapter-6 papers must overlap by at least 4").toBeGreaterThanOrEqual(4);
+
+  // An unshuffled build renders each question's choices in bank order every
+  // time, so every shared question matches and this fails. With the shuffle,
+  // all four-plus agreeing would take (1/24)^4 — about three in a million.
+  const differing = shared.filter((id) => attempts[0].get(id) !== attempts[1].get(id));
   expect(
-    repeated.length,
-    "no question was presented with two different choice orders across 6 attempts",
+    differing.length,
+    `all ${shared.length} shared questions were laid out identically in both attempts`,
   ).toBeGreaterThan(0);
 });

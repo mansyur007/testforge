@@ -975,10 +975,20 @@ visible without failing the build today.
 
 That script cannot see whether `beginAttempt` still calls `presentPaper` — delete the call and it
 keeps passing, since it invokes the core function itself. **TC-E2E-114** is the guard for the
-wiring: it starts the same chapter quiz six times and requires some question to have been presented
-with two different choice orders. Both guards were **proved to fail**: removing the shuffle from
+wiring: it walks two whole chapter-6 attempts and requires at least one question they share to have
+been laid out differently. Both guards were **proved to fail**: removing the shuffle from
 `presentPaper` fails the script (46.6%), and removing the call from `beginAttempt` fails
-TC-E2E-114 with "no question was presented with two different choice orders across 6 attempts".
+TC-E2E-114 with "all 6 shared questions were laid out identically in both attempts".
+
+> **The first version of TC-E2E-114 was itself flaky, and it took arithmetic rather than a test run
+> to notice.** It keyed on the *first* question of each of six attempts and looked for one drawn
+> first twice. Chapter 6 has 12 questions, so the chance no question is ever first twice is
+> `(12/12)(11/12)…(7/12)` ≈ **22%** — a guard that cries wolf one run in four, which is worse than
+> no guard, and it passed three times (twice locally, once in CI) purely on luck. Comparing two
+> *whole* attempts instead makes the overlap a pigeonhole certainty: 8 drawn from 12, twice, share
+> at least `8+8-12 = 4` questions. All four-plus agreeing by chance is `(1/24)^4`, about three in a
+> million. Worth stating because this suite already has flakes of exactly this kind (see A-10's
+> "Not in A-10" note), and adding another while auditing them would have been ironic.
 
 #### A-10b — Single-use exam tickets `[x]`
 
