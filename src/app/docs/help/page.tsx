@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getSession } from "@/lib/auth";
+import { AuthedAppShell } from "@/components/AuthedAppShell";
 import { Logo, TFIcon } from "@/components/icons";
 import { HELP_TOPICS } from "@/content/help";
 import { JsonLd } from "@/components/JsonLd";
@@ -21,32 +23,37 @@ export const metadata: Metadata = {
   },
 };
 
-export default function HelpIndexPage() {
-  return (
-    <main className="mx-auto max-w-3xl px-4 py-12">
-      <JsonLd
-        data={ldGraph(
-          breadcrumbLd([
-            { name: "TestForge", path: "/" },
-            { name: "Help", path: "/docs/help" },
-          ]),
-          {
-            "@type": "ItemList",
-            itemListElement: HELP_TOPICS.map((t, i) => ({
-              "@type": "ListItem",
-              position: i + 1,
-              name: t.title,
-              url: absoluteUrl(`/docs/help/${t.slug}`),
-            })),
-          },
-        )}
-      />
-      <div className="mb-8 flex items-center justify-between">
-        <Logo size="sm" />
-        <Link href="/dashboard" className="text-sm text-accent-text hover:underline">
-          Back to app
-        </Link>
-      </div>
+// A-09: same treatment as /academy (docs/QA-ACADEMY.md A-09) — this route
+// stays outside the (app) group so it's reachable without a session, but
+// reads one optionally so a signed-in visitor gets the app shell instead of
+// a disconnected-looking public page. Forces dynamic rendering, same reason.
+export const dynamic = "force-dynamic";
+
+export default async function HelpIndexPage() {
+  const session = await getSession();
+
+  const jsonLd = (
+    <JsonLd
+      data={ldGraph(
+        breadcrumbLd([
+          { name: "TestForge", path: "/" },
+          { name: "Help", path: "/docs/help" },
+        ]),
+        {
+          "@type": "ItemList",
+          itemListElement: HELP_TOPICS.map((t, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            name: t.title,
+            url: absoluteUrl(`/docs/help/${t.slug}`),
+          })),
+        },
+      )}
+    />
+  );
+
+  const body = (
+    <>
       <h1 className="flex items-center gap-3 text-3xl font-bold">
         <TFIcon name="nav-help" className="h-9 w-9" />
         Help
@@ -76,6 +83,36 @@ export default function HelpIndexPage() {
           </Link>
         ))}
       </div>
+    </>
+  );
+
+  if (session) {
+    return (
+      <AuthedAppShell session={session}>
+        {jsonLd}
+        <div className="mx-auto max-w-3xl">{body}</div>
+      </AuthedAppShell>
+    );
+  }
+
+  return (
+    <main className="mx-auto max-w-3xl px-4 py-12">
+      {jsonLd}
+      <div className="mb-8 flex items-center justify-between">
+        <Logo size="sm" />
+        <div className="flex items-center gap-4 text-sm">
+          <Link href="/login" className="text-accent-text hover:underline">
+            Log in
+          </Link>
+          <Link
+            href="/signup"
+            className="rounded-lg bg-accent px-3 py-1.5 font-medium text-white hover:bg-accent-hover"
+          >
+            Sign up
+          </Link>
+        </div>
+      </div>
+      {body}
     </main>
   );
 }

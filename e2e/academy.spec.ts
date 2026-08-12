@@ -687,3 +687,31 @@ test(`TC-${TC}-108 The exam answer key never reaches the page before submission`
   }
   expect(stems.some((s) => whileTaking.includes(s))).toBe(true);
 });
+
+// A-09: /academy stays a public route (unauthenticated crawlers and readers
+// still need it), but now renders two different shells depending on whether
+// the visitor has a session — see docs/QA-ACADEMY.md A-09.
+test(`TC-${TC}-109 A signed-in visitor gets the app shell on /academy, not the standalone public chrome`, async ({
+  page,
+}) => {
+  await login(page);
+  await page.goto("/academy");
+  await expect(page.getByRole("heading", { name: "QA Academy", level: 1 })).toBeVisible();
+  await expect(page.getByTestId("app-sidebar")).toBeVisible();
+  await expect(page.getByTestId("nav-academy")).toBeVisible();
+  // The guest-only "no account needed" pitch and the public header's
+  // Log in/Sign up links don't belong in front of someone already signed in.
+  await expect(page.getByRole("link", { name: "Sign up", exact: true })).toHaveCount(0);
+});
+
+test(`TC-${TC}-110 A guest on /academy sees Log in and Sign up, and no app shell`, async ({
+  page,
+}) => {
+  await page.goto("/academy");
+  await expect(page.getByTestId("app-sidebar")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Log in" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Sign up", exact: true })).toHaveAttribute(
+    "href",
+    "/signup",
+  );
+});
