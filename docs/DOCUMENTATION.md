@@ -4249,7 +4249,10 @@ with the `SuiteFolderGrid` work noted above.
   questions against a blueprint weight of 9, giving two papers a 70% mean overlap, and there are no
   multi-answer questions at all despite a graded code path for them; **A-10b** exam start tickets
   are never marked used, so replaying one after reading the answer key off an empty submission mints
-  a `passed` attempt — blocking for A-07, which issues certificates on a passing exam; **A-10c**
+  a `passed` attempt — blocking for A-07, which issues certificates on a passing exam, **fixed
+  2026-08-12** by `@@unique([userId, seed])` on `ExamAttempt` plus a conflict path that resolves to
+  the existing attempt, guarded by **TC-E2E-113** (which replays the real server-action request off
+  the wire, and was proved to fail with the index dropped); **A-10c**
   `ExamRunner` keeps the whole attempt in React state, so a reload mid-exam discards every answer,
   and the auto-submit retries once a second into a 20/min rate limit. A-10a also adds the selftest
   that would have caught the chapter-5 shortfall — the existing one runs against a synthetic

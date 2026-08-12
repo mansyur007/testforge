@@ -411,22 +411,56 @@ export async function submitExamAction(
   const session = await getSession();
   if (!session) return graded;
 
-  const attempt = await db.examAttempt.create({
-    data: {
-      userId: session.userId,
-      templateSlug: payload.templateSlug,
-      seed: payload.seed,
-      questionIdsJson: JSON.stringify(payload.questionIds),
-      answersJson: JSON.stringify(answers),
-      startedAt: new Date(payload.startedAt),
-      submittedAt: new Date(),
-      durationSec: payload.durationSec,
-      score: graded.score,
-      total: graded.total,
-      passed: graded.passed,
-      chapterScoresJson: JSON.stringify(graded.chapterScores),
-    },
-  });
+  // A-10b: a start ticket buys exactly one attempt row. Verifying the
+  // signature is not enough on its own — the graded response hands back
+  // `correctChoiceIds` for every question (it is the review screen), so a
+  // ticket that stayed submittable would let anyone submit blank, read the
+  // key, and replay the same ticket for a `passed` row. `@@unique([userId,
+  // seed])` on ExamAttempt is what forbids that, and `seed` is minted per
+  // ticket so it needs no consumed-ticket store and nothing to expire.
+  //
+  // A replay is not always an attack, though: an auto-submit racing a manual
+  // one, or a retried request after a flaky connection, hits this same path.
+  // So the conflict resolves to the attempt that already exists rather than an
+  // error — an honest double-submit lands on its own result page, and a
+  // forged one gets back the score it originally earned.
+  let attempt: { id: string };
+  try {
+    attempt = await db.examAttempt.create({
+      data: {
+        userId: session.userId,
+        templateSlug: payload.templateSlug,
+        seed: payload.seed,
+        questionIdsJson: JSON.stringify(payload.questionIds),
+        answersJson: JSON.stringify(answers),
+        startedAt: new Date(payload.startedAt),
+        submittedAt: new Date(),
+        durationSec: payload.durationSec,
+        score: graded.score,
+        total: graded.total,
+        passed: graded.passed,
+        chapterScoresJson: JSON.stringify(graded.chapterScores),
+      },
+    });
+  } catch {
+    const existing = await db.examAttempt.findUnique({
+      where: { userId_seed: { userId: session.userId, seed: payload.seed } },
+      select: { id: true, answersJson: true },
+    });
+    // Anything other than the unique-constraint race is a genuine failure and
+    // must not be reported as a graded attempt.
+    if (!existing) return { error: "Couldn't save this attempt. Try again." };
+    // Re-grade from what was actually stored, not from what this request sent:
+    // returning the first attempt's id alongside the replay's verdicts would
+    // describe an attempt that does not exist. The row is the record.
+    let storedAnswers: Record<string, string[]> = {};
+    try {
+      storedAnswers = JSON.parse(existing.answersJson || "{}");
+    } catch {
+      /* a corrupt row still resolves to its own id below */
+    }
+    return { ...gradeFromTicket(payload, storedAnswers), attemptId: existing.id };
+  }
 
   await logAudit({
     userId: session.userId,
