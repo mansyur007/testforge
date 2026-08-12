@@ -783,3 +783,61 @@ test(`TC-${TC}-113 Replaying an exam submission cannot mint a second attempt`, a
 
   await db.user.delete({ where: { email } }); // cascades ExamAttempt
 });
+
+// ---------------------------------------------------------------------------
+// A-10a: choice order is shuffled per attempt. `scripts/academy-bank-check.mjs`
+// measures the statistical property against the real bank; this is the part it
+// cannot see — that `beginAttempt` actually calls `presentPaper` on the way
+// out. Delete the shuffle from the wrapper and the script still passes; this
+// fails.
+// ---------------------------------------------------------------------------
+
+/**
+ * Walk one whole attempt, recording each question's choice order as rendered.
+ * `data-testid` is `exam-choice-<questionId>-<choiceId>`, so the question id
+ * comes off the first choice on each screen.
+ */
+async function choiceOrdersInAttempt(
+  page: Page,
+  questionCount: number,
+): Promise<Map<string, string>> {
+  const orders = new Map<string, string>();
+  for (let i = 0; i < questionCount; i++) {
+    const choices = page.locator('[data-testid^="exam-choice-"]');
+    const testId = (await choices.first().getAttribute("data-testid")) ?? "";
+    const questionId = testId.split("-").slice(2, -1).join("-");
+    orders.set(questionId, (await choices.allInnerTexts()).join(" | "));
+    if (i < questionCount - 1) await page.click('[data-testid="exam-next"]');
+  }
+  return orders;
+}
+
+test(`TC-${TC}-114 A question's choices are presented in a different order across attempts`, async ({
+  page,
+}) => {
+  // Compare two whole attempts, not just their first screens. Chapter 6 draws
+  // 8 of its 12 questions, so any two attempts share at least 8+8-12 = 4
+  // questions by pigeonhole — guaranteed, not likely. Keying on the first
+  // question of each attempt instead would need one to be drawn first twice,
+  // which across six attempts fails on its own ~22% of the time; a guard that
+  // cries wolf one run in four is worse than no guard.
+  const attempts: Map<string, string>[] = [];
+  for (let i = 0; i < 2; i++) {
+    await page.goto("/academy/istqb/practice-exam/chapter/6");
+    await page.click('[data-testid="exam-begin"]');
+    await expect(page.getByTestId("exam-taking")).toBeVisible();
+    attempts.push(await choiceOrdersInAttempt(page, 8));
+  }
+
+  const shared = Array.from(attempts[0].keys()).filter((id) => attempts[1].has(id));
+  expect(shared.length, "two chapter-6 papers must overlap by at least 4").toBeGreaterThanOrEqual(4);
+
+  // An unshuffled build renders each question's choices in bank order every
+  // time, so every shared question matches and this fails. With the shuffle,
+  // all four-plus agreeing would take (1/24)^4 — about three in a million.
+  const differing = shared.filter((id) => attempts[0].get(id) !== attempts[1].get(id));
+  expect(
+    differing.length,
+    `all ${shared.length} shared questions were laid out identically in both attempts`,
+  ).toBeGreaterThan(0);
+});

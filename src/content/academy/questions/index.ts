@@ -26,11 +26,18 @@ import { CH6_TOOLS } from "./ch6-tools";
 // average and never fewer than 23. Every question here still carries a real
 // `syllabusRef` for a reviewer to check against the objective, per §7.2.
 //
-// **Do not simply add questions here without reading A-10a first.** The audit's
-// sharper finding is not volume: the correct answer is `a` or `b` in 66 of the
-// 70 questions (`d` is never correct, `c` four times), so the paper can be
-// passed at 94% by always guessing `a`. Growing the bank while keeping that
-// distribution makes the problem bigger, not smaller.
+// **On answer positions.** The correct answer is `a` or `b` in 66 of these 70
+// questions (`d` is never correct, `c` four times), so as authored, two of the
+// four options are dead on almost every question. A-10a fixed the consequence
+// rather than the content: `presentPaper` in src/lib/academy/exam-core.mjs
+// shuffles each question's choices per attempt, so position now carries no
+// information and it does not matter where in the array a new question puts
+// its answer. Write them wherever reads most naturally.
+//
+// What still matters when adding questions is everything shuffling can't fix:
+// the correct answer being the longest option (true of 76% here), pool sizes
+// below 5x their blueprint weight, and the total absence of multi-answer
+// questions. scripts/academy-bank-check.mjs reports all three on every build.
 export const QUESTION_BANK: ExamQuestion[] = [
   ...CH1_FUNDAMENTALS,
   ...CH2_SDLC,

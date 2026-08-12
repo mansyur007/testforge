@@ -77,6 +77,30 @@ export function drawQuestionIds(bank, chapters, seed) {
 }
 
 /**
+ * A-10a: put one paper's questions into the order they are presented in.
+ *
+ * Only choice order changes — the question order is already decided by
+ * `drawQuestionIds`. Position must carry no information: the bank as authored
+ * answers `a` or `b` in 66 of its 70 questions and never `d`, so two of the
+ * four options are dead on almost every question and a candidate who notices
+ * lifts a blind guess from 25% to ~47% by reading the bank rather than the
+ * syllabus. Rebalancing the content by hand would fix only the questions that
+ * exist today and re-break the moment someone writes the next one with the
+ * answer first.
+ *
+ * Seeded, not random, so an attempt stays reproducible from its ticket — the
+ * same property the draw itself has. Lives here, in the pure core, so
+ * `scripts/academy-bank-check.mjs` measures the real function rather than a
+ * copy of it that could drift.
+ */
+export function presentPaper(questions, seed) {
+  return questions.map((q) => ({
+    ...q,
+    choices: seededShuffle(q.choices, `${seed}:${q.id}:choices`),
+  }));
+}
+
+/**
  * `questions` are full bank rows: `{ id, chapter, choices: [{id, correct}] }`.
  * `answers` is `{ [questionId]: string[] }`, exactly what the client posts —
  * nothing about it is trusted beyond "an array of strings". Grading is set

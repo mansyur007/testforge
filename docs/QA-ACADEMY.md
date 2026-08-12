@@ -13,8 +13,9 @@
 > A-05 shipped 2026-08-11 (persistence, claim-at-signup, `/academy/me`).
 > A-06 shipped 2026-08-11 (exam engine, ISTQB question bank, practice exam + chapter quizzes).
 > A-09 shipped 2026-08-12 (session-aware shell on /academy and /docs/help).
-> A-10b shipped 2026-08-12 (single-use exam tickets).
-> A-07 … A-08 planned; A-10a / A-10c planned (exam integrity — opened 2026-08-12 from an audit of
+> A-10b shipped 2026-08-12 (single-use exam tickets);
+> A-10a shipped 2026-08-12 (per-attempt choice shuffling, real-bank content guard).
+> A-07 … A-08 planned; A-10c / A-10d planned (exam integrity — opened 2026-08-12 from an audit of
 > what A-06 actually shipped, see §8). Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
@@ -882,7 +883,12 @@ no Sign up link), **TC-E2E-110** (guest at `/academy` sees Log in/Sign up, no `a
 content files and nothing else, single-use tickets are a schema change, and the runner's state
 handling is client-side work. One review each.
 
-#### A-10a — Question-bank rebalance and a content-shape guard `[ ]`
+#### A-10a — Answer-position bias and a content-shape guard `[x]`
+
+> **Status: DONE** (2026-08-12, branch `feat/academy-a10a-shuffle-choices`) — but **narrower than
+> this work order as written**, and the rest is split out as A-10d below. What shipped fixes the
+> position bias and adds the guard. The bank is still 70 questions with no multi-answer items; that
+> is content work, not code, and bundling it here would have held the fix behind weeks of writing.
 
 **The finding.** The correct answer's position across all 70 questions:
 
@@ -890,12 +896,23 @@ handling is client-side work. One review each.
 |---|---:|---:|---:|---:|
 | Times correct | 35 | 31 | 4 | **0** |
 
-Not one question in the bank is answered `d`, and only four are answered `c`. **A candidate who
-always guesses `a` or `b` scores 66/70 = 94%**, against a 65% pass line — so the practice exam can
-be passed, comfortably, by someone who has read nothing. Chapter 6 is the worst single case: 10 of
-its 12 answers are `a`. Compounding it, the correct answer is the **longest** option in 76% of
-questions — the other classic test-wise tell. This is not a content-volume problem; the bank could
-grow to 300 questions and still be beatable this way.
+Not one question in the bank is answered `d`, and only four are answered `c` — **the answer is `a`
+or `b` in 66 of 70 questions (94%)**. Chapter 6 is the worst single case: 10 of its 12 answers are
+`a`. Compounding it, the correct answer is the **longest** option in 76% of questions — the other
+classic test-wise tell.
+
+> **Corrected 2026-08-12, while building A-10a.** This paragraph first read "a candidate who always
+> guesses `a` or `b` scores 66/70 = 94%, so the exam can be passed by someone who has read nothing".
+> That conflated *coverage* with *score* and overstated the finding. Measured: always picking `a`
+> scores **50%**, always `b` **44%**, and a candidate coin-flipping between the two lands at
+> **~47%** — none of which clears the 65% line on their own. The real defect is narrower and still
+> worth fixing: two of the four options are dead on almost every question, so noticing that lifts a
+> blind guess from 25% to ~47%, and it is reading *the bank* that gets you there rather than the
+> syllabus. With the longest-answer tell on top, a test-wise candidate carries a large unearned
+> advantage into a paper whose whole purpose is to estimate readiness for the real one.
+
+This is not a content-volume problem; the bank could grow to 300 questions and still be beatable
+this way.
 
 **Also in scope, because it is the same edit pass over the same six files:**
 
@@ -932,6 +949,46 @@ every chapter pool is ≥5× its blueprint weight; mean overlap between two pape
 seeds is below 40%; the bank contains multi-answer questions in proportion to the real paper; the
 new selftest fails the build when any of those regress, **proved by breaking each one deliberately**
 (the standard `academy-bundle-check.mjs` set for itself in A-02).
+
+**Delivered — and the plan was wrong about the fix.** This work order said to rebalance the answer
+key by hand across the six content files. Building it made clear that is the weaker of two options:
+it fixes only the 70 questions that exist today, silently re-breaks the moment someone writes the
+71st with the answer first, and — because `getExamAttempt` recomputes `correctChoiceIds` from the
+current bank — editing which letter is correct would retroactively corrupt the review view of every
+attempt already taken.
+
+Shipped instead: **`presentPaper(questions, seed)` in `exam-core.mjs` shuffles each question's
+choices per attempt**, so position carries no information for any question there will ever be.
+Seeded rather than random, so an attempt stays reproducible from its ticket — the same property the
+draw already had. It is safe precisely because of two things A-06 got right: grading is set equality
+over choice **ids**, and `ExamRunner` renders `c.text` with no position label, so a learner never
+sees a letter at all. No content file changed, and no historical attempt is affected.
+
+**Two guards, because neither is sufficient alone.** `scripts/academy-bank-check.mjs` (new, wired
+into `prebuild`) reads the **real** bank — closing A-06's blind spot, where the selftest's synthetic
+12-per-chapter fixture is why chapter 5's shortfall went unnoticed — and checks per-question shape
+(id uniqueness, `multi` agreeing with the key, `syllabusRef`/`kLevel`/explanation present) plus the
+statistical property, by simulating always-pick-the-first-option over 300 seeded papers through the
+real `presentPaper`: **26.0%, passing 0 of 300**, against ~47% with the authored order. It also
+*reports* the outstanding content debt on every build rather than asserting it, so A-10d stays
+visible without failing the build today.
+
+That script cannot see whether `beginAttempt` still calls `presentPaper` — delete the call and it
+keeps passing, since it invokes the core function itself. **TC-E2E-114** is the guard for the
+wiring: it walks two whole chapter-6 attempts and requires at least one question they share to have
+been laid out differently. Both guards were **proved to fail**: removing the shuffle from
+`presentPaper` fails the script (46.6%), and removing the call from `beginAttempt` fails
+TC-E2E-114 with "all 6 shared questions were laid out identically in both attempts".
+
+> **The first version of TC-E2E-114 was itself flaky, and it took arithmetic rather than a test run
+> to notice.** It keyed on the *first* question of each of six attempts and looked for one drawn
+> first twice. Chapter 6 has 12 questions, so the chance no question is ever first twice is
+> `(12/12)(11/12)…(7/12)` ≈ **22%** — a guard that cries wolf one run in four, which is worse than
+> no guard, and it passed three times (twice locally, once in CI) purely on luck. Comparing two
+> *whole* attempts instead makes the overlap a pigeonhole certainty: 8 drawn from 12, twice, share
+> at least `8+8-12 = 4` questions. All four-plus agreeing by chance is `(1/24)^4`, about three in a
+> million. Worth stating because this suite already has flakes of exactly this kind (see A-10's
+> "Not in A-10" note), and adding another while auditing them would have been ironic.
 
 #### A-10b — Single-use exam tickets `[x]`
 
@@ -1016,6 +1073,26 @@ once, then back off and surface a manual retry.
 **Acceptance:** an attempt survives a full page reload with answers and remaining time intact; a
 failed auto-submit retries at most a few times with backoff and leaves the candidate able to submit
 manually; the server-authoritative timer and grading behaviour of §2.3 are unchanged.
+
+#### A-10d — Question-bank build-out `[ ]`
+
+Split out of A-10a once shuffling made the answer-position half a code fix. What is left is the
+content, and it is the "weeks of writing" §9 warns about — `scripts/academy-bank-check.mjs` prints
+the current state on every build:
+
+- **Pools to ≥5× their blueprint weight.** Today: ch1 12/40, ch2 12/30, ch3 12/20, ch4 12/55,
+  ch5 10/45, ch6 12/10 (the only one already there). Chapters 4 and 5 are the priority — they carry
+  20 of the paper's 40 questions and currently draw 92%/90% of their pools, which is what makes two
+  papers share 70% of their content.
+- **Multi-answer questions.** Zero of 70, though the engine, ticket, runner and set-equality grading
+  all support them and the real paper has them.
+- **K-level balance.** K1 28 / K2 36 / **K3 6**. K3 is what chapter 4 is mostly about.
+- **`syllabusRef` spread.** 40 distinct refs across 70 questions; `FL-6.1.1` alone carries 6 of
+  chapter 6's 12.
+
+When the pools grow, turn the bank-check's *reported* debt lines into *asserted* ones — the script
+is written so that is a one-line change per check, and until then a build that fails on content the
+team is mid-way through writing would just get muted.
 
 #### Not in A-10, deliberately
 

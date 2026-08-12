@@ -4245,7 +4245,13 @@ with the `SuiteFolderGrid` work noted above.
 - **A-10** `[ ]` not started — exam integrity, opened 2026-08-12 from an audit of what A-06 actually
   shipped (measured against the real bank and the real `drawQuestionIds`, not against the docs).
   Three findings, one PR each: **A-10a** the answer key is `a` or `b` in 66 of 70 questions (`d` is
-  never correct), so the paper is passable at 94% by always guessing `a` — plus chapter 5 holds 10
+  never correct), so two of four options are dead on almost every question and noticing lifts a
+  blind guess from 25% to ~47%, **fixed 2026-08-12** by shuffling each question's choices per
+  attempt (`presentPaper` in `exam-core.mjs`) rather than rebalancing content by hand — which fixes
+  every future question too, and avoids retroactively corrupting past attempts' review view; guarded
+  by the new `scripts/academy-bank-check.mjs` (first-choice guessing: 26.0%, 0/300 papers passed)
+  and **TC-E2E-114** for the wiring the script can't see, both proved to fail. The remaining content
+  work (pools to 5x, multi-answer questions, K3 balance) split out as **A-10d** — plus chapter 5 holds 10
   questions against a blueprint weight of 9, giving two papers a 70% mean overlap, and there are no
   multi-answer questions at all despite a graded code path for them; **A-10b** exam start tickets
   are never marked used, so replaying one after reading the answer key off an empty submission mints
