@@ -224,6 +224,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
       { id: "b", text: "The test level each is restricted to — black-box only at system level, white-box only at unit level" },
       { id: "c", text: "Whether the technique can be automated — only white-box techniques support automated execution" },
       { id: "d", text: "The number of testers required to run them — white-box techniques always require pair testing" },
+      { id: "e", text: "The phase of the SDLC each belongs to — black-box during analysis, white-box during coding, experience-based during acceptance" },
     ],
     explanation:
       "The three categories are defined by what they derive test cases from: black-box (specification-based) needs no knowledge of internals, white-box (structure-based) is built on the code or design structure, and experience-based leans on the tester's history with similar systems. None of the three is tied to a single test level or to automation status.",
@@ -253,12 +254,12 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     choices: [
       { id: "a", text: "Invalid partitions need test coverage too, not only valid ones", correct: true },
       { id: "b", text: "A value from a partition is assumed to be representative of every other value in that partition", correct: true },
-      { id: "c", text: "Equivalence partitioning can define partitions for output values as well as input values", correct: true },
+      { id: "c", text: "Every value in a partition must be tested individually before that partition counts as covered" },
       { id: "d", text: "Equivalence partitioning guarantees that all boundary-related defects will be found" },
       { id: "e", text: "Equivalence partitioning can only be applied to numeric input fields" },
     ],
     explanation:
-      "Equivalence partitioning covers both valid and invalid partitions, relies on the assumption that one representative stands in for its whole partition, and can be applied to outputs and non-numeric data alike. Finding boundary defects specifically is what boundary value analysis adds on top of it.",
+      "Equivalence partitioning covers both valid and invalid partitions, and rests on the assumption that one representative value stands in for its whole partition — testing every value individually is exactly what the technique exists to avoid. It also applies to non-numeric data and to output partitions, and finding boundary defects specifically is what boundary value analysis adds on top of it.",
   },
   {
     id: "ch4-q16",
@@ -316,17 +317,12 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     stem: "Which of the following statements about decision table testing are correct? (Select all that apply.)",
     choices: [
       { id: "a", text: "A full decision table lists every possible combination of the conditions", correct: true },
-      {
-        id: "b",
-        text: "Decision tables are well suited to testing combinations of business rules, where equivalence partitioning taken one input at a time is likely to miss an interaction defect",
-        correct: true,
-      },
-      { id: "c", text: "Rules that produce the same action can sometimes be collapsed using 'don't care' values", correct: true },
-      { id: "d", text: "Every decision table must include at least four conditions to be valid" },
-      { id: "e", text: "A decision table can only represent binary (true/false) conditions" },
+      { id: "b", text: "Rules that produce the same action can sometimes be collapsed using 'don't care' values", correct: true },
+      { id: "c", text: "Every decision table must include at least four conditions to be valid" },
+      { id: "d", text: "A decision table can only represent binary (true/false) conditions" },
     ],
     explanation:
-      "Decision tables enumerate condition combinations, target the interaction defects that single-input techniques miss, and can be collapsed with 'don't care' values where an action doesn't depend on a condition. There is no minimum of four conditions — a table with two conditions is just as valid — and conditions are not limited to binary values.",
+      "A full decision table enumerates every combination of its conditions, and rules that share an action can be collapsed with 'don't care' values where the action doesn't depend on a condition. There is no minimum of four conditions — a table with two conditions is just as valid — and conditions are not limited to binary values.",
   },
   {
     id: "ch4-q20",
@@ -348,15 +344,15 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     chapter: 4,
     kLevel: "K3",
     syllabusRef: "FL-4.2.4",
-    stem: "Using the same order model (PENDING → PAID → SHIPPED → DELIVERED, CANCELLED from PENDING or PAID), which single test sequence gives 1-switch coverage of the pair PENDING → PAID → SHIPPED?",
+    stem: "An order model defines exactly five transitions: PENDING → PAID, PAID → SHIPPED, SHIPPED → DELIVERED, PENDING → CANCELLED, and PAID → CANCELLED. DELIVERED and CANCELLED are terminal — no transition leaves them. How many distinct pairs of consecutive transitions must a test suite exercise to reach 100% 1-switch coverage?",
     choices: [
-      { id: "a", text: "PENDING → PAID → SHIPPED", correct: true },
-      { id: "b", text: "PENDING → PAID" },
-      { id: "c", text: "PENDING → CANCELLED" },
-      { id: "d", text: "SHIPPED → DELIVERED" },
+      { id: "a", text: "3", correct: true },
+      { id: "b", text: "5" },
+      { id: "c", text: "6" },
+      { id: "d", text: "10" },
     ],
     explanation:
-      "1-switch coverage exercises two consecutive transitions in a single test. PENDING → PAID → SHIPPED covers both the PENDING → PAID and PAID → SHIPPED transitions back to back; the other options exercise only a single transition or the wrong pair.",
+      "1-switch coverage requires every valid pair of consecutive transitions. A pair is valid only where the first transition's target state is the second's source, so the five transitions chain into just three pairs: (PENDING → PAID, PAID → SHIPPED), (PENDING → PAID, PAID → CANCELLED), and (PAID → SHIPPED, SHIPPED → DELIVERED). Nothing follows a transition into DELIVERED or CANCELLED because both are terminal — which is why the answer is well below the five transitions themselves.",
   },
   {
     id: "ch4-q22",
@@ -419,10 +415,10 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
         text: "Statement coverage only requires every executable line to run at least once, regardless of which branches were taken to get there",
         correct: true,
       },
-      { id: "e", text: "Both are examples of experience-based test techniques" },
+      { id: "e", text: "Both are classified as white-box (structure-based) techniques", correct: true },
     ],
     explanation:
-      "Branch coverage is the stronger criterion: exercising every decision outcome necessarily runs every reachable statement, but running every statement can still leave a branch outcome untaken (e.g. always taking the true side of an if). Both are white-box (structure-based) techniques, not experience-based ones.",
+      "Branch coverage is the stronger criterion: exercising every decision outcome necessarily runs every reachable statement, but running every statement can still leave a branch outcome untaken (e.g. always taking the true side of an if) — so only the implication in option b is the wrong way round. Both criteria are white-box, measured against the code's structure rather than its specification.",
   },
   {
     id: "ch4-q26",
@@ -435,6 +431,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
       { id: "b", text: "Decision table testing" },
       { id: "c", text: "Boundary value analysis derived strictly from the specification" },
       { id: "d", text: "Statement coverage measurement" },
+      { id: "e", text: "Use case testing, since pagination is part of a documented user flow" },
     ],
     explanation:
       "Error guessing is an experience-based technique where the tester uses knowledge of typical mistakes and past defects — here, a known class of off-by-one pagination bugs — to anticipate and target likely failure points, rather than deriving the test from a formal model of the specification.",
@@ -503,8 +500,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
         correct: true,
       },
       { id: "c", text: "It is classified as an experience-based test technique", correct: true },
-      { id: "d", text: "Checklists eliminate the need for any tester judgement during execution" },
-      { id: "e", text: "A checklist item always maps to exactly one, fully scripted test case" },
+      { id: "d", text: "A checklist item always maps to exactly one, fully scripted test case" },
     ],
     explanation:
       "Checklists accumulate and improve over time, but because their items are usually a short prompt rather than a detailed script, different testers can cover the same item differently — which is also why they are experience-based rather than a precise, repeatable procedure with no tester judgement involved.",
@@ -600,7 +596,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     multi: true,
     stem: "Which of the following statements about acceptance test-driven development (ATDD) are correct? (Select all that apply.)",
     choices: [
-      { id: "a", text: "It is a collaboration-based approach involving business, development, and testing perspectives", correct: true },
+      { id: "a", text: "The acceptance tests are written by the tester alone, once the story has been estimated and accepted into a sprint" },
       { id: "b", text: "Deriving the tests before coding starts helps prevent defects rather than only detect them after the fact", correct: true },
       {
         id: "c",
@@ -611,6 +607,6 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
       { id: "e", text: "It requires that no manual testing ever be performed on the story" },
     ],
     explanation:
-      "ATDD is a collaboration-based, defect-prevention approach that derives tests from acceptance criteria before coding, and it overlaps closely with BDD's Given/When/Then style. It is distinct from unit-level TDD (different scope, different authors) and does not rule out manual testing elsewhere in the story's lifecycle.",
+      "ATDD derives acceptance tests from the acceptance criteria before coding — a defect-prevention move rather than a detection one — and overlaps closely with BDD's Given/When/Then style. It is collaborative by definition, so tests written by the tester alone after estimation is the opposite of the approach; it is also distinct from unit-level TDD (different scope, different authors) and does not rule out manual testing elsewhere in the story's lifecycle.",
   },
 ];
