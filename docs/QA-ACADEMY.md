@@ -13,8 +13,9 @@
 > A-05 shipped 2026-08-11 (persistence, claim-at-signup, `/academy/me`).
 > A-06 shipped 2026-08-11 (exam engine, ISTQB question bank, practice exam + chapter quizzes).
 > A-09 shipped 2026-08-12 (session-aware shell on /academy and /docs/help).
-> A-07 … A-08 planned. Created 2026-08-10.
-> Work orders are numbered `A-01 … A-09` (a new track alongside `F-xx`/`L-xx` in
+> A-07 … A-08 planned; A-10 planned (exam integrity — opened 2026-08-12 from an audit of what
+> A-06 actually shipped, see §8). Created 2026-08-10.
+> Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
 > `[x]` shipped. **Part IV §0 (repo conventions) and §1 (Definition of Done) are normative here** —
@@ -34,7 +35,7 @@
 - [5. The ISTQB Foundation practice exam](#5-the-istqb-foundation-practice-exam)
 - [6. Learn-by-doing: the Academy sandbox](#6-learn-by-doing-the-academy-sandbox)
 - [7. Legal & trademark constraints](#7-legal--trademark-constraints)
-- [8. Work orders A-01 … A-08](#8-work-orders)
+- [8. Work orders A-01 … A-10](#8-work-orders)
 - [9. Risks, open questions, deliberate exclusions](#9-risks-open-questions-deliberate-exclusions)
 
 ---
@@ -736,7 +737,7 @@ same way the sandbox checkers are (§6.2): `src/lib/academy/exam-core.mjs` is pl
 `scripts/academy-exam-selftest.mjs`, wired into `prebuild`), and `src/lib/academy/exam.ts` is the
 `server-only` typed wrapper that draws from the real question bank and signs/verifies the start
 ticket (`jose`, same `AUTH_SECRET`-derived-key pattern as `src/lib/superadmin.ts`). The question
-bank (`src/content/academy/questions/**`, 72 questions — see the deviation below) and the
+bank (`src/content/academy/questions/**`, 70 questions — see the deviation below) and the
 blueprints (`src/content/academy/exams.ts`: `ctfl-v4-full` and six `ctfl-v4-ch<n>` chapter quizzes,
 sharing one `ExamBlueprint` shape and one `ExamRunner` UI, docs §5.2's "reusing the same engine").
 Server actions in `src/app/actions/academy.ts`: `startExamAction`, `submitExamAction`,
@@ -768,11 +769,17 @@ anyway once `localStorage`/the tab is gone — not worth it until there's a conc
 anonymous result addressable across visits.
 
 **One content-scope deviation, flagged up front rather than discovered by a reviewer.** §9 calls the
-bank "the cost, not the code" of this feature, and that held: this work order ships **72 questions
-(12/chapter)** against the plan's ≥300/5× target — enough to draw the full blueprint (chapter 4's 11
-is the largest weight) and every chapter quiz (8, not the plan's 10 — also sized to this bank) without
-a repeat inside one paper, but well short of 5×, so different seeds' papers will overlap more than
-the target design calls for. Every question still carries a real `syllabusRef` for review, and
+bank "the cost, not the code" of this feature, and that held: this work order ships **70 questions
+(12 per chapter except chapter 5, which has 10)** against the plan's ≥300/5× target — enough to draw
+the full blueprint (chapter 4's 11 is the largest weight) and every chapter quiz (8, not the plan's
+10 — also sized to this bank) without a repeat inside one paper, but well short of 5×, so different
+seeds' papers will overlap more than the target design calls for.
+
+> **Corrected 2026-08-12 (A-10 audit).** This entry originally recorded "72 questions (12/chapter)".
+> The bank has always held 70 — chapter 5 has 10, not 12 — and the shortfall lands on the chapter the
+> blueprint draws 9 from, so it is the sharpest instance of the overlap problem the paragraph above
+> predicts, not a rounding error. Nothing caught it because `scripts/academy-exam-selftest.mjs` runs
+> against a synthetic 12-per-chapter bank rather than the real content. A-10a closes both gaps. Every question still carries a real `syllabusRef` for review, and
 `src/content/academy/questions/index.ts` documents this as tracked content debt for a follow-up
 work order rather than silently shipping under-target. The **chapter weights themselves** (§5.1's
 own "verify before seeding" warning) were taken from the CTFL v4.0 syllabus structure as read for
@@ -860,6 +867,145 @@ no Sign up link), **TC-E2E-110** (guest at `/academy` sees Log in/Sign up, no `a
 `e2e/academy.spec.ts` and `e2e/help-center.spec.ts` (25 specs) pass together; `tsc --noEmit`,
 `eslint`, and `next build` are clean, and `next build`'s route table confirms `/academy` and
 `/docs/help` moved from prerendered to `ƒ` (dynamic), as expected.
+
+### A-10 — Exam integrity: answer-key balance, single-use tickets, resumable attempts `[ ]`
+
+> **Opened 2026-08-12** from an audit of what A-06 actually shipped, run against the real bank and
+> the real `drawQuestionIds` rather than against this document's account of them. Every number below
+> is measured, not estimated. §9 named content as this project's main risk; the audit's finding is
+> narrower and more urgent than "there isn't enough of it" — **the exam as shipped can be passed
+> without knowing any testing**, and a passing attempt can be forged. A-07 issues certificates on a
+> passing exam, so both are blocking for it.
+
+**Split into three PRs**, along the same reasoning as A-04's split: rebalancing the bank touches six
+content files and nothing else, single-use tickets are a schema change, and the runner's state
+handling is client-side work. One review each.
+
+#### A-10a — Question-bank rebalance and a content-shape guard `[ ]`
+
+**The finding.** The correct answer's position across all 70 questions:
+
+| Option | a | b | c | d |
+|---|---:|---:|---:|---:|
+| Times correct | 35 | 31 | 4 | **0** |
+
+Not one question in the bank is answered `d`, and only four are answered `c`. **A candidate who
+always guesses `a` or `b` scores 66/70 = 94%**, against a 65% pass line — so the practice exam can
+be passed, comfortably, by someone who has read nothing. Chapter 6 is the worst single case: 10 of
+its 12 answers are `a`. Compounding it, the correct answer is the **longest** option in 76% of
+questions — the other classic test-wise tell. This is not a content-volume problem; the bank could
+grow to 300 questions and still be beatable this way.
+
+**Also in scope, because it is the same edit pass over the same six files:**
+
+- **Chapter 5 is short.** 10 questions against a blueprint weight of 9, i.e. 90% of the pool is
+  drawn into every paper. Chapter 4 is nearly as bad at 11 of 12. Measured over 200 seeds with the
+  real draw function, two papers share **28.2 of 40 questions on average (70%), never fewer than
+  23** — "different seeds → different papers" (§5.1) is true of the ordering and barely true of the
+  content. Bringing every chapter to ≥5× its blueprint weight is the plan's own ≥300 target; the
+  first useful step is levelling chapters 4 and 5, where the shortfall actually bites.
+- **There are no multi-answer questions at all.** Zero of 70 set `multi`. The engine, the ticket,
+  `sanitizeExamQuestion`, `ExamRunner`'s checkbox branch and `gradeAttempt`'s set-equality rule all
+  support them, and §8's own A-02 entry describes the self-checks as "single- and multi-answer" — so
+  a whole graded code path ships exercised only by the selftest's synthetic fixtures, and the paper
+  is easier than the real one it simulates.
+- **K-level spread is flat.** K1 28, K2 36, **K3 6**. K3 ("apply the technique") is what chapter 4
+  is mostly about and what actually transfers to the sandbox exercises.
+- **`syllabusRef` concentration.** 40 distinct refs across 70 questions, with `FL-6.1.1` alone
+  carrying 6 of chapter 6's 12. §7.2 exists so a reviewer can check a question against its
+  objective; six questions per objective means the chapter tests a narrow slice of it.
+
+**The guard, which is the part that keeps this from regressing.** `scripts/academy-exam-selftest.mjs`
+builds a synthetic 12-per-chapter bank, so it is structurally blind to everything above — it is why
+the chapter-5 shortfall survived a work order and a doc review. Add a second selftest that runs
+against the **real** bank and fails the build on: any chapter pool below 5× its blueprint weight; an
+answer-position distribution more skewed than a stated tolerance; a question whose `multi` flag and
+correct-answer count disagree; a missing `syllabusRef`, `kLevel` or explanation; and a duplicate id
+or near-duplicate stem. Same `prebuild` wiring as its siblings, so `npm run build` covers it with no
+CI change. Note that this cannot live in `exam-core.mjs`'s selftest as written — that file is pure
+ESM by design and the bank is TypeScript; the guard needs the same content-reading approach
+`scripts/academy-bundle-check.mjs` already uses.
+
+**Acceptance:** the always-guess-`a`-or-`b` strategy scores at or below chance on the full paper;
+every chapter pool is ≥5× its blueprint weight; mean overlap between two papers drawn from different
+seeds is below 40%; the bank contains multi-answer questions in proportion to the real paper; the
+new selftest fails the build when any of those regress, **proved by breaking each one deliberately**
+(the standard `academy-bundle-check.mjs` set for itself in A-02).
+
+#### A-10b — Single-use exam tickets `[ ]`
+
+**The finding.** `submitExamAction` verifies the start ticket's signature and then grades it —
+but never marks it used. There is no `jti`, no consumed-ticket store, and no unique constraint on
+`ExamAttempt`. The ticket stays valid for `TICKET_MAX_AGE_SEC` (6 hours). So:
+
+1. Start an attempt; submit it with no answers.
+2. The graded response returns `correctChoiceIds` **and** `explanation` for every question — by
+   design, it is the review screen.
+3. Re-submit the *same ticket* with those answers. A second `ExamAttempt` row is written, 40/40,
+   `passed: true`.
+
+Today the damage is confined to a wrong row in `/academy/me`'s history. **A-07 issues a certificate
+on a passing exam**, at which point this mints them on demand — so this lands before A-07, not
+after it.
+
+**Shape of the fix.** The authed half is cheap: `seed` is 16 random bytes minted per ticket, so
+`@@unique([userId, seed])` on `ExamAttempt` makes a replay a constraint violation rather than a
+second row, with no new table and no new state to expire. Return the existing attempt's id on the
+conflict rather than an error — a genuine double-submit (a flaky connection, an auto-submit racing a
+manual one, see A-10c) should land on its result page, not on a failure. The anonymous half is
+deliberately left alone: §2.4 says anonymous attempts write no row, there is no certificate and no
+history to corrupt, and a stranger fooling themselves costs nothing — closing it would mean
+introducing exactly the server-side state §2.4 exists to avoid.
+
+**While here, one inconsistency in the same file.** The chapter quizzes set `durationSec` to 24
+hours with the comment "generous enough that no honest attempt ever hits it", but the real bound is
+the ticket's own 6-hour `exp`, so a quiz left open longer fails verification with "expired or
+invalid" and loses the answers. Either make the ticket's lifetime follow the blueprint's duration or
+stop claiming 24 hours.
+
+**Acceptance:** replaying a ticket cannot produce a second attempt row, asserted against
+`ExamAttempt.count()` rather than the UI; a legitimate double-submit resolves to the original
+attempt's result page; an anonymous submission still writes no row.
+
+#### A-10c — Resumable attempts and submit robustness `[ ]`
+
+**The finding.** `ExamRunner` holds the ticket, the answers, the flags and the current index in
+React state and nothing else. A reload, a back-navigation, a phone locking, or a tab crash **40
+minutes into a 60-minute exam discards every answer and the ticket with them** — there is no way
+back into that attempt. A-04b went to real trouble to keep the coach's `since` in `sessionStorage`
+precisely so a redirect couldn't lose it; the exam, which is far longer and the higher-stakes of the
+two, has none of that.
+
+Mirror the attempt into `sessionStorage` (ticket, answers, flags, index) and offer to resume it on
+mount when the ticket is still within its own deadline. The server stays authoritative for both the
+clock and the grade — this stores nothing the ticket doesn't already sign, so it changes no trust
+boundary. Note the one thing that must *not* be stored: the sanitized question set is fine, but this
+is client-visible storage, so nothing may be written to it that `sanitizeExamQuestion` would strip.
+
+**Second, the auto-submit can lock a candidate out.** Once the deadline passes, the one-second
+`tick` calls `doSubmit()` on every tick. If submission fails — a transient network error is exactly
+when this matters — `pending` clears and the next tick retries, one per second, into an endpoint
+rate-limited at 20/minute. Twenty seconds of a bad connection at the deadline and the candidate is
+locked out of submitting at all, for the rest of the minute, repeatedly. Auto-submit should fire
+once, then back off and surface a manual retry.
+
+**Acceptance:** an attempt survives a full page reload with answers and remaining time intact; a
+failed auto-submit retries at most a few times with backoff and leaves the candidate able to submit
+manually; the server-authoritative timer and grading behaviour of §2.3 are unchanged.
+
+#### Not in A-10, deliberately
+
+**The blueprint weights themselves.** §5.1's "verify before seeding" warning is still outstanding —
+the chapter weights and the 65% pass line were taken from the CTFL v4.0 syllabus as read during A-06
+and have never had the human check that warning asks for. That is a research task with a different
+kind of answer than anything above, and folding it into a code PR would bury it. It needs its own
+pass before anyone studies for the real exam from this bank.
+
+**`markLessonDoneAction` does not validate its slugs.** `claimAcademyProgress` resolves every slug
+through `findLessonTrack` and skips what it can't place; the direct toggle action does not, so a
+crafted call can write `LessonProgress` rows for lessons that don't exist. It is a data-tidiness bug
+on the learner's own row rather than an exam-integrity one, and it belongs with the next piece of
+progress work rather than here.
 
 ### Testing (applies to all)
 

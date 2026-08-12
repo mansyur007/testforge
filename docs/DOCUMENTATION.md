@@ -4160,7 +4160,7 @@ toolbar genuinely shorter on a phone means hiding rarely-used actions (Export/Pr
 a disclosure, which is the same "invent an interaction" call deferred in F-43/F-44 and belongs
 with the `SuiteFolderGrid` work noted above.
 
-#### A-01 … A-09 — TestForge QA Academy (in progress)
+#### A-01 … A-10 — TestForge QA Academy (in progress)
 
 > **Full work-order detail lives in [`docs/QA-ACADEMY.md`](QA-ACADEMY.md)** — Academy is a
 > subsystem delivered over several PRs rather than one feature (per that doc's header), so its
@@ -4242,6 +4242,18 @@ with the `SuiteFolderGrid` work noted above.
   `e2e/academy.spec.ts` **TC-E2E-109/110** and `e2e/help-center.spec.ts` **TC-E2E-111/112**. See
   `docs/QA-ACADEMY.md` § A-09 for the full writeup, including why the two pages couldn't just move
   into the `(app)` route group.
+- **A-10** `[ ]` not started — exam integrity, opened 2026-08-12 from an audit of what A-06 actually
+  shipped (measured against the real bank and the real `drawQuestionIds`, not against the docs).
+  Three findings, one PR each: **A-10a** the answer key is `a` or `b` in 66 of 70 questions (`d` is
+  never correct), so the paper is passable at 94% by always guessing `a` — plus chapter 5 holds 10
+  questions against a blueprint weight of 9, giving two papers a 70% mean overlap, and there are no
+  multi-answer questions at all despite a graded code path for them; **A-10b** exam start tickets
+  are never marked used, so replaying one after reading the answer key off an empty submission mints
+  a `passed` attempt — blocking for A-07, which issues certificates on a passing exam; **A-10c**
+  `ExamRunner` keeps the whole attempt in React state, so a reload mid-exam discards every answer,
+  and the auto-submit retries once a second into a 20/min rate limit. A-10a also adds the selftest
+  that would have caught the chapter-5 shortfall — the existing one runs against a synthetic
+  12-per-chapter bank, so it is blind to the real content. See `docs/QA-ACADEMY.md` § A-10.
 
 ---
 
