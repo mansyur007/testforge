@@ -12,15 +12,25 @@ import { CH6_TOOLS } from "./ch6-tools";
 // `explanation` never reach a client bundle except through
 // `sanitizeQuestion()`/the grading action. See docs/QA-ACADEMY.md §2.2, §5.1.
 //
-// **Content status (2026-08-11, A-06).** The plan's bank target is ≥300
-// questions, ≥5x the per-chapter draw count. This ships 72 (12/chapter),
-// enough to draw the full blueprint (max weight is chapter 4's 11) and every
-// chapter quiz (8/chapter) without repeats within one paper, but well short
-// of 5x — repeated papers across different seeds will overlap more than the
-// target design calls for. Tracked as content debt for a follow-up work
-// order per docs/QA-ACADEMY.md §9 ("the cost is content, not code"); every
-// question here still carries a real `syllabusRef` for a reviewer to check
-// against the objective, per §7.2.
+// **Content status (2026-08-12, corrected by the A-10 audit).** The plan's bank
+// target is ≥300 questions, ≥5x the per-chapter draw count. This holds **70** —
+// 12 per chapter except chapter 5, which has 10. (This comment previously said
+// 72 (12/chapter); it was wrong, and nothing caught it because
+// scripts/academy-exam-selftest.mjs runs against a synthetic 12-per-chapter
+// bank rather than this file.)
+//
+// That is enough to draw the full blueprint (max weight is chapter 4's 11) and
+// every chapter quiz (8/chapter) without repeats within one paper, but well
+// short of 5x, and the shortfall sits on the chapter the blueprint draws 9
+// from: measured over 200 seeds, two papers share 28.2 of 40 questions on
+// average and never fewer than 23. Every question here still carries a real
+// `syllabusRef` for a reviewer to check against the objective, per §7.2.
+//
+// **Do not simply add questions here without reading A-10a first.** The audit's
+// sharper finding is not volume: the correct answer is `a` or `b` in 66 of the
+// 70 questions (`d` is never correct, `c` four times), so the paper can be
+// passed at 94% by always guessing `a`. Growing the bank while keeping that
+// distribution makes the problem bigger, not smaller.
 export const QUESTION_BANK: ExamQuestion[] = [
   ...CH1_FUNDAMENTALS,
   ...CH2_SDLC,
