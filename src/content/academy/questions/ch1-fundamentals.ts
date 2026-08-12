@@ -14,14 +14,14 @@ export const CH1_FUNDAMENTALS: ExamQuestion[] = [
     syllabusRef: "FL-1.1.1",
     stem: "Which of these best describes what software testing actually is?",
     choices: [
-      { id: "a", text: "Proving that a program has no defects" },
+      { id: "a", text: "Proving that a program contains no defects at all before release" },
       {
         id: "b",
-        text: "A process to evaluate a component or system, providing information about its quality",
+        text: "An evaluation of a component or system, reporting on its quality",
         correct: true,
       },
-      { id: "c", text: "Writing code to fix bugs found by users" },
-      { id: "d", text: "Only running the software to see if it crashes" },
+      { id: "c", text: "Writing the code that fixes the bugs reported by end users" },
+      { id: "d", text: "Running the software repeatedly to see whether it crashes" },
     ],
     explanation:
       "Testing is a set of activities — planning, analysis, design, execution, evaluation, reporting — carried out to give stakeholders objective information about quality. It is not a proof of absence of defects; it reduces the risk of undiscovered ones.",
@@ -63,14 +63,14 @@ export const CH1_FUNDAMENTALS: ExamQuestion[] = [
     syllabusRef: "FL-1.2.1",
     stem: "Which of the following is a reason testing is necessary, beyond finding defects?",
     choices: [
-      { id: "a", text: "It guarantees the software is defect-free before release" },
+      { id: "a", text: "It guarantees that the software is free of defects before release" },
       {
         id: "b",
-        text: "It gives stakeholders information to make release and risk decisions",
+        text: "It gives stakeholders information for release and risk decisions",
         correct: true,
       },
-      { id: "c", text: "It replaces the need for requirements review" },
-      { id: "d", text: "It removes the need for a production monitoring system" },
+      { id: "c", text: "It replaces the need to review the requirements at all" },
+      { id: "d", text: "It removes the need for any production monitoring system" },
     ],
     explanation:
       "Testing contributes to confidence and decision-making — showing that the software meets its requirements and giving stakeholders enough information to judge quality and risk, not a guarantee of zero defects.",
@@ -172,7 +172,7 @@ export const CH1_FUNDAMENTALS: ExamQuestion[] = [
     syllabusRef: "FL-1.4.2",
     stem: "A tester writes 'verify that an expired discount code is rejected at checkout' before deciding on the specific input values or steps to use. Which test-process activity does writing that item belong to?",
     choices: [
-      { id: "a", text: "Test design (deriving test conditions)", correct: true },
+      { id: "a", text: "Test design", correct: true },
       { id: "b", text: "Test implementation" },
       { id: "c", text: "Test execution" },
       { id: "d", text: "Test completion" },
@@ -190,11 +190,11 @@ export const CH1_FUNDAMENTALS: ExamQuestion[] = [
       { id: "a", text: "Because developers are legally barred from testing their own code" },
       {
         id: "b",
-        text: "Because a degree of independence helps a tester notice problems the author's assumptions make hard to see",
+        text: "Because independence helps a tester see what the author cannot",
         correct: true,
       },
-      { id: "c", text: "Because independent testers never need to communicate with developers" },
-      { id: "d", text: "Because independent testing removes the need for reviews" },
+      { id: "c", text: "Because independent testers never need to talk to the developers" },
+      { id: "d", text: "Because independent testing removes the need to hold reviews" },
     ],
     explanation:
       "Independence reduces author bias — the same assumptions that led to a defect can make it invisible to its author. It is a matter of degree (self-checking vs. a dedicated team vs. an outside specialist), not an absolute rule, and it does not remove the need to collaborate.",

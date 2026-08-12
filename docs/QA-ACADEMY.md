@@ -24,8 +24,10 @@
 > first chapter to reach its 5× target since ch6, plus a build assertion against answers quoted in
 > their own stems. Third slice 2026-08-12: chapter 4 completed 36→55, and the longest-answer tell
 > measured for the first time — it scored 65.2% on whole papers, **above the 65% pass line**, so it
-> was a working exploit; the slice's own questions bring it to 63.3% and the build now ratchets it.
-> Chapters 1, 2 and 3 remain untouched at 12 questions each.
+> was a working exploit. Fourth slice 2026-08-12: the length pass — 204 choice texts rewritten across
+> all six chapters, taking that strategy to 31.4% and 0/300 papers passed, i.e. to chance; the guard
+> is now a hard assertion rather than a ratchet.
+> Chapters 1, 2 and 3 remain untouched at 12 questions each, and are the whole of the pool debt.
 > A-07 … A-08 planned. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
@@ -1288,13 +1290,35 @@ now covered; K-levels land K2 32 / K3 23.
 > **149 of 300 papers**, because a mean under 65% with this much variance still clears the bar half
 > the time. So this is not closed; see the debt list below.
 
+**Fourth slice, 2026-08-12: the length pass, all six chapters.** The debt list below used to open
+with the longest-answer tell and a plan to work through it chapter by chapter. It was done in one
+pass instead: **204 choice texts rewritten across 56 questions in all six files**, no question added or
+removed, no key changed. Two rules applied throughout — *keep the key to the claim and let
+`explanation` carry the reasoning*, and *give every distractor enough substance to be worth reading*.
+The before/after, measured by `academy-bank-check.mjs` over 300 simulated papers:
+
+| | before | after |
+|---|---|---|
+| longest-choice strategy, whole paper | 63.3% | **31.4%** |
+| papers it passes | 149/300 | **0/300** |
+| ch1 / ch2 / ch3 / ch4 / ch5 / ch6 | 58 / 58 / 83 / 46 / 82 / 83% | 25 / 25 / 25 / 30 / 31 / 25% |
+
+25% is the floor for a four-choice question, so every chapter is now at chance. The guard changes
+shape to match: `LONGEST_CEILING_PCT` drops 64 → 40 and gains a hard "never passes a paper"
+assertion, the same pair the first-choice strategy has had since A-10a. Both were verified by
+running them against the pre-slice content, where they fail at 63.3% and 149/300.
+
+> **A second tell surfaced while doing it, and is worth writing down: the joke distractor.**
+> `ch5-q9` asked which metric tracks execution progress and offered "the office's total electricity
+> usage" and "the number of team lunches held" as two of its four options. A candidate discards both
+> without reading the stem, so the question is really a two-way choice — the same halving of the
+> guess space the answer-position bias bought, arrived at from the other direction. Those are now
+> plausible-but-wrong metrics, and the rule is in `questions/index.ts` next to the length one.
+> Nothing in the bank-check can detect this; it needs an author who is honest about which of their
+> distractors nobody would ever pick.
+
 Remaining debt, current as of the same date:
 
-- **The longest-answer tell.** Per chapter, the longest choice is the correct one in: ch1 58%, ch2
-  58%, ch3 83%, ch4 46%, ch5 82%, ch6 83%. Chapter 5 is the one to fix first — it is the second
-  heaviest chapter on the blueprint (9 of 40) *and* one of the three worst offenders, so it carries
-  more of the 63.3% than any other. Chapters 3 and 6 are equally skewed but draw only 4 and 2. The
-  bank-check prints this line on every build; lower `LONGEST_CEILING_PCT` with each pass.
 - **Pools to ≥5× their blueprint weight.** ch1 12/40, ch2 12/30, ch3 12/20, ch4 **55/55 done**, ch5
   45/45 (done), ch6 12/10 (done). Chapter 1 is the sharpest of the three left, drawing 8 of the
   paper's 40 questions from a pool of 12; the three together supply 18 of 40.

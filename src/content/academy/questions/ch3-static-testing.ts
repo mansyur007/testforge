@@ -14,12 +14,12 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "Static testing examines work products without executing the code; dynamic testing requires execution",
+        text: "Static testing does not execute the code; dynamic testing does",
         correct: true,
       },
-      { id: "b", text: "Static testing can only be done by developers" },
-      { id: "c", text: "Dynamic testing is done before any code exists" },
-      { id: "d", text: "Static testing only applies to test scripts, never to requirements" },
+      { id: "b", text: "Static testing can only be performed by developers, never by testers" },
+      { id: "c", text: "Dynamic testing is carried out before any of the code has been written" },
+      { id: "d", text: "Static testing applies only to test scripts and never to requirements" },
     ],
     explanation:
       "Static testing (reviews, static analysis) evaluates work products — requirements, designs, code — without running them; dynamic testing observes actual execution behaviour. Static testing can be applied to almost any work product, including requirements documents, long before code exists.",
@@ -33,12 +33,12 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "Because the cost of fixing a defect tends to increase the later it is found in the lifecycle",
+        text: "Because the cost of fixing a defect rises the later it is found",
         correct: true,
       },
-      { id: "b", text: "Because reviews are always free to run" },
-      { id: "c", text: "Because requirements defects cannot cause failures" },
-      { id: "d", text: "Because static testing replaces the need for dynamic testing entirely" },
+      { id: "b", text: "Because reviews are free to run, unlike test execution on real environments" },
+      { id: "c", text: "Because defects in requirements cannot cause failures in the delivered product" },
+      { id: "d", text: "Because static testing removes the need to do any dynamic testing at all" },
     ],
     explanation:
       "Defects found early are generally far cheaper to fix than the same defect discovered in production, where it may have propagated into design, code, tests, and documentation, and possibly affected real users.",
@@ -50,14 +50,14 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
     syllabusRef: "FL-3.1.2",
     stem: "Which of the following is a benefit of static testing that dynamic testing cannot provide by itself?",
     choices: [
-      { id: "a", text: "Confirming the runtime performance of an API under load" },
+      { id: "a", text: "Confirming the runtime performance of an API under a realistic load" },
       {
         id: "b",
-        text: "Finding defects in a document that has no executable form, such as a requirements specification",
+        text: "Finding defects in a document that has no executable form",
         correct: true,
       },
-      { id: "c", text: "Verifying the exact HTTP status code returned by an endpoint" },
-      { id: "d", text: "Measuring actual memory usage during execution" },
+      { id: "c", text: "Verifying the exact HTTP status code an endpoint returns on error" },
+      { id: "d", text: "Measuring the memory a process actually uses while it is executing" },
     ],
     explanation:
       "Static testing can evaluate non-executable work products directly, catching defects (ambiguities, missing cases, inconsistencies) in documents that dynamic testing has no way to exercise, since there is nothing to run.",
@@ -69,10 +69,10 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
     syllabusRef: "FL-3.2.1",
     stem: "Which of these is a typical work product examined during a review?",
     choices: [
-      { id: "a", text: "A compiled binary running in production" },
+      { id: "a", text: "A compiled binary already running in production" },
       { id: "b", text: "A requirements specification or a user story", correct: true },
-      { id: "c", text: "A live database backup" },
-      { id: "d", text: "A load-testing dashboard" },
+      { id: "c", text: "A database backup taken last night" },
+      { id: "d", text: "A load-testing dashboard for the API" },
     ],
     explanation:
       "Reviews commonly examine requirements, designs, code, test plans and cases, and similar documents — anything that can be read and evaluated by people without executing it.",
@@ -144,10 +144,10 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
     syllabusRef: "FL-3.2.4",
     stem: "Which of the following is a success factor for reviews, as opposed to a common pitfall?",
     choices: [
-      { id: "a", text: "Reviewers focus on criticizing the author rather than the document" },
-      { id: "b", text: "Each review has a clear, agreed objective and reviewers prepare beforehand", correct: true },
-      { id: "c", text: "No one reads the document until the meeting starts" },
-      { id: "d", text: "Findings are never tracked to closure" },
+      { id: "a", text: "Reviewers concentrate on criticizing the author rather than the document" },
+      { id: "b", text: "Each review has an agreed objective and reviewers prepare beforehand", correct: true },
+      { id: "c", text: "Nobody reads the document until the review meeting has already started" },
+      { id: "d", text: "Findings are raised in the meeting but never tracked through to closure" },
     ],
     explanation:
       "Effective reviews have a clear objective, management support, reviewer preparation, and a focus on the work product rather than the person — the alternatives listed are classic pitfalls that make reviews unproductive or resented.",
@@ -176,12 +176,12 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "The function has many independent paths through its logic, which tends to make it harder to test thoroughly and maintain",
+        text: "The function has many independent paths through its logic",
         correct: true,
       },
-      { id: "b", text: "The function definitely contains a runtime defect" },
-      { id: "c", text: "The function's performance under load has been measured and found slow" },
-      { id: "d", text: "The function has been reviewed and approved" },
+      { id: "b", text: "The function is certain to contain at least one runtime defect" },
+      { id: "c", text: "The function's performance under load has been measured and found to be slow" },
+      { id: "d", text: "The function has been reviewed and approved by a second developer" },
     ],
     explanation:
       "Cyclomatic complexity counts independent decision paths through code; a high score is a static warning sign correlated with harder testing and maintenance, not a direct report of an actual runtime bug.",
@@ -193,10 +193,10 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
     syllabusRef: "FL-3.3.1",
     stem: "Which of these is a benefit of static analysis as part of a CI pipeline?",
     choices: [
-      { id: "a", text: "It replaces the need for any dynamic/functional testing" },
-      { id: "b", text: "It gives fast, automated feedback on code-level issues before a human review happens", correct: true },
-      { id: "c", text: "It guarantees the software meets all business requirements" },
-      { id: "d", text: "It eliminates the need for a build step" },
+      { id: "a", text: "It removes the need for any dynamic or functional testing of the build" },
+      { id: "b", text: "It gives fast automated feedback on code-level issues before review", correct: true },
+      { id: "c", text: "It guarantees that the software meets all of the business requirements" },
+      { id: "d", text: "It eliminates the need for a separate build step in the pipeline" },
     ],
     explanation:
       "Static analysis integrated into CI catches a class of issues automatically and quickly, before code even reaches a human reviewer or a dynamic test — a complement to, not a replacement for, functional and non-functional testing.",

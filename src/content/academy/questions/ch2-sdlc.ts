@@ -13,13 +13,13 @@ export const CH2_SDLC: ExamQuestion[] = [
     syllabusRef: "FL-2.1.1",
     stem: "A team writes acceptance criteria before coding a feature and uses them to drive both development and testing. Which lifecycle characteristic does this best reflect?",
     choices: [
-      { id: "a", text: "Waterfall's strict phase gating" },
+      { id: "a", text: "Waterfall's strict gating between one phase and the next" },
       {
         id: "b",
-        text: "Testing activities start as early as possible and run alongside development",
+        text: "Testing starts early and runs alongside development",
         correct: true,
       },
-      { id: "c", text: "Testing only begins once the whole system is code-complete" },
+      { id: "c", text: "Testing begins only once the whole system is code-complete" },
       { id: "d", text: "Test levels must always run strictly in a fixed sequence" },
     ],
     explanation:
@@ -34,10 +34,10 @@ export const CH2_SDLC: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "A test level is a group of test activities organized and managed together, tied to a stage of development (e.g. component, integration, system, acceptance)",
+        text: "A group of test activities tied to a stage of development",
         correct: true,
       },
-      { id: "b", text: "A test level is always automated" },
+      { id: "b", text: "A test level is always automated, whereas a test type never is" },
       { id: "c", text: "A test level always follows the test type that precedes it" },
       { id: "d", text: "A test level applies only to non-functional testing" },
     ],
@@ -66,14 +66,14 @@ export const CH2_SDLC: ExamQuestion[] = [
     syllabusRef: "FL-2.2.4",
     stem: "Which of the following is typically the primary goal of acceptance testing?",
     choices: [
-      { id: "a", text: "Finding as many defects as possible in isolated units of code" },
+      { id: "a", text: "Finding as many defects as possible inside isolated units of code" },
       {
         id: "b",
-        text: "Establishing confidence that the system meets user, business, or contractual requirements",
+        text: "Establishing confidence that the system meets the requirements",
         correct: true,
       },
-      { id: "c", text: "Verifying two components exchange data correctly" },
-      { id: "d", text: "Measuring code coverage of unit tests" },
+      { id: "c", text: "Verifying that two components exchange data correctly" },
+      { id: "d", text: "Measuring the code coverage reached by the unit tests" },
     ],
     explanation:
       "Acceptance testing is usually about building confidence that the system is fit for its intended use and ready to release, from the perspective of users, customers, or other authorized stakeholders — not primarily about maximizing defect count.",
@@ -177,7 +177,7 @@ export const CH2_SDLC: ExamQuestion[] = [
     choices: [
       { id: "a", text: "Writing the first draft of a new requirement" },
       { id: "b", text: "A scheduled operating-system upgrade on the production servers", correct: true },
-      { id: "c", text: "Reviewing a design document before coding starts" },
+      { id: "c", text: "Reviewing the design document before any coding starts" },
       { id: "d", text: "Estimating story points in sprint planning" },
     ],
     explanation:
@@ -192,11 +192,11 @@ export const CH2_SDLC: ExamQuestion[] = [
     choices: [
       {
         id: "a",
-        text: "The behaviour and capabilities of the whole system or product, end to end",
+        text: "The behaviour of the whole system or product, end to end",
         correct: true,
       },
-      { id: "b", text: "The interface between exactly two components" },
-      { id: "c", text: "Only the internal logic of a single function" },
+      { id: "b", text: "The interface between exactly two of the components" },
+      { id: "c", text: "Only the internal logic of one individual function" },
       { id: "d", text: "Only non-functional characteristics, never functional ones" },
     ],
     explanation:
