@@ -109,6 +109,24 @@ const SEEDS = 300;
 const byId = new Map(bank.map((q) => [q.id, q]));
 const drawInput = bank.map((q) => ({ id: q.id, chapter: q.chapter }));
 
+// A-10d: the guesser has to know about multi-answer questions, because the
+// client is told which questions they are — `sanitizeQuestion` ships `multi`
+// so the runner can render checkboxes. Scoring a multi question by its first
+// choice alone (what this loop did when the bank held none) counts it wrong
+// unconditionally under set-equality grading, so the simulation would quietly
+// stop covering exactly the questions being added.
+//
+// The strategy modelled is the one a candidate actually gets by drilling the
+// bank: they know a question is multi, and they know the *number* of correct
+// answers the bank habitually uses. Shuffling hides position, not cardinality
+// — if every multi question keys 3 of 5, "pick any 3" is 1-in-10 rather than
+// the 1-in-26 a subset guess costs when the count is unknown. That is the same
+// read-the-bank-not-the-syllabus lift A-10a removed from answer position, so
+// it gets the same treatment: modelled here, and asserted below.
+const multiKeyCounts = bank.filter((q) => q.multi).map((q) => q.choices.filter((c) => c.correct).length);
+const tally = multiKeyCounts.reduce((m, k) => ((m[k] = (m[k] ?? 0) + 1), m), {});
+const kModal = Number(Object.entries(tally).sort((a, b) => b[1] - a[1])[0]?.[0] ?? 1);
+
 let firstChoiceWins = 0;
 let questionsSeen = 0;
 let papersPassed = 0;
@@ -123,7 +141,11 @@ for (let i = 0; i < SEEDS; i++) {
   );
   let score = 0;
   for (const q of shown) {
-    if (q.choices[0].correct) score++;
+    // Set equality, mirroring `gradeAttempt` — picking a subset of the key is
+    // not a partial credit, it is a wrong answer.
+    const want = q.choices.filter((c) => c.correct).map((c) => c.id);
+    const got = q.choices.slice(0, q.multi ? kModal : 1).map((c) => c.id);
+    if (want.length === got.length && want.every((id) => got.includes(id))) score++;
     questionsSeen++;
   }
   firstChoiceWins += score;
@@ -144,6 +166,38 @@ assert(
   papersPassed === 0,
   `${papersPassed} of ${SEEDS} papers passed at ${PASS_PCT}%`,
 );
+
+// A-10d: the structural half of the same concern. The simulation above only
+// punishes a constant key count once enough multi questions are drawn into a
+// paper to move the rate, and the first few chapters' worth never will. This
+// asserts the property directly instead: if the bank's multi questions all key
+// the same number of choices, "how many to tick" is a fact about the bank
+// rather than about the question, and drilling teaches it. Threshold is 3 so a
+// chapter can land its first couple of multi questions without tripping it.
+//
+// Deliberately not asserted: *which* positions are keyed, or that choice counts
+// vary. Position is what `presentPaper` shuffles away, and pinning choice
+// counts would be the same brittleness A-10a's header warns about.
+const multiQs = bank.filter((q) => q.multi);
+if (multiQs.length >= 3) {
+  const distinctKeyCounts = new Set(multiKeyCounts);
+  assert(
+    "multi-answer questions vary how many of their choices are correct",
+    distinctKeyCounts.size >= 2,
+    `all ${multiQs.length} multi questions key exactly ${[...distinctKeyCounts][0]} choices — ` +
+      `a candidate who notices ticks that many and guesses at 1-in-${
+        // C(choices, k) for the commonest shape, as the lift they'd get.
+        (() => {
+          const q = multiQs[0];
+          const n = q.choices.length;
+          const k = [...distinctKeyCounts][0];
+          let c = 1;
+          for (let i = 0; i < k; i++) c = (c * (n - i)) / (i + 1);
+          return Math.round(c);
+        })()
+      } instead of guessing the subset size too`,
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Reported, not asserted: the content debt A-10a's later PRs still owe.

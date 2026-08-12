@@ -18,8 +18,10 @@
 > A-10c shipped 2026-08-12 (resumable attempts, bounded auto-submit).
 > A-10d in progress: first slice landed 2026-08-12 (chapter 4 grown 12→36 questions, still short of
 > its 55-question 5x target; 6 multi-answer questions added bank-wide, was 0; chapter 4's K-level mix
-> shifted toward K3; syllabusRef spread widened to FL-4.1 and FL-4.5, previously uncovered). Chapters
-> 1, 2, 3 and 5 remain untouched — still the bulk of the work.
+> shifted toward K3; syllabusRef spread widened to FL-4.1 and FL-4.5, previously uncovered), then
+> corrected the same day — the new multi-answer questions had a learnable answer-set size, and the
+> bank-check was structurally blind to it. Chapters 1, 2, 3 and 5 remain untouched — still the bulk
+> of the work.
 > A-07 … A-08 planned. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
@@ -1165,13 +1167,50 @@ content K3 — chapter 4 alone now carries 10 of the bank's 16 K3 questions. Ver
 chapter's question count. Chapters 1, 2, 3 and 5 are unchanged and still the bulk of the remaining
 work — chapter 5 in particular, which shares chapter 4's priority but wasn't touched this pass.
 
+> **Corrected 2026-08-12, auditing the slice above before starting chapter 5.** The 6 multi-answer
+> questions shipped with the same defect A-10a exists to prevent, one dimension over. Every one of
+> them was 5 choices with exactly 3 correct, so shuffling — which randomises *position* — left the
+> *cardinality* learnable: a candidate who drills the bank and notices ticks 3 and guesses at 1-in-10
+> instead of the 1-in-26 a subset guess costs when the count is unknown. A 2.6× lift bought by
+> reading the bank rather than the syllabus, which is exactly the trade A-10a closed for answer
+> position. Choice count was a second tell: 5 choices meant multi and 4 meant single, without
+> exception. Both are now broken — key counts span 2/3/4 across five distinct (choices, keys) shapes,
+> and 4- and 5-choice questions appear on both sides of the `multi` flag.
+>
+> Worse than the content bug: **`academy-bank-check.mjs` could not have caught it.** Its guessing
+> simulation scored a paper with `q.choices[0].correct`, which is single-answer logic — under
+> set-equality grading a one-choice pick against a 3-key question is wrong unconditionally, so every
+> multi question was counted wrong without ever being modelled. The guard went blind to precisely the
+> content being added to it. The simulation now grades with set equality against a candidate who has
+> learned the bank's modal key count, and a structural assertion fails the build outright if the multi
+> questions ever share one key count again (threshold 3, so a chapter can land its first couple
+> without tripping it). The assertion was verified by reintroducing the uniform shape and watching the
+> build fail, then reverting — a guard nobody has seen fail is not a guard.
+>
+> One more, unrelated: `ch4-q21` was tautological. It asked which sequence gives 1-switch coverage of
+> the pair `PENDING → PAID → SHIPPED` and offered `PENDING → PAID → SHIPPED` as the answer, so string
+> matching beat knowing the technique, and its correct-answer text was identical to `ch4-q9`'s — two
+> near-twins that could land in the same paper. Replaced with a counting question over an explicit
+> five-transition model (answer: 3 pairs, since DELIVERED and CANCELLED are terminal).
+>
+> The general lesson for the chapters still to be written: **shuffling only launders the dimensions it
+> touches.** Anything else an author does uniformly across a batch — subset size, choice count, stem
+> phrasing, which distractor is the joke one — stays learnable, and `presentPaper` will not save it.
+
 Remaining debt, current as of the same date:
 
 - **Pools to ≥5× their blueprint weight.** ch1 12/40, ch2 12/30, ch3 12/20, ch4 **36/55**, ch5
   10/45, ch6 12/10 (the only one already there). Chapter 5 is now the sharpest gap — it still draws
   90% of its pool per paper, same as before this slice.
-- **Multi-answer questions.** 6 of 94, all in chapter 4. The other five chapters still have none,
-  though the real paper draws them from any chapter.
+- **Multi-answer questions.** 6 of 94, all in chapter 4, now spanning 2/3/4 correct answers over
+  five distinct (choices, keys) shapes. The other five chapters still have none, though the real
+  paper draws them from any chapter — and each should vary its own shapes rather than settling on
+  one, or the build now fails (see the correction above).
+- **`kLevel` against the objective's own level.** Unverified, and it needs the same human pass §5.1
+  asks for. `ch4-q34` is tagged K3 on `FL-4.5.2` while `ch4-q35`/`ch4-q36` are K2 on `FL-4.5.3`; if
+  the syllabus rates those objectives K2 and K3 respectively, all three are inverted. Nothing in the
+  bank-check can decide this — it is a read-the-syllabus task, filed with the §5.1 verification below
+  rather than guessed at here.
 - **K-level balance.** K1 28 / K2 50 / **K3 16**. Better than the 28/36/6 split this section
   originally recorded, but still light outside chapter 4 — chapters 1, 2, 3 and 5 carried none of
   this slice's K3 additions.
