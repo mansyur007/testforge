@@ -16,8 +16,11 @@
 > A-10b shipped 2026-08-12 (single-use exam tickets);
 > A-10a shipped 2026-08-12 (per-attempt choice shuffling, real-bank content guard);
 > A-10c shipped 2026-08-12 (resumable attempts, bounded auto-submit).
-> A-07 … A-08 planned; A-10d planned (question-bank build-out — opened 2026-08-12 from an audit of
-> what A-06 actually shipped, see §8). Created 2026-08-10.
+> A-10d in progress: first slice landed 2026-08-12 (chapter 4 grown 12→36 questions, still short of
+> its 55-question 5x target; 6 multi-answer questions added bank-wide, was 0; chapter 4's K-level mix
+> shifted toward K3; syllabusRef spread widened to FL-4.1 and FL-4.5, previously uncovered). Chapters
+> 1, 2, 3 and 5 remain untouched — still the bulk of the work.
+> A-07 … A-08 planned. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
@@ -1148,17 +1151,32 @@ and the server rejects an expired ticket regardless.
 
 Split out of A-10a once shuffling made the answer-position half a code fix. What is left is the
 content, and it is the "weeks of writing" §9 warns about — `scripts/academy-bank-check.mjs` prints
-the current state on every build:
+the current state on every build.
 
-- **Pools to ≥5× their blueprint weight.** Today: ch1 12/40, ch2 12/30, ch3 12/20, ch4 12/55,
-  ch5 10/45, ch6 12/10 (the only one already there). Chapters 4 and 5 are the priority — they carry
-  20 of the paper's 40 questions and currently draw 92%/90% of their pools, which is what makes two
-  papers share 70% of their content.
-- **Multi-answer questions.** Zero of 70, though the engine, ticket, runner and set-equality grading
-  all support them and the real paper has them.
-- **K-level balance.** K1 28 / K2 36 / **K3 6**. K3 is what chapter 4 is mostly about.
-- **`syllabusRef` spread.** 40 distinct refs across 70 questions; `FL-6.1.1` alone carries 6 of
-  chapter 6's 12.
+**First slice, 2026-08-12: chapter 4 only.** Chapter 4 was the sharper of the two priority chapters
+(11 of 40 paper questions against chapter 5's 9, and the one the K-level note below singles out), so
+it went first rather than splitting effort across both. 24 new questions (`ch4-q13`…`ch4-q36`),
+taking chapter 4 from 12 to 36 of its 55-question target, widening its `syllabusRef` coverage from 7
+refs (FL-4.2.x–4.4.1 only) to 14 (adds FL-4.1.1 and all of FL-4.5, the collaboration-based
+techniques, previously untouched), adding the bank's first 6 multi-answer questions, and skewing new
+content K3 — chapter 4 alone now carries 10 of the bank's 16 K3 questions. Verified against
+`academy-bank-check.mjs`, `academy-exam-selftest.mjs`, `academy-checks-selftest.mjs` and `tsc
+--noEmit`; no e2e change needed since nothing in `e2e/academy.spec.ts` or the engine hardcodes a
+chapter's question count. Chapters 1, 2, 3 and 5 are unchanged and still the bulk of the remaining
+work — chapter 5 in particular, which shares chapter 4's priority but wasn't touched this pass.
+
+Remaining debt, current as of the same date:
+
+- **Pools to ≥5× their blueprint weight.** ch1 12/40, ch2 12/30, ch3 12/20, ch4 **36/55**, ch5
+  10/45, ch6 12/10 (the only one already there). Chapter 5 is now the sharpest gap — it still draws
+  90% of its pool per paper, same as before this slice.
+- **Multi-answer questions.** 6 of 94, all in chapter 4. The other five chapters still have none,
+  though the real paper draws them from any chapter.
+- **K-level balance.** K1 28 / K2 50 / **K3 16**. Better than the 28/36/6 split this section
+  originally recorded, but still light outside chapter 4 — chapters 1, 2, 3 and 5 carried none of
+  this slice's K3 additions.
+- **`syllabusRef` spread.** 47 distinct refs across 94 questions. `FL-6.1.1` still alone carries 6 of
+  chapter 6's 12 — chapter 6 wasn't part of this slice either.
 
 When the pools grow, turn the bank-check's *reported* debt lines into *asserted* ones — the script
 is written so that is a one-line change per check, and until then a build that fails on content the
