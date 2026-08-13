@@ -32,10 +32,11 @@
 > questions citing objective codes that do not exist, 6 testing material ISTQB removed from
 > Foundation in v4.0, and 58 whose K-level contradicts their objective — none of it detectable
 > without the document. **Shipped 2026-08-13**: the 64 objectives are in the repo as data, 70 refs
-> and 73 K-levels are corrected, the 6 unexaminable questions are rewritten, and two build assertions
-> make the whole class of error unrepresentable. It also closes half of §5.1's "verify before
-> seeding" warning; the other half (chapter weights, the 65% pass line) is now blocked on two ISTQB
-> documents the project does not have.
+> and 73 K-levels are corrected, the 6 unexaminable questions are rewritten, and three build
+> assertions make the whole class of error unrepresentable. It also closes half of §5.1's "verify
+> before seeding" warning. The owner then supplied the exam structure on 2026-08-13 — 40 questions,
+> 65% pass, 60 minutes plus 15 in a non-native language, all of which `exams.ts` already matches — so
+> what is still unverified is **the per-chapter split alone** (8 / 6 / 4 / 11 / 9 / 2).
 > A-07 … A-08 planned. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
@@ -338,6 +339,23 @@ speakers — offered as a checkbox at start), **pass at 65% = 26/40**, points di
 > hand. Until one of them is, the weights and the pass mark are an informed guess, and **the exam
 > result page must not claim equivalence with the real exam**. Getting hold of either document
 > closes this item outright.
+>
+> **Narrowed again 2026-08-13, owner-supplied.** The exam structure for CTFL v4.0: **40 questions,
+> pass at 65% (26 of 40), 60 minutes, plus 15 further minutes when the exam is not sat in the
+> candidate's native language.** That confirms three of the four numbers this project has been
+> running on since A-06 — the pass line, the base duration and the extra-time allowance — and
+> `exams.ts` already matches all three (`passPct` 65, `durationSec` 60 min, `extraTimeSec` 75 min,
+> which is the *total* under the allowance rather than the increment; see the field's own note).
+>
+> **What is still open is only the per-chapter weights** — the 8 / 6 / 4 / 11 / 9 / 2 split. Note the
+> provenance difference, because it is the whole point of A-10e: the version, question count and
+> learning objectives were read off documents the project holds, while the line above was supplied by
+> the owner and is not backed by a document here. That is good enough to stop calling the pass mark a
+> guess, and not good enough to promote the weights by association. They were "authored from memory
+> of the syllabus" exactly like the `syllabusRef` tags A-10e had to correct 70 of, and 40 questions
+> can be split six ways in a great many plausible-looking ways. **Owner action is now narrower: the
+> per-chapter question counts, from "Exam Structure Tables" or equivalent.** Until then the exam
+> result page still must not claim equivalence with the real paper.
 
 Bank target: **≥300 questions**, ≥5× the number drawn per chapter, each tagged `chapter`,
 `kLevel` (K1/K2/K3), `syllabusRef` (e.g. `FL-4.2.1`), with a written explanation and, where the
@@ -1546,6 +1564,14 @@ pass before anyone studies for the real exam from this bank.
 > to sit, and worth saying plainly so nobody re-opens the research from scratch. **Owner action:
 > obtain either document.** If neither can be had, the fallback is to state in the exam UI that the
 > blueprint is TestForge's approximation, rather than to keep implying equivalence.
+>
+> **Narrowed to one number, 2026-08-13.** The owner supplied the exam structure: 40 questions, pass
+> at 65% (26 of 40), 60 minutes plus 15 when the exam is not sat in the candidate's native language.
+> `exams.ts` already matches all of it. **What is left is the per-chapter split alone** — 8 / 6 / 4 /
+> 11 / 9 / 2 — which that line does not cover and which is the half that actually shapes which
+> questions a paper draws. Deliberately not upgraded by association: it came from the same "authored
+> from memory" process A-10e had to correct 70 refs and 73 K-levels out of, and the fallback above
+> still stands until a document says otherwise. See §5.1.
 
 **`markLessonDoneAction` does not validate its slugs.** `claimAcademyProgress` resolves every slug
 through `findLessonTrack` and skips what it can't place; the direct toggle action does not, so a
