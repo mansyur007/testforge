@@ -12,22 +12,24 @@ import { CH6_TOOLS } from "./ch6-tools";
 // `explanation` never reach a client bundle except through
 // `sanitizeQuestion()`/the grading action. See docs/QA-ACADEMY.md §2.2, §5.1.
 //
-// **Content status (2026-08-13, A-10d's fifth slice).** The plan's bank target
-// is ≥300 questions, ≥5x the per-chapter draw count. This holds **176**:
-// chapters 1 (40), 4 (55), 5 (45) and 6 (12) are at or past their targets, and
-// chapters 2 (12/30) and 3 (12/20) are the whole of the remaining debt.
+// **Content status (2026-08-13, A-10d's sixth slice).** This holds **202**
+// questions, and **every chapter is at or above 5x what the blueprint draws
+// from it** — ch1 40, ch2 30, ch3 20, ch4 55, ch5 45, ch6 12. All 64 learning
+// objectives have at least one question. Both of those are now *assertions* in
+// academy-bank-check.mjs rather than printed debt, so the coverage cannot be
+// removed without failing the build.
+//
+// The plan's other target, ≥300 questions, is not met and is now the open
+// question rather than a task: 200 is what 5x yields, and chapter 6 cannot grow
+// far past 12 because the syllabus gives it two objectives. Reaching 300 means
+// deepening chapters that are already at target, which is worth doing for the
+// draw-heavy ones (ch4 draws 11, ch5 draws 9) and hard to justify for ch6. See
+// docs/QA-ACADEMY.md §8 (A-10d) — it needs a decision, not another slice.
 // (Before A-10d this comment said 72, then 70; both were wrong, and nothing
 // caught it because scripts/academy-exam-selftest.mjs runs against a synthetic
 // 12-per-chapter bank rather than this file. scripts/academy-bank-check.mjs
 // now reads the real bank and prints the counts on every build, so the number
 // above is a convenience rather than the source of truth.)
-//
-// The shortfall now sits on chapters 2 and 3, which the blueprint draws 10 of
-// a paper's 40 questions from — chapter 2 the sharper, drawing 6 from a pool of
-// 12. The writing order for both is the untested-objective list the bank-check
-// prints, not the pool count: chapter 2 is missing five of the six FL-2.1.x
-// objectives, which is most of what makes it a chapter about modern lifecycles
-// rather than about test levels.
 //
 // **On `syllabusRef` and `kLevel` — read before adding a question (A-10e).**
 // This comment used to end "every question here carries a real `syllabusRef`
