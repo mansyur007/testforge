@@ -4267,10 +4267,13 @@ with the `SuiteFolderGrid` work noted above.
   backs off 2s/6s/18s before handing over a manual **Submit now**; guarded by **TC-E2E-115** and
   **TC-E2E-116**, both proved to fail. A-10a also adds the selftest that would have caught the
   chapter-5 shortfall — the existing one runs against a synthetic 12-per-chapter bank, so it is blind
-  to the real content. **A-10d** is writing, not code: four slices shipped 2026-08-12 (#171–#175)
-  taking the bank 70 → 148 questions, completing chapters 4 and 5, and closing the longest-answer
-  tell (a candidate always picking the longest choice scored 65.2% — a pass — and now scores 31.4%
-  and passes no paper); chapters 1, 2 and 3 remain at 12 each, ~54 questions of debt.
+  to the real content. **A-10d** is writing, not code: five slices shipped, four on 2026-08-12
+  (#171–#175) taking the bank 70 → 148 questions, completing chapters 4 and 5, and closing the
+  longest-answer tell (a candidate always picking the longest choice scored 65.2% — a pass — and now
+  scores 31.4% and passes no paper), then chapter 1 completed 12 → 40 on 2026-08-13, the first slice
+  written after A-10e and so the first driven by the untested-objective list the build prints: eight
+  of chapter 1's fourteen objectives had no question at all and took 21 of the 28 new ones. Chapters
+  2 (12/30) and 3 (12/20) are what is left, ~26 questions of debt.
 - **A-10e** `[x]` shipped 2026-08-13 — **syllabus alignment**, opened 2026-08-12 once the owner supplied the
   real CTFL v4.0.1 syllabus PDF. Every tag in the bank had been authored from memory of the syllabus
   rather than from it, and an audit against the real document found **26 of 148 questions citing
