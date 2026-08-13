@@ -23,6 +23,14 @@ import {
   type GradedAttempt,
 } from "@/lib/academy/exam";
 import { getQuestion } from "@/content/academy/questions";
+import {
+  findCertificateSerial,
+  issueExamCertificate,
+  issueTrackCertificateIfComplete,
+  listMyCertificates,
+  setCertificateHidden,
+} from "@/lib/academy/certificates";
+import type { MyCertificate } from "@/lib/academy/types";
 
 // A-02: grading for the in-lesson self-check.
 //
@@ -258,6 +266,13 @@ export async function markLessonDoneAction(
     entityId: lessonSlug,
     detail: trackSlug,
   });
+
+  // A-07: the lesson that completes a track earns its certificate. `trackSlug`
+  // arrives from the client, so this is not trusted as "the track" — it is only
+  // where to *look*; `issueTrackCertificateIfComplete` resolves it against the
+  // published registry and counts real rows, so a forged slug finds no track
+  // and issues nothing.
+  await issueTrackCertificateIfComplete(session.userId, trackSlug);
   return { ok: true };
 }
 
@@ -340,6 +355,15 @@ export async function claimAcademyProgress(
     entityId: session.userId,
     detail: `${rows.length} lesson(s)`,
   });
+
+  // A-07: a track finished anonymously and claimed at signup never passes
+  // through `markLessonDoneAction`, so its certificate has to be issued here
+  // too — otherwise the hybrid placement's whole funnel (§1: read anonymously,
+  // sign up to keep it) would hand back progress but silently swallow the one
+  // artifact worth signing up for. One check per track the claim touched.
+  for (const trackSlug of Array.from(new Set(rows.map((r) => r.trackSlug)))) {
+    await issueTrackCertificateIfComplete(session.userId, trackSlug);
+  }
   return { claimed: rows.length };
 }
 
@@ -469,8 +493,32 @@ export async function submitExamAction(
     entityId: attempt.id,
     detail: `${payload.templateSlug}:${graded.score}/${graded.total}`,
   });
+
+  // A-07: a passing full paper earns a certificate. This runs *after* the
+  // attempt row exists, which is the ordering that matters: `@@unique([userId,
+  // seed])` is what makes a replayed ticket fail above (A-10b), so a forged
+  // submission never reaches this line — the certificate inherits the attempt
+  // row's protection instead of needing a rule of its own.
+  const certificate = await issueExamCertificate(
+    session.userId,
+    payload.templateSlug,
+    graded,
+  );
+  if (certificate) {
+    await logAudit({
+      userId: session.userId,
+      action: "academy.certificate_issue",
+      entityType: "certificate",
+      entityId: certificate.serial,
+      detail: `${certificate.kind}:${certificate.refSlug}`,
+    });
+  }
   revalidatePath("/academy/me");
 
+  // The serial is deliberately *not* returned here. A signed-in submission
+  // navigates to `/academy/istqb/practice-exam/[attemptId]`, which reads the
+  // certificate from the database anyway — handing it back as well would put a
+  // second, staler copy of the same fact on the wire.
   return { ...graded, attemptId: attempt.id };
 }
 
@@ -509,6 +557,45 @@ export async function getMyExamAttempts(): Promise<ExamAttemptSummary[]> {
   }));
 }
 
+// ---------------------------------------------------------------------------
+// A-07: certificates. Reading one is public and lives on the page itself
+// (`getPublicCertificate`); these two are the holder's own controls, so they
+// take the §0.2 shape — a session, a tenant guard, an audit row.
+// ---------------------------------------------------------------------------
+
+/** The viewer's certificates for `/academy/me`, hidden ones included. */
+export async function getMyCertificates(): Promise<MyCertificate[]> {
+  const session = await getSession();
+  if (!session) return [];
+  return listMyCertificates(session.userId, session.name);
+}
+
+/**
+ * Take a certificate's public page down, or put it back up. The serial is the
+ * only handle the UI has, and `setCertificateHidden` scopes the write to the
+ * caller's own rows — so someone else's serial matches nothing and returns the
+ * same "not found" a made-up one does, rather than confirming it exists.
+ */
+export async function setCertificateVisibilityAction(
+  serial: string,
+  hidden: boolean,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const session = await getSession();
+  if (!session) return { ok: false, error: "Sign in to manage certificates." };
+
+  const changed = await setCertificateHidden(session.userId, serial, hidden);
+  if (!changed) return { ok: false, error: "Certificate not found." };
+
+  await logAudit({
+    userId: session.userId,
+    action: hidden ? "academy.certificate_hide" : "academy.certificate_unhide",
+    entityType: "certificate",
+    entityId: serial,
+  });
+  revalidatePath("/academy/me");
+  return { ok: true };
+}
+
 /**
  * Full review for `/academy/istqb/practice-exam/[attemptId]` — session-scoped
  * (the route table's "session" auth; there is no anonymous variant of this
@@ -521,6 +608,10 @@ export async function getExamAttempt(attemptId: string): Promise<
   | { error: string }
   | (ExamAttemptSummary & {
       chapterScores: Record<string, { correct: number; total: number }>;
+      /** A-07: set only when this attempt's template earned a certificate and
+       *  its link is on. Read from the row, not recomputed from the score —
+       *  a certificate the holder has hidden must not reappear here. */
+      certificateSerial: string | null;
       review: {
         id: string;
         stem: string;
@@ -578,6 +669,9 @@ export async function getExamAttempt(attemptId: string): Promise<
     submittedAt: attempt.submittedAt ? attempt.submittedAt.toISOString() : null,
     startedAt: attempt.startedAt.toISOString(),
     chapterScores: JSON.parse(attempt.chapterScoresJson || "{}"),
+    certificateSerial: attempt.passed
+      ? await findCertificateSerial(session.userId, "EXAM", attempt.templateSlug)
+      : null,
     review,
   };
 }

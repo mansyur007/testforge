@@ -36,6 +36,10 @@ export const MODEL_ORDER = [
   "TwoFactorRecoveryCode",
   "LessonProgress",
   "ExamAttempt",
+  // A-07: after User (its only foreign key), and next to the two Academy tables
+  // whose achievements it records. A restored certificate keeps its serial, so
+  // a link shared before the backup still resolves afterwards.
+  "Certificate",
   "Project",
   "ProjectMember",
   "Milestone",
