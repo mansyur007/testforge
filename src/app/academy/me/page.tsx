@@ -7,8 +7,7 @@ import { requireSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { publishedLessons, publishedTracks } from "@/content/academy";
 import { NOINDEX } from "@/lib/seo";
-import { getMyCertificates, getMyExamAttempts } from "@/app/actions/academy";
-import { CertificateList } from "@/components/academy/CertificateList";
+import { getMyExamAttempts } from "@/app/actions/academy";
 
 // A-05: the one Academy page that needs a session — progress belongs to
 // somebody, same reasoning as /academy/sandbox. Everything else under
@@ -40,10 +39,7 @@ export default async function AcademyMePage() {
 
   const totalDone = tracks.reduce((n, t) => n + t.done, 0);
   const totalLessons = tracks.reduce((n, t) => n + t.lessons.length, 0);
-  const [attempts, certificates] = await Promise.all([
-    getMyExamAttempts(),
-    getMyCertificates(),
-  ]);
+  const attempts = await getMyExamAttempts();
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
@@ -166,10 +162,6 @@ export default async function AcademyMePage() {
           </ul>
         )}
       </section>
-
-      {/* A-07: certificates, below the evidence that earned them — a reader who
-          wants to check one is one section away from the attempt it came from. */}
-      <CertificateList certificates={certificates} />
     </main>
   );
 }

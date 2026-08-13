@@ -29,9 +29,7 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   cases get reviewed in pull requests like the rest of your code.
 - **QA Academy** (beta) — a free roadmap from zero to professional QA at `/academy`:
   testing fundamentals, manual QA at work, automation, and Foundation Level exam
-  prep, practised in a real project ([plan](docs/QA-ACADEMY.md)). Finish a track or
-  pass the full practice exam and you get a certificate on a shareable page — a
-  record of practice, not a professional qualification.
+  prep, practised in a real project ([plan](docs/QA-ACADEMY.md)).
 - **Self-hosted and free** — one `docker compose up`, SQLite or PostgreSQL,
   unlimited users, no per-seat pricing, MIT licensed.
 

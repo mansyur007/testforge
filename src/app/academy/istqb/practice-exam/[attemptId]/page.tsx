@@ -57,33 +57,6 @@ export default async function ExamAttemptPage({
             </p>
           </div>
 
-          {/* A-07: the certificate this attempt earned. Only the full paper
-              earns one, and `certificateSerial` is null when the holder has
-              turned its link off — so this block is absent rather than
-              offering a link that would 404. */}
-          {attempt.certificateSerial && (
-            <div
-              data-testid="exam-attempt-certificate"
-              className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-accent-ring bg-accent-soft p-6"
-            >
-              <div>
-                <p className="font-semibold text-content-strong">
-                  You&rsquo;ve earned a certificate
-                </p>
-                <p className="mt-1 text-sm text-content-muted">
-                  A public page anyone with the link can read. Turn the link off
-                  any time from My progress.
-                </p>
-              </div>
-              <Link
-                href={`/academy/certificate/${attempt.certificateSerial}`}
-                className="min-h-[44px] shrink-0 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent-hover"
-              >
-                View certificate
-              </Link>
-            </div>
-          )}
-
           <div className="mt-6 rounded-2xl border border-hairline bg-surface p-6">
             <h2 className="font-semibold text-content-strong">Per-chapter breakdown</h2>
             <ul className="mt-3 space-y-2">
