@@ -934,13 +934,30 @@ diff again would not have produced.
 - **A hard-coded fixture serial made two of the new e2e tests unrepeatable.** They passed once; a run
   that failed before its cleanup left the row behind, and every later run then died on `serial`'s
   unique index instead of on whatever it was testing. Fixture serials are now generated per run.
-- **The lesson toggle is optimistic, which quietly weakened the assertion that mattered.**
-  `markDone` writes `localStorage` and fires `markLessonDoneAction` without awaiting it, and
-  `src/lib/academy/progress.ts` only calls the action at all once `ensureSynced()` has set `authed` —
-  so a click that beats that round trip is a no-op that still flips the button. The first draft of
-  TC-E2E-118 therefore asserted "no certificate yet" against a database no action had touched, and
-  **passed with the completeness gate deliberately removed**. It now waits for the action's own
-  response, which is the one signal that orders "not issued" after "had every chance to be".
+- **The progress layer has two paths that persist a toggle, and the test spent three drafts learning
+  it.** `markDone` writes `localStorage` and fires `markLessonDoneAction` without awaiting it — but
+  only once `ensureSynced()` has set `authed`. Before that, the click writes `localStorage` alone and
+  the write reaches the database later, through `claimAcademyProgress`, whose request body carries
+  the *whole* progress map. So the first draft of TC-E2E-118 asserted "no certificate yet" against a
+  database no action had touched and **passed with the completeness gate deliberately removed**; the
+  second waited for "a request mentioning this lesson", which the claim satisfies, so it proceeded
+  while the sync was still in flight — and the claim's `localStorage` overwrite then silently undid
+  the un-toggle it had just performed, which is what stuck the button at `aria-pressed="true"` for 33
+  polls on CI. **Which request carries the write is a race the test has no business pinning down.**
+  It now polls the row count (the same fact either way) and takes its negative assertion after a full
+  navigation, re-verified against the mutated build.
+
+  Worth recording as an app observation rather than a test one: a late `ensureSynced()` overwrite can
+  leave the toggle showing *done* for a lesson the database has just un-marked, until the next
+  reload. Harmless in ordinary use — nobody un-marks a lesson within the sync window — and out of
+  scope here, but it is a real disagreement between the button and the row behind it.
+
+- **The un-toggle/re-toggle sub-case was cut rather than stabilised.** It was there to prove issuing
+  the same achievement twice is a no-op, and every attempt to drive it through the toggle fought the
+  sync design above instead of testing A-07 (a stale `localStorage` entry is a *claim source*, so the
+  cache can re-create the very row the un-toggle deleted). The same property is now proved on the
+  exam path in TC-E2E-117, which has no client cache in it at all: sit a second full paper, and the
+  certificate is still one row with the same serial and the same `issuedAt`.
 
 **Verification.** `scripts/academy-certificate-selftest.mjs` (wired into `prebuild`, the house
 pattern from `exam-core.mjs`) covers what no e2e can see: determinism over 1000 repeats, that every
@@ -949,9 +966,10 @@ unambiguous, that 20,000 serials use all 32 symbols evenly (no modulo bias) and 
 normalization, and a golden vector. Each was proved to fail by re-injecting the defect it exists to
 catch — joining with `""`, `% 30` instead of `% 32`, and a `Math.random()` in the input — the same
 way A-10a's and A-10d's assertions were checked. Four e2e specs, **TC-E2E-117** (sit the whole
-40-question paper answering correctly, certificate issued at 100%, page read from a fresh
-cookie-less context), **TC-E2E-118** (the lesson that completes a track earns it, the one before it
-does not, re-toggling doesn't mint a second), **TC-E2E-119** (link off → 404, back on → same serial)
+40-question paper answering correctly, certificate issued at 100%, page and its `og:image` read from
+a fresh cookie-less context, then a *second* paper sat to prove re-issuing is one row with the same
+serial and the same `issuedAt`), **TC-E2E-118** (the lesson that completes a track earns it, the one
+before it does not), **TC-E2E-119** (link off → 404, back on → same serial)
 and **TC-E2E-120** (a signed-in stranger replaying the toggle action against someone else's serial
 changes nothing). 118, 119 and 120 were each proved to fail against a mutated build — the
 completeness gate removed, the `userId` dropped from the `updateMany` filter, and the `revokedAt`

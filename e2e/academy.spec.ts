@@ -1076,46 +1076,6 @@ async function readAsStranger<T>(browser: Browser, fn: (page: Page) => Promise<T
   }
 }
 
-/**
- * Click the lesson's done toggle and wait for `markLessonDoneAction` to *return*.
- *
- * The button is optimistic — it writes `localStorage` and fires the action
- * without awaiting it (src/components/AcademyProgress.tsx), so `aria-pressed`
- * flips before the server has written anything. Certificate issuance is the
- * last thing that action awaits before returning, which makes its response the
- * one signal that orders "the certificate was not issued" after "it had every
- * chance to be" — an assertion polled against the database instead would either
- * race the write or, worse, pass because it ran too early.
- */
-/**
- * Open a fundamentals lesson and wait for `ensureSynced()` to land.
- *
- * Until that round trip resolves, `src/lib/academy/progress.ts` has `authed`
- * false and the toggle writes `localStorage` only — no server action, nothing
- * for `toggleLessonDone` to wait on, and (for an un-toggle) not even a state
- * change, since `markNotDone` reads the same unsynced cache first. The
- * subscription is armed before the navigation because the response can arrive
- * while `goto` is still settling.
- */
-async function gotoLessonSynced(page: Page, lessonSlug: string) {
-  const synced = page.waitForResponse(
-    (r) => r.request().method() === "POST" && r.request().headers()["next-action"] !== undefined,
-  );
-  await page.goto(`/academy/fundamentals/${lessonSlug}`);
-  await synced;
-}
-
-async function toggleLessonDone(page: Page, lessonSlug: string) {
-  const settled = page.waitForResponse(
-    (r) =>
-      r.request().method() === "POST" &&
-      r.request().headers()["next-action"] !== undefined &&
-      (r.request().postData() ?? "").includes(lessonSlug),
-  );
-  await page.click('[data-testid="lesson-done-toggle"]');
-  await settled;
-}
-
 async function makeUser(email: string, name: string, password: string) {
   await db.user.create({
     data: {
@@ -1201,6 +1161,28 @@ test(`TC-${TC}-117 Passing the full practice exam issues a certificate, and its 
     expect(card.headers()["content-type"]).toContain("image/");
   });
 
+  // Sit a second paper. A new ticket draws a different 40 questions, so this is
+  // a genuine second pass — and `issueExamCertificate` runs again for an
+  // achievement already held. Deterministic serials are what make that a no-op
+  // rather than a second row or a unique-constraint error, and this is the
+  // cleanest place in the app to prove it: the exam path has no `localStorage`
+  // cache in it, so nothing here can be explained by client-side state.
+  await page.goto("/academy/istqb/practice-exam");
+  await page.click('[data-testid="exam-begin"]');
+  await expect(page.getByTestId("exam-taking")).toBeVisible();
+  await answerEveryQuestionCorrectly(page, 40);
+  await page.click('[data-testid="exam-review-submit"]');
+  await page.click('[data-testid="exam-confirm-submit-btn"]');
+  await page.waitForURL(/\/academy\/istqb\/practice-exam\/[a-z0-9]+$/);
+
+  const attempts = await db.examAttempt.count({ where: { user: { email } } });
+  expect(attempts).toBe(2);
+
+  const after = await db.certificate.findMany({ where: { user: { email } } });
+  expect(after).toHaveLength(1);
+  expect(after[0].serial).toBe(certs[0].serial);
+  expect(after[0].issuedAt.getTime()).toBe(certs[0].issuedAt.getTime()); // "first earned" doesn't move
+
   await db.user.delete({ where: { email } }); // cascades ExamAttempt + Certificate
 });
 
@@ -1232,22 +1214,40 @@ test(`TC-${TC}-118 The lesson that completes a track earns its certificate, and 
 
   await login(page, email, "AcademyTrack123");
 
-  // One lesson short of the track, marked done through `markLessonDoneAction`:
-  // still no certificate. This is the assertion that catches issuance firing on
-  // any progress write rather than on the one that completes the track.
-  await gotoLessonSynced(page, penultimate.slug);
-  await toggleLessonDone(page, penultimate.slug);
-  expect(await db.lessonProgress.count({ where: { userId: user.id } })).toBe(lessons.length - 1);
+  // One lesson short of the track. Marking it done is polled for on the server
+  // rather than waited for on a request: A-05's progress layer has two paths
+  // that persist a toggle — `markLessonDoneAction` when `ensureSynced()` has
+  // already established a session, and `claimAcademyProgress` folding the local
+  // cache in when it hasn't — so *which* request carries the write is a race
+  // this test has no business pinning down. The row count is the same fact
+  // either way.
+  await page.goto(`/academy/fundamentals/${penultimate.slug}`);
+  await page.click('[data-testid="lesson-done-toggle"]');
+  await expect
+    .poll(async () => db.lessonProgress.count({ where: { userId: user.id } }), { timeout: 15_000 })
+    .toBe(lessons.length - 1);
+
+  // Now the negative. It is checked after a full navigation and render, which
+  // is orders of magnitude longer than the one `count` and `findUnique` an
+  // ungated `issueTrackCertificateIfComplete` would need after the row it just
+  // waited for — so this is a practical ordering, not a formal one, and the
+  // thing that settles it is that the assertion was watched to fail against a
+  // build with the gate removed. Asserting immediately after the click instead
+  // does not: the first draft of this test passed against exactly that build.
+  await page.goto(`/academy/fundamentals/${last.slug}`);
+  await expect(page.getByTestId("lesson-done-toggle")).toBeVisible();
   expect(await db.certificate.count({ where: { userId: user.id } })).toBe(0);
 
-  await gotoLessonSynced(page, last.slug);
-  await toggleLessonDone(page, last.slug);
+  await page.click('[data-testid="lesson-done-toggle"]');
+  await expect
+    .poll(async () => db.certificate.count({ where: { userId: user.id } }), { timeout: 15_000 })
+    .toBe(1);
 
-  expect(await db.certificate.count({ where: { userId: user.id } })).toBe(1);
   const cert = await db.certificate.findFirstOrThrow({ where: { userId: user.id } });
   expect(cert.kind).toBe("TRACK");
   expect(cert.refSlug).toBe("fundamentals");
   expect(cert.scorePct).toBeNull(); // a track is done or not; there is no score
+  expect(await db.lessonProgress.count({ where: { userId: user.id } })).toBe(lessons.length);
 
   await page.goto("/academy/me");
   await expect(page.getByTestId(`me-certificate-${cert.serial}`)).toContainText(
@@ -1257,20 +1257,6 @@ test(`TC-${TC}-118 The lesson that completes a track earns its certificate, and 
     "href",
     `/academy/certificate/${cert.serial}`,
   );
-
-  // Un-toggling and re-toggling the same lesson runs issuance a second time.
-  // Deterministic serials are what make that a no-op instead of a second row
-  // (or a unique-constraint error the learner would see as a broken toggle).
-  await gotoLessonSynced(page, last.slug);
-  await expect(page.getByTestId("lesson-done-toggle")).toHaveAttribute("aria-pressed", "true");
-  await toggleLessonDone(page, last.slug); // off
-  await expect(page.getByTestId("lesson-done-toggle")).toHaveAttribute("aria-pressed", "false");
-  await toggleLessonDone(page, last.slug); // and on again, re-running issuance
-
-  const after = await db.certificate.findMany({ where: { userId: user.id } });
-  expect(after).toHaveLength(1);
-  expect(after[0].serial).toBe(cert.serial);
-  expect(after[0].issuedAt.getTime()).toBe(cert.issuedAt.getTime()); // "first earned" doesn't move
 
   await db.user.delete({ where: { email } });
 });

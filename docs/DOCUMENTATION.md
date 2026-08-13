@@ -4359,8 +4359,12 @@ with the `SuiteFolderGrid` work noted above.
   both triggers, the cookie-less read, the link switch, and the tenant guard, the last three proved
   against mutated builds. Two findings from the verification pass are recorded in
   `docs/QA-ACADEMY.md` § A-07: the model was missing from L-05's backup `MODEL_ORDER` (caught by
-  `backup-selfcheck.mjs` on the first `prebuild`), and the optimistic lesson toggle made the first
-  draft of TC-E2E-118 pass against a build with the completeness gate removed.
+  `backup-selfcheck.mjs` on the first `prebuild`), and A-05's progress layer persists a toggle down
+  two different paths — `markLessonDoneAction` once `ensureSynced()` has set `authed`, and
+  `claimAcademyProgress` before that — which made the first draft of TC-E2E-118 pass against a build
+  with the completeness gate removed, and the second hang on a button a late `localStorage` overwrite
+  had silently un-clicked. The test polls the row count now, and the idempotence sub-case moved to
+  the exam path, which has no client cache in it.
 
 ---
 
