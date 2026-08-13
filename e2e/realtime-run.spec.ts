@@ -38,6 +38,44 @@ async function createRun(page: Page, name: string) {
 const runUrl = (runId: string) =>
   `/projects/${E2E.projectSlug}/runs/${runId}`;
 
+/** The two requests a session must complete before the other side can see it,
+ *  and before it can see anything the other side does: the SSE subscription
+ *  (whose first frame is the current presence snapshot — nothing published
+ *  before it is subscribed gets replayed) and the heartbeat POST that puts this
+ *  session into that snapshot. Waiting on them turns "the avatar never showed
+ *  up in 20 s" into "this half of the handshake never landed", and lets the
+ *  assertions that follow keep a timeout that matches what they actually wait
+ *  for — one SSE frame — instead of covering for the handshake as well.
+ *
+ *  Register before navigating: Playwright only reports responses that arrive
+ *  after the waiter exists. */
+function handshake(p: Page, runId: string) {
+  return Promise.all([
+    p.waitForResponse((r) => r.url().includes(`/api/runs/${runId}/events`), {
+      timeout: 20_000,
+    }),
+    p.waitForResponse(
+      (r) =>
+        r.url().includes(`/api/runs/${runId}/presence`) &&
+        r.request().method() === "POST",
+      { timeout: 20_000 }
+    ),
+  ]);
+}
+
+/** Bodies of every presence POST a session sends, beacons included (Chromium
+ *  reports `sendBeacon` as a normal request). Mounting the executor must send
+ *  heartbeats and nothing else — a `{leave:true}` among them is the regression
+ *  that made this spec flaky, and naming it beats a bare visibility timeout. */
+function presencePosts(p: Page, runId: string): string[] {
+  const bodies: string[] = [];
+  p.on("request", (r) => {
+    if (r.method() === "POST" && r.url().includes(`/api/runs/${runId}/presence`))
+      bodies.push(r.postData() ?? "");
+  });
+  return bodies;
+}
+
 test(`TC-${TC}-48 Realtime: presence + live results across two sessions`, async ({
   page,
   browser,
@@ -47,16 +85,30 @@ test(`TC-${TC}-48 Realtime: presence + live results across two sessions`, async 
   const run = await createRun(page, `Realtime run ${ts}`);
   const b = await newUserPage(browser, E2E.reviewerEmail, E2E.password);
 
-  await page.goto(runUrl(run.id));
-  await b.page.goto(runUrl(run.id));
+  const beatsA = presencePosts(page, run.id);
+  const beatsB = presencePosts(b.page, run.id);
 
-  // Presence: each side sees the other's avatar (heartbeat fires on mount).
+  const readyA = handshake(page, run.id);
+  await page.goto(runUrl(run.id));
+  const readyB = handshake(b.page, run.id);
+  await b.page.goto(runUrl(run.id));
+  await Promise.all([readyA, readyB]);
+
+  // Mounting is not leaving. A leave beacon sent while mounting races the
+  // heartbeats around it — same client, four unordered requests — and deletes a
+  // live session when it lands last, which is exactly the 20 s hole this test
+  // used to fall into.
+  expect(beatsA.filter((body) => body.includes('"leave"'))).toEqual([]);
+  expect(beatsB.filter((body) => body.includes('"leave"'))).toEqual([]);
+
+  // Presence: both sessions are in the map and both are subscribed, so each
+  // side's avatar is one SSE frame away.
   await expect(
     page.locator('[data-testid="presence-avatar"]').first()
-  ).toBeVisible({ timeout: 20_000 });
+  ).toBeVisible({ timeout: 10_000 });
   await expect(
     b.page.locator('[data-testid="presence-avatar"]').first()
-  ).toBeVisible({ timeout: 20_000 });
+  ).toBeVisible({ timeout: 10_000 });
 
   // A submits PASSED on the first case → B's row flashes + updates, no reload.
   const rowB = b.page
@@ -83,8 +135,13 @@ test(`TC-${TC}-49 Realtime: conflict toast + Undo restores my value`, async ({
   const run = await createRun(page, `Conflict run ${ts}`);
   const b = await newUserPage(browser, E2E.reviewerEmail, E2E.password);
 
+  // A must be subscribed before B submits: result events go to whoever is on
+  // the bus at publish time and are never replayed to a late subscriber.
+  const readyA = handshake(page, run.id);
   await page.goto(runUrl(run.id));
+  const readyB = handshake(b.page, run.id);
   await b.page.goto(runUrl(run.id));
+  await Promise.all([readyA, readyB]);
 
   // Both sides work the SAME (first) case. B records FAILED…
   await b.page.click('[data-testid="submit-status-FAILED"]');

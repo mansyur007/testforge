@@ -17,6 +17,24 @@ export default defineConfig({
   // `main` too. 60s is a budget that matches what the tests actually do; a
   // genuinely hung test still fails, just 30s later.
   timeout: 60_000,
+  // The same reasoning, applied to the budget it was missing from. `timeout`
+  // above governs a whole test; every individual `expect()` kept Playwright's
+  // 5s default, so a spec could sit well inside its 60s budget and still fail
+  // on one assertion that happened to be the first to render a route.
+  //
+  // That is exactly how TC-*-32 failed on PR #177 (run 31611521472), a PR that
+  // touched only the realtime presence hook: the suite runs alphabetically and
+  // only two specs ever render the plan detail route, so
+  // `estimates-forecast.spec.ts` pays its on-demand compile at test #70 and
+  // `plans.spec.ts` gets it warm at #96 — the same submit-and-assert flow, one
+  // red and two green in a single run. The test took 13.5s of its 60s, and the
+  // 5s assertion inside it was the only thing that ran out.
+  //
+  // 15s is the warm cost of these pages with the config comment's own "roughly
+  // double for a cold compile" on top, and a doubling again for a slow CI
+  // worker. An element that genuinely never arrives still fails the test, three
+  // seconds into the same minute it always had.
+  expect: { timeout: 15_000 },
   reporter: [["list"], ["junit", { outputFile: "e2e-results/junit.xml" }]],
   use: {
     baseURL: "http://localhost:3456",
