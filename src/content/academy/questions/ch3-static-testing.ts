@@ -10,6 +10,11 @@ import type { ExamQuestion } from "../types";
 // stakeholder feedback (FL-3.2.1) and the activities of the review process
 // itself (FL-3.2.2), which is the one a candidate is most likely to be asked to
 // put in order.
+//
+// A-10d's eighth slice took it 20 → 26 (q21–q26). Chapter 3 held six of the
+// thirteen objectives still sitting at two questions — more than any other
+// chapter — because its pool is the smallest in the bank while its objective
+// count is not. All eight now meet the asserted depth floor of 3.
 
 export const CH3_STATIC_TESTING: ExamQuestion[] = [
   {
@@ -330,5 +335,95 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
     ],
     explanation:
       "Success factors start with clear objectives and measurable exit criteria, and the syllabus attaches an explicit exception: evaluating the participants is never among those objectives. A review that doubles as an appraisal stops producing candid findings — authors defend, reviewers soften, and the defects stay in the document.",
+  },
+  {
+    id: "ch3-q21",
+    chapter: 3,
+    kLevel: "K1",
+    syllabusRef: "FL-3.1.1",
+    stem: "Which of the following can static testing not evaluate?",
+    choices: [
+      { id: "a", text: "Whether the checkout holds up under 500 concurrent users", correct: true },
+      { id: "b", text: "Whether a user story's acceptance criteria contradict each other" },
+      { id: "c", text: "Whether a test case's expected result matches the requirement" },
+      { id: "d", text: "Whether an API specification is internally consistent" },
+    ],
+    explanation:
+      "Static testing examines a work product without executing it, which covers requirements, user stories, designs, code, test cases, contracts and specifications — anything written down and readable. Behaviour that only exists while the system runs, such as throughput, response time or memory use under load, needs dynamic testing.",
+  },
+  {
+    id: "ch3-q22",
+    chapter: 3,
+    kLevel: "K2",
+    syllabusRef: "FL-3.1.3",
+    stem: "A review finds a null check missing from a function. A dynamic test of the same function produces a crash. What has each of them found directly?",
+    choices: [
+      { id: "a", text: "The review found the defect; the test found a failure", correct: true },
+      { id: "b", text: "Both found the same defect, by two different routes" },
+      { id: "c", text: "The review found a failure; the test found its root cause" },
+      { id: "d", text: "The review found a risk; the test found the defect itself" },
+    ],
+    explanation:
+      "Static testing examines the work product, so it identifies the defect where it sits. Dynamic testing observes behaviour, so what it sees is a failure — the crash — from which the defect still has to be located. That difference is much of why static testing is cheaper per defect: it skips the diagnosis step entirely.",
+  },
+  {
+    id: "ch3-q23",
+    chapter: 3,
+    kLevel: "K1",
+    syllabusRef: "FL-3.2.1",
+    stem: "What is the main thing early and frequent stakeholder feedback prevents?",
+    choices: [
+      { id: "a", text: "Effort spent building on a misunderstood requirement", correct: true },
+      { id: "b", text: "Defects being introduced by developers during coding" },
+      { id: "c", text: "The need to run any acceptance testing before release" },
+      { id: "d", text: "Changes to the requirements once the project has started" },
+    ],
+    explanation:
+      "Feedback loops that run throughout let a misunderstanding be corrected while it is still cheap, before it has been designed around, coded and tested. What it does not do is stop developers making mistakes, remove the need for acceptance testing, or freeze the requirements — it makes changes visible sooner rather than preventing them.",
+  },
+  {
+    id: "ch3-q24",
+    chapter: 3,
+    kLevel: "K1",
+    syllabusRef: "FL-3.2.3",
+    stem: "In a formal review, who is responsible for fixing the defects found in the work product?",
+    choices: [
+      { id: "a", text: "The author, who owns the work product under review", correct: true },
+      { id: "b", text: "The moderator, who ran the meeting where they were raised" },
+      { id: "c", text: "The scribe, who logged each one as the meeting went on" },
+      { id: "d", text: "The reviewers, split between them by area of expertise" },
+    ],
+    explanation:
+      "The author creates the work product and corrects the defects found in it. The review leader or moderator runs the process and mediates, the scribe records what is raised, the reviewers identify anomalies, and the manager decides the review is worth doing at all — none of them takes over the work product itself.",
+  },
+  {
+    id: "ch3-q25",
+    chapter: 3,
+    kLevel: "K2",
+    syllabusRef: "FL-3.2.4",
+    stem: "Technically qualified peers review a design to reach consensus on it and note the alternatives, with a trained facilitator rather than the author leading, and no manager in the room. Which review type is that?",
+    choices: [
+      { id: "a", text: "A technical review, run by and for technical peers", correct: true },
+      { id: "b", text: "A walkthrough, in which the author leads the group through" },
+      { id: "c", text: "An inspection, the most formal type with metrics collected" },
+      { id: "d", text: "An informal review, with no documented process at all" },
+    ],
+    explanation:
+      "A technical review is conducted by technically qualified participants, ideally led by a trained facilitator rather than the author, and aims at consensus and technical decisions. A walkthrough is author-led and often serves knowledge transfer; an inspection is the most formal type, with defined entry and exit criteria and metrics; an informal review has no defined process at all.",
+  },
+  {
+    id: "ch3-q26",
+    chapter: 3,
+    kLevel: "K1",
+    syllabusRef: "FL-3.2.5",
+    stem: "A team schedules a single two-hour review of a 200-page specification, with twelve people attending. Which review success factor is it working against?",
+    choices: [
+      { id: "a", text: "Reviews go better in small chunks, so attention holds", correct: true },
+      { id: "b", text: "Reviews must always be chaired by the document's author" },
+      { id: "c", text: "Reviews should collect metrics on each participant's finds" },
+      { id: "d", text: "Reviews need every stakeholder present to be considered valid" },
+    ],
+    explanation:
+      "Splitting the work product into pieces small enough to review with concentration is one of the named success factors, alongside clear objectives, the right people, adequate preparation and enough time. Author-led meetings describe a walkthrough rather than a general rule, per-participant metrics are the misuse the syllabus explicitly warns against, and filling the room does not improve the findings.",
   },
 ];

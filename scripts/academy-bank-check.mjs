@@ -339,19 +339,31 @@ assert(
 // the reverse of what they measured: not "write more", but "do not delete the
 // coverage someone spent five slices writing".
 //
-// A pool below 5x means the same questions recur across papers — at 12
-// questions for chapter 1's 8-question draw, two papers shared two thirds of
+// A pool below its multiplier means the same questions recur across papers — at
+// 12 questions for chapter 1's 8-question draw, two papers shared two thirds of
 // their chapter 1 content, which makes a second sitting a memory test.
+//
+// A-10d's seventh slice raised the multiplier to 7x for chapters 4 and 5, which
+// is the answer to the plan's old "-300 questions" line. 5x everywhere yields
+// 200 and reaching 300 uniformly would mean padding chapter 6, which has two
+// learning objectives and cannot spread past them. So the multiplier follows
+// the draw instead: chapters 4 and 5 take 11 and 9 of the paper's 40 questions
+// between them, half the paper, and at 5x two sittings still overlapped by
+// about a fifth in each. The number is per chapter rather than global for the
+// same reason the pool rule is a multiple of the draw rather than a flat count.
+const POOL_MULTIPLIER = { 4: 7, 5: 7 };
+const DEFAULT_POOL_MULTIPLIER = 5;
+const poolTarget = (c) => c.count * (POOL_MULTIPLIER[c.chapter] ?? DEFAULT_POOL_MULTIPLIER);
 
 const perChapter = {};
 for (const q of bank) perChapter[q.chapter] = (perChapter[q.chapter] ?? 0) + 1;
-const thin = FULL_EXAM_CHAPTERS.filter((c) => (perChapter[c.chapter] ?? 0) < c.count * 5)
-  .map((c) => `ch${c.chapter} ${perChapter[c.chapter] ?? 0}/${c.count * 5}`)
+const thin = FULL_EXAM_CHAPTERS.filter((c) => (perChapter[c.chapter] ?? 0) < poolTarget(c))
+  .map((c) => `ch${c.chapter} ${perChapter[c.chapter] ?? 0}/${poolTarget(c)}`)
   .join(", ");
 assert(
-  "every chapter's pool is at least 5x what the blueprint draws from it",
+  "every chapter's pool is at least its multiple of what the blueprint draws from it",
   thin === "",
-  `${thin} — a paper drawing n questions from a pool of fewer than 5n repeats itself across attempts`,
+  `${thin} — a paper drawing n questions from a pool short of its multiple of n repeats itself across attempts`,
 );
 const multiCount = bank.filter((q) => q.multi).length;
 
@@ -386,6 +398,36 @@ const uncoveredByChapter = FULL_EXAM_CHAPTERS.map((c) => {
   return `ch${c.chapter} ${total - missing}/${total}`;
 }).join(", ");
 
+// A-10d's eighth slice: depth per objective, which is the measure the coverage
+// assertion above cannot see. "At least one question" was the right bar while
+// 17 objectives had none, but it is satisfied by an objective a paper can only
+// ever ask about one way — and a candidate who has drilled the bank meets that
+// question knowing the answer rather than the material. `FL-5.2.4` and
+// `FL-5.3.3` each sat at one question through six slices for exactly that
+// reason: nothing was counting past zero.
+//
+// Three is deliberately modest. It is what makes two sittings differ on an
+// objective rather than what makes the objective well covered — the draw-heavy
+// chapters run far above it (chapter 4's black-box objectives carry 9 each).
+// Raising this floor is the lever if the bank is ever to grow again; it points
+// effort at the objectives that are thin rather than at the chapters that are
+// easy to write for, which is the lesson of the fifth slice restated.
+const OBJECTIVE_DEPTH_FLOOR = 3;
+const shallow = SYLLABUS_OBJECTIVES.filter(
+  (o) => (refCounts.get(o.id) ?? 0) < OBJECTIVE_DEPTH_FLOOR,
+);
+assert(
+  `every learning objective has at least ${OBJECTIVE_DEPTH_FLOOR} questions`,
+  shallow.length === 0,
+  `${shallow.length} below the floor: ${shallow
+    .map((o) => `${o.id} ${refCounts.get(o.id) ?? 0}`)
+    .join(", ")} — a paper can only ask about these one way, so drilling the bank beats learning the objective`,
+);
+const depthCounts = SYLLABUS_OBJECTIVES.map((o) => refCounts.get(o.id) ?? 0);
+const depthSummary = `min ${Math.min(...depthCounts)}, median ${
+  [...depthCounts].sort((a, b) => a - b)[Math.floor(depthCounts.length / 2)]
+}, max ${Math.max(...depthCounts)}`;
+
 if (failed > 0) {
   console.error(`academy-bank-check: FAILED (${failed} assertion(s))`);
   process.exit(1);
@@ -395,14 +437,14 @@ console.log(
     `${guessRate.toFixed(1)}% and passes ${papersPassed}/${SEEDS} papers)`,
 );
 console.log(
-  `academy-bank-check: pools below 5x blueprint weight: ${thin || "none"}; ` +
-    `multi-answer questions: ${multiCount}`,
+  `academy-bank-check: pools below their blueprint multiple (7x ch4/ch5, 5x elsewhere): ` +
+    `${thin || "none"}; multi-answer questions: ${multiCount}`,
 );
 console.log(
   `academy-bank-check: learning objectives with at least one question, per chapter: ` +
     `${uncoveredByChapter}${
       uncovered.length ? ` — untested: ${uncovered.map((o) => o.id).join(", ")}` : ""
-    }`,
+    }; questions per objective: ${depthSummary} (floor ${OBJECTIVE_DEPTH_FLOOR})`,
 );
 console.log(
   `academy-bank-check: longest-choice guessing scores ${longestRate.toFixed(1)}% ` +

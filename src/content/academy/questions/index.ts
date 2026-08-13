@@ -12,24 +12,26 @@ import { CH6_TOOLS } from "./ch6-tools";
 // `explanation` never reach a client bundle except through
 // `sanitizeQuestion()`/the grading action. See docs/QA-ACADEMY.md §2.2, §5.1.
 //
-// **Content status (2026-08-13, A-10d's sixth slice).** This holds **202**
-// questions, and **every chapter is at or above 5x what the blueprint draws
-// from it** — ch1 40, ch2 30, ch3 20, ch4 55, ch5 45, ch6 12. All 64 learning
-// objectives have at least one question. Both of those are now *assertions* in
-// academy-bank-check.mjs rather than printed debt, so the coverage cannot be
-// removed without failing the build.
+// **Content status (2026-08-13, A-10d complete).** This holds **255**
+// questions — ch1 44, ch2 33, ch3 26, ch4 77, ch5 63, ch6 12 — and three
+// properties of it are *assertions* in academy-bank-check.mjs rather than
+// printed debt, so none of them can be removed without failing the build:
+//   - every chapter is at or above its multiple of the blueprint draw, which is
+//     **7x for chapters 4 and 5** and 5x elsewhere;
+//   - all 64 learning objectives have at least one question;
+//   - **every objective has at least 3**, so no objective can be asked about
+//     one way only.
 //
-// The plan's other target, ≥300 questions, is not met and is now the open
-// question rather than a task: 200 is what 5x yields, and chapter 6 cannot grow
-// far past 12 because the syllabus gives it two objectives. Reaching 300 means
-// deepening chapters that are already at target, which is worth doing for the
-// draw-heavy ones (ch4 draws 11, ch5 draws 9) and hard to justify for ch6. See
-// docs/QA-ACADEMY.md §8 (A-10d) — it needs a decision, not another slice.
+// The plan's old ≥300 target is gone, and what replaced it is the 7x above.
+// 5x everywhere yields 200; reaching 300 uniformly would have meant padding
+// chapter 6, which has two learning objectives and cannot spread past them. So
+// the multiplier follows the draw instead — chapters 4 and 5 take 11 and 9 of
+// the paper's 40 questions between them. See docs/QA-ACADEMY.md §8 (A-10d).
 // (Before A-10d this comment said 72, then 70; both were wrong, and nothing
 // caught it because scripts/academy-exam-selftest.mjs runs against a synthetic
 // 12-per-chapter bank rather than this file. scripts/academy-bank-check.mjs
-// now reads the real bank and prints the counts on every build, so the number
-// above is a convenience rather than the source of truth.)
+// now reads the real bank and prints the counts on every build, so the numbers
+// above are a convenience rather than the source of truth.)
 //
 // **On `syllabusRef` and `kLevel` — read before adding a question (A-10e).**
 // This comment used to end "every question here carries a real `syllabusRef`
@@ -66,7 +68,7 @@ import { CH6_TOOLS } from "./ch6-tools";
 //     nothing can. Read the objective before citing it.
 //
 // **On answer positions.** The correct answer is authored first or second in
-// 127 of the 133 single-answer questions (`d` is still never correct in the
+// 219 of the 225 single-answer questions (`d` is still never correct in the
 // array, `c` six times), so on the page, as authored, two of the four options
 // would be dead on almost every question. A-10a fixed the consequence
 // rather than the content: `presentPaper` in src/lib/academy/exam-core.mjs
@@ -91,9 +93,9 @@ import { CH6_TOOLS } from "./ch6-tools";
 //     turns a four-choice question into a two-choice one.
 // academy-bank-check.mjs simulates the length strategy against the real draw,
 // asserts it stays near chance and never passes a paper, and prints the
-// per-chapter breakdown on every build. It also reports pool sizes below 5x
-// their blueprint weight and the multi-answer count, and asserts that multi
-// questions vary how many choices they key.
+// per-chapter breakdown on every build. It also asserts the pool multiples and
+// the per-objective depth floor listed above, reports the multi-answer count,
+// and asserts that multi questions vary how many choices they key.
 export const QUESTION_BANK: ExamQuestion[] = [
   ...CH1_FUNDAMENTALS,
   ...CH2_SDLC,
