@@ -4286,9 +4286,12 @@ with the `SuiteFolderGrid` work noted above.
   ~54 questions. The fix ran larger than the audit: **70 refs** needed correcting, not 26, because 44
   more named a real objective about a different topic, which no assertion can catch; **73 K-levels**,
   counted after the remap. `kLevel` is no longer an authored field. The same audit half-closes §5.1's "verify before seeding"
-  warning: v4.0 is confirmed current and the 40-question total corroborated, but the per-chapter
-  weights and the 65% pass line are **blocked on two ISTQB documents the project does not have**
-  ("Exam Structures and Rules", "Exam Structure Tables") — owner action. See
+  warning: v4.0 is confirmed current and the 40-question total corroborated. The owner then supplied
+  the exam structure on 2026-08-13 — 40 questions, pass at 65% (26 of 40), 60 minutes plus 15 when
+  the exam is not sat in the candidate's native language — which `exams.ts` already matches, so what
+  remains blocked is **the per-chapter split alone** (8 / 6 / 4 / 11 / 9 / 2), still wanting "Exam
+  Structure Tables" or equivalent. Deliberately not upgraded by association: it came from the same
+  authored-from-memory process A-10e had to correct 70 refs out of. Owner action. See
   `docs/QA-ACADEMY.md` § A-10e and §5.1.
 
 ---

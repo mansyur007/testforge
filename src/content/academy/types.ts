@@ -87,7 +87,12 @@ export type ExamBlueprint = {
   title: string;
   timed: boolean;
   durationSec: number;
-  /** Offered as a checkbox at start for full papers; ignored by quizzes. */
+  /** **The whole duration under the allowance, not the increment** — despite the
+   *  name. `exam.ts` picks one or the other (`extraTime ? extraTimeSec :
+   *  durationSec`), never sums them. The real rule is 60 minutes plus 15 when
+   *  the exam is not sat in the candidate's native language, so this holds
+   *  75 min against `durationSec`'s 60. Offered as a checkbox at start for full
+   *  papers; ignored by quizzes. */
   extraTimeSec?: number;
   passPct: number;
   chapters: ExamChapterWeight[];
