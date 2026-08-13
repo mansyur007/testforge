@@ -1,14 +1,27 @@
 import type { ExamQuestion } from "../types";
 
 // A-06: Chapter 5 — Managing the Test Activities. Original questions on test
-// planning, entry/exit criteria, risk-based testing, defect management, and
-// test estimation. See docs/QA-ACADEMY.md §7.2.
+// planning, entry/exit criteria, risk management, test monitoring and
+// reporting, configuration management and defect management. See
+// docs/QA-ACADEMY.md §7.2.
+//
+// **A-10e realigned every `syllabusRef` in this file.** The chapter's refs used
+// to be topic-sequential in the order the questions were authored — `FL-5.1.2`
+// meant risk-based testing, `FL-5.4.1` meant estimation, `FL-5.6.1` meant
+// configuration management — and none of that matched the syllabus, where 5.1
+// is Test Planning, 5.2 Risk Management, 5.3 Test Monitoring/Control/
+// Completion, 5.4 Configuration Management and 5.5 Defect Management. Two of
+// the old ids (`FL-5.1.8`, `FL-5.6.1`) named nothing at all; the rest resolved
+// to real objectives about entirely different topics, which is the worse
+// failure of the two because a reviewer checking the ref would have found a
+// plausible-looking answer. All 45 questions now sit on the objective they
+// actually test, and all 16 of the chapter's objectives have at least one.
 
 export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q1",
     chapter: 5,
-    kLevel: "K1",
+    kLevel: "K2",
     syllabusRef: "FL-5.1.1",
     stem: "A test plan primarily documents:",
     choices: [
@@ -28,7 +41,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     id: "ch5-q2",
     chapter: 5,
     kLevel: "K2",
-    syllabusRef: "FL-5.1.2",
+    syllabusRef: "FL-5.2.3",
     stem: "A team decides to spend more test effort on the payment flow than on the 'About us' page because a payment defect would be far more damaging. This is an example of:",
     choices: [
       { id: "a", text: "Exhaustive testing" },
@@ -42,8 +55,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q3",
     chapter: 5,
-    kLevel: "K2",
-    syllabusRef: "FL-5.1.2",
+    kLevel: "K1",
+    syllabusRef: "FL-5.2.1",
     stem: "In risk-based testing, 'risk level' is typically a function of which two factors?",
     choices: [
       { id: "a", text: "Team size and sprint length" },
@@ -57,8 +70,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q4",
     chapter: 5,
-    kLevel: "K1",
-    syllabusRef: "FL-5.2.1",
+    kLevel: "K2",
+    syllabusRef: "FL-5.1.3",
     stem: "Entry criteria for a test level define:",
     choices: [
       { id: "a", text: "The conditions that must be met before testing at that level can begin", correct: true },
@@ -73,7 +86,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     id: "ch5-q5",
     chapter: 5,
     kLevel: "K2",
-    syllabusRef: "FL-5.2.1",
+    syllabusRef: "FL-5.1.3",
     stem: "A team decides system testing is 'done' once 95% of planned test cases have passed and no open critical or high-severity defects remain. This is an example of:",
     choices: [
       { id: "a", text: "Entry criteria" },
@@ -87,8 +100,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q6",
     chapter: 5,
-    kLevel: "K1",
-    syllabusRef: "FL-5.3.1",
+    kLevel: "K3",
+    syllabusRef: "FL-5.5.1",
     stem: "Which of the following is typically included in a well-written defect report?",
     choices: [
       { id: "a", text: "Only the reporter's opinion that the software is 'bad'" },
@@ -106,8 +119,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q7",
     chapter: 5,
-    kLevel: "K2",
-    syllabusRef: "FL-5.3.1",
+    kLevel: "K3",
+    syllabusRef: "FL-5.5.1",
     stem: "A defect makes the entire checkout page fail to load for every user. A separate defect causes a tooltip to display slightly misaligned text. How do severity and priority typically differ for these two?",
     choices: [
       {
@@ -125,8 +138,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q8",
     chapter: 5,
-    kLevel: "K1",
-    syllabusRef: "FL-5.4.1",
+    kLevel: "K3",
+    syllabusRef: "FL-5.1.4",
     stem: "Which of these is a widely used approach to estimating test effort?",
     choices: [
       {
@@ -144,8 +157,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q9",
     chapter: 5,
-    kLevel: "K2",
-    syllabusRef: "FL-5.5.1",
+    kLevel: "K1",
+    syllabusRef: "FL-5.3.1",
     stem: "Which metric is most useful for tracking whether test execution is on schedule during a test cycle?",
     choices: [
       { id: "a", text: "Number of test cases executed vs. planned, over time", correct: true },
@@ -160,7 +173,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     id: "ch5-q10",
     chapter: 5,
     kLevel: "K2",
-    syllabusRef: "FL-5.5.1",
+    syllabusRef: "FL-5.3.2",
     stem: "A dashboard reports '92% of test cases passed' with no other detail. Why is a raw pass-rate number, on its own, a risky way to judge whether a release is ready?",
     choices: [
       {
@@ -232,8 +245,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q13",
     chapter: 5,
-    kLevel: "K2",
-    syllabusRef: "FL-5.1.3",
+    kLevel: "K1",
+    syllabusRef: "FL-5.1.2",
     stem: "During release planning, what is the most useful contribution a tester can make?",
     choices: [
       {
@@ -251,8 +264,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q14",
     chapter: 5,
-    kLevel: "K2",
-    syllabusRef: "FL-5.1.3",
+    kLevel: "K1",
+    syllabusRef: "FL-5.1.2",
     stem: "How does a tester's contribution to iteration planning differ from their contribution to release planning?",
     choices: [
       {
@@ -270,8 +283,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q15",
     chapter: 5,
-    kLevel: "K3",
-    syllabusRef: "FL-5.2.1",
+    kLevel: "K2",
+    syllabusRef: "FL-5.1.3",
     stem: "A team lists four conditions for its system test phase: (1) the build is deployed to the staging environment, (2) no open critical defects remain, (3) test data has been loaded, (4) 95% of planned test cases have been executed. Which pair are entry criteria?",
     choices: [
       { id: "a", text: "1 and 3", correct: true },
@@ -286,7 +299,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     id: "ch5-q16",
     chapter: 5,
     kLevel: "K2",
-    syllabusRef: "FL-5.2.1",
+    syllabusRef: "FL-5.1.3",
     multi: true,
     stem: "Why does a team define exit criteria in advance rather than deciding when to stop testing as they go? (Select all that apply.)",
     choices: [
@@ -306,7 +319,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     id: "ch5-q17",
     chapter: 5,
     kLevel: "K2",
-    syllabusRef: "FL-5.2.2",
+    syllabusRef: "FL-5.1.3",
     stem: "A team treats 'acceptance criteria written and reviewed, and test data identified' as a condition a story must satisfy before it can enter a sprint. What is this an example of?",
     choices: [
       { id: "a", text: "A definition of ready", correct: true },
@@ -320,8 +333,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q18",
     chapter: 5,
-    kLevel: "K2",
-    syllabusRef: "FL-5.4.1",
+    kLevel: "K3",
+    syllabusRef: "FL-5.1.4",
     stem: "What is the essential difference between metrics-based and expert-based test estimation?",
     choices: [
       {
@@ -340,7 +353,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     id: "ch5-q19",
     chapter: 5,
     kLevel: "K3",
-    syllabusRef: "FL-5.4.2",
+    syllabusRef: "FL-5.1.4",
     stem: "A team estimates test effort for a feature using the three-point technique, with an optimistic estimate of 10 days, a most likely estimate of 15 days, and a pessimistic estimate of 26 days. Using the weighted formula E = (optimistic + 4 × most likely + pessimistic) / 6, what is the estimate?",
     choices: [
       { id: "a", text: "16 days", correct: true },
@@ -354,8 +367,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q20",
     chapter: 5,
-    kLevel: "K2",
-    syllabusRef: "FL-5.4.3",
+    kLevel: "K3",
+    syllabusRef: "FL-5.1.4",
     stem: "In planning poker, why do team members reveal their estimates simultaneously rather than one at a time?",
     choices: [
       {
@@ -374,7 +387,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     id: "ch5-q21",
     chapter: 5,
     kLevel: "K3",
-    syllabusRef: "FL-5.4.1",
+    syllabusRef: "FL-5.1.4",
     stem: "A team's last four comparable features each took roughly 4 test-days per user story, and the next feature contains 7 stories of similar size. The team estimates 28 test-days. Which estimation approach is this, and what is its main vulnerability here?",
     choices: [
       {
@@ -392,8 +405,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q22",
     chapter: 5,
-    kLevel: "K2",
-    syllabusRef: "FL-5.1.8",
+    kLevel: "K3",
+    syllabusRef: "FL-5.1.5",
     stem: "A team orders its regression suite so that tests covering the areas most likely to fail and most damaging if they do run first. Which prioritization strategy is this?",
     choices: [
       { id: "a", text: "Risk-based prioritization", correct: true },
@@ -408,7 +421,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     id: "ch5-q23",
     chapter: 5,
     kLevel: "K3",
-    syllabusRef: "FL-5.1.8",
+    syllabusRef: "FL-5.1.5",
     stem: "A regression run takes six hours, but a hotfix must ship in two. The team can only execute part of the suite. What is the soundest basis for choosing which tests to run?",
     choices: [
       {
@@ -426,8 +439,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q24",
     chapter: 5,
-    kLevel: "K2",
-    syllabusRef: "FL-5.1.8",
+    kLevel: "K3",
+    syllabusRef: "FL-5.1.5",
     multi: true,
     stem: "Which of the following are recognised bases for prioritizing test cases? (Select all that apply.)",
     choices: [
@@ -443,7 +456,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q25",
     chapter: 5,
-    kLevel: "K2",
+    kLevel: "K1",
     syllabusRef: "FL-5.1.6",
     stem: "The test pyramid recommends a large base of low-level tests and progressively fewer tests toward the top. What property of the tests changes as you move up the levels?",
     choices: [
@@ -462,7 +475,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q26",
     chapter: 5,
-    kLevel: "K3",
+    kLevel: "K1",
     syllabusRef: "FL-5.1.6",
     stem: "A team's suite is 900 end-to-end UI tests, 60 integration tests and 40 unit tests. The suite takes four hours and fails intermittently, and a failure rarely says which component is at fault. Which diagnosis fits?",
     choices: [
@@ -500,7 +513,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q28",
     chapter: 5,
-    kLevel: "K3",
+    kLevel: "K2",
     syllabusRef: "FL-5.1.7",
     stem: "A team runs a load test to confirm the checkout service holds its response time at 5,000 concurrent users. In the testing quadrants, where does this test sit?",
     choices: [
@@ -516,7 +529,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     id: "ch5-q29",
     chapter: 5,
     kLevel: "K2",
-    syllabusRef: "FL-5.1.4",
+    syllabusRef: "FL-5.2.2",
     stem: "What distinguishes a product risk from a project risk?",
     choices: [
       {
@@ -534,8 +547,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q30",
     chapter: 5,
-    kLevel: "K3",
-    syllabusRef: "FL-5.1.4",
+    kLevel: "K2",
+    syllabusRef: "FL-5.2.2",
     stem: "Which of these is a project risk rather than a product risk?",
     choices: [
       { id: "a", text: "The only engineer who understands the payment integration is leaving in three weeks", correct: true },
@@ -549,8 +562,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q31",
     chapter: 5,
-    kLevel: "K3",
-    syllabusRef: "FL-5.1.2",
+    kLevel: "K1",
+    syllabusRef: "FL-5.2.1",
     stem: "A team rates four risks on likelihood and impact, each from 1 (low) to 5 (high), and treats risk level as the product of the two. Which risk should receive the most test effort? (A) likelihood 5, impact 2. (B) likelihood 2, impact 5. (C) likelihood 4, impact 4. (D) likelihood 1, impact 5.",
     choices: [
       { id: "a", text: "C — risk level 16", correct: true },
@@ -565,7 +578,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     id: "ch5-q32",
     chapter: 5,
     kLevel: "K2",
-    syllabusRef: "FL-5.1.5",
+    syllabusRef: "FL-5.2.4",
     multi: true,
     stem: "Product risk analysis has identified a high risk in the payment flow. Which of the following are legitimate risk-control responses? (Select all that apply.)",
     choices: [
@@ -582,7 +595,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     id: "ch5-q33",
     chapter: 5,
     kLevel: "K2",
-    syllabusRef: "FL-5.1.5",
+    syllabusRef: "FL-5.2.3",
     stem: "Why is product risk analysis repeated during a project rather than done once at the start?",
     choices: [
       {
@@ -600,8 +613,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q34",
     chapter: 5,
-    kLevel: "K2",
-    syllabusRef: "FL-5.5.1",
+    kLevel: "K1",
+    syllabusRef: "FL-5.3.1",
     stem: "What does defect density measure?",
     choices: [
       { id: "a", text: "The number of defects found, relative to the size of the component or system", correct: true },
@@ -616,8 +629,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q35",
     chapter: 5,
-    kLevel: "K3",
-    syllabusRef: "FL-5.5.1",
+    kLevel: "K1",
+    syllabusRef: "FL-5.3.1",
     stem: "Testing found 152 defects before release. In the three months after release, users reported a further 8 defects that had been present at release. What is the defect detection percentage (DDP)?",
     choices: [
       { id: "a", text: "95%", correct: true },
@@ -631,8 +644,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q36",
     chapter: 5,
-    kLevel: "K3",
-    syllabusRef: "FL-5.5.1",
+    kLevel: "K1",
+    syllabusRef: "FL-5.3.1",
     stem: "A team's defect discovery curve was climbing steeply for three weeks and has now flattened for a week, with test execution still proceeding at the same rate. What is the most defensible reading?",
     choices: [
       {
@@ -651,7 +664,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     id: "ch5-q37",
     chapter: 5,
     kLevel: "K2",
-    syllabusRef: "FL-5.5.2",
+    syllabusRef: "FL-5.3.2",
     stem: "How does a test progress report differ from a test completion report?",
     choices: [
       {
@@ -670,7 +683,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     id: "ch5-q38",
     chapter: 5,
     kLevel: "K2",
-    syllabusRef: "FL-5.5.2",
+    syllabusRef: "FL-5.3.2",
     multi: true,
     stem: "Which of the following belong in a test completion report? (Select all that apply.)",
     choices: [
@@ -688,7 +701,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     id: "ch5-q39",
     chapter: 5,
     kLevel: "K2",
-    syllabusRef: "FL-5.5.3",
+    syllabusRef: "FL-5.3.3",
     stem: "A test manager writes the same detailed defect-by-defect breakdown for the development team and for the executive sponsor. What is the problem?",
     choices: [
       {
@@ -706,8 +719,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q40",
     chapter: 5,
-    kLevel: "K2",
-    syllabusRef: "FL-5.3.2",
+    kLevel: "K3",
+    syllabusRef: "FL-5.5.1",
     stem: "What is the main purpose of a defect management process?",
     choices: [
       {
@@ -726,7 +739,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     id: "ch5-q41",
     chapter: 5,
     kLevel: "K3",
-    syllabusRef: "FL-5.3.1",
+    syllabusRef: "FL-5.5.1",
     stem: "A defect report reads in full: 'Export is broken, please fix.' What is the single most important thing missing?",
     choices: [
       {
@@ -744,8 +757,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q42",
     chapter: 5,
-    kLevel: "K2",
-    syllabusRef: "FL-5.3.1",
+    kLevel: "K3",
+    syllabusRef: "FL-5.5.1",
     stem: "A tester hits a defect that only appears roughly one time in twenty, and cannot pin down a reliable sequence to trigger it. What is the most useful way to report it?",
     choices: [
       {
@@ -763,8 +776,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q43",
     chapter: 5,
-    kLevel: "K2",
-    syllabusRef: "FL-5.3.1",
+    kLevel: "K3",
+    syllabusRef: "FL-5.5.1",
     multi: true,
     stem: "Which of the following make a defect report more actionable? (Select all that apply.)",
     choices: [
@@ -780,7 +793,7 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     id: "ch5-q44",
     chapter: 5,
     kLevel: "K2",
-    syllabusRef: "FL-5.6.1",
+    syllabusRef: "FL-5.4.1",
     stem: "How does configuration management support testing?",
     choices: [
       {
@@ -798,8 +811,8 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
     id: "ch5-q45",
     chapter: 5,
-    kLevel: "K3",
-    syllabusRef: "FL-5.6.1",
+    kLevel: "K2",
+    syllabusRef: "FL-5.4.1",
     stem: "A tester logs a defect against 'the latest build'. Two weeks later the developer cannot reproduce it, and nobody can establish which build was actually tested or whether the test data has since changed. Which failing does this most directly illustrate?",
     choices: [
       { id: "a", text: "Inadequate configuration management", correct: true },

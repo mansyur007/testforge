@@ -59,9 +59,15 @@ export type Lesson = {
 export type ExamQuestion = SelfCheckQuestion & {
   /** CTFL v4.0 chapter number, 1–6. What the blueprint draws against. */
   chapter: 1 | 2 | 3 | 4 | 5 | 6;
-  /** Bloom-ish cognitive level per the syllabus: K1 recall, K2 understand, K3 apply. */
+  /** Bloom-ish cognitive level: K1 recall, K2 understand, K3 apply. **Not an
+   *  authored opinion of difficulty** — A-10e made it the level the syllabus
+   *  assigns `syllabusRef`, and `scripts/academy-bank-check.mjs` fails the
+   *  build if the two disagree. Whether the question as written really demands
+   *  that much is a content judgement, and belongs to a human reviewer. */
   kLevel: "K1" | "K2" | "K3";
-  /** e.g. "FL-4.2.1" — which learning objective this tests. Lets a reviewer
+  /** e.g. "FL-4.2.1" — which learning objective this tests. Must be one of the
+   *  64 in `src/lib/academy/syllabus-los.mjs`, and must belong to this
+   *  question's own `chapter`; the build rejects anything else. Lets a reviewer
    *  check the question teaches the objective rather than reproducing anyone
    *  else's material (docs/QA-ACADEMY.md §7.2). */
   syllabusRef: string;

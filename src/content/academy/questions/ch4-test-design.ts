@@ -2,9 +2,16 @@ import type { ExamQuestion } from "../types";
 
 // A-06: Chapter 4 — Test Analysis and Design. Original questions on
 // black-box techniques (equivalence partitioning, boundary value analysis,
-// decision tables, state transition testing, use case testing), white-box
-// coverage (statement/branch), and experience-based techniques. See
-// docs/QA-ACADEMY.md §7.2 — no question copied or reworded from a real paper.
+// decision tables, state transition testing), white-box coverage
+// (statement/branch), experience-based techniques and the collaboration-based
+// approaches. See docs/QA-ACADEMY.md §7.2 — no question copied or reworded
+// from a real paper.
+//
+// A-10e removed the three use case testing questions (q10, q22, q48). Use case
+// testing was dropped from the syllabus in v4.0 — its own release notes say so
+// — and it has no learning objective left to reference, so those questions
+// could not appear on a paper this exam claims to simulate. They were rewritten
+// onto checklist-based testing, ATDD and collaborative story writing.
 //
 // A-10d grew this chapter 12 → 36 → 55, its full 5x blueprint target. The
 // third slice (q37–q55) added the collaboration-based questions' missing
@@ -18,7 +25,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
     id: "ch4-q1",
     chapter: 4,
-    kLevel: "K2",
+    kLevel: "K3",
     syllabusRef: "FL-4.2.1",
     stem: "A quantity field accepts whole numbers from 1 to 99. Using equivalence partitioning alone, how many valid partitions does this input have?",
     choices: [
@@ -78,7 +85,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
     id: "ch4-q5",
     chapter: 4,
-    kLevel: "K2",
+    kLevel: "K3",
     syllabusRef: "FL-4.2.2",
     stem: "Why is boundary value analysis considered a natural extension of equivalence partitioning, rather than an unrelated technique?",
     choices: [
@@ -112,7 +119,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
     id: "ch4-q7",
     chapter: 4,
-    kLevel: "K2",
+    kLevel: "K3",
     syllabusRef: "FL-4.2.3",
     stem: "What is a key strength of decision table testing over plain equivalence partitioning?",
     choices: [
@@ -131,7 +138,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
     id: "ch4-q8",
     chapter: 4,
-    kLevel: "K2",
+    kLevel: "K3",
     syllabusRef: "FL-4.2.4",
     stem: "In state transition testing, what does an 'invalid transition' test aim to check?",
     choices: [
@@ -166,25 +173,25 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     id: "ch4-q10",
     chapter: 4,
     kLevel: "K2",
-    syllabusRef: "FL-4.2.5",
-    stem: "Use case testing derives test cases primarily from:",
+    syllabusRef: "FL-4.4.3",
+    stem: "A team has run the same accessibility checklist at every release for two years, and it now finds almost nothing. What does this say about checklist-based testing?",
     choices: [
-      { id: "a", text: "The internal structure of the source code that implements the feature" },
+      { id: "a", text: "A checklist should be replaced by a scripted suite once it has been written down" },
       {
         id: "b",
-        text: "Documented interactions between an actor and the system, flow by flow",
+        text: "A checklist ages with the product and has to be revised to keep finding defects",
         correct: true,
       },
-      { id: "c", text: "Randomly generated input, sampled across the whole input domain" },
-      { id: "d", text: "Cyclomatic complexity scores taken from a static analysis tool" },
+      { id: "c", text: "A checklist is only ever a suitable basis for testing non-functional behaviour" },
+      { id: "d", text: "A checklist stops being valid as soon as every one of its entries has been used" },
     ],
     explanation:
-      "Use cases describe a sequence of interactions between an actor (user or external system) and the system to achieve a goal, including its main success scenario and alternative/exception paths — use case testing exercises these end-to-end flows, which is valuable for finding integration-level and business-process defects.",
+      "A checklist is a set of conditions someone thought worth checking at the time it was written, and a product that has moved on for two years has grown conditions it does not mention. This is the pesticide paradox arriving by another route: the checklist keeps finding nothing not because the product is clean, but because it keeps asking the same questions. Revising and extending it is part of using the technique.",
   },
   {
     id: "ch4-q11",
     chapter: 4,
-    kLevel: "K3",
+    kLevel: "K2",
     syllabusRef: "FL-4.3.1",
     stem: "A function has one `if` statement and no loops. A test suite executes every line of the function but only ever takes the `true` branch of the `if`. What coverage has it achieved?",
     choices: [
@@ -200,7 +207,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     id: "ch4-q12",
     chapter: 4,
     kLevel: "K2",
-    syllabusRef: "FL-4.4.1",
+    syllabusRef: "FL-4.4.2",
     stem: "A tester explores an unfamiliar feature with no predefined test cases, learning the system and designing tests simultaneously, adapting each next step based on what was just observed. This is:",
     choices: [
       { id: "a", text: "Decision table testing" },
@@ -255,7 +262,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
     id: "ch4-q15",
     chapter: 4,
-    kLevel: "K2",
+    kLevel: "K3",
     syllabusRef: "FL-4.2.1",
     multi: true,
     stem: "Which of the following statements about equivalence partitioning are correct? (Select all that apply.)",
@@ -287,7 +294,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
     id: "ch4-q17",
     chapter: 4,
-    kLevel: "K2",
+    kLevel: "K3",
     syllabusRef: "FL-4.2.2",
     multi: true,
     stem: "Which of the following statements about boundary value analysis (BVA) are correct? (Select all that apply.)",
@@ -319,7 +326,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
     id: "ch4-q19",
     chapter: 4,
-    kLevel: "K2",
+    kLevel: "K3",
     syllabusRef: "FL-4.2.3",
     multi: true,
     stem: "Which of the following statements about decision table testing are correct? (Select all that apply.)",
@@ -366,21 +373,21 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
     id: "ch4-q22",
     chapter: 4,
     kLevel: "K3",
-    syllabusRef: "FL-4.2.5",
-    stem: "A 'place order' use case has a main flow ending in payment confirmation, and an alternative flow triggered when the customer's saved card is declined, which redirects them to add a new payment method before rejoining the main flow. Which test exercises this alternative flow specifically?",
+    syllabusRef: "FL-4.5.3",
+    stem: "A story reads 'as a shopper I can apply one discount code per order'. In an ATDD session the team agrees three concrete examples: a valid code applies, a second code is refused, an expired code is refused. What are those three examples?",
     choices: [
-      { id: "a", text: "Checking out with a card that will be declined, then completing payment with a newly added card", correct: true },
-      { id: "b", text: "Checking out with a valid saved card and confirming the order total" },
-      { id: "c", text: "Checking that the cart page displays the correct item count" },
-      { id: "d", text: "Checking that the order confirmation email is sent after a successful main-flow checkout" },
+      { id: "a", text: "The acceptance tests, agreed and written before the code that has to satisfy them", correct: true },
+      { id: "b", text: "A defect report for each of the three cases the current build does not yet handle" },
+      { id: "c", text: "The story's estimate, expressed as three comparable units of testing effort" },
+      { id: "d", text: "A regression suite, assembled from the story once it has been delivered to users" },
     ],
     explanation:
-      "The alternative flow is specifically the declined-card path that detours through adding a new payment method before rejoining the main flow — only a test that triggers the decline and follows that detour exercises it. The other options exercise the main flow or an unrelated part of the system.",
+      "ATDD turns the conversation about a story into concrete examples, and those examples are the acceptance tests — written before implementation, from the requirement rather than from the code, and used by developers and testers alike as the definition of done. They are not an estimate, and they precede the build rather than being harvested from it.",
   },
   {
     id: "ch4-q23",
     chapter: 4,
-    kLevel: "K3",
+    kLevel: "K2",
     syllabusRef: "FL-4.3.1",
     stem: "A function has 20 executable statements. A test suite executes 16 of them at least once. What is the statement coverage?",
     choices: [
@@ -395,7 +402,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
     id: "ch4-q24",
     chapter: 4,
-    kLevel: "K3",
+    kLevel: "K2",
     syllabusRef: "FL-4.3.2",
     stem: "A function contains exactly three `if` statements and no other branching, giving six possible branch outcomes in total (true and false for each). A test suite exercises 4 of those 6 outcomes. What is the branch coverage?",
     choices: [
@@ -462,7 +469,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
     id: "ch4-q28",
     chapter: 4,
-    kLevel: "K3",
+    kLevel: "K2",
     syllabusRef: "FL-4.4.2",
     stem: "A tester is given a charter: 'Explore the new bulk-export feature, focusing on how it behaves with unusual selections.' During the session they notice exporting zero rows produces an empty file with no header, and immediately try exporting a single row to compare. What does this behaviour illustrate about exploratory testing?",
     choices: [
@@ -569,7 +576,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
     id: "ch4-q34",
     chapter: 4,
-    kLevel: "K3",
+    kLevel: "K2",
     syllabusRef: "FL-4.5.2",
     stem: "Which of these is written in the scenario-oriented (Given/When/Then) style commonly used for acceptance criteria?",
     choices: [
@@ -584,7 +591,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
     id: "ch4-q35",
     chapter: 4,
-    kLevel: "K2",
+    kLevel: "K3",
     syllabusRef: "FL-4.5.3",
     stem: "In acceptance test-driven development (ATDD), when are acceptance tests derived from the story's acceptance criteria?",
     choices: [
@@ -599,7 +606,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
     id: "ch4-q36",
     chapter: 4,
-    kLevel: "K2",
+    kLevel: "K3",
     syllabusRef: "FL-4.5.3",
     multi: true,
     stem: "Which of the following statements about acceptance test-driven development (ATDD) are correct? (Select all that apply.)",
@@ -668,7 +675,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
     id: "ch4-q40",
     chapter: 4,
-    kLevel: "K2",
+    kLevel: "K3",
     syllabusRef: "FL-4.2.1",
     stem: "A form has three fields, each with its own valid and invalid partitions. Why do test designers usually cover invalid partitions one field at a time, rather than combining several invalid values into a single test?",
     choices: [
@@ -684,7 +691,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
     id: "ch4-q41",
     chapter: 4,
-    kLevel: "K2",
+    kLevel: "K3",
     syllabusRef: "FL-4.2.2",
     stem: "How does the three-value approach to boundary value analysis differ from the two-value approach?",
     choices: [
@@ -759,7 +766,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
     id: "ch4-q46",
     chapter: 4,
-    kLevel: "K2",
+    kLevel: "K3",
     syllabusRef: "FL-4.2.4",
     stem: "What does a state table make visible that a state transition diagram typically does not?",
     choices: [
@@ -775,7 +782,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
     id: "ch4-q47",
     chapter: 4,
-    kLevel: "K2",
+    kLevel: "K3",
     syllabusRef: "FL-4.2.4",
     multi: true,
     stem: "Which of the following are true of state transition testing? (Select all that apply.)",
@@ -792,17 +799,17 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
     id: "ch4-q48",
     chapter: 4,
-    kLevel: "K3",
-    syllabusRef: "FL-4.2.5",
-    stem: "A 'withdraw cash' use case has a main flow, an alternative flow for a wrong PIN on the first attempt, and an exception flow for a card retained after three wrong PINs. A tester runs one test that enters the correct PIN and takes the cash. What can be said about their use case coverage?",
+    kLevel: "K2",
+    syllabusRef: "FL-4.5.1",
+    stem: "A product owner, a developer and a tester sit down to write a story about withdrawing cash from an ATM. Which contribution is characteristically the tester's?",
     choices: [
-      { id: "a", text: "Only the main flow is covered; the alternative and exception flows are untested", correct: true },
-      { id: "b", text: "All flows are covered, since the alternative and exception flows share the main path" },
-      { id: "c", text: "Coverage is complete once the actor reaches any documented end state of the case" },
-      { id: "d", text: "Use case coverage counts the defects that were found, not the flows exercised" },
+      { id: "a", text: "Asking how each behaviour the story promises would be shown to work", correct: true },
+      { id: "b", text: "Deciding which stories the team should commit to for the coming iteration" },
+      { id: "c", text: "Choosing the implementation approach the story's back end will end up using" },
+      { id: "d", text: "Approving the business value the story is expected to deliver to the customer" },
     ],
     explanation:
-      "Use case coverage is measured by the proportion of the use case's flows exercised. A single happy-path test covers the main flow only; the alternative and exception flows each need their own test, and they are usually where the interesting defects live.",
+      "Collaborative story writing works because the three roles bring different questions. The tester's is testability: how would we know this behaviour works, what happens on the paths the story does not mention, and can the acceptance criteria be checked at all. Committing to scope belongs to the team and the product owner, the design belongs to the developer, and business value belongs to the product owner.",
   },
   {
     id: "ch4-q49",
@@ -886,7 +893,7 @@ export const CH4_TEST_DESIGN: ExamQuestion[] = [
   {
     id: "ch4-q54",
     chapter: 4,
-    kLevel: "K3",
+    kLevel: "K2",
     syllabusRef: "FL-4.4.1",
     stem: "Before testing a new file-import feature, a tester lists the failures the team has hit in previous importers — truncated last row, wrong delimiter silently accepted, empty file failing without a message — and designs a test for each. What is this an example of?",
     choices: [

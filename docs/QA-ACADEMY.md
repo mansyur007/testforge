@@ -28,13 +28,14 @@
 > all six chapters, taking that strategy to 31.4% and 0/300 papers passed, i.e. to chance; the guard
 > is now a hard assertion rather than a ratchet.
 > Chapters 1, 2 and 3 remain untouched at 12 questions each, and are the whole of the pool debt.
-> A-10e opened 2026-08-12 and is the next thing to build: the owner supplied the real CTFL v4.0.1
-> syllabus, an audit against it found 26 questions citing objective codes that do not exist, 6
-> testing material ISTQB removed from Foundation in v4.0, and 58 whose K-level contradicts their
-> objective — none of it detectable without the document. It also closes half of §5.1's "verify
-> before seeding" warning; the other half (chapter weights, the 65% pass line) is now blocked on two
-> ISTQB documents the project does not have. **Do A-10e before writing more questions** — the
-> remaining ~54 would otherwise be authored against the same wrong reference.
+> A-10e opened 2026-08-12 from an audit against the real CTFL v4.0.1 syllabus the owner supplied: 26
+> questions citing objective codes that do not exist, 6 testing material ISTQB removed from
+> Foundation in v4.0, and 58 whose K-level contradicts their objective — none of it detectable
+> without the document. **Shipped 2026-08-13**: the 64 objectives are in the repo as data, 70 refs
+> and 73 K-levels are corrected, the 6 unexaminable questions are rewritten, and two build assertions
+> make the whole class of error unrepresentable. It also closes half of §5.1's "verify before
+> seeding" warning; the other half (chapter weights, the 65% pass line) is now blocked on two ISTQB
+> documents the project does not have.
 > A-07 … A-08 planned. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
@@ -1349,26 +1350,32 @@ Remaining debt, current as of the same date:
   correct answers across 4-, 5- and 6-choice questions. Chapters 1, 2, 3 and 6 still have none,
   though the real paper draws them from any chapter — and each should vary its own shapes rather
   than settling on one, or the build fails (see the correction above).
-- **`kLevel` against the objective's own level.** ~~Unverified~~ — **measured 2026-08-12, and the
-  doubt was justified twice over. Moved to A-10e**, which is where the numbers live. `ch4-q34`'s
-  suspected inversion is real (`FL-4.5.2` is K2, `FL-4.5.3` is K3), and so is `ch4-q24`'s
-  (`FL-4.3.2` is K2, so the K3 tag is the wrong one of the pair).
-- **K-level balance.** K1 28 / K2 85 / **K3 35**. The original 28/36/6 split is well behind us, but
-  every K3 question added so far sits in chapter 4 or 5 — chapters 1, 2, 3 and 6 still carry the
-  authored-in-A-06 mix and none of the growth. Note this split is the *bank's own tags*, and A-10e
-  will move 58 of them; re-read it after that lands rather than planning against it now.
-- **`syllabusRef` spread.** 61 distinct refs across 148 questions. `FL-6.1.1` still alone carries 6
-  of chapter 6's 12 — though the syllabus turns out to give chapter 6 only **two** objectives in
-  total (`FL-6.1.1`, `FL-6.2.1`), so that concentration is far less wrong than it looked; chapter 6
-  cannot spread wider than two. **17 of the 64 real objectives have no question at all**, listed in
-  A-10e — that list, not the ref count, is the real coverage debt and the writing order for the
-  remaining pools.
+- **`kLevel` against the objective's own level.** ~~Unverified~~ — **closed by A-10e 2026-08-13.**
+  Both A-10d doubts were right (`FL-4.5.2` is K2 and `FL-4.5.3` is K3, so `ch4-q34`/`q35`/`q36` were
+  inverted; `FL-4.3.2` is K2, so `ch4-q24`'s K3 was the wrong tag of the pair), and 71 more were
+  wrong besides. The field is no longer authored: it is the objective's level, and the build fails if
+  the two disagree.
+- **K-level balance.** ~~K1 28 / K2 85 / K3 35~~ → **K1 19 / K2 86 / K3 43** after A-10e retagged
+  against the syllabus. **This line was chasing a target that does not exist**, and is closed with
+  the rest. Only 8 of the 64 objectives are K3 — `FL-4.2.1`–`FL-4.2.4`, `FL-4.5.3`, `FL-5.1.4`,
+  `FL-5.1.5`, `FL-5.5.1` — and every one of them is in chapter 4 or 5. So "chapters 1, 2, 3 and 6
+  carry none of the K3 growth" was never debt: those chapters *have* no K3 objectives, and a K3
+  question in them would be a question the real paper could not ask. The achievable mix is a
+  consequence of the blueprint, not something an author balances.
+- **`syllabusRef` spread.** ~~61 distinct refs across 148 questions~~ → **49 of the 64 real
+  objectives** after A-10e (the old count included 14 invented codes). `FL-6.1.1` carries 8 of
+  chapter 6's 12, which is as spread as chapter 6 can be: the syllabus gives it only **two**
+  objectives. **15 objectives still have no question at all** — `FL-1.1.2` `FL-1.2.2` `FL-1.4.2`
+  `FL-1.4.3` `FL-1.4.4` `FL-1.4.5` `FL-1.5.1` `FL-1.5.2` · `FL-2.1.1` `FL-2.1.2` `FL-2.1.3`
+  `FL-2.1.4` `FL-2.1.6` · `FL-3.2.1` `FL-3.2.2` — all of them in the three unbuilt chapters, which
+  is the writing order for the remaining pools and a sharper measure than the pool counts above.
+  `academy-bank-check.mjs` prints this list on every build.
 
 When the pools grow, turn the bank-check's *reported* debt lines into *asserted* ones — the script
 is written so that is a one-line change per check, and until then a build that fails on content the
 team is mid-way through writing would just get muted.
 
-#### A-10e — Syllabus alignment: real refs, real K-levels `[ ]`
+#### A-10e — Syllabus alignment: real refs, real K-levels `[x]`
 
 Opened 2026-08-12 from an audit of the whole bank against the **real CTFL v4.0.1 syllabus PDF**,
 which the owner supplied after A-10d's fourth slice landed. Same shape as A-10 itself, which was
@@ -1451,6 +1458,77 @@ folds static analysis into `FL-3.1.1`/`FL-3.1.2` rather than giving it its own o
 of the two fits depends on each question. Three questions is small enough to decide in review rather
 than pre-commit here. And the blueprint weights and 65% pass line stay open — see §5.1; they are
 blocked on a document, not on this work order.
+
+---
+
+**Shipped 2026-08-13.** The 64 objectives now live in `src/lib/academy/syllabus-los.mjs`, with
+`src/content/academy/syllabus-los.ts` as the typed face the app imports. Plain ESM plus a typed
+wrapper rather than the single `.ts` file the scope above called for, for the same reason
+`exam-core.mjs` is shaped that way: `academy-bank-check.mjs` runs under bare `node` in `prebuild`,
+and a table it has to type-strip to read is a table it can silently stop reading. What the file
+carries is the identifier, the section, the K-level and a **topic label written here** — not the
+syllabus's own sentence for each objective. The facts are what the guard checks; the prose is not
+ours to ship, and §7.2's rule applies to this file as much as to a question.
+
+The fix came out larger than the audit predicted, in one direction that matters:
+
+| | audited | shipped |
+|---|---|---|
+| refs corrected | 26 invalid | **70** — 26 invalid, 44 valid but naming the wrong objective |
+| `kLevel` corrected | 58 (24 high, 34 low) | **73** (27 high, 46 low), counted after the remap |
+| questions rewritten | 6 | 6 |
+
+**The 44 is the finding worth keeping.** The audit enumerated the invalid codes, and separately
+noticed that chapter 5's *valid* codes pointed at the wrong topics. That second defect is not
+confined to chapter 5 — `ch1-q2`/`ch1-q3` asked about error/defect/failure while citing "testing
+versus debugging"; `ch1-q12` asked about independence while citing the generic-skills objective;
+`ch3-q5`–`ch3-q8` had the roles and the review-types objectives swapped; `ch2-q1` cited "impact of
+the lifecycle" for a question whose answer is shift left; `ch4-q12` cited error guessing for an
+exploratory-testing question. Each one resolves to a real objective and would have passed the new
+existence check, so a reviewer following the ref would have found something plausible and moved on.
+Only reading all 148 against the table catches these, and the new assertions do not — they are why
+the ref count went 26 → 70.
+
+The `FL-3.3.1` trio went to `FL-3.1.2` (the value of static testing), all three: what static analysis
+finds without executing, what a complexity score means, and what it buys in a pipeline are all
+arguments for static testing's value rather than statements about which work products it can examine
+(`FL-3.1.1`). `kLevel` was corrected last, from the objective each question ended up on.
+
+**`kLevel` stopped being an authored field.** It is the objective's level, and the build fails if
+they disagree — which is the only definition anything can check, and the one the real paper uses.
+What no script can check is whether a question as *written* demands that much: `ch5-q26` diagnoses an
+inverted test pyramid, which is more than the K1 recall `FL-5.1.6` asks for, and `ch4-q15` lists true
+statements about equivalence partitioning, which is less than `FL-4.2.1`'s K3 "use it to derive test
+cases". Both now carry their objective's level honestly and are over- or under-written against it.
+That is content debt for §5.1's human pass, not something to launder by relabelling — the visible
+cases are roughly a dozen, chapter 4 and chapter 5 heaviest.
+
+**The rewritten six.** `ch4-q10` → checklist-based testing and how a checklist ages (`FL-4.4.3`),
+`ch4-q22` → deriving acceptance tests from an ATDD conversation (`FL-4.5.3`), `ch4-q48` → what the
+tester specifically contributes to collaborative story writing (`FL-4.5.1`); `ch6-q5` → defect
+management tools (`FL-6.1.1`), `ch6-q6` → the risk that a green suite only covers what someone
+thought to encode (`FL-6.2.1`), `ch6-q10` → what CI tooling does and does not change (`FL-6.1.1`).
+Pools unchanged at 55 and 12. All six were written against A-10d's length rule, and the
+longest-choice strategy moved 31.4% → 31.1%, still 0/300 papers.
+
+**The guards.** Three assertions, not two: a ref must exist, its chapter must match the question's
+own `chapter`, and `kLevel` must equal the objective's. The chapter check was not in the scope and
+costs nothing — it catches a typo like `FL-4.2.1` on a chapter 5 question, which is exactly how
+chapter 5's numbering went wrong in the first place. All three verified the way A-10a's and A-10d's
+were: re-injected `FL-6.3.1`, pointed `ch5-q2` at `FL-4.2.1`, watched the build fail on each, then
+reverted. The bank-check also now prints objective coverage per chapter and names the untested
+objectives, which is reported rather than asserted for the same reason the pool sizes are — chapters
+1, 2 and 3 are mid-build.
+
+> **The uncovered list moved, and it is not the audit's list any more.** The work order recorded 17
+> objectives with no question. After the remap it is **15**, and only nine names are common to both.
+> Eight of the audit's 17 turned out to be covered all along by questions that were citing the wrong
+> ref (`FL-1.2.3`, `FL-1.5.3`, `FL-2.1.5`, `FL-3.1.3`, `FL-3.2.5`, `FL-5.2.3`, `FL-5.2.4`,
+> `FL-5.3.3`), and six new ones appeared for the mirror-image reason — `FL-1.1.2`, `FL-1.4.2`,
+> `FL-1.5.1`, `FL-2.1.1`, `FL-3.2.1` and `FL-3.2.2` were only ever "covered" by questions that were
+> about something else. Both lists were
+> honest measurements; the first was taken through the wrong lens. The current one is printed by the
+> build, so it stays current without anyone maintaining it here.
 
 #### Not in A-10, deliberately
 

@@ -8,8 +8,8 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
   {
     id: "ch3-q1",
     chapter: 3,
-    kLevel: "K1",
-    syllabusRef: "FL-3.1.1",
+    kLevel: "K2",
+    syllabusRef: "FL-3.1.3",
     stem: "What is the key difference between static and dynamic testing?",
     choices: [
       {
@@ -46,7 +46,7 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
   {
     id: "ch3-q3",
     chapter: 3,
-    kLevel: "K1",
+    kLevel: "K2",
     syllabusRef: "FL-3.1.2",
     stem: "Which of the following is a benefit of static testing that dynamic testing cannot provide by itself?",
     choices: [
@@ -66,7 +66,7 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
     id: "ch3-q4",
     chapter: 3,
     kLevel: "K1",
-    syllabusRef: "FL-3.2.1",
+    syllabusRef: "FL-3.1.1",
     stem: "Which of these is a typical work product examined during a review?",
     choices: [
       { id: "a", text: "A compiled binary already running in production" },
@@ -80,8 +80,8 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
   {
     id: "ch3-q5",
     chapter: 3,
-    kLevel: "K2",
-    syllabusRef: "FL-3.2.2",
+    kLevel: "K1",
+    syllabusRef: "FL-3.2.3",
     stem: "In a formal review, whose role is it to lead the meeting, manage the process, and mediate between participants if needed?",
     choices: [
       { id: "a", text: "The author" },
@@ -95,8 +95,8 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
   {
     id: "ch3-q6",
     chapter: 3,
-    kLevel: "K2",
-    syllabusRef: "FL-3.2.2",
+    kLevel: "K1",
+    syllabusRef: "FL-3.2.3",
     stem: "Whose responsibility is it, in a formal review, to record each defect, question, and decision raised during the meeting?",
     choices: [
       { id: "a", text: "The scribe/recorder", correct: true },
@@ -110,8 +110,8 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
   {
     id: "ch3-q7",
     chapter: 3,
-    kLevel: "K1",
-    syllabusRef: "FL-3.2.3",
+    kLevel: "K2",
+    syllabusRef: "FL-3.2.4",
     stem: "Which review type is the most formal, following a defined process with defined roles, entry and exit criteria, and metrics collection?",
     choices: [
       { id: "a", text: "Informal review" },
@@ -126,7 +126,7 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
     id: "ch3-q8",
     chapter: 3,
     kLevel: "K2",
-    syllabusRef: "FL-3.2.3",
+    syllabusRef: "FL-3.2.4",
     stem: "A review where the author leads colleagues through a document to build common understanding and gather feedback, with no strict entry/exit criteria, is typically called:",
     choices: [
       { id: "a", text: "An inspection" },
@@ -141,7 +141,7 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
     id: "ch3-q9",
     chapter: 3,
     kLevel: "K1",
-    syllabusRef: "FL-3.2.4",
+    syllabusRef: "FL-3.2.5",
     stem: "Which of the following is a success factor for reviews, as opposed to a common pitfall?",
     choices: [
       { id: "a", text: "Reviewers concentrate on criticizing the author rather than the document" },
@@ -155,8 +155,8 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
   {
     id: "ch3-q10",
     chapter: 3,
-    kLevel: "K1",
-    syllabusRef: "FL-3.3.1",
+    kLevel: "K2",
+    syllabusRef: "FL-3.1.2",
     stem: "Static analysis tools are typically used to detect which kind of issue without executing the code?",
     choices: [
       { id: "a", text: "Unreachable (dead) code and undeclared variables", correct: true },
@@ -171,7 +171,7 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
     id: "ch3-q11",
     chapter: 3,
     kLevel: "K2",
-    syllabusRef: "FL-3.3.1",
+    syllabusRef: "FL-3.1.2",
     stem: "A static analysis tool flags a function with a very high cyclomatic complexity score. What does this indicate?",
     choices: [
       {
@@ -189,8 +189,8 @@ export const CH3_STATIC_TESTING: ExamQuestion[] = [
   {
     id: "ch3-q12",
     chapter: 3,
-    kLevel: "K1",
-    syllabusRef: "FL-3.3.1",
+    kLevel: "K2",
+    syllabusRef: "FL-3.1.2",
     stem: "Which of these is a benefit of static analysis as part of a CI pipeline?",
     choices: [
       { id: "a", text: "It removes the need for any dynamic or functional testing of the build" },

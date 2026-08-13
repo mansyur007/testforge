@@ -29,8 +29,8 @@ export const CH1_FUNDAMENTALS: ExamQuestion[] = [
   {
     id: "ch1-q2",
     chapter: 1,
-    kLevel: "K1",
-    syllabusRef: "FL-1.1.2",
+    kLevel: "K2",
+    syllabusRef: "FL-1.2.3",
     stem: "A user enters a valid discount code and the checkout total does not change. What is the discount code field's incorrect output an example of?",
     choices: [
       { id: "a", text: "An error" },
@@ -45,7 +45,7 @@ export const CH1_FUNDAMENTALS: ExamQuestion[] = [
     id: "ch1-q3",
     chapter: 1,
     kLevel: "K2",
-    syllabusRef: "FL-1.1.2",
+    syllabusRef: "FL-1.2.3",
     stem: "A developer misreads a requirement and writes the wrong tax calculation. Put the three terms in the order they occur: the mistake itself, the flaw left in the code, and the wrong total a customer sees.",
     choices: [
       { id: "a", text: "Defect → Error → Failure" },
@@ -59,7 +59,7 @@ export const CH1_FUNDAMENTALS: ExamQuestion[] = [
   {
     id: "ch1-q4",
     chapter: 1,
-    kLevel: "K1",
+    kLevel: "K2",
     syllabusRef: "FL-1.2.1",
     stem: "Which of the following is a reason testing is necessary, beyond finding defects?",
     choices: [
@@ -93,7 +93,7 @@ export const CH1_FUNDAMENTALS: ExamQuestion[] = [
   {
     id: "ch1-q6",
     chapter: 1,
-    kLevel: "K1",
+    kLevel: "K2",
     syllabusRef: "FL-1.3.1",
     stem: "Which testing principle explains why running every possible input combination through a login form is not a realistic test strategy?",
     choices: [
@@ -123,7 +123,7 @@ export const CH1_FUNDAMENTALS: ExamQuestion[] = [
   {
     id: "ch1-q8",
     chapter: 1,
-    kLevel: "K1",
+    kLevel: "K2",
     syllabusRef: "FL-1.3.1",
     stem: "\"A small number of modules usually contain most of the defects found in a system\" describes which principle?",
     choices: [
@@ -153,7 +153,7 @@ export const CH1_FUNDAMENTALS: ExamQuestion[] = [
   {
     id: "ch1-q10",
     chapter: 1,
-    kLevel: "K1",
+    kLevel: "K2",
     syllabusRef: "FL-1.4.1",
     stem: "Which of the following is one of the test activities in the ISTQB test process (alongside test design, implementation, and execution)?",
     choices: [
@@ -169,7 +169,7 @@ export const CH1_FUNDAMENTALS: ExamQuestion[] = [
     id: "ch1-q11",
     chapter: 1,
     kLevel: "K2",
-    syllabusRef: "FL-1.4.2",
+    syllabusRef: "FL-1.4.1",
     stem: "A tester writes 'verify that an expired discount code is rejected at checkout' before deciding on the specific input values or steps to use. Which test-process activity does writing that item belong to?",
     choices: [
       { id: "a", text: "Test design", correct: true },
@@ -184,7 +184,7 @@ export const CH1_FUNDAMENTALS: ExamQuestion[] = [
     id: "ch1-q12",
     chapter: 1,
     kLevel: "K2",
-    syllabusRef: "FL-1.5.1",
+    syllabusRef: "FL-1.5.3",
     stem: "Why does the ISTQB syllabus recommend that testers and authors of the work under test not be the same person for the most important test activities?",
     choices: [
       { id: "a", text: "Because developers are legally barred from testing their own code" },
