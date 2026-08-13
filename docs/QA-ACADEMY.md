@@ -26,8 +26,11 @@
 > measured for the first time — it scored 65.2% on whole papers, **above the 65% pass line**, so it
 > was a working exploit. Fourth slice 2026-08-12: the length pass — 204 choice texts rewritten across
 > all six chapters, taking that strategy to 31.4% and 0/300 papers passed, i.e. to chance; the guard
-> is now a hard assertion rather than a ratchet.
-> Chapters 1, 2 and 3 remain untouched at 12 questions each, and are the whole of the pool debt.
+> is now a hard assertion rather than a ratchet. Fifth slice 2026-08-13: chapter 1 completed 12→40,
+> the first chapter written after A-10e and therefore the first written against the *untested
+> objective* list the build prints rather than against a chapter count — eight of its fourteen
+> objectives had no question at all, and they took 21 of the 28 new ones.
+> Chapters 2 (12/30) and 3 (12/20) are what is left of the pool debt.
 > A-10e opened 2026-08-12 from an audit against the real CTFL v4.0.1 syllabus the owner supplied: 26
 > questions citing objective codes that do not exist, 6 testing material ISTQB removed from
 > Foundation in v4.0, and 58 whose K-level contradicts their objective — none of it detectable
@@ -1359,15 +1362,36 @@ running them against the pre-slice content, where they fail at 63.3% and 149/300
 > Nothing in the bank-check can detect this; it needs an author who is honest about which of their
 > distractors nobody would ever pick.
 
-Remaining debt, current as of the same date:
+**Fifth slice, 2026-08-13: chapter 1 complete, and the first chapter written after A-10e.** 28 new
+questions (`ch1-q13`…`ch1-q40`) take chapter 1 from 12 to its full 40-question target — the sharpest
+remaining pool, drawing 8 of the paper's 40 from 12. What makes this slice different from the four
+before it is that the writing order came from the build rather than from a topic list: **eight of
+chapter 1's fourteen objectives had no question at all**, and between them they carry 21 of the 28.
+New ground: testing versus debugging and the reproduce/diagnose/fix sequence (`FL-1.1.2`), testing
+versus quality assurance (`FL-1.2.2`), the test process in context (`FL-1.4.2`), testware and which
+activity produces which work product (`FL-1.4.3`), traceability (`FL-1.4.4`), the test management and
+testing roles (`FL-1.4.5`), the generic skills and why communication is singled out (`FL-1.5.1`), and
+the whole team approach (`FL-1.5.2`). All 14 objectives now covered; chapter 1 leaves the pool debt
+line entirely.
 
-- **Pools to ≥5× their blueprint weight.** ch1 12/40, ch2 12/30, ch3 12/20, ch4 **55/55 done**, ch5
-  45/45 (done), ch6 12/10 (done). Chapter 1 is the sharpest of the three left, drawing 8 of the
-  paper's 40 questions from a pool of 12; the three together supply 18 of 40.
-- **Multi-answer questions.** 15 of 148, split 9 in chapter 4 and 6 in chapter 5, spanning 2/3/4
-  correct answers across 4-, 5- and 6-choice questions. Chapters 1, 2, 3 and 6 still have none,
-  though the real paper draws them from any chapter — and each should vary its own shapes rather
-  than settling on one, or the build fails (see the correction above).
+> **The list the build prints is a better brief than a chapter count.** Before A-10e this slice would
+> have been "write 28 more chapter 1 questions", and the obvious way to do that is to deepen what is
+> already there — chapter 1 had five questions on the seven principles and none on testware. Writing
+> against the untested-objective list instead produced a chapter that covers the syllabus rather than
+> the previous author's interests. Worth saying because chapters 2 and 3 are next and the same trap
+> is set: chapter 2 currently has seven of its twelve questions on test levels and types, and is
+> missing five of the six `FL-2.1.x` objectives — DevOps, shift left, test-first approaches,
+> retrospectives, good practices across lifecycles.
+
+Remaining debt, current as of 2026-08-13:
+
+- **Pools to ≥5× their blueprint weight.** ch1 **40/40 done**, ch2 12/30, ch3 12/20, ch4 **55/55
+  done**, ch5 45/45 (done), ch6 12/10 (done). Chapter 2 is now the sharper of the two left, drawing 6
+  of the paper's 40 questions from a pool of 12; the two together supply 10 of 40.
+- **Multi-answer questions.** 19 of 176 — 9 in chapter 4, 6 in chapter 5, and 4 added to chapter 1 by
+  the fifth slice, spanning 2/3/4 correct answers across 4-, 5- and 6-choice questions. Chapters 2, 3
+  and 6 still have none, though the real paper draws them from any chapter — and each should vary its
+  own shapes rather than settling on one, or the build fails (see the correction above).
 - **`kLevel` against the objective's own level.** ~~Unverified~~ — **closed by A-10e 2026-08-13.**
   Both A-10d doubts were right (`FL-4.5.2` is K2 and `FL-4.5.3` is K3, so `ch4-q34`/`q35`/`q36` were
   inverted; `FL-4.3.2` is K2, so `ch4-q24`'s K3 was the wrong tag of the pair), and 71 more were
@@ -1380,14 +1404,13 @@ Remaining debt, current as of the same date:
   carry none of the K3 growth" was never debt: those chapters *have* no K3 objectives, and a K3
   question in them would be a question the real paper could not ask. The achievable mix is a
   consequence of the blueprint, not something an author balances.
-- **`syllabusRef` spread.** ~~61 distinct refs across 148 questions~~ → **49 of the 64 real
-  objectives** after A-10e (the old count included 14 invented codes). `FL-6.1.1` carries 8 of
-  chapter 6's 12, which is as spread as chapter 6 can be: the syllabus gives it only **two**
-  objectives. **15 objectives still have no question at all** — `FL-1.1.2` `FL-1.2.2` `FL-1.4.2`
-  `FL-1.4.3` `FL-1.4.4` `FL-1.4.5` `FL-1.5.1` `FL-1.5.2` · `FL-2.1.1` `FL-2.1.2` `FL-2.1.3`
-  `FL-2.1.4` `FL-2.1.6` · `FL-3.2.1` `FL-3.2.2` — all of them in the three unbuilt chapters, which
-  is the writing order for the remaining pools and a sharper measure than the pool counts above.
-  `academy-bank-check.mjs` prints this list on every build.
+- **`syllabusRef` spread.** ~~61 distinct refs across 148 questions~~ → **57 of the 64 real
+  objectives** across 176 questions (A-10e's 49, plus the eight chapter 1 closed in the fifth slice).
+  `FL-6.1.1` carries 8 of chapter 6's 12, which is as spread as chapter 6 can be: the syllabus gives
+  it only **two** objectives. **7 objectives still have no question at all** — `FL-2.1.1` `FL-2.1.2`
+  `FL-2.1.3` `FL-2.1.4` `FL-2.1.6` · `FL-3.2.1` `FL-3.2.2` — all in the two unbuilt chapters, and
+  five of them in `FL-2.1.x` alone. That list, not the pool counts above, is the writing order for
+  the remaining slices; `academy-bank-check.mjs` prints it on every build.
 
 When the pools grow, turn the bank-check's *reported* debt lines into *asserted* ones — the script
 is written so that is a one-line change per check, and until then a build that fails on content the

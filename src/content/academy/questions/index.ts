@@ -12,19 +12,22 @@ import { CH6_TOOLS } from "./ch6-tools";
 // `explanation` never reach a client bundle except through
 // `sanitizeQuestion()`/the grading action. See docs/QA-ACADEMY.md §2.2, §5.1.
 //
-// **Content status (2026-08-12, A-10d's third slice).** The plan's bank target
-// is ≥300 questions, ≥5x the per-chapter draw count. This holds **148**:
-// chapters 4 (55), 5 (45) and 6 (12) are at or past their targets, chapters 1,
-// 2 and 3 are untouched at 12 each and are the whole of the remaining debt.
+// **Content status (2026-08-13, A-10d's fifth slice).** The plan's bank target
+// is ≥300 questions, ≥5x the per-chapter draw count. This holds **176**:
+// chapters 1 (40), 4 (55), 5 (45) and 6 (12) are at or past their targets, and
+// chapters 2 (12/30) and 3 (12/20) are the whole of the remaining debt.
 // (Before A-10d this comment said 72, then 70; both were wrong, and nothing
 // caught it because scripts/academy-exam-selftest.mjs runs against a synthetic
 // 12-per-chapter bank rather than this file. scripts/academy-bank-check.mjs
 // now reads the real bank and prints the counts on every build, so the number
 // above is a convenience rather than the source of truth.)
 //
-// The shortfall now sits entirely on the three unbuilt chapters, which the
-// blueprint draws 18 of a paper's 40 questions from — chapter 1 the sharpest,
-// drawing 8 from a pool of 12.
+// The shortfall now sits on chapters 2 and 3, which the blueprint draws 10 of
+// a paper's 40 questions from — chapter 2 the sharper, drawing 6 from a pool of
+// 12. The writing order for both is the untested-objective list the bank-check
+// prints, not the pool count: chapter 2 is missing five of the six FL-2.1.x
+// objectives, which is most of what makes it a chapter about modern lifecycles
+// rather than about test levels.
 //
 // **On `syllabusRef` and `kLevel` — read before adding a question (A-10e).**
 // This comment used to end "every question here carries a real `syllabusRef`
