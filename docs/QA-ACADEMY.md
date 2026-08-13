@@ -29,8 +29,10 @@
 > is now a hard assertion rather than a ratchet. Fifth slice 2026-08-13: chapter 1 completed 12→40,
 > the first chapter written after A-10e and therefore the first written against the *untested
 > objective* list the build prints rather than against a chapter count — eight of its fourteen
-> objectives had no question at all, and they took 21 of the 28 new ones.
-> Chapters 2 (12/30) and 3 (12/20) are what is left of the pool debt.
+> objectives had no question at all, and they took 21 of the 28 new ones. Sixth slice 2026-08-13:
+> chapters 2 (12→30) and 3 (12→20), which **closes the pool debt** — the bank holds 202 questions,
+> every chapter is at or above 5× its blueprint draw, and all 64 objectives are covered. Both of
+> those stop being reported numbers and become build assertions in the same slice.
 > A-10e opened 2026-08-12 from an audit against the real CTFL v4.0.1 syllabus the owner supplied: 26
 > questions citing objective codes that do not exist, 6 testing material ISTQB removed from
 > Foundation in v4.0, and 58 whose K-level contradicts their objective — none of it detectable
@@ -1383,15 +1385,54 @@ line entirely.
 > missing five of the six `FL-2.1.x` objectives — DevOps, shift left, test-first approaches,
 > retrospectives, good practices across lifecycles.
 
+**Sixth slice, 2026-08-13: chapters 2 and 3, and the pool debt closes.** 18 new questions in chapter
+2 (12→30) and 8 in chapter 3 (12→20) take the bank to **202** and put **every chapter at or above 5×
+what the blueprint draws from it**. All 64 learning objectives now have at least one question.
+
+Chapter 2 was the most lopsided chapter in the bank, and the objective list is what made that
+visible: seven of its twelve questions sat on test levels and types, while **five of the six
+`FL-2.1.x` objectives had none at all**. A chapter titled *Testing Throughout the Software
+Development Lifecycle* had almost nothing in it about lifecycles — no DevOps, no shift left, no
+test-first approaches, no retrospectives, and nothing on the good practices that hold whichever model
+is in use. 14 of its 18 new questions land there. Chapter 3's eight open the two remaining
+objectives: the benefits of early and frequent stakeholder feedback, and the activities of the review
+process itself — planning, initiation, individual review, communication and analysis, fixing and
+reporting — which is the one a candidate is most likely to be asked to put in order.
+
+> **The two reported debt lines become assertions.** The paragraph below this list has said since
+> A-10a that the bank-check's *reported* debt should become *asserted* once the pools grow, and that
+> the script was written so each is a one-line change. That moment is now: every chapter is at 5×,
+> every objective is covered, so `academy-bank-check.mjs` fails the build if a chapter's pool drops
+> below 5× its draw or if any of the 64 objectives loses its last question. Both verified by deleting
+> chapter 3's new questions and watching both fire, then reverting. What they protect is the reverse
+> of what they measured for five slices: not "write more", but "do not quietly delete the coverage
+> six slices paid for".
+
+> **On the mirror of the length tell.** Chapter 3's singles have the key as the *shortest* choice 39%
+> of the time, against a 25% chance line, which looked like the length tell arriving from the other
+> direction. It is not. Re-measured with a margin a candidate could actually see — key shorter than
+> every distractor by ≥10 characters — chapter 3 scores **0%**, and the whole bank scores 4 questions
+> out of 178 singles. The 39% is made of 1- and 2-character margins, which nobody can eyeball. Worth
+> recording because the raw percentage is the kind of number that gets acted on: the fix would have
+> been to pad six keys for no reader-visible benefit, and the guard that matters is the paper-level
+> simulation, which prices what a strategy is actually worth rather than how often a rule happens to
+> fire.
+
 Remaining debt, current as of 2026-08-13:
 
-- **Pools to ≥5× their blueprint weight.** ch1 **40/40 done**, ch2 12/30, ch3 12/20, ch4 **55/55
-  done**, ch5 45/45 (done), ch6 12/10 (done). Chapter 2 is now the sharper of the two left, drawing 6
-  of the paper's 40 questions from a pool of 12; the two together supply 10 of 40.
-- **Multi-answer questions.** 19 of 176 — 9 in chapter 4, 6 in chapter 5, and 4 added to chapter 1 by
-  the fifth slice, spanning 2/3/4 correct answers across 4-, 5- and 6-choice questions. Chapters 2, 3
-  and 6 still have none, though the real paper draws them from any chapter — and each should vary its
-  own shapes rather than settling on one, or the build fails (see the correction above).
+- ~~**Pools to ≥5× their blueprint weight.**~~ **Closed by the sixth slice** and now asserted: ch1
+  40, ch2 30, ch3 20, ch4 55, ch5 45, ch6 12 — every one at or above target.
+- **The ≥300-question target is not met, and is now a decision rather than a task.** 5× the blueprint
+  yields 200, and the bank sits at 202. Getting to 300 means deepening chapters that are already at
+  target — worth it for the draw-heavy ones (chapter 4 draws 11 questions a paper, chapter 5 draws 9)
+  and hard to justify for chapter 6, which cannot spread past the two learning objectives the
+  syllabus gives it. Either raise the multiplier for the heavy chapters or revise the 300 in §9; both
+  are defensible, and neither should be settled by writing another slice on autopilot.
+- **Multi-answer questions.** 24 of 202 — 9 in chapter 4, 6 in chapter 5, 4 in chapter 1, 3 in
+  chapter 2 and 2 in chapter 3, spanning 2/3/4 correct answers across 4-, 5- and 6-choice questions.
+  Only chapter 6 still has none, and with 12 questions across 2 objectives it is the one chapter
+  where that is defensible. Each chapter varies its own shapes rather than settling on one, or the
+  build fails (see the correction above).
 - **`kLevel` against the objective's own level.** ~~Unverified~~ — **closed by A-10e 2026-08-13.**
   Both A-10d doubts were right (`FL-4.5.2` is K2 and `FL-4.5.3` is K3, so `ch4-q34`/`q35`/`q36` were
   inverted; `FL-4.3.2` is K2, so `ch4-q24`'s K3 was the wrong tag of the pair), and 71 more were
@@ -1404,17 +1445,18 @@ Remaining debt, current as of 2026-08-13:
   carry none of the K3 growth" was never debt: those chapters *have* no K3 objectives, and a K3
   question in them would be a question the real paper could not ask. The achievable mix is a
   consequence of the blueprint, not something an author balances.
-- **`syllabusRef` spread.** ~~61 distinct refs across 148 questions~~ → **57 of the 64 real
-  objectives** across 176 questions (A-10e's 49, plus the eight chapter 1 closed in the fifth slice).
-  `FL-6.1.1` carries 8 of chapter 6's 12, which is as spread as chapter 6 can be: the syllabus gives
-  it only **two** objectives. **7 objectives still have no question at all** — `FL-2.1.1` `FL-2.1.2`
-  `FL-2.1.3` `FL-2.1.4` `FL-2.1.6` · `FL-3.2.1` `FL-3.2.2` — all in the two unbuilt chapters, and
-  five of them in `FL-2.1.x` alone. That list, not the pool counts above, is the writing order for
-  the remaining slices; `academy-bank-check.mjs` prints it on every build.
+- ~~**`syllabusRef` spread.**~~ ~~61 distinct refs across 148 questions~~ → **all 64 objectives, at
+  least one question each, across 202** — A-10e's 49, plus the eight chapter 1 closed in the fifth
+  slice and the seven chapters 2 and 3 closed in the sixth. **Closed and asserted.** `FL-6.1.1`
+  carries 8 of chapter 6's 12, which is as spread as chapter 6 can be: the syllabus gives it two
+  objectives. What is *not* closed is depth per objective — several carry a single question, so a
+  paper can only ask about them one way. That is where the ≥300 decision above should point if the
+  answer is to keep writing.
 
-When the pools grow, turn the bank-check's *reported* debt lines into *asserted* ones — the script
-is written so that is a one-line change per check, and until then a build that fails on content the
-team is mid-way through writing would just get muted.
+The two lines above that say "asserted" are the ones this paragraph used to promise: the bank-check's
+*reported* debt became *asserted* the moment the pools allowed, which was A-10d's sixth slice. Until
+then a build that failed on content the team was mid-way through writing would just have been muted,
+taking the guessing assertions with it.
 
 #### A-10e — Syllabus alignment: real refs, real K-levels `[x]`
 

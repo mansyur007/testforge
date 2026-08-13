@@ -4272,8 +4272,14 @@ with the `SuiteFolderGrid` work noted above.
   longest-answer tell (a candidate always picking the longest choice scored 65.2% — a pass — and now
   scores 31.4% and passes no paper), then chapter 1 completed 12 → 40 on 2026-08-13, the first slice
   written after A-10e and so the first driven by the untested-objective list the build prints: eight
-  of chapter 1's fourteen objectives had no question at all and took 21 of the 28 new ones. Chapters
-  2 (12/30) and 3 (12/20) are what is left, ~26 questions of debt.
+  of chapter 1's fourteen objectives had no question at all and took 21 of the 28 new ones. A sixth
+  slice the same day took chapters 2 (12→30) and 3 (12→20) and **closed the pool debt**: 202
+  questions, every chapter at or above 5× its blueprint draw, all 64 learning objectives covered.
+  Chapter 2 was the lopsided one — seven of its twelve questions on test levels and types, and five
+  of its six `FL-2.1.x` objectives untouched, so a chapter about lifecycles had nothing on DevOps,
+  shift left, test-first or retrospectives. Both coverage measures graduate from printed debt to
+  build assertions in the same slice. What remains is a decision rather than a task: §9's ≥300-question
+  target is not met (5× yields 200) and reaching it means deepening chapters already at target.
 - **A-10e** `[x]` shipped 2026-08-13 — **syllabus alignment**, opened 2026-08-12 once the owner supplied the
   real CTFL v4.0.1 syllabus PDF. Every tag in the bank had been authored from memory of the syllabus
   rather than from it, and an audit against the real document found **26 of 148 questions citing

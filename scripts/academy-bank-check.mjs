@@ -326,14 +326,33 @@ assert(
 );
 
 // ---------------------------------------------------------------------------
-// Reported, not asserted: the content debt A-10a's later PRs still owe.
+// Pool sizes and objective coverage — asserted since A-10d's sixth slice
 // ---------------------------------------------------------------------------
+//
+// These two were *reported* for five slices, deliberately: a build that fails
+// on content the team is halfway through writing gets muted, and muting this
+// script would have cost the guessing assertions above along with it. A-10d's
+// sixth slice closed the last of the pools, so as of then every chapter is at
+// or above 5x its blueprint draw and all 64 learning objectives have a
+// question. Both become ratchets at that point — the plan's §8 says to make
+// this switch the moment the numbers allow, because what they now protect is
+// the reverse of what they measured: not "write more", but "do not delete the
+// coverage someone spent five slices writing".
+//
+// A pool below 5x means the same questions recur across papers — at 12
+// questions for chapter 1's 8-question draw, two papers shared two thirds of
+// their chapter 1 content, which makes a second sitting a memory test.
 
 const perChapter = {};
 for (const q of bank) perChapter[q.chapter] = (perChapter[q.chapter] ?? 0) + 1;
 const thin = FULL_EXAM_CHAPTERS.filter((c) => (perChapter[c.chapter] ?? 0) < c.count * 5)
   .map((c) => `ch${c.chapter} ${perChapter[c.chapter] ?? 0}/${c.count * 5}`)
   .join(", ");
+assert(
+  "every chapter's pool is at least 5x what the blueprint draws from it",
+  thin === "",
+  `${thin} — a paper drawing n questions from a pool of fewer than 5n repeats itself across attempts`,
+);
 const multiCount = bank.filter((q) => q.multi).length;
 
 // Which chapters the length tell lives in, so the next slice knows where to
@@ -348,15 +367,19 @@ const lengthDebt = FULL_EXAM_CHAPTERS.map((c) => {
   return `ch${c.chapter} ${Math.round((wins / singles.length) * 100)}%`;
 }).join(", ");
 
-// A-10e: which learning objectives nobody has written a question for. Reported
-// rather than asserted, for the same reason the pool sizes are: chapters 1, 2
-// and 3 are mid-build, and a guard that failed on content the team is part-way
-// through writing would just get muted. It is the sharper measure of the two —
-// a chapter can look well stocked and still leave half its objectives untested,
-// which is exactly what chapter 1's 12 questions do.
+// A-10e: which learning objectives nobody has written a question for. The
+// sharper of the two measures — a chapter can look well stocked and still leave
+// half its objectives untested, which is exactly what chapter 1's original 12
+// questions did (5 on the seven principles, 0 on testware). Asserted from
+// A-10d's sixth slice, when the last of the 64 got its first question.
 const refCounts = new Map();
 for (const q of bank) refCounts.set(q.syllabusRef, (refCounts.get(q.syllabusRef) ?? 0) + 1);
 const uncovered = SYLLABUS_OBJECTIVES.filter((o) => !refCounts.has(o.id));
+assert(
+  "every learning objective has at least one question",
+  uncovered.length === 0,
+  `${uncovered.length} with none: ${uncovered.map((o) => o.id).join(", ")} — a candidate can be examined on any of the 64`,
+);
 const uncoveredByChapter = FULL_EXAM_CHAPTERS.map((c) => {
   const total = SYLLABUS_OBJECTIVES.filter((o) => o.chapter === c.chapter).length;
   const missing = uncovered.filter((o) => o.chapter === c.chapter).length;
@@ -372,7 +395,7 @@ console.log(
     `${guessRate.toFixed(1)}% and passes ${papersPassed}/${SEEDS} papers)`,
 );
 console.log(
-  `academy-bank-check: content debt — pools below 5x blueprint weight: ${thin || "none"}; ` +
+  `academy-bank-check: pools below 5x blueprint weight: ${thin || "none"}; ` +
     `multi-answer questions: ${multiCount}`,
 );
 console.log(
