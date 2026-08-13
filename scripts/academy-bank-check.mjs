@@ -27,6 +27,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { drawQuestionIds, presentPaper } from "../src/lib/academy/exam-core.mjs";
+import { SYLLABUS_OBJECTIVES, OBJECTIVES_BY_ID } from "../src/lib/academy/syllabus-los.mjs";
 
 const QUESTIONS_DIR = "src/content/academy/questions";
 
@@ -83,8 +84,38 @@ for (const q of bank) {
     q.multi ? correct.length >= 2 : correct.length === 1,
     `multi=${Boolean(q.multi)}, correct=${correct.length}`,
   );
-  assert(`${q.id}: has a syllabusRef`, Boolean(q.syllabusRef));
-  assert(`${q.id}: has a kLevel`, Boolean(q.kLevel));
+  // A-10e: the ref has to name a real learning objective, not merely exist.
+  // Before this check the bank carried `FL-2.4.1`, `FL-3.3.1`, `FL-4.2.5`,
+  // `FL-5.1.8` and `FL-6.3.1`, none of which are in the syllabus, plus a whole
+  // chapter-5 scheme where the ids collided with real ones and meant something
+  // else (`FL-5.4.1` was "estimation" here and "configuration management" in
+  // the document). A ref that resolves to nothing cannot be reviewed against
+  // anything, which is the only reason §7.2 asks a question to carry one.
+  const objective = OBJECTIVES_BY_ID.get(q.syllabusRef);
+  assert(
+    `${q.id}: syllabusRef names a real learning objective`,
+    Boolean(objective),
+    `"${q.syllabusRef}" is not in the CTFL v4.0 syllabus (see src/lib/academy/syllabus-los.mjs)`,
+  );
+  if (objective) {
+    assert(
+      `${q.id}: syllabusRef belongs to the question's own chapter`,
+      objective.chapter === q.chapter,
+      `chapter ${q.chapter} question on ${q.syllabusRef}, which is a chapter ${objective.chapter} objective`,
+    );
+    // `kLevel` is the objective's level, not the author's opinion of how hard
+    // the question feels. That is the only definition anything can check, and
+    // it is the one the real paper uses: a question examines its objective at
+    // the level the syllabus assigns that objective. Whether the question as
+    // *written* actually demands that much is a content judgement no script
+    // can make — see docs/QA-ACADEMY.md §8 (A-10e) for the ones this audit
+    // flagged for a human.
+    assert(
+      `${q.id}: kLevel matches its objective's level`,
+      q.kLevel === objective.kLevel,
+      `tagged ${q.kLevel}, but ${q.syllabusRef} is ${objective.kLevel}`,
+    );
+  }
   assert(
     `${q.id}: has a real explanation`,
     typeof q.explanation === "string" && q.explanation.trim().length >= 40,
@@ -295,14 +326,33 @@ assert(
 );
 
 // ---------------------------------------------------------------------------
-// Reported, not asserted: the content debt A-10a's later PRs still owe.
+// Pool sizes and objective coverage — asserted since A-10d's sixth slice
 // ---------------------------------------------------------------------------
+//
+// These two were *reported* for five slices, deliberately: a build that fails
+// on content the team is halfway through writing gets muted, and muting this
+// script would have cost the guessing assertions above along with it. A-10d's
+// sixth slice closed the last of the pools, so as of then every chapter is at
+// or above 5x its blueprint draw and all 64 learning objectives have a
+// question. Both become ratchets at that point — the plan's §8 says to make
+// this switch the moment the numbers allow, because what they now protect is
+// the reverse of what they measured: not "write more", but "do not delete the
+// coverage someone spent five slices writing".
+//
+// A pool below 5x means the same questions recur across papers — at 12
+// questions for chapter 1's 8-question draw, two papers shared two thirds of
+// their chapter 1 content, which makes a second sitting a memory test.
 
 const perChapter = {};
 for (const q of bank) perChapter[q.chapter] = (perChapter[q.chapter] ?? 0) + 1;
 const thin = FULL_EXAM_CHAPTERS.filter((c) => (perChapter[c.chapter] ?? 0) < c.count * 5)
   .map((c) => `ch${c.chapter} ${perChapter[c.chapter] ?? 0}/${c.count * 5}`)
   .join(", ");
+assert(
+  "every chapter's pool is at least 5x what the blueprint draws from it",
+  thin === "",
+  `${thin} — a paper drawing n questions from a pool of fewer than 5n repeats itself across attempts`,
+);
 const multiCount = bank.filter((q) => q.multi).length;
 
 // Which chapters the length tell lives in, so the next slice knows where to
@@ -317,6 +367,25 @@ const lengthDebt = FULL_EXAM_CHAPTERS.map((c) => {
   return `ch${c.chapter} ${Math.round((wins / singles.length) * 100)}%`;
 }).join(", ");
 
+// A-10e: which learning objectives nobody has written a question for. The
+// sharper of the two measures — a chapter can look well stocked and still leave
+// half its objectives untested, which is exactly what chapter 1's original 12
+// questions did (5 on the seven principles, 0 on testware). Asserted from
+// A-10d's sixth slice, when the last of the 64 got its first question.
+const refCounts = new Map();
+for (const q of bank) refCounts.set(q.syllabusRef, (refCounts.get(q.syllabusRef) ?? 0) + 1);
+const uncovered = SYLLABUS_OBJECTIVES.filter((o) => !refCounts.has(o.id));
+assert(
+  "every learning objective has at least one question",
+  uncovered.length === 0,
+  `${uncovered.length} with none: ${uncovered.map((o) => o.id).join(", ")} — a candidate can be examined on any of the 64`,
+);
+const uncoveredByChapter = FULL_EXAM_CHAPTERS.map((c) => {
+  const total = SYLLABUS_OBJECTIVES.filter((o) => o.chapter === c.chapter).length;
+  const missing = uncovered.filter((o) => o.chapter === c.chapter).length;
+  return `ch${c.chapter} ${total - missing}/${total}`;
+}).join(", ");
+
 if (failed > 0) {
   console.error(`academy-bank-check: FAILED (${failed} assertion(s))`);
   process.exit(1);
@@ -326,8 +395,14 @@ console.log(
     `${guessRate.toFixed(1)}% and passes ${papersPassed}/${SEEDS} papers)`,
 );
 console.log(
-  `academy-bank-check: content debt — pools below 5x blueprint weight: ${thin || "none"}; ` +
+  `academy-bank-check: pools below 5x blueprint weight: ${thin || "none"}; ` +
     `multi-answer questions: ${multiCount}`,
+);
+console.log(
+  `academy-bank-check: learning objectives with at least one question, per chapter: ` +
+    `${uncoveredByChapter}${
+      uncovered.length ? ` — untested: ${uncovered.map((o) => o.id).join(", ")}` : ""
+    }`,
 );
 console.log(
   `academy-bank-check: longest-choice guessing scores ${longestRate.toFixed(1)}% ` +

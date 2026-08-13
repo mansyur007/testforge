@@ -12,20 +12,58 @@ import { CH6_TOOLS } from "./ch6-tools";
 // `explanation` never reach a client bundle except through
 // `sanitizeQuestion()`/the grading action. See docs/QA-ACADEMY.md §2.2, §5.1.
 //
-// **Content status (2026-08-12, A-10d's third slice).** The plan's bank target
-// is ≥300 questions, ≥5x the per-chapter draw count. This holds **148**:
-// chapters 4 (55), 5 (45) and 6 (12) are at or past their targets, chapters 1,
-// 2 and 3 are untouched at 12 each and are the whole of the remaining debt.
+// **Content status (2026-08-13, A-10d's sixth slice).** This holds **202**
+// questions, and **every chapter is at or above 5x what the blueprint draws
+// from it** — ch1 40, ch2 30, ch3 20, ch4 55, ch5 45, ch6 12. All 64 learning
+// objectives have at least one question. Both of those are now *assertions* in
+// academy-bank-check.mjs rather than printed debt, so the coverage cannot be
+// removed without failing the build.
+//
+// The plan's other target, ≥300 questions, is not met and is now the open
+// question rather than a task: 200 is what 5x yields, and chapter 6 cannot grow
+// far past 12 because the syllabus gives it two objectives. Reaching 300 means
+// deepening chapters that are already at target, which is worth doing for the
+// draw-heavy ones (ch4 draws 11, ch5 draws 9) and hard to justify for ch6. See
+// docs/QA-ACADEMY.md §8 (A-10d) — it needs a decision, not another slice.
 // (Before A-10d this comment said 72, then 70; both were wrong, and nothing
 // caught it because scripts/academy-exam-selftest.mjs runs against a synthetic
 // 12-per-chapter bank rather than this file. scripts/academy-bank-check.mjs
 // now reads the real bank and prints the counts on every build, so the number
 // above is a convenience rather than the source of truth.)
 //
-// The shortfall now sits entirely on the three unbuilt chapters, which the
-// blueprint draws 18 of a paper's 40 questions from — chapter 1 the sharpest,
-// drawing 8 from a pool of 12. Every question here carries a real
-// `syllabusRef` for a reviewer to check against the objective, per §7.2.
+// **On `syllabusRef` and `kLevel` — read before adding a question (A-10e).**
+// This comment used to end "every question here carries a real `syllabusRef`
+// for a reviewer to check against the objective, per §7.2". That was not true,
+// and could not have been checked until 2026-08-12, when the real CTFL v4.0.1
+// syllabus arrived and the whole bank was audited against it. What it found:
+//   - 26 of 148 questions cited an objective code that **did not exist** — 14
+//     invented codes. Chapter 5's numbering was wrong wholesale (its metrics
+//     and defect-report codes were swapped with each other).
+//   - 6 questions tested material ISTQB **removed** from Foundation Level in
+//     v4.0 — use case testing (ch4-q10/q22/q48) and tool selection, pilots and
+//     rollout (ch6-q5/q6/q10). Correct questions, wrong syllabus. Rewritten
+//     rather than deleted, so the pools did not shrink.
+//   - 58 of the 122 questions on valid refs carried a `kLevel` the syllabus
+//     contradicts. The systematic one: all four `FL-4.2.x` techniques
+//     (equivalence partitioning, BVA, decision tables, state transition) are
+//     **K3**, and 10 questions here tagged them K2 — so the bank had been
+//     modelling its heaviest chapter as easier than the real paper.
+// Every tag in this bank was authored from memory of the syllabus rather than
+// from the syllabus, which is the single root cause of all three.
+//
+// **Fixed 2026-08-13 (A-10e).** The 64 objectives are now data, in
+// `src/lib/academy/syllabus-los.mjs`, and academy-bank-check.mjs asserts that a
+// `syllabusRef` exists, belongs to the question's own chapter, and carries the
+// `kLevel` the syllabus assigns it. So: **do not hand-check those two fields —
+// the build does it, and it cannot be talked out of it.** Two consequences when
+// writing a question:
+//   - `kLevel` is not yours to choose. Pick the objective; the level follows.
+//     If the level looks wrong for the question you have in mind, the objective
+//     is wrong, not the level.
+//   - the counts above were worse than the audit found: 70 refs needed
+//     correcting, not 26, because 44 of them named a real objective about a
+//     different topic. The existence check does not catch that class, and
+//     nothing can. Read the objective before citing it.
 //
 // **On answer positions.** The correct answer is authored first or second in
 // 127 of the 133 single-answer questions (`d` is still never correct in the

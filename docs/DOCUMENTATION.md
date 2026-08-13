@@ -4301,8 +4301,41 @@ with the `SuiteFolderGrid` work noted above.
   backs off 2s/6s/18s before handing over a manual **Submit now**; guarded by **TC-E2E-115** and
   **TC-E2E-116**, both proved to fail. A-10a also adds the selftest that would have caught the
   chapter-5 shortfall — the existing one runs against a synthetic 12-per-chapter bank, so it is blind
-  to the real content. What is left under A-10 is **A-10d**, which is writing, not code. See
-  `docs/QA-ACADEMY.md` § A-10.
+  to the real content. **A-10d** is writing, not code: five slices shipped, four on 2026-08-12
+  (#171–#175) taking the bank 70 → 148 questions, completing chapters 4 and 5, and closing the
+  longest-answer tell (a candidate always picking the longest choice scored 65.2% — a pass — and now
+  scores 31.4% and passes no paper), then chapter 1 completed 12 → 40 on 2026-08-13, the first slice
+  written after A-10e and so the first driven by the untested-objective list the build prints: eight
+  of chapter 1's fourteen objectives had no question at all and took 21 of the 28 new ones. A sixth
+  slice the same day took chapters 2 (12→30) and 3 (12→20) and **closed the pool debt**: 202
+  questions, every chapter at or above 5× its blueprint draw, all 64 learning objectives covered.
+  Chapter 2 was the lopsided one — seven of its twelve questions on test levels and types, and five
+  of its six `FL-2.1.x` objectives untouched, so a chapter about lifecycles had nothing on DevOps,
+  shift left, test-first or retrospectives. Both coverage measures graduate from printed debt to
+  build assertions in the same slice. What remains is a decision rather than a task: §9's ≥300-question
+  target is not met (5× yields 200) and reaching it means deepening chapters already at target.
+- **A-10e** `[x]` shipped 2026-08-13 — **syllabus alignment**, opened 2026-08-12 once the owner supplied the
+  real CTFL v4.0.1 syllabus PDF. Every tag in the bank had been authored from memory of the syllabus
+  rather than from it, and an audit against the real document found **26 of 148 questions citing
+  objective codes that do not exist** (14 invented codes; chapter 5's numbering is wholesale wrong,
+  with metrics and defect reports swapped), **6 questions testing material ISTQB removed from
+  Foundation Level in v4.0** (use case testing, tool selection/pilot — named in the syllabus Release
+  Notes), and **58 of the 122 questions on valid refs carrying a `kLevel` that contradicts their
+  objective** (including all four `FL-4.2.x` techniques, which are K3 while 10 questions tag them
+  K2). None of it was detectable by `academy-bank-check.mjs`, which can only check the bank against
+  itself. **Shipped:** the 64 objectives are data in `src/lib/academy/syllabus-los.mjs`, and three
+  build assertions — a ref must exist, it must belong to the question's own chapter, and `kLevel`
+  must equal its objective's — make the whole class unrepresentable before A-10d writes its remaining
+  ~54 questions. The fix ran larger than the audit: **70 refs** needed correcting, not 26, because 44
+  more named a real objective about a different topic, which no assertion can catch; **73 K-levels**,
+  counted after the remap. `kLevel` is no longer an authored field. The same audit half-closes §5.1's "verify before seeding"
+  warning: v4.0 is confirmed current and the 40-question total corroborated. The owner then supplied
+  the exam structure on 2026-08-13 — 40 questions, pass at 65% (26 of 40), 60 minutes plus 15 when
+  the exam is not sat in the candidate's native language — which `exams.ts` already matches, so what
+  remains blocked is **the per-chapter split alone** (8 / 6 / 4 / 11 / 9 / 2), still wanting "Exam
+  Structure Tables" or equivalent. Deliberately not upgraded by association: it came from the same
+  authored-from-memory process A-10e had to correct 70 refs out of. Owner action. See
+  `docs/QA-ACADEMY.md` § A-10e and §5.1.
 
 ---
 
