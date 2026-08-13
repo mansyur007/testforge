@@ -30,24 +30,35 @@ import { CH6_TOOLS } from "./ch6-tools";
 // This comment used to end "every question here carries a real `syllabusRef`
 // for a reviewer to check against the objective, per §7.2". That was not true,
 // and could not have been checked until 2026-08-12, when the real CTFL v4.0.1
-// syllabus arrived and the whole bank was audited against it:
-//   - 26 of 148 questions cite an objective code that **does not exist** — 14
-//     invented codes. Chapter 5's numbering is wrong wholesale (its metrics and
-//     defect-report codes are swapped with each other).
-//   - 6 questions test material ISTQB **removed** from Foundation Level in
+// syllabus arrived and the whole bank was audited against it. What it found:
+//   - 26 of 148 questions cited an objective code that **did not exist** — 14
+//     invented codes. Chapter 5's numbering was wrong wholesale (its metrics
+//     and defect-report codes were swapped with each other).
+//   - 6 questions tested material ISTQB **removed** from Foundation Level in
 //     v4.0 — use case testing (ch4-q10/q22/q48) and tool selection, pilots and
-//     rollout (ch6-q5/q6/q10). Correct questions, wrong syllabus.
-//   - 58 of the 122 questions on valid refs carry a `kLevel` the syllabus
+//     rollout (ch6-q5/q6/q10). Correct questions, wrong syllabus. Rewritten
+//     rather than deleted, so the pools did not shrink.
+//   - 58 of the 122 questions on valid refs carried a `kLevel` the syllabus
 //     contradicts. The systematic one: all four `FL-4.2.x` techniques
 //     (equivalence partitioning, BVA, decision tables, state transition) are
-//     **K3**, and 10 questions here tag them K2 — so the bank has been
+//     **K3**, and 10 questions here tagged them K2 — so the bank had been
 //     modelling its heaviest chapter as easier than the real paper.
 // Every tag in this bank was authored from memory of the syllabus rather than
-// from the syllabus, which is the single root cause of all three. A-10e lands
-// the 64 real objectives as data in `syllabus-los.ts` and makes
-// academy-bank-check.mjs assert that a `syllabusRef` exists and a `kLevel`
-// matches its objective — so once it ships, do not hand-check these two
-// fields; the build does it. Until it ships, do not trust either field.
+// from the syllabus, which is the single root cause of all three.
+//
+// **Fixed 2026-08-13 (A-10e).** The 64 objectives are now data, in
+// `src/lib/academy/syllabus-los.mjs`, and academy-bank-check.mjs asserts that a
+// `syllabusRef` exists, belongs to the question's own chapter, and carries the
+// `kLevel` the syllabus assigns it. So: **do not hand-check those two fields —
+// the build does it, and it cannot be talked out of it.** Two consequences when
+// writing a question:
+//   - `kLevel` is not yours to choose. Pick the objective; the level follows.
+//     If the level looks wrong for the question you have in mind, the objective
+//     is wrong, not the level.
+//   - the counts above were worse than the audit found: 70 refs needed
+//     correcting, not 26, because 44 of them named a real objective about a
+//     different topic. The existence check does not catch that class, and
+//     nothing can. Read the objective before citing it.
 //
 // **On answer positions.** The correct answer is authored first or second in
 // 127 of the 133 single-answer questions (`d` is still never correct in the

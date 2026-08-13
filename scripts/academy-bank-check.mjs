@@ -27,6 +27,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { drawQuestionIds, presentPaper } from "../src/lib/academy/exam-core.mjs";
+import { SYLLABUS_OBJECTIVES, OBJECTIVES_BY_ID } from "../src/lib/academy/syllabus-los.mjs";
 
 const QUESTIONS_DIR = "src/content/academy/questions";
 
@@ -83,8 +84,38 @@ for (const q of bank) {
     q.multi ? correct.length >= 2 : correct.length === 1,
     `multi=${Boolean(q.multi)}, correct=${correct.length}`,
   );
-  assert(`${q.id}: has a syllabusRef`, Boolean(q.syllabusRef));
-  assert(`${q.id}: has a kLevel`, Boolean(q.kLevel));
+  // A-10e: the ref has to name a real learning objective, not merely exist.
+  // Before this check the bank carried `FL-2.4.1`, `FL-3.3.1`, `FL-4.2.5`,
+  // `FL-5.1.8` and `FL-6.3.1`, none of which are in the syllabus, plus a whole
+  // chapter-5 scheme where the ids collided with real ones and meant something
+  // else (`FL-5.4.1` was "estimation" here and "configuration management" in
+  // the document). A ref that resolves to nothing cannot be reviewed against
+  // anything, which is the only reason §7.2 asks a question to carry one.
+  const objective = OBJECTIVES_BY_ID.get(q.syllabusRef);
+  assert(
+    `${q.id}: syllabusRef names a real learning objective`,
+    Boolean(objective),
+    `"${q.syllabusRef}" is not in the CTFL v4.0 syllabus (see src/lib/academy/syllabus-los.mjs)`,
+  );
+  if (objective) {
+    assert(
+      `${q.id}: syllabusRef belongs to the question's own chapter`,
+      objective.chapter === q.chapter,
+      `chapter ${q.chapter} question on ${q.syllabusRef}, which is a chapter ${objective.chapter} objective`,
+    );
+    // `kLevel` is the objective's level, not the author's opinion of how hard
+    // the question feels. That is the only definition anything can check, and
+    // it is the one the real paper uses: a question examines its objective at
+    // the level the syllabus assigns that objective. Whether the question as
+    // *written* actually demands that much is a content judgement no script
+    // can make — see docs/QA-ACADEMY.md §8 (A-10e) for the ones this audit
+    // flagged for a human.
+    assert(
+      `${q.id}: kLevel matches its objective's level`,
+      q.kLevel === objective.kLevel,
+      `tagged ${q.kLevel}, but ${q.syllabusRef} is ${objective.kLevel}`,
+    );
+  }
   assert(
     `${q.id}: has a real explanation`,
     typeof q.explanation === "string" && q.explanation.trim().length >= 40,
@@ -317,6 +348,21 @@ const lengthDebt = FULL_EXAM_CHAPTERS.map((c) => {
   return `ch${c.chapter} ${Math.round((wins / singles.length) * 100)}%`;
 }).join(", ");
 
+// A-10e: which learning objectives nobody has written a question for. Reported
+// rather than asserted, for the same reason the pool sizes are: chapters 1, 2
+// and 3 are mid-build, and a guard that failed on content the team is part-way
+// through writing would just get muted. It is the sharper measure of the two —
+// a chapter can look well stocked and still leave half its objectives untested,
+// which is exactly what chapter 1's 12 questions do.
+const refCounts = new Map();
+for (const q of bank) refCounts.set(q.syllabusRef, (refCounts.get(q.syllabusRef) ?? 0) + 1);
+const uncovered = SYLLABUS_OBJECTIVES.filter((o) => !refCounts.has(o.id));
+const uncoveredByChapter = FULL_EXAM_CHAPTERS.map((c) => {
+  const total = SYLLABUS_OBJECTIVES.filter((o) => o.chapter === c.chapter).length;
+  const missing = uncovered.filter((o) => o.chapter === c.chapter).length;
+  return `ch${c.chapter} ${total - missing}/${total}`;
+}).join(", ");
+
 if (failed > 0) {
   console.error(`academy-bank-check: FAILED (${failed} assertion(s))`);
   process.exit(1);
@@ -328,6 +374,12 @@ console.log(
 console.log(
   `academy-bank-check: content debt — pools below 5x blueprint weight: ${thin || "none"}; ` +
     `multi-answer questions: ${multiCount}`,
+);
+console.log(
+  `academy-bank-check: learning objectives with at least one question, per chapter: ` +
+    `${uncoveredByChapter}${
+      uncovered.length ? ` — untested: ${uncovered.map((o) => o.id).join(", ")}` : ""
+    }`,
 );
 console.log(
   `academy-bank-check: longest-choice guessing scores ${longestRate.toFixed(1)}% ` +

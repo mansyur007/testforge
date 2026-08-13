@@ -4271,7 +4271,7 @@ with the `SuiteFolderGrid` work noted above.
   taking the bank 70 → 148 questions, completing chapters 4 and 5, and closing the longest-answer
   tell (a candidate always picking the longest choice scored 65.2% — a pass — and now scores 31.4%
   and passes no paper); chapters 1, 2 and 3 remain at 12 each, ~54 questions of debt.
-- **A-10e** `[ ]` not started — **syllabus alignment**, opened 2026-08-12 once the owner supplied the
+- **A-10e** `[x]` shipped 2026-08-13 — **syllabus alignment**, opened 2026-08-12 once the owner supplied the
   real CTFL v4.0.1 syllabus PDF. Every tag in the bank had been authored from memory of the syllabus
   rather than from it, and an audit against the real document found **26 of 148 questions citing
   objective codes that do not exist** (14 invented codes; chapter 5's numbering is wholesale wrong,
@@ -4280,9 +4280,12 @@ with the `SuiteFolderGrid` work noted above.
   Notes), and **58 of the 122 questions on valid refs carrying a `kLevel` that contradicts their
   objective** (including all four `FL-4.2.x` techniques, which are K3 while 10 questions tag them
   K2). None of it was detectable by `academy-bank-check.mjs`, which can only check the bank against
-  itself. The fix lands the 64 objectives in the repo as data and adds two build assertions — a ref
-  must exist, a `kLevel` must match its objective — making the whole class unrepresentable before
-  A-10d writes its remaining ~54 questions. The same audit half-closes §5.1's "verify before seeding"
+  itself. **Shipped:** the 64 objectives are data in `src/lib/academy/syllabus-los.mjs`, and three
+  build assertions — a ref must exist, it must belong to the question's own chapter, and `kLevel`
+  must equal its objective's — make the whole class unrepresentable before A-10d writes its remaining
+  ~54 questions. The fix ran larger than the audit: **70 refs** needed correcting, not 26, because 44
+  more named a real objective about a different topic, which no assertion can catch; **73 K-levels**,
+  counted after the remap. `kLevel` is no longer an authored field. The same audit half-closes §5.1's "verify before seeding"
   warning: v4.0 is confirmed current and the 40-question total corroborated, but the per-chapter
   weights and the 65% pass line are **blocked on two ISTQB documents the project does not have**
   ("Exam Structures and Rules", "Exam Structure Tables") — owner action. See

@@ -1,14 +1,23 @@
 import type { ExamQuestion } from "../types";
 
-// A-06: Chapter 6 — Test Tools. Original questions on tool categories,
-// benefits/risks of tool support, and considerations for introducing a tool
-// into an organization. See docs/QA-ACADEMY.md §7.2.
+// A-06: Chapter 6 — Test Tools. Original questions on tool categories and on
+// the benefits and risks of test automation. See docs/QA-ACADEMY.md §7.2.
+//
+// The whole chapter hangs off two learning objectives — FL-6.1.1 (K2) and
+// FL-6.2.1 (K1) — which is the shortest chapter in the syllabus and why 12
+// questions already clear its 5x blueprint target of 10.
+//
+// A-10e rewrote q5, q6 and q10. They asked about tool selection, running a
+// pilot project, and introducing a tool into an organization: v4.0 removed that
+// section as too advanced for foundation level, so all three referenced an
+// objective (`FL-6.3.1`) that does not exist and tested material no paper would
+// ask about.
 
 export const CH6_TOOLS: ExamQuestion[] = [
   {
     id: "ch6-q1",
     chapter: 6,
-    kLevel: "K1",
+    kLevel: "K2",
     syllabusRef: "FL-6.1.1",
     stem: "A test management tool primarily supports:",
     choices: [
@@ -27,7 +36,7 @@ export const CH6_TOOLS: ExamQuestion[] = [
   {
     id: "ch6-q2",
     chapter: 6,
-    kLevel: "K1",
+    kLevel: "K2",
     syllabusRef: "FL-6.1.1",
     stem: "Which of the following is an example of a static analysis tool, as opposed to a test execution tool?",
     choices: [
@@ -42,7 +51,7 @@ export const CH6_TOOLS: ExamQuestion[] = [
   {
     id: "ch6-q3",
     chapter: 6,
-    kLevel: "K2",
+    kLevel: "K1",
     syllabusRef: "FL-6.2.1",
     stem: "Which of these is a genuine benefit of using test automation tools?",
     choices: [
@@ -61,7 +70,7 @@ export const CH6_TOOLS: ExamQuestion[] = [
   {
     id: "ch6-q4",
     chapter: 6,
-    kLevel: "K2",
+    kLevel: "K1",
     syllabusRef: "FL-6.2.1",
     stem: "A team introduces a UI test automation tool expecting it to immediately replace all manual testing, without budgeting time to maintain scripts as the UI changes. What risk are they most likely to run into?",
     choices: [
@@ -80,45 +89,45 @@ export const CH6_TOOLS: ExamQuestion[] = [
   {
     id: "ch6-q5",
     chapter: 6,
-    kLevel: "K1",
-    syllabusRef: "FL-6.3.1",
-    stem: "Before selecting a test tool for an organization, which of these is a recommended first step?",
+    kLevel: "K2",
+    syllabusRef: "FL-6.1.1",
+    stem: "A team wants one place where every reported anomaly is tracked from the first report through to a verified fix. Which category of test tool is that?",
     choices: [
-      { id: "a", text: "Buy the most expensive tool available, since a high price implies quality" },
+      { id: "a", text: "Test execution tools, which replay scripted checks against each new build" },
       {
         id: "b",
-        text: "Assess the organization's needs, maturity and existing processes",
+        text: "Defect management tools, which hold each anomaly's state and history",
         correct: true,
       },
-      { id: "c", text: "Skip the evaluation and copy whatever the nearest competitor uses" },
-      { id: "d", text: "Choose a tool with no trial period, so that the decision is final" },
+      { id: "c", text: "Static analysis tools, which inspect source code without ever running it" },
+      { id: "d", text: "Continuous integration tools, which build and deploy each merged change" },
     ],
     explanation:
-      "Tool selection should start from the organization's real requirements — team skills, process maturity, budget, and what it needs to integrate with — rather than price, imitation, or a decision made without ever trying the tool first.",
+      "Defect management tools store reported anomalies and carry each one through its lifecycle — new, assigned, fixed, retested, closed — which is what makes the state of every known problem visible in one place. The other three categories all support testing, but none of them is where a defect's status lives.",
   },
   {
     id: "ch6-q6",
     chapter: 6,
-    kLevel: "K2",
-    syllabusRef: "FL-6.3.1",
-    stem: "A pilot project is recommended before rolling a new test tool out organization-wide. What is the main purpose of the pilot?",
+    kLevel: "K1",
+    syllabusRef: "FL-6.2.1",
+    stem: "A suite of 800 automated checks is green on every run, yet users keep reporting problems the suite never flags. Which risk of test automation does this best illustrate?",
     choices: [
       {
         id: "a",
-        text: "To learn on a small scale whether the tool fits real workflows",
+        text: "Automated checks verify only what someone thought to encode in them",
         correct: true,
       },
-      { id: "b", text: "To satisfy a legal requirement that applies to all new tooling purchases" },
-      { id: "c", text: "To avoid having to write any documentation for the tool" },
-      { id: "d", text: "To guarantee that the tool itself contains no defects" },
+      { id: "b", text: "Automated checks take longer to execute than the same checks run by hand" },
+      { id: "c", text: "Automated checks cannot be run more than once against a given build" },
+      { id: "d", text: "Automated checks report their results in a format no other tool can read" },
     ],
     explanation:
-      "A pilot is a controlled, small-scale trial that reveals integration issues, training needs, and fit-for-purpose problems while the cost of being wrong is still low — far cheaper than discovering the tool doesn't fit after a full rollout.",
+      "An automated suite is a record of the risks someone already thought of. It re-asks those questions cheaply and reliably, which is its value, but a green run says nothing about the areas nobody wrote a check for — so a suite that never goes red can coexist with users hitting problems daily.",
   },
   {
     id: "ch6-q7",
     chapter: 6,
-    kLevel: "K1",
+    kLevel: "K2",
     syllabusRef: "FL-6.1.1",
     stem: "A performance testing tool that simulates thousands of concurrent virtual users hitting an API is best classified as which category of tool?",
     choices: [
@@ -133,7 +142,7 @@ export const CH6_TOOLS: ExamQuestion[] = [
   {
     id: "ch6-q8",
     chapter: 6,
-    kLevel: "K2",
+    kLevel: "K1",
     syllabusRef: "FL-6.2.1",
     stem: "Which of the following is a realistic risk of test automation, separate from the cost of initial tool purchase?",
     choices: [
@@ -152,7 +161,7 @@ export const CH6_TOOLS: ExamQuestion[] = [
   {
     id: "ch6-q9",
     chapter: 6,
-    kLevel: "K1",
+    kLevel: "K2",
     syllabusRef: "FL-6.1.1",
     stem: "A tool that automatically records and replays API requests as part of a CI pipeline, comparing responses against a saved baseline, is an example of:",
     choices: [
@@ -168,25 +177,25 @@ export const CH6_TOOLS: ExamQuestion[] = [
     id: "ch6-q10",
     chapter: 6,
     kLevel: "K2",
-    syllabusRef: "FL-6.3.1",
-    stem: "An organization rolls out a new test automation tool but gives the team no training and no time allotted to learn it. What is the most likely outcome, per the syllabus's tool-introduction guidance?",
+    syllabusRef: "FL-6.1.1",
+    stem: "A team wires its component tests, a linter and a coverage report into the pipeline that runs on every push. What has the tooling actually changed?",
     choices: [
       {
         id: "a",
-        text: "Low adoption and poor results, since proficiency takes training",
+        text: "Feedback on each change arrives without anyone having to ask for it",
         correct: true,
       },
-      { id: "b", text: "The tool will train the team automatically as they use it" },
-      { id: "c", text: "Results will be identical to those of a team that was fully trained" },
-      { id: "d", text: "No training is ever necessary for a modern test tool" },
+      { id: "b", text: "The team no longer has to decide which risks are worth testing for" },
+      { id: "c", text: "The pipeline stands in for the test design work behind each check" },
+      { id: "d", text: "Defects in the areas no check covers will now surface automatically" },
     ],
     explanation:
-      "Tool introduction guidance stresses that training, coaching, and time to reach proficiency are success factors — skipping them is one of the most common reasons an otherwise suitable tool fails to deliver value.",
+      "Continuous integration tooling changes when feedback arrives, not what is being checked: the same component tests, linter and coverage report now run on every push instead of when someone remembers. Deciding what is worth checking, and designing the checks, is unchanged — and nothing in the pipeline can see a defect in code no check touches.",
   },
   {
     id: "ch6-q11",
     chapter: 6,
-    kLevel: "K1",
+    kLevel: "K2",
     syllabusRef: "FL-6.1.1",
     stem: "Which of these tool categories is primarily concerned with managing test data — generating, masking, or provisioning it for test environments?",
     choices: [
