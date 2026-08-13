@@ -50,7 +50,12 @@
 > before seeding" warning. The owner then supplied the exam structure on 2026-08-13 — 40 questions,
 > 65% pass, 60 minutes plus 15 in a non-native language, all of which `exams.ts` already matches — so
 > what is still unverified is **the per-chapter split alone** (8 / 6 / 4 / 11 / 9 / 2).
-> A-07 … A-08 planned. Created 2026-08-10.
+> A-07 shipped 2026-08-13 (certificates for a completed track and a passing full paper: HMAC-derived
+> serials, a public page with its own share card, and a holder-controlled switch on the link). It
+> waited for A-10 on purpose — a shareable record of a paper that could be passed by always picking
+> the first choice, on an attempt that could be forged, would have been a way to publish a false
+> statement about somebody rather than a feature.
+> A-08 planned. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
@@ -882,11 +887,118 @@ without checking the user row still exists (true of every Academy action, not ne
 a cookie left over from a deleted user 500s instead of behaving like "signed out". Not fixed here —
 it's pre-existing behaviour across the whole app, not a regression — but worth a dedicated look.
 
-### A-07 — Certificates & shareable badge `[ ]`
+### A-07 — Certificates & shareable badge `[x]`
 
-`Certificate` model, HMAC-derived serial, `/academy/certificate/[serial]` public page with a
-generated OG image (follow `src/app/opengraph-image.tsx`), issued on track completion and on a
-passing exam. Revocable. Disclaimer per §7.4.
+> **Status: DONE** (2026-08-13, branch `feat/academy-a07-certificates`). Implemented as specified:
+> `Certificate` model, HMAC-derived serial, `/academy/certificate/[serial]` public page with a
+> generated OG image (following `src/app/opengraph-image.tsx`), issued on track completion and on a
+> passing exam, revocable, disclaimer per §7.4.
+
+**Why this one waited for A-10.** A certificate is the first Academy artifact that makes a claim to
+someone who was not there. A-06 shipped an exam a candidate could pass by always picking the first
+choice (~50%, against a 65% line) on a paper whose ticket could be replayed with the answer key the
+review screen had just handed back. Minting a shareable record on top of that would not have been a
+feature; it would have been a way to publish a false statement about somebody. So issuance sits
+*after* the `ExamAttempt` row is written: `@@unique([userId, seed])` (A-10b) is what makes a
+replayed ticket fail before this code is ever reached, and the certificate inherits that protection
+instead of carrying a rule of its own.
+
+**The serial is derived, not random, and stored, not recomputed.** `HMAC(secret, "academy-
+certificate" | kind | refSlug | userId)`, 16 symbols over Crockford's base32 (no I/L/O/U, because a
+serial gets transcribed by hand more often than any other identifier here) — 80 bits, and that
+entropy *is* the access control on a page with no session. Deterministic, so issuing the same
+achievement twice computes the serial that already exists and the unique index turns a double-issue
+into a no-op rather than a second row — the same move A-10b made for replays, one level up. Stored,
+so rotating `AUTH_SECRET` cannot break a link already out in the world; `@@unique([userId, kind,
+refSlug])` is not redundant with `serial @unique` but is what stops a rotation minting a duplicate
+for an achievement someone already holds.
+
+**Four decisions worth naming, because each has a defensible opposite:**
+
+- **`scorePct` is the best passing score; `issuedAt` is the first.** A learner who scrapes a 68% and
+  retakes at 90% would otherwise show 68% forever. "First earned" and "best so far" are two true
+  statements; one averaged number would be a half-truth.
+- **`revokedAt` is the holder's visibility switch, and a hidden certificate 404s** rather than
+  rendering "withdrawn by its holder" — which is precisely the sentence someone withdrawing a link
+  does not want published. An *administrative* revocation means the opposite thing (a reader
+  following a stale link deserves to be told) and needs its own reason field and page state. It is
+  not this boolean read backwards.
+- **Only the full paper earns an exam certificate.** Six more per learner for the chapter quizzes
+  would say nothing the attempt history doesn't, while making the one that means something harder to
+  pick out (§7.4).
+- **`NOINDEX` on the page, deliberately *not* in `robots.txt`.** The meta tag keeps a page carrying
+  somebody's name out of search results; a robots entry would stop LinkedIn, Slack and WhatsApp
+  fetching it at all, killing the share card the OG image exists to produce. Compare `/share/` in
+  `src/app/robots.ts`, where killing the preview is the point.
+
+Track completion is issued from `claimAcademyProgress` as well as `markLessonDoneAction`: a track
+finished anonymously and claimed at signup never passes through the toggle, and swallowing its
+certificate would break the one funnel §1 is built around.
+
+**What the verification pass found.** The first cut was written in one sitting and left its own
+selftest, e2e and this write-up to a second; three things turned up in that pass that reading the
+diff again would not have produced.
+
+- **`Certificate` was missing from the backup's `MODEL_ORDER`** (L-05). `scripts/backup-selfcheck.mjs`
+  failed the build the first time `prebuild` ran — a schema PR that adds a model without placing it
+  in that list silently drops the model from every backup, which for this table means restoring an
+  instance and finding every shared certificate link dead. Placed after `User`, its only foreign key.
+  Worth recording that the guard did exactly what it was written for, on the first feature to test it
+  in a while.
+- **A hard-coded fixture serial made two of the new e2e tests unrepeatable.** They passed once; a run
+  that failed before its cleanup left the row behind, and every later run then died on `serial`'s
+  unique index instead of on whatever it was testing. Fixture serials are now generated per run.
+- **The progress layer has two paths that persist a toggle, and the test spent three drafts learning
+  it.** `markDone` writes `localStorage` and fires `markLessonDoneAction` without awaiting it — but
+  only once `ensureSynced()` has set `authed`. Before that, the click writes `localStorage` alone and
+  the write reaches the database later, through `claimAcademyProgress`, whose request body carries
+  the *whole* progress map. So the first draft of TC-E2E-118 asserted "no certificate yet" against a
+  database no action had touched and **passed with the completeness gate deliberately removed**; the
+  second waited for "a request mentioning this lesson", which the claim satisfies, so it proceeded
+  while the sync was still in flight — and the claim's `localStorage` overwrite then silently undid
+  the un-toggle it had just performed, which is what stuck the button at `aria-pressed="true"` for 33
+  polls on CI. **Which request carries the write is a race the test has no business pinning down.**
+  It now polls the row count (the same fact either way) and takes its negative assertion after a full
+  navigation, re-verified against the mutated build.
+
+  Worth recording as an app observation rather than a test one: a late `ensureSynced()` overwrite can
+  leave the toggle showing *done* for a lesson the database has just un-marked, until the next
+  reload. Harmless in ordinary use — nobody un-marks a lesson within the sync window — and out of
+  scope here, but it is a real disagreement between the button and the row behind it.
+
+- **The un-toggle/re-toggle sub-case was cut rather than stabilised.** It was there to prove issuing
+  the same achievement twice is a no-op, and every attempt to drive it through the toggle fought the
+  sync design above instead of testing A-07 (a stale `localStorage` entry is a *claim source*, so the
+  cache can re-create the very row the un-toggle deleted). The same property is now proved on the
+  exam path in TC-E2E-117, which has no client cache in it at all: sit a second full paper, and the
+  certificate is still one row with the same serial and the same `issuedAt`.
+
+**Verification.** `scripts/academy-certificate-selftest.mjs` (wired into `prebuild`, the house
+pattern from `exam-core.mjs`) covers what no e2e can see: determinism over 1000 repeats, that every
+field of the achievement and the secret change the serial, that the NUL join keeps field boundaries
+unambiguous, that 20,000 serials use all 32 symbols evenly (no modulo bias) and collide zero times,
+normalization, and a golden vector. Each was proved to fail by re-injecting the defect it exists to
+catch — joining with `""`, `% 30` instead of `% 32`, and a `Math.random()` in the input — the same
+way A-10a's and A-10d's assertions were checked. Four e2e specs, **TC-E2E-117** (sit the whole
+40-question paper answering correctly, certificate issued at 100%, page and its `og:image` read from
+a fresh cookie-less context, then a *second* paper sat to prove re-issuing is one row with the same
+serial and the same `issuedAt`), **TC-E2E-118** (the lesson that completes a track earns it, the one
+before it does not), **TC-E2E-119** (link off → 404, back on → same serial)
+and **TC-E2E-120** (a signed-in stranger replaying the toggle action against someone else's serial
+changes nothing). 118, 119 and 120 were each proved to fail against a mutated build — the
+completeness gate removed, the `userId` dropped from the `updateMany` filter, and the `revokedAt`
+check dropped from `getPublicCertificate`.
+
+TC-E2E-117 imports the answer key from the six chapter modules directly. They carry a *type-only*
+import and nothing else, so unlike `src/content/academy/questions/index.ts` — `server-only`, for the
+answer key's sake — they can be read from a spec. The alternative was 40 hard-coded answers that go
+stale the next time A-10d touches the bank.
+
+**Deliberately not in A-07:** a PDF or any offline-verifiable document (the URL is the credential —
+same shape as F-17 share links and L-01 badge tokens; a PDF would imply a signature this does not
+have); administrative revocation with a reason and a "this credential was withdrawn" page state,
+which is a different feature wearing the same column's name; and a LinkedIn "add to profile" deep
+link, which wants a real issuing-organisation id and would overstate what this is.
 
 ### A-08 — Content build-out & localised routes `[ ]`
 

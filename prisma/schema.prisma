@@ -55,6 +55,7 @@ model User {
   publicShares    PublicShare[]     @relation("PublicShareCreator")
   lessonProgress  LessonProgress[]
   examAttempts    ExamAttempt[]
+  certificates    Certificate[]
 }
 
 // F-20: single-use TOTP recovery codes. codeHash is the sha256 hex of the raw
@@ -972,6 +973,41 @@ model ExamAttempt {
   // those answers to mint a `passed` attempt. See docs/QA-ACADEMY.md § A-10b.
   @@unique([userId, seed])
   @@index([userId, templateSlug])
+}
+
+// A-07: a shareable record of one achievement — a completed track, or a passing
+// full practice exam. See docs/QA-ACADEMY.md § A-07.
+//
+// `serial` is HMAC-derived from (kind, refSlug, userId), so it is both
+// unguessable (80 bits, no secret in the URL to reverse) and *deterministic*:
+// issuing the same achievement twice computes the same serial, which the unique
+// index turns into a no-op rather than a second certificate. That is the same
+// trick `@@unique([userId, seed])` above plays for exam replays — make the
+// duplicate unrepresentable instead of guarding against it in application code.
+//
+// `@@unique([userId, kind, refSlug])` is not redundant with it. The serial is
+// derived once and *stored*, so lookups never recompute it and rotating
+// AUTH_SECRET cannot break a link that is already out in the world — but a
+// rotation would make the next derivation for the same achievement differ, and
+// this constraint is what stops that from minting a second certificate.
+//
+// `revokedAt` is the holder's own visibility switch in this work order, not an
+// integrity action: a set value makes /academy/certificate/<serial> a 404. See
+// the A-07 entry for why an admin revocation would need a different signal.
+model Certificate {
+  id        String    @id @default(cuid())
+  userId    String
+  kind      String // TRACK | EXAM
+  refSlug   String // track slug or exam template slug
+  serial    String    @unique // HMAC-derived, unguessable, public URL segment
+  scorePct  Int? // EXAM only: best passing score, null for TRACK
+  issuedAt  DateTime  @default(now())
+  revokedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, kind, refSlug])
+  @@index([userId])
 }
 
 // Gap audit: PRD §5.5 mensyaratkan audit log tapi tabelnya tidak ada di ERD.
