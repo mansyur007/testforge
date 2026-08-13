@@ -16,6 +16,13 @@ import type { ExamQuestion } from "../types";
 // failure of the two because a reviewer checking the ref would have found a
 // plausible-looking answer. All 45 questions now sit on the objective they
 // actually test, and all 16 of the chapter's objectives have at least one.
+//
+// A-10d's seventh slice took the chapter 45 → 63 (q46–q63), 7x rather than 5x
+// its blueprint draw of 9. The 18 went where the pool was thinnest per
+// objective rather than by topic: FL-5.2.4 (responding to product risks) and
+// FL-5.3.3 (communicating status) each had a single question, so a paper could
+// only ask about them one way, and nine more objectives sat at two. Every one
+// of the 16 now carries at least 3.
 
 export const CH5_MANAGING_TESTING: ExamQuestion[] = [
   {
@@ -822,5 +829,281 @@ export const CH5_MANAGING_TESTING: ExamQuestion[] = [
     ],
     explanation:
       "Every part of this — an unidentifiable build, testware drifting out of step with the software, a result that can no longer be tied to a version — is what configuration management exists to prevent. The defect may well be real, but without the version and data pinned down it can no longer be investigated.",
+  },
+  {
+    id: "ch5-q46",
+    chapter: 5,
+    kLevel: "K2",
+    syllabusRef: "FL-5.1.1",
+    stem: "Halfway through a project, two of the planned test environments turn out to be unavailable and a major feature is descoped. What should happen to the test plan?",
+    choices: [
+      { id: "a", text: "It is updated, because a plan reflects decisions that have changed", correct: true },
+      { id: "b", text: "It is left as signed off, and the differences noted in the final report" },
+      { id: "c", text: "It is replaced by a new plan, since a plan cannot be revised once agreed" },
+      { id: "d", text: "It is archived, as planning ends once test execution has started" },
+    ],
+    explanation:
+      "Test planning is a continuous activity rather than a document handed over at the start. Environments, scope, risks and schedule all move, and a plan that no longer describes what the team intends to do stops supporting the decisions it exists for. Recording the divergence only in a final report leaves everyone working from a document known to be wrong.",
+  },
+  {
+    id: "ch5-q47",
+    chapter: 5,
+    kLevel: "K1",
+    syllabusRef: "FL-5.1.2",
+    stem: "A team plans an iteration with no tester in the room. Which consequence is the one most directly attributable to that absence?",
+    choices: [
+      { id: "a", text: "Stories are committed without the test effort being estimated", correct: true },
+      { id: "b", text: "The stories chosen turn out to be technically impossible to build" },
+      { id: "c", text: "The product owner ranks the backlog in the wrong business order" },
+      { id: "d", text: "The iteration's development work is estimated far too optimistically" },
+    ],
+    explanation:
+      "A tester in planning contributes a testability review of the candidate stories, an estimate of the test effort each carries, and a view of where the risk sits. Without one, the iteration commits to work whose testing has never been sized, and the shortfall surfaces at the end as stories that are built but not tested. Feasibility, backlog order and development estimates are owned by others in that room.",
+  },
+  {
+    id: "ch5-q48",
+    chapter: 5,
+    kLevel: "K3",
+    syllabusRef: "FL-5.1.4",
+    stem: "A team must estimate test effort for a product it has never worked on, in a domain none of them has tested before, with no data from comparable past projects. Which estimation approach fits?",
+    choices: [
+      { id: "a", text: "Expert-based estimation, drawing on the judgement of those doing the work", correct: true },
+      { id: "b", text: "Metrics-based estimation, extrapolating from the organisation's past projects" },
+      { id: "c", text: "A three-point calculation over the defect counts recorded in earlier releases" },
+      { id: "d", text: "Ratio-based estimation, applying the industry-standard test-to-development split" },
+    ],
+    explanation:
+      "Metrics-based approaches extrapolate from data about previous comparable efforts, which is precisely what is missing here — and a three-point calculation over historical defect counts has the same dependency. Expert-based estimation asks the people who will do the work, individually or as a group, and survives an absence of history. There is no universal test-to-development ratio to fall back on.",
+  },
+  {
+    id: "ch5-q49",
+    chapter: 5,
+    kLevel: "K3",
+    syllabusRef: "FL-5.1.5",
+    stem: "A team has two hours of its four-hour regression suite available before a release decision, and wants the run to exercise as much of the product as possible rather than any one area deeply. Which prioritization does that?",
+    choices: [
+      { id: "a", text: "Coverage-based, ordering tests so each adds the most new coverage", correct: true },
+      { id: "b", text: "Risk-based, running the tests attached to the highest-rated risks first" },
+      { id: "c", text: "Requirements-based, following the priority the customer gave each requirement" },
+      { id: "d", text: "Chronological, running the oldest tests first so the mature ones report early" },
+    ],
+    explanation:
+      "Coverage-based prioritization sequences tests so the highest coverage is reached earliest, which is what a fixed window and a breadth goal call for. Risk-based and requirements-based ordering both concentrate effort where the stakes are highest, deliberately at the cost of breadth, and the age of a test is not a basis for prioritization at all.",
+  },
+  {
+    id: "ch5-q50",
+    chapter: 5,
+    kLevel: "K3",
+    syllabusRef: "FL-5.1.5",
+    stem: "A regression suite was ordered by risk two releases ago. The same tests still run first, though the areas they cover have not changed in months while three new modules have shipped. What is wrong?",
+    choices: [
+      { id: "a", text: "The prioritization was never revisited as the risks moved", correct: true },
+      { id: "b", text: "Risk-based prioritization should have been replaced by coverage-based" },
+      { id: "c", text: "A regression suite must always run in the order the tests were written" },
+      { id: "d", text: "New modules belong in a separate suite that is never prioritized at all" },
+    ],
+    explanation:
+      "Prioritization records a judgement about risk at a point in time, and risk moves: the new modules carry the uncertainty now, while areas stable for months carry less than they did. An order fixed two releases ago spends the first minutes of every run on the code least likely to break. The technique is sound; leaving its input stale is what fails.",
+  },
+  {
+    id: "ch5-q51",
+    chapter: 5,
+    kLevel: "K1",
+    syllabusRef: "FL-5.1.6",
+    stem: "What does the test pyramid's shape assert about the tests at its base, compared with those towards its top?",
+    choices: [
+      { id: "a", text: "There are more of them, and each is cheaper and faster to run", correct: true },
+      { id: "b", text: "They are written first, and the upper levels are written last" },
+      { id: "c", text: "They are owned by developers, while the upper levels belong to testers" },
+      { id: "d", text: "They are run on every commit, while the upper levels run only at release" },
+    ],
+    explanation:
+      "The pyramid's width is a count and its height a degree of integration: many small, fast, isolated tests at the base, progressively fewer and more expensive ones above. Who writes each level and how often each runs are choices a team may well make that way, but they are not what the shape itself claims.",
+  },
+  {
+    id: "ch5-q52",
+    chapter: 5,
+    kLevel: "K2",
+    syllabusRef: "FL-5.1.7",
+    multi: true,
+    stem: "Which of the following are true of the testing quadrants? (Select all that apply.)",
+    choices: [
+      { id: "a", text: "They separate tests that support the team from those that critique the product", correct: true },
+      { id: "b", text: "They separate business-facing tests from technology-facing tests", correct: true },
+      { id: "c", text: "A single test level can hold tests from more than one quadrant", correct: true },
+      { id: "d", text: "The quadrants are ordered, and testing moves through them in sequence" },
+      { id: "e", text: "Each quadrant maps to exactly one test level in the lifecycle" },
+    ],
+    explanation:
+      "The quadrants classify tests on two axes — whether a test guides the team's work or evaluates the finished product, and whether it is expressed in business or in technology terms. It is a classification rather than a schedule, so nothing runs in quadrant order, and one test level routinely contains tests from several quadrants at once.",
+  },
+  {
+    id: "ch5-q53",
+    chapter: 5,
+    kLevel: "K1",
+    syllabusRef: "FL-5.2.1",
+    stem: "A risk register entry reads: 'the reporting export was rewritten by a contractor new to the codebase, and finance send its output to the regulator each quarter.' Which part of that speaks to impact rather than to likelihood?",
+    choices: [
+      { id: "a", text: "That the output reaches an external regulator", correct: true },
+      { id: "b", text: "That the code was rewritten by someone new to it" },
+      { id: "c", text: "That the previous version had run for years without complaint" },
+      { id: "d", text: "That the rewrite was done under someone else's schedule" },
+    ],
+    explanation:
+      "Risk level combines likelihood — how probable a failure is — with impact, what it costs if it happens. A wrong figure landing in front of a regulator is a consequence, so it sets impact. Unfamiliarity with the code raises likelihood, as does working to a schedule set elsewhere, and a long record of running cleanly lowers it.",
+  },
+  {
+    id: "ch5-q54",
+    chapter: 5,
+    kLevel: "K2",
+    syllabusRef: "FL-5.2.2",
+    multi: true,
+    stem: "A project's risk register mixes both kinds of risk. Which of the entries below are project risks? (Select all that apply.)",
+    choices: [
+      { id: "a", text: "The only tester with payments experience is leaving in three weeks", correct: true },
+      { id: "b", text: "The test environment's licence expires before system testing ends", correct: true },
+      { id: "c", text: "The checkout miscalculates tax on orders shipped between states" },
+      { id: "d", text: "The mobile app stops responding when the network drops mid-payment" },
+    ],
+    explanation:
+      "Project risks threaten the project's ability to deliver at all — staffing, environments, suppliers, schedule. Product risks are properties of the thing being built, where the failure would be experienced by a user. The last two describe how the software itself could behave badly, which makes them product risks however serious they are.",
+  },
+  {
+    id: "ch5-q55",
+    chapter: 5,
+    kLevel: "K2",
+    syllabusRef: "FL-5.2.3",
+    stem: "Product risk analysis rates a settings screen as low risk. What does that most appropriately change about how the screen is tested?",
+    choices: [
+      { id: "a", text: "It gets a lighter technique and less depth, not no testing at all", correct: true },
+      { id: "b", text: "It is dropped from scope, since low risk means no testing is needed" },
+      { id: "c", text: "It is tested last, but to exactly the same depth as everything else" },
+      { id: "d", text: "It is handed to the developers, as testers only cover high-risk areas" },
+    ],
+    explanation:
+      "Risk analysis allocates effort: it decides how much testing an area earns and which techniques are worth applying to it, not whether the area is tested. A low-risk screen may warrant a checklist rather than a full set of derived test cases. The order things run in is a separate question, and moving the work to someone else does not change how much of it there is.",
+  },
+  {
+    id: "ch5-q56",
+    chapter: 5,
+    kLevel: "K2",
+    syllabusRef: "FL-5.2.4",
+    stem: "A product risk is rated low likelihood but very high impact, and mitigating it fully would cost more than the release is worth. Which response is still legitimate?",
+    choices: [
+      { id: "a", text: "Accept the risk on record, with a plan for what to do if it occurs", correct: true },
+      { id: "b", text: "Remove the risk from the register, since it will not be mitigated" },
+      { id: "c", text: "Re-rate the impact downwards until the mitigation cost looks justified" },
+      { id: "d", text: "Transfer it to the test team, who will find it during exploratory testing" },
+    ],
+    explanation:
+      "Accepting a risk is one of the recognised responses, alongside mitigating it, transferring it to another party and preparing a contingency. What makes acceptance legitimate is that it is a recorded decision, taken by someone with the authority to take it and backed by a contingency plan. Deleting the entry or re-rating it to fit the budget hides the decision instead of making it.",
+  },
+  {
+    id: "ch5-q57",
+    chapter: 5,
+    kLevel: "K2",
+    syllabusRef: "FL-5.2.4",
+    stem: "A team responds to a high product risk in the payment flow by putting three extra test analysts on that area for the release. Which kind of risk response is that?",
+    choices: [
+      { id: "a", text: "Mitigation, lowering the chance a defect survives to production", correct: true },
+      { id: "b", text: "Transfer, moving responsibility for the risk to the people testing it" },
+      { id: "c", text: "Contingency, preparing what the team will do once the risk occurs" },
+      { id: "d", text: "Acceptance, since the team is going ahead with the release regardless" },
+    ],
+    explanation:
+      "Testing an area more thoroughly is a mitigation: it reduces the probability that a defect reaches users, which is one of the two factors in the risk level. Transfer moves the risk to another party such as a supplier or insurer, contingency is the plan for when it materialises anyway, and acceptance takes no action at all.",
+  },
+  {
+    id: "ch5-q58",
+    chapter: 5,
+    kLevel: "K1",
+    syllabusRef: "FL-5.3.1",
+    stem: "Which of these is a test coverage metric, rather than a test progress metric or a defect metric?",
+    choices: [
+      { id: "a", text: "The percentage of requirements exercised by at least one test", correct: true },
+      { id: "b", text: "The number of test cases executed against the number planned" },
+      { id: "c", text: "The number of defects found per thousand lines of delivered code" },
+      { id: "d", text: "The proportion of open defects that have been assigned an owner" },
+    ],
+    explanation:
+      "Coverage metrics express how much of some defined item — requirements, code, risks — has been exercised by testing. Executed against planned is progress, defects per unit of size is defect density, and the state of the defect backlog is a defect management metric.",
+  },
+  {
+    id: "ch5-q59",
+    chapter: 5,
+    kLevel: "K2",
+    syllabusRef: "FL-5.3.2",
+    stem: "A test progress report is going to a project manager who has to decide whether to move the release date. Which content earns its place most?",
+    choices: [
+      { id: "a", text: "What is blocking execution, and what it will cost to clear it", correct: true },
+      { id: "b", text: "A list of every test case executed since the previous report" },
+      { id: "c", text: "The full text of each defect report raised during the period" },
+      { id: "d", text: "The names of the testers who worked on each area this week" },
+    ],
+    explanation:
+      "A report is written for the decision its audience has to take. A schedule decision needs the impediments, their effect on the work still outstanding, and the confidence behind any new date. Complete case lists and defect texts live in the tools that hold them, and staffing detail answers a different question.",
+  },
+  {
+    id: "ch5-q60",
+    chapter: 5,
+    kLevel: "K2",
+    syllabusRef: "FL-5.3.3",
+    stem: "A tester finds that a defect discovered this morning has made the whole payment flow untestable. The next scheduled status report is four days away. What should they do?",
+    choices: [
+      { id: "a", text: "Raise it now through an agreed channel, ahead of the report", correct: true },
+      { id: "b", text: "Wait for the report, so status arrives through one consistent route" },
+      { id: "c", text: "Log the defect only, since the report will pick it up automatically" },
+      { id: "d", text: "Escalate straight to the executive sponsor, bypassing the whole team" },
+    ],
+    explanation:
+      "Communicating test status is more than the scheduled report; it includes the immediate channels a team agrees on for things that cannot wait. A blocker that stops an entire flow being tested changes what other people should be doing today. Holding it for the cadence, or trusting the defect tracker to raise the alarm, both cost four days.",
+  },
+  {
+    id: "ch5-q61",
+    chapter: 5,
+    kLevel: "K2",
+    syllabusRef: "FL-5.3.3",
+    stem: "A test manager tells a board deciding whether to launch: 'we have executed 340 of 500 tests and 18 are failing.' Why is that a poor status communication for this audience?",
+    choices: [
+      { id: "a", text: "It gives counts without saying what the remaining risk is", correct: true },
+      { id: "b", text: "The numbers should have been given as percentages, not counts" },
+      { id: "c", text: "Test execution figures must never leave the test team itself" },
+      { id: "d", text: "A board should be handed the defect reports themselves to read" },
+    ],
+    explanation:
+      "The board's question is whether the product is safe to launch, and raw execution counts do not answer it: 18 failures in cosmetic areas and 18 in the payment flow mean entirely different things. Status is adapted to the audience and to the decision, which here means the residual risk in the areas that matter. How the numbers are formatted is not the problem.",
+  },
+  {
+    id: "ch5-q62",
+    chapter: 5,
+    kLevel: "K2",
+    syllabusRef: "FL-5.4.1",
+    stem: "A team keeps its application code under version control, but stores test cases and test data on a shared drive with no versioning at all. What does testing lose?",
+    choices: [
+      { id: "a", text: "The ability to say which version of a test produced a given result", correct: true },
+      { id: "b", text: "The ability to run the test suite automatically in the build pipeline" },
+      { id: "c", text: "The ability to trace a requirement to the test cases that cover it" },
+      { id: "d", text: "The ability to execute the same test against two different builds" },
+    ],
+    explanation:
+      "Configuration management applies to testware as much as to code: cases, data, scripts and environments are all items whose versions must be identifiable if a result is to mean anything afterwards. Without it, a pass cannot be tied to the test that produced it. Automation, traceability and reuse across builds all remain possible — they simply stop being trustworthy.",
+  },
+  {
+    id: "ch5-q63",
+    chapter: 5,
+    kLevel: "K2",
+    syllabusRef: "FL-5.4.1",
+    multi: true,
+    stem: "What does configuration management give testing? (Select all that apply.)",
+    choices: [
+      { id: "a", text: "Every test item is uniquely identified and its version is known", correct: true },
+      { id: "b", text: "Testware can be tied to the version of the product it ran against", correct: true },
+      { id: "c", text: "A defect can be reported against a build identifiable later on", correct: true },
+      { id: "d", text: "Changes to test items are tracked, so a suite can be reconstructed", correct: true },
+      { id: "e", text: "Test cases become unnecessary, since the build history records behaviour" },
+      { id: "f", text: "Defects cannot be introduced, because every change is reviewed beforehand" },
+    ],
+    explanation:
+      "Configuration management establishes and maintains the identity and integrity of the items testing depends on — the test object, the testware, and the relationship between them — so that results, defect reports and whole suites stay meaningful after the fact. It records what changed; it does not review those changes, and it does not replace the tests.",
   },
 ];
