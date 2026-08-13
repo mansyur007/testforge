@@ -4276,7 +4276,7 @@ with the `SuiteFolderGrid` work noted above.
   `e2e/academy.spec.ts` **TC-E2E-109/110** and `e2e/help-center.spec.ts` **TC-E2E-111/112**. See
   `docs/QA-ACADEMY.md` § A-09 for the full writeup, including why the two pages couldn't just move
   into the `(app)` route group.
-- **A-10** `[x]` code / `[ ]` content — exam integrity, opened 2026-08-12 from an audit of what A-06 actually
+- **A-10** `[x]` code and content — exam integrity, opened 2026-08-12 from an audit of what A-06 actually
   shipped (measured against the real bank and the real `drawQuestionIds`, not against the docs).
   Three findings, one PR each: **A-10a** the answer key is `a` or `b` in 66 of 70 questions (`d` is
   never correct), so two of four options are dead on almost every question and noticing lifts a
@@ -4312,8 +4312,16 @@ with the `SuiteFolderGrid` work noted above.
   Chapter 2 was the lopsided one — seven of its twelve questions on test levels and types, and five
   of its six `FL-2.1.x` objectives untouched, so a chapter about lifecycles had nothing on DevOps,
   shift left, test-first or retrospectives. Both coverage measures graduate from printed debt to
-  build assertions in the same slice. What remains is a decision rather than a task: §9's ≥300-question
-  target is not met (5× yields 200) and reaching it means deepening chapters already at target.
+  build assertions in the same slice. **A-10d closed 2026-08-13** with two further slices that
+  settled §9's ≥300-question target by replacing it: the seventh took the two draw-heavy chapters to
+  **7×** rather than 5× (ch4 55→77, ch5 45→63, bank 242) and the eighth added 13 questions across
+  chapters 1–3 to put **every one of the 64 objectives at three questions or more** (bank **255**).
+  300 was a round number that predated the blueprint weights and disagreed with the 5× rule beside it
+  — 5× yields 200, and reaching 300 uniformly would have meant padding chapter 6, which has two
+  learning objectives and cannot spread past them. So the multiplier follows the draw instead, and
+  the new per-objective floor catches what a chapter-level count cannot: `FL-5.2.4` and `FL-5.3.3`
+  had each sat at a single question through six slices, because nothing was counting past zero. Both
+  rules are build assertions, each proved to fail before it landed.
 - **A-10e** `[x]` shipped 2026-08-13 — **syllabus alignment**, opened 2026-08-12 once the owner supplied the
   real CTFL v4.0.1 syllabus PDF. Every tag in the bank had been authored from memory of the syllabus
   rather than from it, and an audit against the real document found **26 of 148 questions citing

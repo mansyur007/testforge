@@ -13,6 +13,10 @@ import type { ExamQuestion } from "../types";
 // chapter about testing throughout the lifecycle had almost nothing about
 // lifecycles in it. The 18 new questions put that right: 14 of them land on
 // FL-2.1.x, and all 10 objectives are now covered.
+//
+// A-10d's eighth slice added 3 more (q31–q33), taking FL-2.1.2, FL-2.1.5 and
+// FL-2.1.6 to the bank's depth floor of 3 questions per objective — the same
+// three FL-2.1.x topics the sixth slice had only just opened.
 
 export const CH2_SDLC: ExamQuestion[] = [
   {
@@ -502,5 +506,50 @@ export const CH2_SDLC: ExamQuestion[] = [
     ],
     explanation:
       "Retirement is one of the triggers the syllabus names, alongside modification, migration and upgrades of the operating environment. Archiving is precisely where it matters: data that has to be readable years later, and a restore procedure nobody has ever exercised, are worth testing while the people who understand the system are still available.",
+  },
+  {
+    id: "ch2-q31",
+    chapter: 2,
+    kLevel: "K1",
+    syllabusRef: "FL-2.1.2",
+    stem: "Whatever lifecycle model a team follows, some testing practices hold across all of them. Which of these is one?",
+    choices: [
+      { id: "a", text: "Testers are involved while requirements are still being refined", correct: true },
+      { id: "b", text: "All test levels are executed by one dedicated testing team" },
+      { id: "c", text: "Test execution starts only after the code has been frozen" },
+      { id: "d", text: "Each iteration repeats the previous iteration's test cases exactly" },
+    ],
+    explanation:
+      "The practices that survive any model include pairing every development activity with a test activity, giving each test level its own objectives, starting test analysis and design for a level during the corresponding development activity, and involving testers early enough to shape the work products they will later test. Freezing code before testing starts, concentrating every level in one team and repeating a fixed suite are choices a particular model might make, not general good practice.",
+  },
+  {
+    id: "ch2-q32",
+    chapter: 2,
+    kLevel: "K2",
+    syllabusRef: "FL-2.1.5",
+    stem: "A team wants to shift left. Which of these changes actually does that?",
+    choices: [
+      { id: "a", text: "Reviewing requirements before any code is written for them", correct: true },
+      { id: "b", text: "Adding a second round of system testing before the release" },
+      { id: "c", text: "Running the regression suite nightly instead of weekly" },
+      { id: "d", text: "Adding more testers to the phase that runs closest to release" },
+    ],
+    explanation:
+      "Shifting left means performing testing activities earlier in the lifecycle — static testing of requirements and designs, writing tests before the code, getting feedback from continuous integration on every change. Running an existing late activity more often, or staffing it more heavily, leaves that activity exactly where it sat in the sequence.",
+  },
+  {
+    id: "ch2-q33",
+    chapter: 2,
+    kLevel: "K2",
+    syllabusRef: "FL-2.1.6",
+    stem: "A retrospective finds that defects keep reaching system testing because stories are accepted without acceptance criteria. What makes that a useful retrospective outcome rather than a complaint?",
+    choices: [
+      { id: "a", text: "It names a change the team can make in the next iteration", correct: true },
+      { id: "b", text: "It identifies which team member accepted the stories" },
+      { id: "c", text: "It records the defect counts for the release report" },
+      { id: "d", text: "It confirms the exit criteria for system testing were met" },
+    ],
+    explanation:
+      "A retrospective is a process improvement activity, so its value lies in what the team agrees to do differently and in the follow-through that makes the change stick. Attributing the problem to a person, collecting numbers for a report and checking criteria are all separate activities, and the first of them actively discourages the candour a retrospective depends on.",
   },
 ];

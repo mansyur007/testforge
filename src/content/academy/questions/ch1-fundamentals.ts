@@ -14,6 +14,12 @@ import type { ExamQuestion } from "../types";
 // process in context, testware, traceability, roles, generic skills, the whole
 // team approach), and between them they now carry 21 of the 28. All 14
 // objectives are covered.
+//
+// A-10d's eighth slice added 4 more (q41–q44) to bring FL-1.2.3, FL-1.4.4,
+// FL-1.5.1 and FL-1.5.2 up to the bank's depth floor of 3 questions each. The
+// floor is now asserted: "at least one question" was the right bar while 17
+// objectives had none, but it is satisfied by an objective a paper can only
+// ever ask about one way.
 
 export const CH1_FUNDAMENTALS: ExamQuestion[] = [
   {
@@ -660,5 +666,65 @@ export const CH1_FUNDAMENTALS: ExamQuestion[] = [
     ],
     explanation:
       "Independence buys a different set of biases and the standing to challenge assumptions, but at a distance it costs collaboration: the test team can become isolated, relations can turn adversarial, testers get treated as a bottleneck or blamed for delays, and quality drifts into being someone else's job. None of the other three follows from where the testers sit.",
+  },
+  {
+    id: "ch1-q41",
+    chapter: 1,
+    kLevel: "K2",
+    syllabusRef: "FL-1.2.3",
+    stem: "A tax miscalculation is traced back to a training gap: the developer had never been told how the regional rules differ. In the root cause, error, defect and failure chain, what is that gap?",
+    choices: [
+      { id: "a", text: "The root cause — the thing that made the mistake likely", correct: true },
+      { id: "b", text: "The error, since the developer acted on what they knew" },
+      { id: "c", text: "The defect, because it explains what the code got wrong" },
+      { id: "d", text: "The failure, as it is what the customer eventually saw" },
+    ],
+    explanation:
+      "The root cause is the earliest thing that, had it been addressed, would have prevented the whole chain — here a gap in what the developer had been taught. The error is the mistake they then made, the defect is the flaw left in the code, and the failure is the wrong total a customer sees. Root cause analysis exists to reach past the defect to the conditions that produced it, because that is where a fix also stops the next one.",
+  },
+  {
+    id: "ch1-q42",
+    chapter: 1,
+    kLevel: "K2",
+    syllabusRef: "FL-1.4.4",
+    stem: "A requirement changes late in a release, and nobody can say which test cases now need rerunning. Which failing does that point to?",
+    choices: [
+      { id: "a", text: "Traceability between the test basis and the testware is missing", correct: true },
+      { id: "b", text: "The regression suite has not been automated far enough yet" },
+      { id: "c", text: "The exit criteria for system testing were never agreed on" },
+      { id: "d", text: "The team has no defect taxonomy to classify the change against" },
+    ],
+    explanation:
+      "Traceability links each element of the test basis to the testware derived from it, which is what makes impact analysis possible: change a requirement and the affected test cases can be identified. Without it the team must rerun everything or guess which is which. Automation, exit criteria and defect taxonomies each address a different problem.",
+  },
+  {
+    id: "ch1-q43",
+    chapter: 1,
+    kLevel: "K2",
+    syllabusRef: "FL-1.5.1",
+    stem: "In a review meeting a tester says 'this section contradicts section 4' rather than 'you contradicted yourself in section 4'. What does that choice of wording demonstrate?",
+    choices: [
+      { id: "a", text: "Communicating findings about the work rather than its author", correct: true },
+      { id: "b", text: "Analytical thinking applied to the structure of the document" },
+      { id: "c", text: "Domain knowledge of the business the document describes" },
+      { id: "d", text: "Attention to detail in spotting a contradiction between sections" },
+    ],
+    explanation:
+      "Both sentences carry the same finding; only one avoids putting the author on the defensive. The syllabus singles out communication because test results are so often received as criticism, and a finding phrased about the work is far more likely to be acted on. Spotting the contradiction took analysis and attention — how it was said is what this question asks about.",
+  },
+  {
+    id: "ch1-q44",
+    chapter: 1,
+    kLevel: "K1",
+    syllabusRef: "FL-1.5.2",
+    stem: "What does the whole team approach do for the testers on a team?",
+    choices: [
+      { id: "a", text: "Their knowledge feeds the product early, alongside everyone else's", correct: true },
+      { id: "b", text: "It gives them the final say over whether a release goes ahead" },
+      { id: "c", text: "It removes the need for anyone on the team to hold testing skills" },
+      { id: "d", text: "It puts them in a separate reporting line from the developers" },
+    ],
+    explanation:
+      "In a whole team approach anyone with the necessary skills can take on any task, and quality is the responsibility of the team as a whole — so testing knowledge shapes requirements and design rather than arriving after the code exists. It does not hand testers release authority, does not dissolve the skill itself, and works by bringing people together rather than separating anyone out.",
   },
 ];
