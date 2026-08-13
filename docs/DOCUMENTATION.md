@@ -4266,8 +4266,7 @@ with the `SuiteFolderGrid` work noted above.
   attempt, checked against whichever questions the seed actually drew). See `docs/QA-ACADEMY.md`
   § A-06 for the full writeup, including a stale-session-cookie edge case found while manually
   walking the flow (pre-existing app-wide behaviour, not a regression, not fixed in this PR).
-- **A-08** `[ ]` not started — content build-out and localised routes. See `docs/QA-ACADEMY.md` §8.
-  (A-07 shipped on 2026-08-13 — its entry is at the end of this list, in ship order.)
+- **A-07 … A-08** `[ ]` not started — certificates, content build-out. See `docs/QA-ACADEMY.md` §8.
 - **A-09** `[x]` (2026-08-12, branch `feat/academy-help-authed-shell`) — Session-aware shell on
   `/academy` and `/docs/help`: a signed-in visitor now gets the same sidebar/`AppShell` as the rest
   of the app (extracted into `src/components/AuthedAppShell.tsx`, reused by `(app)/layout.tsx`
@@ -4337,30 +4336,6 @@ with the `SuiteFolderGrid` work noted above.
   Structure Tables" or equivalent. Deliberately not upgraded by association: it came from the same
   authored-from-memory process A-10e had to correct 70 refs out of. Owner action. See
   `docs/QA-ACADEMY.md` § A-10e and §5.1.
-- **A-07** `[x]` (2026-08-13, branch `feat/academy-a07-certificates`) — **Certificates**, for a
-  completed track and a passing full practice exam. `Certificate` model; the serial is
-  `HMAC(secret, kind|refSlug|userId)` rendered as 16 Crockford base32 symbols (`TF-XXXX-XXXX-XXXX-
-  XXXX`) — 80 bits, which *is* the access control on `/academy/certificate/<serial>`, a page with no
-  session on it. Derived rather than random so issuing the same achievement twice computes the serial
-  that already exists and the unique index makes a double-issue a no-op (A-10b's move, one level up);
-  stored rather than recomputed so rotating `AUTH_SECRET` cannot break a link already shared. Public
-  page carries its own OG card, `NOINDEX` but deliberately *not* a `robots.txt` entry (which would
-  stop LinkedIn and Slack fetching the preview the OG image exists for), and §7.4's disclaimer that
-  this is a record of practice and no ISTQB credential. Issued from `submitExamAction`
-  (full paper only), `markLessonDoneAction`, and `claimAcademyProgress` — a track finished
-  anonymously and claimed at signup never passes through the toggle. `revokedAt` is the *holder's*
-  switch and a hidden certificate 404s rather than announcing itself as withdrawn; an administrative
-  revocation would need its own reason field and page state. **This work order is why A-10 exists**:
-  a shareable record of a paper that could be passed by always picking the first choice, on an
-  attempt that could be replayed, would publish a false statement about somebody.
-  `scripts/academy-certificate-selftest.mjs` (in `prebuild`) covers derivation with no DB —
-  determinism, field separation, 20k serials with no modulo bias and no collisions, a golden vector —
-  each assertion proved by re-injecting the defect. **TC-E2E-117** … **TC-E2E-120** cover issuance on
-  both triggers, the cookie-less read, the link switch, and the tenant guard, the last three proved
-  against mutated builds. Two findings from the verification pass are recorded in
-  `docs/QA-ACADEMY.md` § A-07: the model was missing from L-05's backup `MODEL_ORDER` (caught by
-  `backup-selfcheck.mjs` on the first `prebuild`), and the optimistic lesson toggle made the first
-  draft of TC-E2E-118 pass against a build with the completeness gate removed.
 
 ---
 

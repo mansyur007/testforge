@@ -34,29 +34,3 @@ export type SelfCheckResult =
  * the database.
  */
 export type CheckResult = { passed: boolean; feedback: string[] };
-
-/**
- * A-07: a certificate as anyone may see it. Same rule as everything above —
- * `src/lib/academy/certificates.ts` is `server-only` because it reaches the
- * database and the HMAC key, and `CertificateList` is a client component.
- *
- * What is *not* on this type is the point of it: no user id, no email, no
- * attempt id. A shared certificate link must not become a handle on the rest of
- * its holder's account.
- */
-export type PublicCertificate = {
-  serial: string;
-  kind: string;
-  refSlug: string;
-  /** "Track Completion" | "Practice Exam Pass" — §7.4's required wording. */
-  heading: string;
-  subject: string;
-  holderName: string;
-  /** EXAM only: the best passing score. `null` for a track. */
-  scorePct: number | null;
-  issuedAt: string;
-};
-
-/** The holder's own view, which adds the one thing only they may know: whether
- *  the public link is currently switched off. */
-export type MyCertificate = PublicCertificate & { hidden: boolean };
