@@ -63,8 +63,9 @@
 > **and the track published at 12 of 12** — the first A-08 slice with a visible change: thirteen
 > routes, thirteen sitemap entries, a clickable roadmap card, and T1's long-dangling link to
 > `/academy/manual-pro` finally resolving), sixth 2026-08-14 (T3's first lesson, `what-to-automate`,
-> back to `draft` and invisible). T4 and T5's lesson bodies, the rest of T3 including the CI capstone,
-> and the Indonesian routes are what remains of A-08. Created 2026-08-10.
+> back to `draft` and invisible), seventh 2026-08-14 (T3's `programming-foundations`, 2 of 12).
+> T4 and T5's lesson bodies, the rest of T3 including the CI capstone, and the Indonesian routes are
+> what remains of A-08. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
@@ -1125,6 +1126,25 @@ can go while still saying something true about what the user gets — the wrong-
 through as twelve UI tests for password rules, and the maintenance cost, where flake rate connects
 back to T2's metrics lesson. It closes on what automation is *not*, because "automation replaces
 manual QA" is the misconception this whole track is otherwise liable to reinforce.
+
+**Seventh slice 2026-08-14: T3's `programming-foundations`**, taking the track to 2 of 12, still
+`draft`. **The "sample of shape" from the sixth slice was not held for review before this one** — the
+owner delegated the decision to continue — so that slice is a review *checkpoint* rather than a gate,
+and the two lessons remain separately reviewable in their own PRs. Recording it plainly because the
+sixth slice's own rationale said the opposite, and a reader comparing the two entries deserves the
+reason rather than a contradiction.
+
+The lesson is the track's only pure-syntax one and it is written against the smaller target: **read
+and change test code without being afraid of it**, not "learn JavaScript". Roughly a third of it is
+`async`/`await`, because a missing `await` is the ecosystem's biggest source of flakiness and its
+signature — a failure that lands in the *next* test — is unguessable if nobody says it out loud.
+The other unusual choice is a section on **reading somebody else's suite** (start at the name, find
+the `expect` first, read backwards, change nothing cosmetic on day one), since nobody's first
+automation job is green-field.
+
+It also plants the capstone's constraint eight lessons early: **name tests so they map to case ids**,
+because `/api/v1/junit` matches on test names, and retrofitting that convention across 400 tests
+costs a sprint while deciding it in week one costs nothing.
 
 > **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
 > *track's* status, so the lesson-level status is what let the writing land in five reviewable

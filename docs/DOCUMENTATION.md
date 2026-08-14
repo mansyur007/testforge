@@ -4276,11 +4276,11 @@ with the `SuiteFolderGrid` work noted above.
   `non-functional-basics`), then 11–12 (`metrics-that-mean-something`, `reporting-to-stakeholders`)
   — at which point **the track flipped to `published` at 12 of 12**, the first visible change of the
   work order: thirteen routes, thirteen sitemap entries, a clickable roadmap card, and T1's
-  long-dangling link to `/academy/manual-pro` finally resolving. The sixth slice opens Track 3
-  (`automation`) with one lesson, `what-to-automate`, back to `draft` and invisible. T4 and T5's
-  lesson bodies, the rest of T3 including the CI capstone, and the localised routes are what
-  remains. See `docs/QA-ACADEMY.md` §8. (A-07 shipped on 2026-08-13 — its entry is at the end of
-  this list, in ship order.)
+  long-dangling link to `/academy/manual-pro` finally resolving. The sixth and seventh slices open
+  Track 3 (`automation`) with `what-to-automate` and `programming-foundations` — 2 of 12, back to
+  `draft` and invisible. T4 and T5's lesson bodies, the rest of T3 including the CI capstone, and
+  the localised routes are what remains. See `docs/QA-ACADEMY.md` §8. (A-07 shipped on 2026-08-13 —
+  its entry is at the end of this list, in ship order.)
 - **A-09** `[x]` (2026-08-12, branch `feat/academy-help-authed-shell`) — Session-aware shell on
   `/academy` and `/docs/help`: a signed-in visitor now gets the same sidebar/`AppShell` as the rest
   of the app (extracted into `src/components/AuthedAppShell.tsx`, reused by `(app)/layout.tsx`
