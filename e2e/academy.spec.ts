@@ -1437,3 +1437,89 @@ test(`TC-${TC}-120 A signed-in stranger cannot switch off somebody else's certif
   await db.user.delete({ where: { email: victimEmail } });
   await db.user.delete({ where: { email: attackerEmail } });
 });
+
+// ---------------------------------------------------------------------------
+// The slug-validation hole recorded in docs/QA-ACADEMY.md § A-10's open items:
+// `claimAcademyProgress` resolved every slug through the published registry
+// before inserting, but `markLessonDoneAction` took both slugs on trust, so a
+// crafted call could write `LessonProgress` rows for lessons that do not exist.
+// Same replay technique as TC-*-113 — capture the real server-action POST, then
+// re-send it with the slug swapped. The replacement is deliberately the same
+// length as the slug it replaces, so the body still matches the Content-Length
+// the captured headers carry.
+// ---------------------------------------------------------------------------
+
+test(`TC-${TC}-127 A crafted "mark done" cannot write progress for a lesson that does not exist`, async ({
+  page,
+}) => {
+  const email = `academy-slug-${Date.now()}@testforge.local`;
+  const passwordHash = await bcrypt.hash("AcademySlug123", 10);
+  await db.user.create({
+    data: {
+      name: "Academy Slug Test",
+      email,
+      passwordHash,
+      emailVerifiedAt: new Date(),
+      onboardedAt: new Date(),
+    },
+  });
+  await login(page, email, "AcademySlug123");
+
+  let doneReq: { url: string; headers: Record<string, string>; body: string } | null = null;
+  page.on("request", (req) => {
+    if (req.method() !== "POST") return;
+    const headers = req.headers();
+    if (!headers["next-action"]) return;
+    const body = req.postData();
+    if (body && body.includes("what-qa-does")) doneReq = { url: req.url(), headers, body };
+  });
+
+  await page.goto("/academy/fundamentals/what-qa-does");
+  // A-05's progress layer has two paths that persist a toggle, and only one of
+  // them is under test: `markLessonDoneAction` fires when `ensureSynced()` has
+  // already set the client's `authed` flag, and `claimAcademyProgress` folds
+  // the local cache in when it hasn't. Clicking straight after `goto` loses
+  // that race and takes the claim path — which has always validated its slugs,
+  // so the first draft of this test passed against a build with the fix
+  // removed. Wait for the sync round-trip, then click.
+  await page.waitForResponse(
+    (r) => r.request().method() === "POST" && !!r.request().headers()["next-action"],
+  );
+  await page.waitForTimeout(1_000);
+  await page.click('[data-testid="lesson-done-toggle"]');
+  await expect
+    .poll(() => db.lessonProgress.count({ where: { user: { email } } }))
+    .toBe(1);
+  expect(doneReq).not.toBeNull();
+
+  const req = doneReq!;
+  // ...and prove it, rather than trust the wait above: these are
+  // markLessonDoneAction's two positional arguments. If the race was lost
+  // anyway this fails here instead of passing vacuously below.
+  expect(req.body).toContain('["fundamentals","what-qa-does"]');
+
+  // 1. A lesson slug that exists nowhere in the registry.
+  const forgedLesson = await page.request.post(req.url, {
+    headers: req.headers,
+    data: req.body.replace("what-qa-does", "zzzz-qa-zzzz"),
+  });
+  expect(forgedLesson.ok()).toBe(true);
+
+  // 2. A real lesson filed under a track it does not belong to. "fundamentals"
+  //    and "manual-proxx" are both 12 characters; the latter is not a published
+  //    track, so the pair must not resolve either.
+  const forgedTrack = await page.request.post(req.url, {
+    headers: req.headers,
+    data: req.body.replace("fundamentals", "manual-proxx"),
+  });
+  expect(forgedTrack.ok()).toBe(true);
+
+  // Neither replay may leave a trace: the only row is the honest one, and it
+  // still carries the track the registry says the lesson belongs to.
+  const rows = await db.lessonProgress.findMany({ where: { user: { email } } });
+  expect(rows).toHaveLength(1);
+  expect(rows[0].lessonSlug).toBe("what-qa-does");
+  expect(rows[0].trackSlug).toBe("fundamentals");
+
+  await db.user.delete({ where: { email } }); // cascades LessonProgress
+});
