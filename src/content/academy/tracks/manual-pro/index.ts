@@ -1,6 +1,9 @@
 import type { Lesson, Track } from "../../types";
+import { apiTesting } from "./api-testing";
 import { exploratoryTesting } from "./exploratory-testing";
+import { httpAndDevtools } from "./http-and-devtools";
 import { riskBasedTesting } from "./risk-based-testing";
+import { sqlForQa } from "./sql-for-qa";
 import { testOracles } from "./test-oracles";
 import { testPlanning } from "./test-planning";
 
@@ -47,9 +50,9 @@ export const manualPro: Track = {
     riskBasedTesting,
     exploratoryTesting,
     testOracles,
-    planned("http-and-devtools", "HTTP and browser dev tools for testers", "Status codes, headers, the network tab, and reading a failed request like a developer.", 12),
-    planned("api-testing", "API testing with Postman", "Requests, environments, chaining, assertions, and testing the API a UI hides.", 15, true),
-    planned("sql-for-qa", "SQL for verification", "SELECT, JOIN and GROUP BY — enough to prove what the screen is claiming.", 14),
+    httpAndDevtools,
+    apiTesting,
+    sqlForQa,
     planned("cross-browser-mobile", "Cross-browser and mobile testing", "Building a device matrix from analytics instead of superstition.", 11),
     planned("accessibility-basics", "Accessibility basics", "Keyboard, contrast, labels, screen readers — the checks that take ten minutes.", 12),
     planned("non-functional-basics", "Non-functional testing you can do today", "Cheap first checks for performance, security and reliability.", 12),
