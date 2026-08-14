@@ -1,22 +1,29 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { getSession } from "@/lib/auth";
+import { AuthedAppShell } from "@/components/AuthedAppShell";
 import { Logo, TFIcon } from "@/components/icons";
 import { Markdown } from "@/components/Markdown";
 import { JsonLd } from "@/components/JsonLd";
 import { AcademyNav, SandboxBadge } from "@/components/AcademyNav";
 import { SelfCheck } from "@/components/SelfCheck";
 import { LessonDoneToggle } from "@/components/AcademyProgress";
-import { allLessonParams, getLesson, lessonNeighbours } from "@/content/academy";
+import { getLesson, lessonNeighbours } from "@/content/academy";
 import { getSandboxTask } from "@/content/academy/sandbox";
 import { openSandboxTask } from "@/app/actions/academy";
 import { sanitizeQuestions } from "@/lib/academy/questions";
 import { breadcrumbLd, canonical, INDEXABLE, ldGraph, techArticleLd } from "@/lib/seo";
 
-export function generateStaticParams() {
-  return allLessonParams();
-}
-export const dynamicParams = false;
+// A-09b: same change as the track page — a signed-in reader keeps the app shell
+// on a lesson instead of being dropped into standalone reading chrome. Reading
+// the session cookie forces dynamic rendering, so the prerender pair
+// (`generateStaticParams` + `dynamicParams = false`) is gone; `getLesson()`
+// already returns undefined for a draft or unknown slug and `notFound()` below
+// still turns that into a 404. Lessons are the Academy's SEO surface and are
+// still fully server-rendered per request — what they lose is the prerender and
+// the CDN cache (docs/QA-ACADEMY.md §8, A-01, A-09).
+export const dynamic = "force-dynamic";
 
 export function generateMetadata({
   params,
@@ -46,7 +53,7 @@ export function generateMetadata({
   };
 }
 
-export default function AcademyLessonPage({
+export default async function AcademyLessonPage({
   params,
 }: {
   params: { track: string; lesson: string };
@@ -54,14 +61,15 @@ export default function AcademyLessonPage({
   const found = getLesson(params.track, params.lesson);
   if (!found) notFound();
   const { track, lesson } = found;
+  const session = await getSession();
   const { prev, next } = lessonNeighbours(track, lesson.slug);
   // A-04b: only the five lessons with a real checker get the direct-to-exercise
   // button; other sandbox-marked lessons (T2+) still get the generic callout
   // below until their own work order lands a task and a checker for them.
   const sandboxTask = getSandboxTask(lesson.slug);
 
-  return (
-    <main className="mx-auto max-w-5xl px-4 py-12">
+  const jsonLd = (
+    <>
       <JsonLd
         data={ldGraph(
           techArticleLd({
@@ -80,14 +88,11 @@ export default function AcademyLessonPage({
           ]),
         )}
       />
+    </>
+  );
 
-      <div className="mb-8 flex items-center justify-between">
-        <Logo size="sm" />
-        <Link href="/dashboard" className="text-sm text-accent-text hover:underline">
-          Back to app
-        </Link>
-      </div>
-
+  const body = (
+    <>
       <div className="flex gap-10">
         <AcademyNav track={track} currentSlug={lesson.slug} />
 
@@ -231,6 +236,38 @@ export default function AcademyLessonPage({
           </nav>
         </article>
       </div>
+    </>
+  );
+
+  if (session) {
+    return (
+      <AuthedAppShell session={session}>
+        {jsonLd}
+        <div className="mx-auto max-w-5xl">{body}</div>
+      </AuthedAppShell>
+    );
+  }
+
+  return (
+    <main className="mx-auto max-w-5xl px-4 py-12">
+      {jsonLd}
+
+      <div className="mb-8 flex items-center justify-between">
+        <Logo size="sm" />
+        <div className="flex items-center gap-4 text-sm">
+          <Link href="/login" className="text-accent-text hover:underline">
+            Log in
+          </Link>
+          <Link
+            href="/signup"
+            className="rounded-lg bg-accent px-3 py-1.5 font-medium text-white hover:bg-accent-hover"
+          >
+            Sign up
+          </Link>
+        </div>
+      </div>
+
+      {body}
     </main>
   );
 }

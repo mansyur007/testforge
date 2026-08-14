@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Logo, TFIcon } from "@/components/icons";
+import { AuthedAppShell } from "@/components/AuthedAppShell";
+import { TFIcon } from "@/components/icons";
 import { BetaChip } from "@/components/BetaChip";
 import { AcademyMeSync } from "@/components/AcademyMeSync";
 import { requireSession } from "@/lib/auth";
@@ -10,10 +11,12 @@ import { NOINDEX } from "@/lib/seo";
 import { getMyCertificates, getMyExamAttempts } from "@/app/actions/academy";
 import { CertificateList } from "@/components/academy/CertificateList";
 
-// A-05: the one Academy page that needs a session — progress belongs to
-// somebody, same reasoning as /academy/sandbox. Everything else under
-// /academy stays public and prerendered; this route is what that design
-// deliberately left dynamic.
+// A-05: one of the two Academy pages that require a session — progress belongs
+// to somebody, same reasoning as /academy/sandbox. A-09b: because the session
+// is guaranteed here, this page renders the app shell unconditionally, with no
+// guest branch to mirror; it is reached from the sidebar's "My progress" link,
+// and losing the sidebar on arrival was the same disconnect A-09 fixed on
+// /academy.
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "My progress — TestForge QA Academy",
@@ -46,14 +49,9 @@ export default async function AcademyMePage() {
   ]);
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-12">
+    <AuthedAppShell session={session}>
+      <div className="mx-auto max-w-3xl">
       <AcademyMeSync />
-      <div className="mb-8 flex items-center justify-between">
-        <Logo size="sm" />
-        <Link href="/dashboard" className="text-sm text-accent-text hover:underline">
-          Back to app
-        </Link>
-      </div>
 
       <h1 className="flex flex-wrap items-center gap-3 text-3xl font-bold text-content-strong">
         My progress
@@ -170,6 +168,7 @@ export default async function AcademyMePage() {
       {/* A-07: certificates, below the evidence that earned them — a reader who
           wants to check one is one section away from the attempt it came from. */}
       <CertificateList certificates={certificates} />
-    </main>
+      </div>
+    </AuthedAppShell>
   );
 }

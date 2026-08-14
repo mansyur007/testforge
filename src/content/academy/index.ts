@@ -85,13 +85,6 @@ export function trackMinutes(track: Track): number {
   return publishedLessons(track).reduce((sum, l) => sum + l.minutes, 0);
 }
 
-/** `{ track, lesson }` slug pairs for `generateStaticParams`. */
-export function allLessonParams(): { track: string; lesson: string }[] {
-  return publishedTracks().flatMap((t) =>
-    publishedLessons(t).map((l) => ({ track: t.slug, lesson: l.slug })),
-  );
-}
-
 /**
  * A-05: which published track a lesson slug belongs to. Anonymous progress
  * (A-02) only ever recorded the slug, not the track, so

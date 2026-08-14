@@ -3005,9 +3005,11 @@ the PR description). Reminder from the repo's e2e conventions: reporters run via
 > not `docs/help/*.md` files read from disk at request time. **Why:** the production Docker image
 > (`Dockerfile`) only copies `.next/`, `node_modules/`, and `prisma/` into the runtime stage —
 > plus `.dockerignore` excludes `*.md` outright — so raw markdown files on disk would 404 in every
-> self-hosted deployment. TS modules bundle into `.next` like any other source file (confirmed via
-> `generateStaticParams` → the `/docs/help/[topic]` pages build as static HTML), so this works
-> identically in dev and in the single-command Docker deploy. `/docs/help` index + 9 topic pages,
+> self-hosted deployment. TS modules bundle into `.next` like any other source file, so this works
+> identically in dev and in the single-command Docker deploy. (This was originally confirmed by
+> `generateStaticParams` building the `/docs/help/[topic]` pages as static HTML; A-09b made that
+> route `force-dynamic`, so the topics now bundle and render per request instead — the reason the
+> content lives in TS rather than on disk is unchanged.) `/docs/help` index + 9 topic pages,
 > "Help" nav entry (new `nav-help` icon) in the app shell, and a link from the empty test-case
 > table state. e2e `help-center.spec.ts`, full suite 32/32.
 
@@ -4203,7 +4205,7 @@ with the `SuiteFolderGrid` work noted above.
 
 - **A-01** `[x]` (2026-08-10) — Academy shell: `/academy`, `/academy/[track]`,
   `/academy/[track]/[lesson]`, all public and prerendered; Track 1 (QA Fundamentals) written and
-  published, 13 lessons.
+  published, 13 lessons. (Still public; the prerendering went away in A-09/A-09b.)
 - **A-02** `[x]` (2026-08-11) — Self-check quizzes: 39 questions, server-side grading, anonymous
   progress in `localStorage`, answer key never reaches the client bundle.
 - **A-03** `[x]` (2026-08-11) — SEO (sitemap, `Course` JSON-LD) and entry points (landing nav,
@@ -4277,6 +4279,17 @@ with the `SuiteFolderGrid` work noted above.
   `e2e/academy.spec.ts` **TC-E2E-109/110** and `e2e/help-center.spec.ts` **TC-E2E-111/112**. See
   `docs/QA-ACADEMY.md` § A-09 for the full writeup, including why the two pages couldn't just move
   into the `(app)` route group.
+- **A-09b** `[x]` (2026-08-14, branch `fix/academy-help-shell-subpages`) — the same shell one level
+  deeper, from a user report that `/academy/fundamentals` drops the navigation panel while
+  `/academy` keeps it. A-09 had explicitly scoped track, lesson and help-topic pages out; the audit
+  also caught `/academy/me` and `/academy/sandbox`, which are `requireSession()` pages linked from
+  the sidebar and so render the shell unconditionally. Cost: `/academy/[track]`,
+  `/academy/[track]/[lesson]` and `/docs/help/[topic]` lost their prerender (1 track, 13 lessons, 9
+  topics) and are `force-dynamic`; they are still fully server-rendered per request, so the HTML a
+  crawler receives is unchanged. `dynamicParams = false` and `allLessonParams()` went with it — the
+  draft/unknown-slug 404 always came from `notFound()`, not from the build-time param list.
+  **TC-E2E-121**–**126**; **TC-E2E-27** updated to leave a help topic via the sidebar. See
+  `docs/QA-ACADEMY.md` § A-09b for the rejected middleware alternative.
 - **A-10** `[x]` code and content — exam integrity, opened 2026-08-12 from an audit of what A-06 actually
   shipped (measured against the real bank and the real `drawQuestionIds`, not against the docs).
   Three findings, one PR each: **A-10a** the answer key is `a` or `b` in 66 of 70 questions (`d` is

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Logo, TFIcon } from "@/components/icons";
+import { AuthedAppShell } from "@/components/AuthedAppShell";
+import { TFIcon } from "@/components/icons";
 import { BetaChip } from "@/components/BetaChip";
 import { Markdown } from "@/components/Markdown";
 import { SandboxReset } from "@/components/SandboxControls";
@@ -10,10 +11,10 @@ import { findSandbox } from "@/lib/academy/sandbox";
 import { SANDBOX_SUITES, SHOPMINI_REQUIREMENTS } from "@/content/academy/sandbox";
 import { NOINDEX } from "@/lib/seo";
 
-// A-04: the sandbox's home. The rest of Academy is public and prerendered; this
-// one page needs a session, because a sandbox belongs to somebody. Keeping it
-// here rather than adding session-dependent controls to /academy is what lets
-// the roadmap and every lesson stay static.
+// A-04: the sandbox's home. This page needs a session, because a sandbox
+// belongs to somebody. A-09b: the session is guaranteed, so it renders the app
+// shell unconditionally — the sidebar links straight here, and arriving used to
+// drop the shell entirely.
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Academy sandbox — TestForge",
@@ -25,14 +26,8 @@ export default async function AcademySandboxPage() {
   const sandbox = await findSandbox(session.userId);
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-12">
-      <div className="mb-8 flex items-center justify-between">
-        <Logo size="sm" />
-        <Link href="/academy" className="text-sm text-accent-text hover:underline">
-          Back to Academy
-        </Link>
-      </div>
-
+    <AuthedAppShell session={session}>
+      <div className="mx-auto max-w-3xl">
       <h1 className="flex flex-wrap items-center gap-3 text-3xl font-bold text-content-strong">
         Your sandbox
         <BetaChip className="translate-y-1" />
@@ -97,6 +92,7 @@ export default async function AcademySandboxPage() {
           {SHOPMINI_REQUIREMENTS}
         </Markdown>
       </section>
-    </main>
+      </div>
+    </AuthedAppShell>
   );
 }

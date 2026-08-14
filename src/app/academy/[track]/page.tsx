@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { getSession } from "@/lib/auth";
+import { AuthedAppShell } from "@/components/AuthedAppShell";
 import { Logo, TFIcon } from "@/components/icons";
 import { JsonLd } from "@/components/JsonLd";
 import { AcademyNav, SandboxBadge, formatMinutes } from "@/components/AcademyNav";
@@ -8,7 +10,6 @@ import { TrackProgress } from "@/components/AcademyProgress";
 import {
   getTrack,
   publishedLessons,
-  publishedTracks,
   trackMinutes,
 } from "@/content/academy";
 import {
@@ -20,14 +21,18 @@ import {
   ldGraph,
 } from "@/lib/seo";
 
-/** Published tracks only, and `dynamicParams = false` so a draft slug 404s
- *  instead of rendering unfinished content. Preview of a draft is a branch
- *  deploy, not a query parameter — a page that reads searchParams cannot be
- *  statically rendered, and static is the point (docs/QA-ACADEMY.md §8, A-01). */
-export function generateStaticParams() {
-  return publishedTracks().map((t) => ({ track: t.slug }));
-}
-export const dynamicParams = false;
+// A-09b: this page now reads the session so a signed-in visitor keeps the app
+// shell here, exactly as /academy already does — clicking into a track used to
+// drop the sidebar and look like a different product. Reading the session
+// cookie forces dynamic rendering, so the `generateStaticParams` +
+// `dynamicParams = false` pair that used to prerender the published tracks is
+// gone: it cannot coexist with `force-dynamic`, and it was never what produced
+// the 404 anyway — `getTrack()` returns undefined for a draft or unknown slug
+// and `notFound()` below turns that into the same 404, on every request rather
+// than only for params missing from the build-time list. The page is still
+// server-rendered in full for crawlers; what it loses is the prerender and the
+// CDN cache (docs/QA-ACADEMY.md §8, A-01, A-09).
+export const dynamic = "force-dynamic";
 
 export function generateMetadata({
   params,
@@ -53,7 +58,7 @@ export function generateMetadata({
   };
 }
 
-export default function AcademyTrackPage({
+export default async function AcademyTrackPage({
   params,
 }: {
   params: { track: string };
@@ -61,10 +66,11 @@ export default function AcademyTrackPage({
   const track = getTrack(params.track);
   if (!track) notFound();
 
+  const session = await getSession();
   const lessons = publishedLessons(track);
 
-  return (
-    <main className="mx-auto max-w-5xl px-4 py-12">
+  const jsonLd = (
+    <>
       <JsonLd
         data={ldGraph(
           courseLd({
@@ -90,14 +96,11 @@ export default function AcademyTrackPage({
           },
         )}
       />
+    </>
+  );
 
-      <div className="mb-8 flex items-center justify-between">
-        <Logo size="sm" />
-        <Link href="/dashboard" className="text-sm text-accent-text hover:underline">
-          Back to app
-        </Link>
-      </div>
-
+  const body = (
+    <>
       <div className="flex gap-10">
         <AcademyNav track={track} />
 
@@ -190,6 +193,38 @@ export default function AcademyTrackPage({
           </div>
         </div>
       </div>
+    </>
+  );
+
+  if (session) {
+    return (
+      <AuthedAppShell session={session}>
+        {jsonLd}
+        <div className="mx-auto max-w-5xl">{body}</div>
+      </AuthedAppShell>
+    );
+  }
+
+  return (
+    <main className="mx-auto max-w-5xl px-4 py-12">
+      {jsonLd}
+
+      <div className="mb-8 flex items-center justify-between">
+        <Logo size="sm" />
+        <div className="flex items-center gap-4 text-sm">
+          <Link href="/login" className="text-accent-text hover:underline">
+            Log in
+          </Link>
+          <Link
+            href="/signup"
+            className="rounded-lg bg-accent px-3 py-1.5 font-medium text-white hover:bg-accent-hover"
+          >
+            Sign up
+          </Link>
+        </div>
+      </div>
+
+      {body}
     </main>
   );
 }

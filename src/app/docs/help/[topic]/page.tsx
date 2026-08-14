@@ -1,15 +1,20 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { getSession } from "@/lib/auth";
+import { AuthedAppShell } from "@/components/AuthedAppShell";
 import { Logo, TFIcon } from "@/components/icons";
 import { Markdown } from "@/components/Markdown";
 import { HELP_TOPICS, getHelpTopic } from "@/content/help";
 import { JsonLd } from "@/components/JsonLd";
 import { breadcrumbLd, canonical, ldGraph, techArticleLd } from "@/lib/seo";
 
-export function generateStaticParams() {
-  return HELP_TOPICS.map((t) => ({ topic: t.slug }));
-}
+// A-09b: the help index already branched on the session (A-09); its topic pages
+// did not, so opening one from inside the app dropped the sidebar. Reading the
+// session cookie forces dynamic rendering, which rules out prerendering the
+// topics — `getHelpTopic()` still returns undefined for an unknown slug and
+// `notFound()` below still turns that into a 404.
+export const dynamic = "force-dynamic";
 
 export function generateMetadata({ params }: { params: { topic: string } }): Metadata {
   const topic = getHelpTopic(params.topic);
@@ -33,12 +38,18 @@ export function generateMetadata({ params }: { params: { topic: string } }): Met
   };
 }
 
-export default function HelpTopicPage({ params }: { params: { topic: string } }) {
+export default async function HelpTopicPage({
+  params,
+}: {
+  params: { topic: string };
+}) {
   const topic = getHelpTopic(params.topic);
   if (!topic) notFound();
 
-  return (
-    <main className="mx-auto max-w-5xl px-4 py-12">
+  const session = await getSession();
+
+  const jsonLd = (
+    <>
       <JsonLd
         data={ldGraph(
           techArticleLd({
@@ -53,13 +64,11 @@ export default function HelpTopicPage({ params }: { params: { topic: string } })
           ]),
         )}
       />
-      <div className="mb-8 flex items-center justify-between">
-        <Logo size="sm" />
-        <Link href="/dashboard" className="text-sm text-accent-text hover:underline">
-          Back to app
-        </Link>
-      </div>
+    </>
+  );
 
+  const body = (
+    <>
       <div className="flex gap-10">
         <nav className="hidden w-52 shrink-0 space-y-1 md:block">
           <Link
@@ -89,6 +98,38 @@ export default function HelpTopicPage({ params }: { params: { topic: string } })
           <Markdown className="mt-8 max-w-none text-base leading-relaxed">{topic.body}</Markdown>
         </article>
       </div>
+    </>
+  );
+
+  if (session) {
+    return (
+      <AuthedAppShell session={session}>
+        {jsonLd}
+        <div className="mx-auto max-w-5xl">{body}</div>
+      </AuthedAppShell>
+    );
+  }
+
+  return (
+    <main className="mx-auto max-w-5xl px-4 py-12">
+      {jsonLd}
+
+      <div className="mb-8 flex items-center justify-between">
+        <Logo size="sm" />
+        <div className="flex items-center gap-4 text-sm">
+          <Link href="/login" className="text-accent-text hover:underline">
+            Log in
+          </Link>
+          <Link
+            href="/signup"
+            className="rounded-lg bg-accent px-3 py-1.5 font-medium text-white hover:bg-accent-hover"
+          >
+            Sign up
+          </Link>
+        </div>
+      </div>
+
+      {body}
     </main>
   );
 }

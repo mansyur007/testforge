@@ -33,7 +33,11 @@ test(`TC-${TC}-27 Help nav link opens the index, a topic renders markdown`, asyn
     page.getByRole("heading", { name: "CI quality gates" })
   ).toBeVisible();
 
-  await page.getByRole("link", { name: "Back to app" }).click();
+  // A-09b: a topic page opened with a session now keeps the app shell, so the
+  // way back to the app is the sidebar, not the standalone header's
+  // "Back to app" link that used to stand in for it.
+  await expect(page.getByTestId("app-sidebar")).toBeVisible();
+  await page.getByTestId("nav-dashboard").click();
   await page.waitForURL("**/dashboard");
 });
 
@@ -57,4 +61,17 @@ test(`TC-${TC}-112 A guest on /docs/help sees Log in and Sign up, and no app she
     "href",
     "/signup",
   );
+});
+
+// A-09b: the same split, one level in — topic pages were left on standalone
+// chrome by A-09. See docs/QA-ACADEMY.md A-09b.
+test(`TC-${TC}-126 A guest on a help topic gets the public chrome, and the topic still renders`, async ({
+  page,
+}) => {
+  await page.goto("/docs/help/automation");
+  await expect(page.getByTestId("app-sidebar")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Log in" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Automation & CI upload" })
+  ).toBeVisible();
 });
