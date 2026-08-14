@@ -58,8 +58,8 @@
 > the first choice, on an attempt that could be forged, would have been a way to publish a false
 > statement about somebody rather than a feature.
 > A-08 in progress — content, landing in slices: first 2026-08-14 (T2's `test-planning`), second
-> 2026-08-14 (T2 lessons 2–4, taking the track to 4 of 12 written; all still `draft`).
-> Created 2026-08-10.
+> 2026-08-14 (T2 lessons 2–4), third 2026-08-14 (T2 lessons 5–7, the technical block), taking the
+> track to 7 of 12 written; all still `draft`. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
@@ -1040,14 +1040,35 @@ is the degradation A-04b built for: the lesson page renders the generic hands-on
 a session-based-testing checker has to grade a *charter and notes*, not the shape of a case row, and
 that is a different design problem from the five T1 checkers. It gets its own slice.
 
+**Third slice 2026-08-14: T2 lessons 5–7** — `http-and-devtools`, `api-testing` and `sql-for-qa`,
+taking T2 to **7 of 12 written**, still all `draft`. These three are the track's technical block and
+they were written as one slice because they are one argument told in three places: the network tab
+shows you what the client sent, the API lets you send what the client cannot, and the database shows
+what was actually stored. Each lesson's closing `**Next:**` hands over to the following one, and
+`test-oracles` had already pointed at the first.
+
+`api-testing` is the second `sandbox: true` lesson without a checker, for the same reason as
+`exploratory-testing` — see below.
+
 > **A track flips to `published` when enough of its lessons are, not one at a time.** `getTrack()`
 > filters on the *track's* status, so publishing T2 now would make the roadmap card clickable and
-> land a reader on a track listing four lessons out of twelve. The lesson-level status is what allows
-> writing to land in reviewable pieces meanwhile.
+> land a reader on a track listing seven lessons out of twelve. The lesson-level status is what
+> allows writing to land in reviewable pieces meanwhile.
 >
 > **Still open for the owner:** how many lessons before T2 flips. The other half of this question —
 > roadmap order vs. sandbox-exercise-first — was answered in the second slice, in favour of roadmap
 > order, for the reason above.
+>
+> **Accumulating debt to name: two hands-on lessons with no checker.** `exploratory-testing` and
+> `api-testing` both carry `sandbox: true` and no `SANDBOX_TASKS` entry, so both render A-04b's
+> generic "Open your sandbox" callout instead of a "Start this exercise" button. That degradation is
+> deliberate and it works, but it is now a pattern rather than a one-off, and the remaining T2
+> hands-on lesson (`metrics-that-mean-something`) will make it three. The five T1 checkers all grade
+> the *shape of a case row*; these grade a charter, a Postman collection and a dashboard argument
+> respectively, none of which is a DB row with fields to inspect. **That is a design question, not a
+> writing task**, and it should get its own work order rather than being smuggled into a content
+> slice — including the honest possibility that some of them are better self-assessed against
+> published criteria than machine-checked.
 
 ### A-09 — Session-aware shell on `/academy` and `/docs/help` `[x]`
 
