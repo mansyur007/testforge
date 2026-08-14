@@ -63,7 +63,8 @@
 > **and the track published at 12 of 12** — the first A-08 slice with a visible change: thirteen
 > routes, thirteen sitemap entries, a clickable roadmap card, and T1's long-dangling link to
 > `/academy/manual-pro` finally resolving), sixth 2026-08-14 (T3's first lesson, `what-to-automate`,
-> back to `draft` and invisible), seventh 2026-08-14 (T3's `programming-foundations`, 2 of 12).
+> back to `draft` and invisible), seventh 2026-08-14 (T3's `programming-foundations`, 2 of 12),
+> eighth 2026-08-14 (T3's `first-playwright-test` and `locators` as a pair, 4 of 12).
 > T4 and T5's lesson bodies, the rest of T3 including the CI capstone, and the Indonesian routes are
 > what remains of A-08. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
@@ -1156,21 +1157,54 @@ It also plants the capstone's constraint eight lessons early: **name tests so th
 because `/api/v1/junit` matches on test names, and retrofitting that convention across 400 tests
 costs a sprint while deciding it in week one costs nothing.
 
+**Eighth slice 2026-08-14: T3's `first-playwright-test` and `locators`**, taking the track to
+**4 of 12**, still `draft` — no route, no sitemap entry, no visible change. Back to more than one
+lesson per slice, because these two are **one argument split across two pages**: the first writes a
+test and deliberately defers every locator decision in it, and the second is that decision. Shipping
+`first-playwright-test` alone would have left its central choice — `getByRole` over the selector
+devtools hands you — asserted and unexplained for however long the next slice took.
+
+`first-playwright-test` is the track's first sandbox lesson, and it follows T2's precedent rather
+than T1's: `sandbox: true` with the exercise written as prose, no `SANDBOX_TASKS` entry and no
+checker. **That is A-04 debt, not an omission here** — the note below now covers four hands-on
+lessons rather than three. What the exercise asks for is deliberately not "a passing test": step
+four breaks the test on purpose and asks the learner to find the failure in the trace, because
+reading a red run is the skill that survives the first week and a green one is just a nice feeling.
+
+The lesson also spends its longest section on **the trace viewer**, which is the honest answer to
+the question the rest of the track keeps raising — *how do I debug this on CI?* — and the reason
+`trace: "on-first-retry"` is called out as the most valuable line in the config. Retries are
+documented with their hazard attached (they hide flakiness rather than fix it) so that the
+flaky-tests lesson is not arguing against advice this one gave.
+
+`locators` is written as a maintenance-cost lesson rather than an API tour, because the failure it
+prevents is a suite going red on a `<div>` somebody added. Two positions in it are load-bearing:
+**strict mode is a feature** — `.first()` on an ambiguous locator freezes today's DOM order and then
+keeps passing while acting on the wrong element, which is worse than failing — and **a locator is a
+contract**, which is what makes an asked-for `data-testid` legitimate where a copied class chain is
+not. Role locators are argued for on stability *and* on the accessibility defect they catch for
+free, which is where T2's a11y lesson pays off inside T3.
+
 > **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
 > *track's* status, so the lesson-level status is what let the writing land in five reviewable
 > pieces without a reader ever seeing a half-finished listing. The rule the next track inherits:
 > lesson status is for landing work, track status is for the promise on the roadmap card.
 >
-> **Debt, now at three hands-on lessons with no checker.** `exploratory-testing`, `api-testing` and
-> `metrics-that-mean-something` all carry `sandbox: true` and no `SANDBOX_TASKS` entry, so all three
+> **Debt, now at four hands-on lessons with no checker.** `exploratory-testing`, `api-testing`,
+> `metrics-that-mean-something` and (from the eighth slice) T3's `first-playwright-test` all carry
+> `sandbox: true` and no `SANDBOX_TASKS` entry, so all four
 > render A-04b's generic "Open your sandbox" callout instead of a "Start this exercise" button.
 > That degradation is deliberate and it works — and it is now shipped in a *published* track, which
 > raises its priority without changing its shape. The five T1 checkers all grade the *shape of a case
-> row*; these grade a charter, a Postman collection and a dashboard argument respectively, none of
+> row*; these grade a charter, a Postman collection, a dashboard argument and a Playwright
+> repository on the learner's own machine, none of
 > which is a DB row with fields to inspect. **That is a design question, not a writing task**, and it
 > should get its own work order rather than being smuggled into a content slice — including the
 > honest possibility that some of them are better self-assessed against published criteria than
-> machine-checked.
+> machine-checked. T3's remaining sandbox lessons (`ci-github-actions`, the `junit-to-testforge`
+> capstone) are the one part of this debt with an obvious mechanism: they produce a run in the
+> sandbox project through `/api/v1/junit`, which *is* inspectable, so the capstone can be graded on
+> the artefact the product already stores.
 
 ### A-09 — Session-aware shell on `/academy` and `/docs/help` `[x]`
 

@@ -4268,19 +4268,23 @@ with the `SuiteFolderGrid` work noted above.
   attempt, checked against whichever questions the seed actually drew). See `docs/QA-ACADEMY.md`
   § A-06 for the full writeup, including a stale-session-cookie edge case found while manually
   walking the flow (pre-existing app-wide behaviour, not a regression, not fixed in this PR).
-- **A-08** `[ ]` in progress — content build-out and localised routes. Six content slices landed
-  2026-08-14 (#190–#193, #195, and this one). Five of them wrote Track 2 (`manual-pro`) end to end:
+- **A-08** `[ ]` in progress — content build-out and localised routes. Eight content slices landed
+  2026-08-14 (#190–#193, #195–#197, and this one). Five of them wrote Track 2 (`manual-pro`) end to end:
   `test-planning`, then lessons 2–4 (`risk-based-testing`, `exploratory-testing`, `test-oracles`),
   then the technical block 5–7 (`http-and-devtools`, `api-testing`, `sql-for-qa`), then the
   quality-attribute block 8–10 (`cross-browser-mobile`, `accessibility-basics`,
   `non-functional-basics`), then 11–12 (`metrics-that-mean-something`, `reporting-to-stakeholders`)
   — at which point **the track flipped to `published` at 12 of 12**, the first visible change of the
   work order: thirteen routes, thirteen sitemap entries, a clickable roadmap card, and T1's
-  long-dangling link to `/academy/manual-pro` finally resolving. The sixth and seventh slices open
-  Track 3 (`automation`) with `what-to-automate` and `programming-foundations` — 2 of 12, back to
-  `draft` and invisible. T4 and T5's lesson bodies, the rest of T3 including the CI capstone, and
-  the localised routes are what remains. See `docs/QA-ACADEMY.md` §8. (A-07 shipped on 2026-08-13 —
-  its entry is at the end of this list, in ship order.)
+  long-dangling link to `/academy/manual-pro` finally resolving. Slices six to eight open
+  Track 3 (`automation`) with `what-to-automate`, `programming-foundations` and then
+  `first-playwright-test` + `locators` as a pair — 4 of 12, back to `draft` and invisible. The pair
+  ships together because the first lesson defers every locator decision it makes and the second one
+  is that decision; `first-playwright-test` is also T3's first `sandbox: true` lesson with no
+  checker, which adds a fourth entry to A-04's checker debt. T4 and T5's lesson bodies, the rest of
+  T3 including the CI capstone, and the localised routes are what remains. See
+  `docs/QA-ACADEMY.md` §8. (A-07 shipped on 2026-08-13 — its entry is at the end of this list, in
+  ship order.)
 - **A-09** `[x]` (2026-08-12, branch `feat/academy-help-authed-shell`) — Session-aware shell on
   `/academy` and `/docs/help`: a signed-in visitor now gets the same sidebar/`AppShell` as the rest
   of the app (extracted into `src/components/AuthedAppShell.tsx`, reused by `(app)/layout.tsx`

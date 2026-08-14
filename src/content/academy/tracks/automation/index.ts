@@ -1,4 +1,6 @@
 import type { Lesson, Track } from "../../types";
+import { firstPlaywrightTest } from "./first-playwright-test";
+import { locators } from "./locators";
 import { programmingFoundations } from "./programming-foundations";
 import { whatToAutomate } from "./what-to-automate";
 
@@ -46,8 +48,8 @@ export const automation: Track = {
   lessons: [
     whatToAutomate,
     programmingFoundations,
-    planned("first-playwright-test", "Your first Playwright test", "Install, record, run, and understand every line of what you just wrote.", 16, true),
-    planned("locators", "Locators that survive a refactor", "Roles, labels and test ids — and why CSS chains break every sprint.", 14),
+    firstPlaywrightTest,
+    locators,
     planned("assertions-and-waiting", "Assertions and waiting", "Web-first assertions, auto-waiting, and why sleep() is a bug.", 13),
     planned("page-objects", "Page objects, and when they hurt", "Structure that pays off, structure that becomes a second application.", 14),
     planned("test-data", "Test data and fixtures", "Independent tests, seeded state, and cleaning up after yourself.", 13),
