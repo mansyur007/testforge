@@ -309,9 +309,15 @@ portfolio mode, F-38), interview prep.
 Six chapters mapped to the CTFL v4.0 syllabus structure, each with a chapter quiz weighted like the
 real paper, then the full practice exam. See §5.
 
-Every lesson and track carries `status: "draft" | "published"`. Drafts are excluded from
-`generateStaticParams` and, with `dynamicParams = false`, **have no route at all** — a half-written
-track can be merged and 404s in production.
+Every lesson and track carries `status: "draft" | "published"`. A draft **has no route at all** — a
+half-written track can be merged and 404s in production.
+
+> **Mechanism changed during A-09b (2026-08-14).** This used to say drafts are excluded from
+> `generateStaticParams` and, with `dynamicParams = false`, get no route. Those two are gone — they
+> cannot coexist with the `force-dynamic` that reading the session cookie forces. The guarantee is
+> unchanged and was never theirs to begin with: `getTrack()` and `getLesson()` filter to published
+> and return undefined, and the pages call `notFound()`. The 404 is now decided per request rather
+> than against a build-time list.
 
 > **Changed during A-01.** This originally read "drafts render only with `?preview=1`". A page that
 > reads `searchParams` opts the whole route out of static rendering, which would have cost every
