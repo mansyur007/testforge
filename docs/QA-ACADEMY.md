@@ -64,7 +64,8 @@
 > routes, thirteen sitemap entries, a clickable roadmap card, and T1's long-dangling link to
 > `/academy/manual-pro` finally resolving), sixth 2026-08-14 (T3's first lesson, `what-to-automate`,
 > back to `draft` and invisible), seventh 2026-08-14 (T3's `programming-foundations`, 2 of 12),
-> eighth 2026-08-14 (T3's `first-playwright-test` and `locators` as a pair, 4 of 12).
+> eighth 2026-08-14 (T3's `first-playwright-test` and `locators` as a pair, 4 of 12), ninth
+> 2026-08-14 (T3's `assertions-and-waiting` and `page-objects`, 6 of 12 — halfway, still `draft`).
 > T4 and T5's lesson bodies, the rest of T3 including the CI capstone, and the Indonesian routes are
 > what remains of A-08. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
@@ -1184,6 +1185,50 @@ keeps passing while acting on the wrong element, which is worse than failing —
 contract**, which is what makes an asked-for `data-testid` legitimate where a copied class chain is
 not. Role locators are argued for on stability *and* on the accessibility defect they catch for
 free, which is where T2's a11y lesson pays off inside T3.
+
+**Ninth slice 2026-08-14: T3's `assertions-and-waiting` and `page-objects`**, taking the track to
+**6 of 12** — halfway — still `draft`, so again no route, no sitemap entry, no visible change.
+
+**These two are not one argument, and the slice does not pretend otherwise.** The eighth slice
+paired its lessons because the first deferred a decision the second made; this one pairs them
+because they are the two lessons that sit either side of an arc boundary and both were ready.
+`assertions-and-waiting` closes the "write one test correctly" arc that `first-playwright-test` and
+`locators` opened — locators say *where*, assertions say *what* and *when* — and `page-objects`
+opens the "make many tests maintainable" arc that runs to the end of the track. Recording the
+distinction because the previous entry made a genuine claim of shared argument, and reusing that
+justification where it does not hold would make it worthless.
+
+`assertions-and-waiting` is built on one sentence — **an assertion is the only part of a test that
+can find a bug** — and it opens with two green tests, one of which cannot fail. The load-bearing
+distinction is `expect(locator)` versus `expect(await locator…)`: the first polls, the second
+samples the page at one instant, and that difference is where most self-inflicted flakiness is
+written. It is stated as a rule a reviewer can apply without thinking (*anywhere you see
+`expect(await …)` in a UI test, you are looking at a race*), because the failure it causes shows up
+only on a loaded CI runner and never on the machine that wrote it.
+
+`waitForTimeout` is argued as **wrong in both directions at once** — too short on the worst day,
+wasted on every ordinary one — which is what makes "raise the number" so durable a non-fix. The one
+honest exception (an unobservable debounce) is kept, with the instruction to write the reason on the
+line, since an unexplained sleep gets either deleted or copied. `networkidle` gets its own warning
+for the same reason it is discouraged upstream: an app with polling never reaches silence, and
+silence would not prove the element rendered anyway.
+
+`page-objects` is deliberately half a warning. The pattern is shown minimally, and then the rule
+that keeps it useful — **a page object exposes what a user can do; it does not assert** — with the
+getter as the sanctioned compromise, so the page object owns *where the error lives* and the test
+owns *what it should say*. Five named symptoms of the failure mode follow (one-line wrappers,
+boolean parameters, component mirrors, inheritance chains, lying method chains), because "page
+objects, and when they hurt" is a promise the lesson has to actually keep.
+
+Two things in it are pointed forward rather than restated. **Fixtures are presented as the better
+tool than a base class** — teardown after `use()` runs even when the test fails — which is the hook
+`test-data` needs for cleanup, and `storageState` answers the "60 slow logins" problem without the
+next lesson having to. And it repeats the **case-id naming convention** planted in
+`programming-foundations`, because refactoring into page objects is precisely when people rewrite
+test titles and silently break the capstone's `/api/v1/junit` matching.
+
+**No new checker debt in this slice** — neither lesson is a 🛠 lesson in §4 and neither carries
+`sandbox: true`, so the note below stays at four.
 
 > **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
 > *track's* status, so the lesson-level status is what let the writing land in five reviewable
