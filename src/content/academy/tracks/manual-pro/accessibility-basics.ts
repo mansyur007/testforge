@@ -6,7 +6,7 @@ export const accessibilityBasics: Lesson = {
   summary:
     "Keyboard, contrast, labels, screen readers — the checks that take ten minutes.",
   minutes: 12,
-  status: "draft",
+  status: "published",
   body: `
 ## Three reasons, and the third one is why testers get good at this
 

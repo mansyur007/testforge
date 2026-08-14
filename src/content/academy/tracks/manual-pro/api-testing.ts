@@ -6,7 +6,7 @@ export const apiTesting: Lesson = {
   summary:
     "Requests, environments, chaining, assertions, and testing the API a UI hides.",
   minutes: 15,
-  status: "draft",
+  status: "published",
   sandbox: true,
   body: `
 ## Why test the layer under the screen

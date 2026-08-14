@@ -6,7 +6,7 @@ export const sqlForQa: Lesson = {
   summary:
     "SELECT, JOIN and GROUP BY — enough to prove what the screen is claiming.",
   minutes: 14,
-  status: "draft",
+  status: "published",
   body: `
 ## You are not learning SQL to build things
 

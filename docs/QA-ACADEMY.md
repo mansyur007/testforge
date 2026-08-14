@@ -59,8 +59,11 @@
 > statement about somebody rather than a feature.
 > A-08 in progress — content, landing in slices: first 2026-08-14 (T2's `test-planning`), second
 > 2026-08-14 (T2 lessons 2–4), third 2026-08-14 (T2 lessons 5–7, the technical block), fourth
-> 2026-08-14 (T2 lessons 8–10, the quality-attribute block), taking the track to 10 of 12 written;
-> all still `draft`. Created 2026-08-10.
+> 2026-08-14 (T2 lessons 8–10, the quality-attribute block), fifth 2026-08-14 (T2 lessons 11–12,
+> **and the track published at 12 of 12** — the first A-08 slice with a visible change: thirteen
+> routes, thirteen sitemap entries, a clickable roadmap card, and T1's long-dangling link to
+> `/academy/manual-pro` finally resolving). T3, T4 and T5's lesson bodies, the T3 CI capstone and the
+> Indonesian routes are what remains of A-08. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
@@ -1075,28 +1078,47 @@ real customer data, and on a real finding — stop, document, report through the
 do not keep digging. A lesson that teaches people to probe access control without that paragraph
 would be teaching them to get fired.
 
-> **A track flips to `published` when enough of its lessons are, not one at a time.** `getTrack()`
-> filters on the *track's* status, so publishing T2 now would make the roadmap card clickable and
-> land a reader on a track listing ten lessons out of twelve. The lesson-level status is what
-> allows writing to land in reviewable pieces meanwhile.
+**Fifth slice 2026-08-14: T2 lessons 11–12, and the track published** — `metrics-that-mean-something`
+and `reporting-to-stakeholders` complete the track at **12 of 12**, and `manual-pro` flips to
+`published` along with all twelve lessons. **This is the first A-08 slice with a visible change**:
+thirteen new routes, thirteen new sitemap entries, and a roadmap card that is now a link rather than
+a "coming soon" panel.
+
+These two are one argument as well — the previous lesson produces numbers, this one turns them into
+a decision — which is why `reporting-to-stakeholders` opens by refusing the dashboard link as a
+report. Its spine is a five-sentence release recommendation (scope *and* exclusions, state, risk in
+the reader's currency, recommendation with its condition, and what would change the answer), plus
+the two things a tester has to be able to say under pressure: never "it is ready", and observation
+separated from judgement so that an overruled judgement leaves the evidence standing.
+
+**The open question is answered: flip at 12, not at 10.** Three reasons, in order of weight. The
+track's own `outcomes` promise "report status in terms a product owner acts on", and that outcome
+lives entirely in the last two lessons — publishing at 10 would have shipped a track whose stated
+outcome was not in it. A clickable card leading to ten written lessons and two dead entries is a
+worse first impression than a card that says "coming soon", and the roadmap already renders the full
+lesson list either way, so nothing was hidden by waiting. And it was one slice away.
+
+**It also closes a live 404.** T1's final lesson (`testing-in-agile`, published since A-01) ends by
+pointing at [Manual QA Professional](/academy/manual-pro) — a link that has been landing on a 404 in
+production for as long as T1 has been published, because `getTrack()` filters drafts. Publishing T2
+is what makes it resolve. Worth recording as the general hazard rather than the one instance: a
+published lesson may link to a draft route, and nothing in the build catches it.
+
+> **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
+> *track's* status, so the lesson-level status is what let the writing land in five reviewable
+> pieces without a reader ever seeing a half-finished listing. The rule the next track inherits:
+> lesson status is for landing work, track status is for the promise on the roadmap card.
 >
-> **Still open for the owner, and now the near-term decision:** how many lessons before T2 flips.
-> Two remain (`metrics-that-mean-something`, `reporting-to-stakeholders`), so the honest options are
-> "flip at 12" — one more slice — or "flip at 10 and let the last two land into a published track",
-> which is a different bet about whether an incomplete track is worse than an invisible one. The
-> other half of this question — roadmap order vs. sandbox-exercise-first — was answered in the second
-> slice, in favour of roadmap order, for the reason above.
->
-> **Accumulating debt to name: two hands-on lessons with no checker.** `exploratory-testing` and
-> `api-testing` both carry `sandbox: true` and no `SANDBOX_TASKS` entry, so both render A-04b's
-> generic "Open your sandbox" callout instead of a "Start this exercise" button. That degradation is
-> deliberate and it works, but it is now a pattern rather than a one-off, and the remaining T2
-> hands-on lesson (`metrics-that-mean-something`) will make it three. The five T1 checkers all grade
-> the *shape of a case row*; these grade a charter, a Postman collection and a dashboard argument
-> respectively, none of which is a DB row with fields to inspect. **That is a design question, not a
-> writing task**, and it should get its own work order rather than being smuggled into a content
-> slice — including the honest possibility that some of them are better self-assessed against
-> published criteria than machine-checked.
+> **Debt, now at three hands-on lessons with no checker.** `exploratory-testing`, `api-testing` and
+> `metrics-that-mean-something` all carry `sandbox: true` and no `SANDBOX_TASKS` entry, so all three
+> render A-04b's generic "Open your sandbox" callout instead of a "Start this exercise" button.
+> That degradation is deliberate and it works — and it is now shipped in a *published* track, which
+> raises its priority without changing its shape. The five T1 checkers all grade the *shape of a case
+> row*; these grade a charter, a Postman collection and a dashboard argument respectively, none of
+> which is a DB row with fields to inspect. **That is a design question, not a writing task**, and it
+> should get its own work order rather than being smuggled into a content slice — including the
+> honest possibility that some of them are better self-assessed against published criteria than
+> machine-checked.
 
 ### A-09 — Session-aware shell on `/academy` and `/docs/help` `[x]`
 

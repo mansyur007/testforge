@@ -6,7 +6,7 @@ export const riskBasedTesting: Lesson = {
   summary:
     "Impact × likelihood, and how to defend what you chose not to test.",
   minutes: 12,
-  status: "draft",
+  status: "published",
   body: `
 ## You are always prioritising — the only question is whether you know it
 

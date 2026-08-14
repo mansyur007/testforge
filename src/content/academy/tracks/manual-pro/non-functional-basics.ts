@@ -6,7 +6,7 @@ export const nonFunctionalBasics: Lesson = {
   summary:
     "Cheap first checks for performance, security and reliability.",
   minutes: 12,
-  status: "draft",
+  status: "published",
   body: `
 ## "Does it work" is one question out of many
 
