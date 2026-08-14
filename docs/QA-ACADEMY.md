@@ -57,7 +57,9 @@
 > waited for A-10 on purpose — a shareable record of a paper that could be passed by always picking
 > the first choice, on an attempt that could be forged, would have been a way to publish a false
 > statement about somebody rather than a feature.
-> A-08 planned. Created 2026-08-10.
+> A-08 in progress — content, landing in slices: first 2026-08-14 (T2's `test-planning`), second
+> 2026-08-14 (T2 lessons 2–4, taking the track to 4 of 12 written; all still `draft`).
+> Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
@@ -1024,13 +1026,28 @@ with teaching explanations rather than verdicts.
 `src/content/academy/tracks/manual-pro.ts` became a directory in the process, matching T1's layout —
 one module per written lesson, `planned()` stubs for the rest, in `index.ts`.
 
+**Second slice 2026-08-14: T2 lessons 2–4** — `risk-based-testing`, `exploratory-testing` and
+`test-oracles`, taking T2 to **4 of 12 written**. Everything stays `draft`, so this is again no
+route, no sitemap entry, no visible change. Written **in roadmap order**, which was one of the two
+open questions below: the order is not arbitrary, because each lesson's closing `**Next:**` line
+already names the one after it — `test-planning` ended by promising the risk ranking, and this slice
+is what makes that promise true. Writing sandbox-first would have left those pointers aimed at
+nothing.
+
+`exploratory-testing` carries `sandbox: true` with **no `SANDBOX_TASKS` entry and no checker**, which
+is the degradation A-04b built for: the lesson page renders the generic hands-on callout with an
+"Open your sandbox" link rather than a "Start this exercise" button. That is deliberate here —
+a session-based-testing checker has to grade a *charter and notes*, not the shape of a case row, and
+that is a different design problem from the five T1 checkers. It gets its own slice.
+
 > **A track flips to `published` when enough of its lessons are, not one at a time.** `getTrack()`
 > filters on the *track's* status, so publishing T2 now would make the roadmap card clickable and
-> land a reader on a track listing one lesson out of twelve. The lesson-level status is what allows
+> land a reader on a track listing four lessons out of twelve. The lesson-level status is what allows
 > writing to land in reviewable pieces meanwhile.
 >
-> **Open for the owner:** how many lessons before T2 flips, and whether the remaining eleven should
-> be written in roadmap order or in the order that fills the sandbox exercises first.
+> **Still open for the owner:** how many lessons before T2 flips. The other half of this question —
+> roadmap order vs. sandbox-exercise-first — was answered in the second slice, in favour of roadmap
+> order, for the reason above.
 
 ### A-09 — Session-aware shell on `/academy` and `/docs/help` `[x]`
 

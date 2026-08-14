@@ -1,4 +1,7 @@
 import type { Lesson, Track } from "../../types";
+import { exploratoryTesting } from "./exploratory-testing";
+import { riskBasedTesting } from "./risk-based-testing";
+import { testOracles } from "./test-oracles";
 import { testPlanning } from "./test-planning";
 
 // T2 — outlined in A-01, being written in A-08. Lessons still to be written are
@@ -41,9 +44,9 @@ export const manualPro: Track = {
   ],
   lessons: [
     testPlanning,
-    planned("risk-based-testing", "Risk-based testing", "Impact × likelihood, and how to defend what you chose not to test.", 12),
-    planned("exploratory-testing", "Exploratory and session-based testing", "Charters, timeboxes, note-taking, and why unscripted testing finds what scripts can't.", 14, true),
-    planned("test-oracles", "Test oracles: how do you know it's wrong?", "Requirements, comparable products, history, and heuristics for when there is no spec.", 10),
+    riskBasedTesting,
+    exploratoryTesting,
+    testOracles,
     planned("http-and-devtools", "HTTP and browser dev tools for testers", "Status codes, headers, the network tab, and reading a failed request like a developer.", 12),
     planned("api-testing", "API testing with Postman", "Requests, environments, chaining, assertions, and testing the API a UI hides.", 15, true),
     planned("sql-for-qa", "SQL for verification", "SELECT, JOIN and GROUP BY — enough to prove what the screen is claiming.", 14),
