@@ -1014,6 +1014,24 @@ T2/T3/T4 to `published`; the remaining sandbox checkers; the T3 CI capstone;
 Indonesian lesson bodies; and — if ID organic traffic justifies it — `/id/academy/**` with
 `hreflang`, decided on A-03's measured numbers rather than up front.
 
+**Started 2026-08-14 with one lesson, deliberately.** T2's `test-planning` is written; the other
+eleven T2 lessons are still `planned()` stubs and **both the lesson and the track stay `draft`**, so
+this adds no route, no sitemap entry and no visible change — §9's "`status: draft` lets tracks land
+incrementally", used literally. It is a sample of shape for the owner to judge before ~57 more
+lessons are written to it: length, voice, the worked-example block, and three self-check questions
+with teaching explanations rather than verdicts.
+
+`src/content/academy/tracks/manual-pro.ts` became a directory in the process, matching T1's layout —
+one module per written lesson, `planned()` stubs for the rest, in `index.ts`.
+
+> **A track flips to `published` when enough of its lessons are, not one at a time.** `getTrack()`
+> filters on the *track's* status, so publishing T2 now would make the roadmap card clickable and
+> land a reader on a track listing one lesson out of twelve. The lesson-level status is what allows
+> writing to land in reviewable pieces meanwhile.
+>
+> **Open for the owner:** how many lessons before T2 flips, and whether the remaining eleven should
+> be written in roadmap order or in the order that fills the sandbox exercises first.
+
 ### A-09 — Session-aware shell on `/academy` and `/docs/help` `[x]`
 
 > **Status: DONE** (2026-08-12, branch `feat/academy-help-authed-shell`). Follow-up to A-03: that
