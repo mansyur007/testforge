@@ -1,4 +1,5 @@
 import type { Lesson, Track } from "../../types";
+import { programmingFoundations } from "./programming-foundations";
 import { whatToAutomate } from "./what-to-automate";
 
 // T3 — outlined in A-01, being written in A-08. The capstone is deliberately the
@@ -44,7 +45,7 @@ export const automation: Track = {
   ],
   lessons: [
     whatToAutomate,
-    planned("programming-foundations", "Programming foundations for testers", "Variables, functions, async, and reading someone else's code — JS/TS path.", 18),
+    programmingFoundations,
     planned("first-playwright-test", "Your first Playwright test", "Install, record, run, and understand every line of what you just wrote.", 16, true),
     planned("locators", "Locators that survive a refactor", "Roles, labels and test ids — and why CSS chains break every sprint.", 14),
     planned("assertions-and-waiting", "Assertions and waiting", "Web-first assertions, auto-waiting, and why sleep() is a bug.", 13),
