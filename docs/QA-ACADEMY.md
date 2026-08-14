@@ -65,7 +65,8 @@
 > `/academy/manual-pro` finally resolving), sixth 2026-08-14 (T3's first lesson, `what-to-automate`,
 > back to `draft` and invisible), seventh 2026-08-14 (T3's `programming-foundations`, 2 of 12),
 > eighth 2026-08-14 (T3's `first-playwright-test` and `locators` as a pair, 4 of 12), ninth
-> 2026-08-14 (T3's `assertions-and-waiting` and `page-objects`, 6 of 12 — halfway, still `draft`).
+> 2026-08-14 (T3's `assertions-and-waiting` and `page-objects`, 6 of 12 — halfway, still `draft`),
+> tenth 2026-08-14 (T3's `test-data` and `api-automation` as a genuine pair, 8 of 12).
 > T4 and T5's lesson bodies, the rest of T3 including the CI capstone, and the Indonesian routes are
 > what remains of A-08. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
@@ -1229,6 +1230,50 @@ test titles and silently break the capstone's `/api/v1/junit` matching.
 
 **No new checker debt in this slice** — neither lesson is a 🛠 lesson in §4 and neither carries
 `sandbox: true`, so the note below stays at four.
+
+**Tenth slice 2026-08-14: T3's `test-data` and `api-automation`**, taking the track to **8 of 12**,
+still `draft` — no route, no sitemap entry, no visible change.
+
+**These two genuinely are one argument**, unlike the ninth slice's pair, and the previous lesson had
+already promised it: `page-objects` closed by pointing at fixtures for cleanup, `test-data` arranges
+its state through the API because the UI is slow and brittle, and `api-automation` is that same tool
+turned on the thing under test rather than on the setup. Splitting them would have left `test-data`
+using an HTTP client the track had never introduced.
+
+`test-data` opens on the failure that teaches it — a suite where adding one test breaks a different
+one — because shared state is the second-largest source of unreliable automation after locators, and
+because its signature (passes alone, fails in the suite) reads as flakiness until somebody names it.
+The lesson reduces to one rule, stated as a check a reviewer can apply: *could this test run alone,
+twice in a row, and at the same time as a copy of itself?* Those three map to three real failures —
+depends on another test, cannot survive its own rerun, collides with a parallel worker.
+
+Two positions in it are load-bearing. **Unique data beats cleaned-up data**, with `workerIndex` in
+the name rather than `Date.now()` alone, since two workers can start in the same millisecond — and
+with the counter-case attached, because a test for "duplicate names are rejected" needs the same
+name twice and randomising it silently deletes the test. And **cleanup will fail eventually**, so
+the suite is written to tolerate residue: assert that *my* record appears rather than that there are
+exactly three. It also carries data-handling boundaries as a hard rule rather than a footnote — no
+real customer data even copied, `example.com` addresses, credentials from the environment — the same
+shape as the rules of engagement in T2's non-functional lesson.
+
+`api-automation` is argued as the layer most suites under-use, and its highest-value section is
+**authorization**: a hidden button is not a permission check, the endpoint is, and a UI-only suite
+cannot tell the difference. That is T2's "check authorization by URL first" in automated form. The
+lesson is deliberate about **401 vs 403 and 403 vs 404**, the second because answering 403 for
+another user's record confirms the record exists.
+
+It also states a limit the rest of the track depends on being honest about: an API suite cannot tell
+you the feature works for a person, and **cannot tell you the real client sends the request your
+test constructs** — which is named as the gap contract testing closes, on T4. Without that
+paragraph the pyramid argument from `what-to-automate` would read as "write fewer UI tests" rather
+than "write each test at the layer that can answer it".
+
+One small correction of expectation, recorded because it recurs: `expect(res.status())` is the
+*non*-retrying form and that is correct here, since an HTTP response either arrived or did not. The
+polling rule from `assertions-and-waiting` is about locators, and a reader who over-applies it would
+go looking for a web-first assertion that does not exist.
+
+**No new checker debt** — neither is a 🛠 lesson in §4, so the note below still stands at four.
 
 > **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
 > *track's* status, so the lesson-level status is what let the writing land in five reviewable

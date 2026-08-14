@@ -1,9 +1,11 @@
 import type { Lesson, Track } from "../../types";
+import { apiAutomation } from "./api-automation";
 import { assertionsAndWaiting } from "./assertions-and-waiting";
 import { firstPlaywrightTest } from "./first-playwright-test";
 import { locators } from "./locators";
 import { pageObjects } from "./page-objects";
 import { programmingFoundations } from "./programming-foundations";
+import { testData } from "./test-data";
 import { whatToAutomate } from "./what-to-automate";
 
 // T3 — outlined in A-01, being written in A-08. The capstone is deliberately the
@@ -54,8 +56,8 @@ export const automation: Track = {
     locators,
     assertionsAndWaiting,
     pageObjects,
-    planned("test-data", "Test data and fixtures", "Independent tests, seeded state, and cleaning up after yourself.", 13),
-    planned("api-automation", "API automation", "Faster, steadier tests below the UI — and using the API to set up UI tests.", 14),
+    testData,
+    apiAutomation,
     planned("ci-github-actions", "Running in CI with GitHub Actions", "Workflows, matrices, artifacts, and keeping the pipeline under ten minutes.", 16, true),
     planned("junit-to-testforge", "Capstone: publish results to TestForge", "Emit JUnit XML, upload it via /api/v1/junit, and read the run you just created.", 15, true),
     planned("flaky-tests", "Flaky tests: diagnosis and quarantine", "Finding the cause, and muting honestly instead of retrying forever.", 14),
