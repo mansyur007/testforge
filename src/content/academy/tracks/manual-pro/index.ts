@@ -1,8 +1,13 @@
-import type { Lesson, Track } from "../types";
+import type { Lesson, Track } from "../../types";
+import { testPlanning } from "./test-planning";
 
-// T2 — outlined in A-01, written in A-08. Every lesson is `draft`, so the track
-// produces no routes and no sitemap entries; the roadmap renders it as a
-// "coming soon" card built from these titles. See docs/QA-ACADEMY.md §4.
+// T2 — outlined in A-01, being written in A-08. Lessons still to be written are
+// `planned()` stubs: `draft`, empty body, no routes and no sitemap entries, so
+// the roadmap renders the track as a "coming soon" card built from these titles
+// (docs/QA-ACADEMY.md §4). A written lesson gets its own module next to this
+// one, the same way T1 is laid out — the track flips to `published` when enough
+// of them are, not one at a time, so nobody clicks into a track with one lesson
+// in it.
 const planned = (
   slug: string,
   title: string,
@@ -35,7 +40,7 @@ export const manualPro: Track = {
     "Report status in terms a product owner acts on",
   ],
   lessons: [
-    planned("test-planning", "Test planning that fits on one page", "Scope, risks, environments, entry and exit criteria — without the 40-page template.", 14, true),
+    testPlanning,
     planned("risk-based-testing", "Risk-based testing", "Impact × likelihood, and how to defend what you chose not to test.", 12),
     planned("exploratory-testing", "Exploratory and session-based testing", "Charters, timeboxes, note-taking, and why unscripted testing finds what scripts can't.", 14, true),
     planned("test-oracles", "Test oracles: how do you know it's wrong?", "Requirements, comparable products, history, and heuristics for when there is no spec.", 10),
