@@ -4268,8 +4268,14 @@ with the `SuiteFolderGrid` work noted above.
   attempt, checked against whichever questions the seed actually drew). See `docs/QA-ACADEMY.md`
   § A-06 for the full writeup, including a stale-session-cookie edge case found while manually
   walking the flow (pre-existing app-wide behaviour, not a regression, not fixed in this PR).
-- **A-08** `[ ]` not started — content build-out and localised routes. See `docs/QA-ACADEMY.md` §8.
-  (A-07 shipped on 2026-08-13 — its entry is at the end of this list, in ship order.)
+- **A-08** `[ ]` in progress — content build-out and localised routes. Four content slices landed
+  2026-08-14 (#190–#193), all in Track 2 (`manual-pro`): `test-planning`, then lessons 2–4
+  (`risk-based-testing`, `exploratory-testing`, `test-oracles`), then the technical block 5–7
+  (`http-and-devtools`, `api-testing`, `sql-for-qa`), then the quality-attribute block 8–10
+  (`cross-browser-mobile`, `accessibility-basics`, `non-functional-basics`) — taking the track to
+  **10 of 12 written**. All of it is still `status: "draft"`, so nothing is routed or in the sitemap
+  and there is no visible change yet; the localised routes are untouched. See `docs/QA-ACADEMY.md`
+  §8. (A-07 shipped on 2026-08-13 — its entry is at the end of this list, in ship order.)
 - **A-09** `[x]` (2026-08-12, branch `feat/academy-help-authed-shell`) — Session-aware shell on
   `/academy` and `/docs/help`: a signed-in visitor now gets the same sidebar/`AppShell` as the rest
   of the app (extracted into `src/components/AuthedAppShell.tsx`, reused by `(app)/layout.tsx`
