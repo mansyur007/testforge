@@ -1879,15 +1879,25 @@ pass before anyone studies for the real exam from this bank.
 > from memory" process A-10e had to correct 70 refs and 73 K-levels out of, and the fallback above
 > still stands until a document says otherwise. See §5.1.
 
-**`markLessonDoneAction` does not validate its slugs.** `claimAcademyProgress` resolves every slug
-through `findLessonTrack` and skips what it can't place; the direct toggle action does not, so a
-crafted call can write `LessonProgress` rows for lessons that don't exist. It is a data-tidiness bug
-on the learner's own row rather than an exam-integrity one, and it belongs with the next piece of
-progress work rather than here.
+**~~`markLessonDoneAction` does not validate its slugs.~~ Closed 2026-08-14.**
+`claimAcademyProgress` resolved every slug through `findLessonTrack` and skipped what it couldn't
+place; the direct toggle action did not, so a crafted call could write `LessonProgress` rows for
+lessons that don't exist. It now resolves the pair through `getLesson(trackSlug, lessonSlug)` and
+returns `{ ok: false }` when that misses — which also rejects a real lesson filed under the wrong
+track, and makes the stored `trackSlug` the registry's rather than the caller's.
+
+> **The first draft of the test passed against the unfixed build**, and is worth recording because
+> the trap is not specific to this action. `markDone()` only calls `markLessonDoneAction` once
+> `ensureSynced()` has set the client's `authed` flag; clicking the toggle straight after `goto`
+> loses that race and persists through `claimAcademyProgress` instead — the path that already
+> validated. The test was therefore exercising the wrong code and would have gone green forever.
+> **TC-E2E-127** now waits for the sync round-trip and then asserts the captured request body is
+> `["fundamentals","what-qa-does"]`, so losing the race fails the test instead of quietly passing
+> it. Both directions were watched: with the guard removed the replay writes a `zzzz-qa-zzzz` row.
 
 ### Testing (applies to all)
 
-Playwright specs in `e2e/academy.spec.ts`, continuing the `TC-E2E-*` sequence (last used 116,
+Playwright specs in `e2e/academy.spec.ts`, continuing the `TC-E2E-*` sequence (last used 127,
 global across all `e2e/*.spec.ts` files, per F-45): roadmap → lesson → quiz pass/fail; anonymous
 progress survives reload; claim-at-signup; sandbox provisioning and one checker end to end; a full
 exam run including auto-submit at timeout (clock injected, not waited out); session-aware shell on

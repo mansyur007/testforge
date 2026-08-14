@@ -253,26 +253,41 @@ export async function markLessonDoneAction(
   const session = await getSession();
   if (!session) return { ok: false, error: "Sign in to save progress." };
 
+  // Both slugs arrive from the client, so resolve the pair against the
+  // published registry before writing anything. `getLesson` returns undefined
+  // unless the track is published, the lesson is published, and the lesson
+  // really belongs to that track — so an invented, renamed or still-draft slug
+  // (or a real lesson filed under the wrong track) writes no row at all.
+  // `claimAcademyProgress` has always resolved slugs this way before inserting;
+  // this action was the one path that took them on trust.
+  const found = getLesson(trackSlug, lessonSlug);
+  if (!found) return { ok: false, error: "Unknown lesson." };
+  const { track, lesson } = found;
+
   const now = new Date();
   await db.lessonProgress.upsert({
-    where: { userId_lessonSlug: { userId: session.userId, lessonSlug } },
-    create: { userId: session.userId, trackSlug, lessonSlug, status: "DONE", completedAt: now },
+    where: { userId_lessonSlug: { userId: session.userId, lessonSlug: lesson.slug } },
+    create: {
+      userId: session.userId,
+      trackSlug: track.slug,
+      lessonSlug: lesson.slug,
+      status: "DONE",
+      completedAt: now,
+    },
     update: { status: "DONE", completedAt: now },
   });
   await logAudit({
     userId: session.userId,
     action: "academy.lesson_complete",
     entityType: "lesson",
-    entityId: lessonSlug,
-    detail: trackSlug,
+    entityId: lesson.slug,
+    detail: track.slug,
   });
 
-  // A-07: the lesson that completes a track earns its certificate. `trackSlug`
-  // arrives from the client, so this is not trusted as "the track" — it is only
-  // where to *look*; `issueTrackCertificateIfComplete` resolves it against the
-  // published registry and counts real rows, so a forged slug finds no track
-  // and issues nothing.
-  await issueTrackCertificateIfComplete(session.userId, trackSlug);
+  // A-07: the lesson that completes a track earns its certificate. The track is
+  // now the registry's, not the caller's; `issueTrackCertificateIfComplete`
+  // resolves it again and counts real rows either way.
+  await issueTrackCertificateIfComplete(session.userId, track.slug);
   return { ok: true };
 }
 
