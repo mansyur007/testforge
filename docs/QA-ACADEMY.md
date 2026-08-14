@@ -12,7 +12,9 @@
 > A-04b shipped 2026-08-11 (coach overlay, five sandbox-task checkers);
 > A-05 shipped 2026-08-11 (persistence, claim-at-signup, `/academy/me`).
 > A-06 shipped 2026-08-11 (exam engine, ISTQB question bank, practice exam + chapter quizzes).
-> A-09 shipped 2026-08-12 (session-aware shell on /academy and /docs/help).
+> A-09 shipped 2026-08-12 (session-aware shell on /academy and /docs/help);
+> A-09b shipped 2026-08-14 (the same shell one level deeper: track, lesson and help-topic pages,
+> plus /academy/me and /academy/sandbox).
 > A-10b shipped 2026-08-12 (single-use exam tickets);
 > A-10a shipped 2026-08-12 (per-attempt choice shuffling, real-bank content guard);
 > A-10c shipped 2026-08-12 (resumable attempts, bounded auto-submit).
@@ -1054,6 +1056,50 @@ no Sign up link), **TC-E2E-110** (guest at `/academy` sees Log in/Sign up, no `a
 `e2e/academy.spec.ts` and `e2e/help-center.spec.ts` (25 specs) pass together; `tsc --noEmit`,
 `eslint`, and `next build` are clean, and `next build`'s route table confirms `/academy` and
 `/docs/help` moved from prerendered to `ƒ` (dynamic), as expected.
+
+### A-09b — The same shell, one level deeper `[x]`
+
+> **Status: DONE** (2026-08-14, branch `fix/academy-help-shell-subpages`). A user reported that
+> `/academy/fundamentals` loses the navigation panel while `/academy` keeps it. That is precisely
+> the boundary A-09 drew and wrote down: it fixed the two index pages and left "track pages, lesson
+> pages, and Help topic pages" on standalone reading chrome, on the argument that the disconnect was
+> only felt on the landing pages. It wasn't — clicking a track from inside the app crosses the same
+> line one click later, and the audit that followed found the same break on `/academy/me` and
+> `/academy/sandbox`, both linked directly from the sidebar's own Academy group.
+
+**What shipped:** the A-09 branch (`getSession()` → `<AuthedAppShell>` for a session, standalone
+chrome with Log in/Sign up for a guest) applied to `/academy/[track]`, `/academy/[track]/[lesson]`
+and `/docs/help/[topic]`. `/academy/me` and `/academy/sandbox` already call `requireSession()`, so
+a session is guaranteed there and they render the shell unconditionally — no guest branch to
+mirror. `AuthedAppShell` was already the single implementation, so nothing was duplicated; the
+page bodies are unchanged and simply moved inside whichever wrapper applies.
+
+**Cost paid knowingly, and it is larger than A-09's.** Reading the session cookie forces dynamic
+rendering, so `/academy/[track]`, `/academy/[track]/[lesson]` and `/docs/help/[topic]` lost their
+`generateStaticParams` prerender — 1 track, 13 lessons and 9 help topics that used to build as
+static HTML. A-01 called static "the point" for these routes, and unlike `/academy` they carry real
+indexable content, so this was put to the product owner rather than assumed: the alternative
+(middleware rewriting signed-in visitors to a parallel dynamic route, keeping the static file for
+guests and crawlers) preserves the prerender at the cost of two route files per URL and a
+middleware hop. It was declined in favour of matching the precedent already set. The pages are
+still server-rendered in full on every request — what is lost is the prerender and the CDN cache,
+not the HTML a crawler receives. Next 14.2 has no PPR, which is the option that would have made
+this free; revisit on a Next 15 upgrade.
+
+**`dynamicParams = false` is gone with it** — it cannot coexist with `force-dynamic`. It was never
+what produced the 404 for a draft or unknown slug: `getTrack()` / `getLesson()` / `getHelpTopic()`
+already return undefined and the pages already call `notFound()`. The behaviour is identical, now
+evaluated per request rather than against a build-time list. `allLessonParams()` in
+`src/content/academy/index.ts` existed only to feed `generateStaticParams` and was deleted.
+
+**Verified:** **TC-E2E-121**–**125** (signed-in and guest on a track page, signed-in and guest on a
+lesson page, and the two session-only pages) and **TC-E2E-126** (guest on a help topic). The guest
+cases assert the content still renders, not just the chrome — losing the prerender must not mean
+losing what a crawler comes for. **TC-E2E-27** was updated: it used to click the topic page's "Back
+to app" link, which a signed-in reader no longer has, and now leaves via the sidebar. Full
+regression: `e2e/academy.spec.ts` + `e2e/help-center.spec.ts` 39/39, `tsc --noEmit` and `eslint`
+clean, and `next build`'s route table confirms all three routes moved from `●` (SSG) to `ƒ`
+(Dynamic).
 
 ### A-10 — Exam integrity: answer-key balance, single-use tickets, resumable attempts `[x]` (code) / `[ ]` (content)
 

@@ -730,6 +730,70 @@ test(`TC-${TC}-110 A guest on /academy sees Log in and Sign up, and no app shell
 });
 
 // ---------------------------------------------------------------------------
+// A-09b: A-09 stopped at the two index pages and left track, lesson, progress
+// and sandbox pages on standalone chrome, so clicking a track from inside the
+// app still dropped the sidebar one level in. These cover the same signed-in /
+// guest pair one level deeper, and the two session-only pages that now always
+// render the shell. See docs/QA-ACADEMY.md A-09b.
+// ---------------------------------------------------------------------------
+
+test(`TC-${TC}-121 A signed-in visitor keeps the app shell on a track page`, async ({
+  page,
+}) => {
+  await login(page);
+  await page.goto("/academy/fundamentals");
+  await expect(page.getByTestId("academy-track-start")).toBeVisible();
+  await expect(page.getByTestId("app-sidebar")).toBeVisible();
+  await expect(page.getByTestId("nav-academy")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Back to app" })).toHaveCount(0);
+});
+
+test(`TC-${TC}-122 A guest on a track page gets the public chrome, and the content still renders`, async ({
+  page,
+}) => {
+  await page.goto("/academy/fundamentals");
+  await expect(page.getByTestId("app-sidebar")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Log in" })).toBeVisible();
+  // The lesson list is the indexable payload — losing the prerender must not
+  // mean losing the content a crawler comes for.
+  await expect(page.getByTestId("academy-track-start")).toBeVisible();
+  await expect(page.getByTestId("academy-lesson-what-qa-does")).toBeVisible();
+});
+
+test(`TC-${TC}-123 A signed-in visitor keeps the app shell on a lesson page`, async ({
+  page,
+}) => {
+  await login(page);
+  await page.goto("/academy/fundamentals/what-qa-does");
+  await expect(page.getByTestId("app-sidebar")).toBeVisible();
+  await expect(page.getByTestId("academy-next")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Back to app" })).toHaveCount(0);
+});
+
+test(`TC-${TC}-124 A guest on a lesson page gets the public chrome, and the body still renders`, async ({
+  page,
+}) => {
+  await page.goto("/academy/fundamentals/what-qa-does");
+  await expect(page.getByTestId("app-sidebar")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Log in" })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.getByTestId("academy-next")).toBeVisible();
+});
+
+test(`TC-${TC}-125 The session-only Academy pages render the app shell`, async ({
+  page,
+}) => {
+  await login(page);
+  await page.goto("/academy/me");
+  await expect(page.getByTestId("app-sidebar")).toBeVisible();
+  await expect(page.getByTestId("me-total-progress")).toBeVisible();
+
+  await page.goto("/academy/sandbox");
+  await expect(page.getByTestId("app-sidebar")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your sandbox" })).toBeVisible();
+});
+
+// ---------------------------------------------------------------------------
 // A-10b: a start ticket buys exactly one attempt row. This replays the real
 // server-action request rather than calling the action from test code — the
 // hole was reachable by anyone who could repeat an HTTP request they had just
