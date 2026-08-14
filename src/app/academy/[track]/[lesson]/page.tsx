@@ -9,6 +9,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { AcademyNav, SandboxBadge } from "@/components/AcademyNav";
 import { SelfCheck } from "@/components/SelfCheck";
 import { LessonDoneToggle } from "@/components/AcademyProgress";
+import { TrademarkNotice } from "@/components/TrademarkNotice";
 import { getLesson, lessonNeighbours } from "@/content/academy";
 import { getSandboxTask } from "@/content/academy/sandbox";
 import { openSandboxTask } from "@/app/actions/academy";
@@ -234,6 +235,8 @@ export default async function AcademyLessonPage({
               </Link>
             )}
           </nav>
+
+          {track.trademarkNotice && <TrademarkNotice />}
         </article>
       </div>
     </>

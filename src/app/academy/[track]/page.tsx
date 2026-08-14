@@ -7,6 +7,7 @@ import { Logo, TFIcon } from "@/components/icons";
 import { JsonLd } from "@/components/JsonLd";
 import { AcademyNav, SandboxBadge, formatMinutes } from "@/components/AcademyNav";
 import { TrackProgress } from "@/components/AcademyProgress";
+import { TrademarkNotice } from "@/components/TrademarkNotice";
 import {
   getTrack,
   publishedLessons,
@@ -191,6 +192,8 @@ export default async function AcademyTrackPage({
               Start the first lesson
             </Link>
           </div>
+
+          {track.trademarkNotice && <TrademarkNotice />}
         </div>
       </div>
     </>
