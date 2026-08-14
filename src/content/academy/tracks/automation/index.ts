@@ -1,8 +1,16 @@
-import type { Lesson, Track } from "../types";
+import type { Lesson, Track } from "../../types";
+import { whatToAutomate } from "./what-to-automate";
 
-// T3 — outlined in A-01, written in A-08. The capstone is deliberately the real
-// product loop: produce JUnit XML in CI and upload it to your sandbox project
-// through /api/v1/junit. See docs/QA-ACADEMY.md §6.2.
+// T3 — outlined in A-01, being written in A-08. The capstone is deliberately the
+// real product loop: produce JUnit XML in CI and upload it to your sandbox
+// project through /api/v1/junit. See docs/QA-ACADEMY.md §6.2.
+//
+// Lessons still to be written are `planned()` stubs: `draft`, empty body, no
+// routes and no sitemap entries, so the roadmap renders the track as a "coming
+// soon" card built from these titles (docs/QA-ACADEMY.md §4). A written lesson
+// gets its own module next to this one, the same way T1 and T2 are laid out —
+// and T2's rule applies here too: the track flips to `published` when every
+// lesson is, not one at a time.
 const planned = (
   slug: string,
   title: string,
@@ -35,7 +43,7 @@ export const automation: Track = {
     "Publish results to TestForge and act on flakiness data",
   ],
   lessons: [
-    planned("what-to-automate", "What is worth automating", "The pyramid, its critics, and the maintenance cost nobody budgets for.", 12),
+    whatToAutomate,
     planned("programming-foundations", "Programming foundations for testers", "Variables, functions, async, and reading someone else's code — JS/TS path.", 18),
     planned("first-playwright-test", "Your first Playwright test", "Install, record, run, and understand every line of what you just wrote.", 16, true),
     planned("locators", "Locators that survive a refactor", "Roles, labels and test ids — and why CSS chains break every sprint.", 14),
