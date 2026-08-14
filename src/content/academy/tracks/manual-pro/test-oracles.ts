@@ -6,7 +6,7 @@ export const testOracles: Lesson = {
   summary:
     "Requirements, comparable products, history, and heuristics for when there is no spec.",
   minutes: 10,
-  status: "draft",
+  status: "published",
   body: `
 ## Every test has a hidden second half
 

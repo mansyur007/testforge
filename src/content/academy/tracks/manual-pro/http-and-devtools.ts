@@ -6,7 +6,7 @@ export const httpAndDevtools: Lesson = {
   summary:
     "Status codes, headers, the network tab, and reading a failed request like a developer.",
   minutes: 12,
-  status: "draft",
+  status: "published",
   body: `
 ## The page is a rumour; the network tab is the evidence
 

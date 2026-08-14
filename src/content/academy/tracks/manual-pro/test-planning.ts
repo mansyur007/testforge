@@ -6,7 +6,7 @@ export const testPlanning: Lesson = {
   summary:
     "Scope, risks, environments, entry and exit criteria — without the 40-page template.",
   minutes: 14,
-  status: "draft",
+  status: "published",
   sandbox: true,
   body: `
 ## The template is not the plan

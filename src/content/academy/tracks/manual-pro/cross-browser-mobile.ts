@@ -6,7 +6,7 @@ export const crossBrowserMobile: Lesson = {
   summary:
     "Building a device matrix from analytics instead of superstition.",
   minutes: 11,
-  status: "draft",
+  status: "published",
   body: `
 ## Nobody tests "all browsers"
 

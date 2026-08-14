@@ -6,7 +6,7 @@ export const exploratoryTesting: Lesson = {
   summary:
     "Charters, timeboxes, note-taking, and why unscripted testing finds what scripts can't.",
   minutes: 14,
-  status: "draft",
+  status: "published",
   sandbox: true,
   body: `
 ## Scripted testing can only find what you already thought of
