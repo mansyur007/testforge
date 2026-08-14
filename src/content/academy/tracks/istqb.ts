@@ -20,6 +20,10 @@ export const istqb: Track = {
   level: "Certification prep",
   icon: "target",
   status: "draft",
+  // §7.1: this track names the scheme on every one of its pages, so its track
+  // and lesson pages carry the non-affiliation notice in the footer — the same
+  // one the roadmap, the exam and the certificate already render.
+  trademarkNotice: true,
   outcomes: [
     "Cover every syllabus chapter with its exam weighting in mind",
     "Drill one chapter at a time with explained answers",

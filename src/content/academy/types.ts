@@ -111,4 +111,12 @@ export type Track = {
   /** Bullets for "what you'll be able to do" on the track page. */
   outcomes: string[];
   lessons: Lesson[];
+  /** Set on any track that names a certification scheme in its own copy or its
+   *  lessons. The track and lesson pages render `ISTQB_DISCLAIMER` in their
+   *  footer when it is set — docs/QA-ACADEMY.md §7.1 requires the notice on
+   *  *every* page that names the scheme, and until this existed only the
+   *  roadmap, the exam pages and the certificate carried it.
+   *  `scripts/academy-trademark-check.mjs` fails the build on a track that
+   *  mentions ISTQB without it. */
+  trademarkNotice?: boolean;
 };

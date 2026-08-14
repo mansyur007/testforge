@@ -469,6 +469,16 @@ upload.
 
 Non-negotiable, and cheaper to get right up front than to retrofit:
 
+> **Gap found and closed 2026-08-14, before T5's content was written.** A-06 put the notice on
+> every page that named the scheme *at the time* — the roadmap, both exam routes and the certificate
+> — and stopped there. `/academy/[track]` and `/academy/[track]/[lesson]` never rendered it, which
+> was invisible only because T5 is a draft and both routes 404 for it. The day its lessons published,
+> a track page and six lesson pages naming ISTQB throughout would have gone live without the notice.
+> Now: `Track.trademarkNotice` is a field, the two pages render `<TrademarkNotice />` on it, and
+> `scripts/academy-trademark-check.mjs` (wired into `prebuild`) fails the build on any track whose
+> source names ISTQB or CTFL without setting it. Verified by temporarily publishing T5: the notice
+> renders on its track and lesson pages and on neither of T2's.
+
 1. **ISTQB® is a registered trademark.** Every page mentioning it carries, in the footer:
    *"ISTQB® is a registered trademark of the International Software Testing Qualifications Board.
    TestForge QA Academy is not affiliated with, endorsed by, or accredited by the ISTQB or any of
