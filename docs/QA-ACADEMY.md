@@ -58,8 +58,9 @@
 > the first choice, on an attempt that could be forged, would have been a way to publish a false
 > statement about somebody rather than a feature.
 > A-08 in progress — content, landing in slices: first 2026-08-14 (T2's `test-planning`), second
-> 2026-08-14 (T2 lessons 2–4), third 2026-08-14 (T2 lessons 5–7, the technical block), taking the
-> track to 7 of 12 written; all still `draft`. Created 2026-08-10.
+> 2026-08-14 (T2 lessons 2–4), third 2026-08-14 (T2 lessons 5–7, the technical block), fourth
+> 2026-08-14 (T2 lessons 8–10, the quality-attribute block), taking the track to 10 of 12 written;
+> all still `draft`. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
@@ -1050,14 +1051,41 @@ what was actually stored. Each lesson's closing `**Next:**` hands over to the fo
 `api-testing` is the second `sandbox: true` lesson without a checker, for the same reason as
 `exploratory-testing` — see below.
 
+**Fourth slice 2026-08-14: T2 lessons 8–10** — `cross-browser-mobile`, `accessibility-basics` and
+`non-functional-basics`, taking T2 to **10 of 12 written**, still all `draft`. The track's
+quality-attribute block, and one slice for the same reason as the last one: compatibility and
+accessibility are two of ISO 25010's characteristics, so the third lesson is the frame the first two
+turn out to be instances of — it opens by saying so rather than introducing them as unrelated
+topics. `sql-for-qa` had already pointed at the first.
+
+Written against the *criterion*, not the vibe, because that is the difference between a report that
+gets scheduled and one that does not: every check in `accessibility-basics`' ten-minute pass names
+the WCAG 2.2 criterion it fails (2.4.7, 2.4.3, 2.1.2, 2.4.11, 1.3.1, 1.4.10, 1.4.4, 1.4.3, 1.4.1,
+4.1.2, 3.3.1, 3.3.7), and `non-functional-basics` makes "a number without its conditions and a target
+is an opinion" the shape of every finding it teaches.
+
+**No new checker debt in this slice** — none of these three is a 🛠 lesson in §4, and none carries
+`sandbox: true`, so the count below stays at two.
+
+`non-functional-basics` teaches seven security checks a manual tester can run (authorization by URL
+first, since broken access control is both the highest-yield and the class scanners are worst at),
+and it carries **rules of engagement as a hard boundary rather than a footnote**: authorization in
+writing, only the environments it names, no third parties in the flow, no destructive payloads, no
+real customer data, and on a real finding — stop, document, report through the security channel,
+do not keep digging. A lesson that teaches people to probe access control without that paragraph
+would be teaching them to get fired.
+
 > **A track flips to `published` when enough of its lessons are, not one at a time.** `getTrack()`
 > filters on the *track's* status, so publishing T2 now would make the roadmap card clickable and
-> land a reader on a track listing seven lessons out of twelve. The lesson-level status is what
+> land a reader on a track listing ten lessons out of twelve. The lesson-level status is what
 > allows writing to land in reviewable pieces meanwhile.
 >
-> **Still open for the owner:** how many lessons before T2 flips. The other half of this question —
-> roadmap order vs. sandbox-exercise-first — was answered in the second slice, in favour of roadmap
-> order, for the reason above.
+> **Still open for the owner, and now the near-term decision:** how many lessons before T2 flips.
+> Two remain (`metrics-that-mean-something`, `reporting-to-stakeholders`), so the honest options are
+> "flip at 12" — one more slice — or "flip at 10 and let the last two land into a published track",
+> which is a different bet about whether an incomplete track is worse than an invisible one. The
+> other half of this question — roadmap order vs. sandbox-exercise-first — was answered in the second
+> slice, in favour of roadmap order, for the reason above.
 >
 > **Accumulating debt to name: two hands-on lessons with no checker.** `exploratory-testing` and
 > `api-testing` both carry `sandbox: true` and no `SANDBOX_TASKS` entry, so both render A-04b's
