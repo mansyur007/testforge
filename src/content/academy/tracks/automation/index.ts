@@ -1,6 +1,8 @@
 import type { Lesson, Track } from "../../types";
+import { assertionsAndWaiting } from "./assertions-and-waiting";
 import { firstPlaywrightTest } from "./first-playwright-test";
 import { locators } from "./locators";
+import { pageObjects } from "./page-objects";
 import { programmingFoundations } from "./programming-foundations";
 import { whatToAutomate } from "./what-to-automate";
 
@@ -50,8 +52,8 @@ export const automation: Track = {
     programmingFoundations,
     firstPlaywrightTest,
     locators,
-    planned("assertions-and-waiting", "Assertions and waiting", "Web-first assertions, auto-waiting, and why sleep() is a bug.", 13),
-    planned("page-objects", "Page objects, and when they hurt", "Structure that pays off, structure that becomes a second application.", 14),
+    assertionsAndWaiting,
+    pageObjects,
     planned("test-data", "Test data and fixtures", "Independent tests, seeded state, and cleaning up after yourself.", 13),
     planned("api-automation", "API automation", "Faster, steadier tests below the UI — and using the API to set up UI tests.", 14),
     planned("ci-github-actions", "Running in CI with GitHub Actions", "Workflows, matrices, artifacts, and keeping the pipeline under ten minutes.", 16, true),
