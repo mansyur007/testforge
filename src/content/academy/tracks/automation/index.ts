@@ -1,7 +1,9 @@
 import type { Lesson, Track } from "../../types";
 import { apiAutomation } from "./api-automation";
 import { assertionsAndWaiting } from "./assertions-and-waiting";
+import { ciGithubActions } from "./ci-github-actions";
 import { firstPlaywrightTest } from "./first-playwright-test";
+import { junitToTestforge } from "./junit-to-testforge";
 import { locators } from "./locators";
 import { pageObjects } from "./page-objects";
 import { programmingFoundations } from "./programming-foundations";
@@ -58,8 +60,8 @@ export const automation: Track = {
     pageObjects,
     testData,
     apiAutomation,
-    planned("ci-github-actions", "Running in CI with GitHub Actions", "Workflows, matrices, artifacts, and keeping the pipeline under ten minutes.", 16, true),
-    planned("junit-to-testforge", "Capstone: publish results to TestForge", "Emit JUnit XML, upload it via /api/v1/junit, and read the run you just created.", 15, true),
+    ciGithubActions,
+    junitToTestforge,
     planned("flaky-tests", "Flaky tests: diagnosis and quarantine", "Finding the cause, and muting honestly instead of retrying forever.", 14),
     planned("framework-design", "Designing a framework you can hand over", "Config, reporting, conventions, and the README that makes it survivable.", 15),
   ],

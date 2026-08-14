@@ -163,9 +163,9 @@ case and one failing row does not hide the four after it.
 ## The hybrid test is where this pays off most
 
 ~~~ts
-test("TC-31 a case created by API appears in the suite view", async ({ page, request }) => {
+test("TC-SHOP-31 a case created by API appears in the suite view", async ({ page, request }) => {
   const res = await request.post("/api/v1/cases", {
-    data: { title: \`TC-31 login \${Date.now()}\`, suiteId },
+    data: { title: \`login \${Date.now()}\`, suiteId },
   });
   const created = await res.json();
 

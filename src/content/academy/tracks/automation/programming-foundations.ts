@@ -268,9 +268,14 @@ consequence.
 One decision to make now rather than later: **name your tests so they map to your
 cases.** The capstone in this track uploads JUnit XML to \`/api/v1/junit\`, and the
 matching is done on test names — so a test called
-\`"TC-14 checkout with an expired discount code"\` becomes a result on the case you
-already wrote, while \`"test checkout 2"\` becomes an orphan somebody has to
-reconcile by hand.
+\`"TC-SHOP-14 checkout with an expired discount code"\` becomes a result on the
+case you already wrote, while \`"test checkout 2"\` becomes an orphan somebody has
+to reconcile by hand.
+
+The pattern is \`TC-<PROJECT>-<number>\`, where \`<PROJECT>\` is your project's slug
+(\`SHOP\` above) and the number is the case's number in it. The slug is part of it
+because case numbers only count within a project. The capstone covers the details;
+what matters now is deciding to carry an id at all.
 
 Deciding that convention in your first week costs nothing. Retrofitting it across
 400 tests costs a sprint.
