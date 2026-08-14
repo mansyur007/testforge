@@ -228,7 +228,7 @@ Two conventions that cost nothing now and a sprint later:
 - \`pages/login.page.ts\`, one class per screen, method names in the user's
   language — \`signIn\`, \`createCase\`, \`filterByStatus\` — not the DOM's.
 - **Test names still carry the case id**, whatever structure sits underneath:
-  \`test("TC-12 a valid login lands on the dashboard")\`. The programming lesson
+  \`test("TC-SHOP-12 a valid login lands on the dashboard")\`. The programming lesson
   planted this and the capstone depends on it; refactoring into page objects is
   exactly the moment people accidentally rewrite test titles and break the
   matching.

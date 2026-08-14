@@ -66,8 +66,10 @@
 > back to `draft` and invisible), seventh 2026-08-14 (T3's `programming-foundations`, 2 of 12),
 > eighth 2026-08-14 (T3's `first-playwright-test` and `locators` as a pair, 4 of 12), ninth
 > 2026-08-14 (T3's `assertions-and-waiting` and `page-objects`, 6 of 12 — halfway, still `draft`),
-> tenth 2026-08-14 (T3's `test-data` and `api-automation` as a genuine pair, 8 of 12).
-> T4 and T5's lesson bodies, the rest of T3 including the CI capstone, and the Indonesian routes are
+> tenth 2026-08-14 (T3's `test-data` and `api-automation` as a genuine pair, 8 of 12), eleventh
+> 2026-08-15 (T3's `ci-github-actions` and the `junit-to-testforge` capstone, 10 of 12 — and a fix to
+> four earlier lessons that taught a `TC-<n>` test-naming convention the real matcher rejects).
+> T4 and T5's lesson bodies, T3's last two lessons, and the Indonesian routes are
 > what remains of A-08. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
@@ -1275,14 +1277,63 @@ go looking for a web-first assertion that does not exist.
 
 **No new checker debt** — neither is a 🛠 lesson in §4, so the note below still stands at four.
 
+**Eleventh slice 2026-08-15: T3's `ci-github-actions` and the `junit-to-testforge` capstone**,
+taking the track to **10 of 12**, still `draft`. Paired because the capstone's upload step belongs in
+the workflow the CI lesson builds, and shipping the capstone first would have described a pipeline
+that did not exist yet.
+
+**This slice found and fixed a real defect in already-merged content.** Four earlier lessons —
+`programming-foundations`, `first-playwright-test`, `page-objects` and `api-automation` — taught
+learners to name tests `TC-12`. Read against `ingestResults()` in `src/lib/result-ingest.ts`, that
+form **does not match anything**: the pattern is `TC-<SLUG>-<n>` built from the project's own slug
+(`new RegExp(\`TC-\${project.slug.toUpperCase()}-(\\\\d+)\`, "i")`), because a case's `seq` is unique
+only within its project. A bare `TC-12` misses the id rule, falls through to the exact-title rule,
+and is then compared *including* the "TC-12" prefix — so it matches nothing unless a case is
+literally titled that. All four now teach `TC-SHOP-<n>` with the slug named as the variable part.
+
+Recording it as a general hazard rather than four typos: **the track had been writing against a
+remembered API rather than the one in this repository**, and nothing in the build would ever have
+caught it — the lesson bodies are prose, and a wrong convention taught confidently is worse than a
+missing one. The capstone was where it had to surface, because it is the first lesson whose
+instructions are executed against the real endpoint.
+
+`ci-github-actions` is built around the fact that the workflow is the easy half: the suite has to
+already be environment-independent (locators, waiting) and data-independent (per-test state) before
+CI is worth wiring, and both were earlier lessons. Its non-obvious details are the ones that cost an
+afternoon each — `--with-deps` for the browser system libraries, `npm ci` over `npm install`,
+`timeout-minutes` so a hung test does not burn six hours, and `fail-fast: false` on a shard matrix,
+without which one failure cancels the siblings and hides the rest. Artifacts use
+`if: !cancelled()` rather than `if: failure()`, because a green run's trace is the baseline you need
+on the day something is suspicious but passing.
+
+The capstone is written **against the endpoint as implemented**, not as remembered: the four query
+parameters, the response fields including `unmatched`, and the four failure statuses with what each
+one actually means. Two are worth having in the doc. **404 covers both "no such project" and "you
+are not a member"** — `ingestResults()` filters on `members: { some: { userId } }` — which is
+deliberate non-disclosure and makes "wrong key" and "wrong slug" indistinguishable from outside; the
+lesson says so, and ties it back to the 403-versus-404 argument `api-automation` had just made.
+And **422 is the expected first failure**, which the lesson frames as good news: everything worked
+except the naming.
+
+**Checker debt: the decision was to keep writing prose, not to design checkers**, consistent with
+the note below. Both lessons carry `sandbox: true` with no `SANDBOX_TASKS` entry, so the count goes
+from four to **six**. This was the slice where it was tempting to do otherwise, since the capstone's
+artefact genuinely is inspectable — a run in the sandbox project with `matched`/`unmatched` counts —
+but building that grader is a design task with its own decisions (what counts as a pass: any run? a
+matched run? a *green* matched run?) and smuggling it into a content slice is exactly what the note
+below rules out. What this slice does contribute is a **concrete specification for the future work
+order**: the capstone's exercise now has six numbered steps whose success is visible in product
+state, including a deliberate 422, which is more than any of the other five hands-on lessons offers.
+
 > **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
 > *track's* status, so the lesson-level status is what let the writing land in five reviewable
 > pieces without a reader ever seeing a half-finished listing. The rule the next track inherits:
 > lesson status is for landing work, track status is for the promise on the roadmap card.
 >
-> **Debt, now at four hands-on lessons with no checker.** `exploratory-testing`, `api-testing`,
-> `metrics-that-mean-something` and (from the eighth slice) T3's `first-playwright-test` all carry
-> `sandbox: true` and no `SANDBOX_TASKS` entry, so all four
+> **Debt, now at six hands-on lessons with no checker.** `exploratory-testing`, `api-testing`,
+> `metrics-that-mean-something`, T3's `first-playwright-test` (eighth slice) and — from the eleventh
+> — `ci-github-actions` and `junit-to-testforge` all carry
+> `sandbox: true` and no `SANDBOX_TASKS` entry, so all six
 > render A-04b's generic "Open your sandbox" callout instead of a "Start this exercise" button.
 > That degradation is deliberate and it works — and it is now shipped in a *published* track, which
 > raises its priority without changing its shape. The five T1 checkers all grade the *shape of a case
@@ -1291,10 +1342,16 @@ go looking for a web-first assertion that does not exist.
 > which is a DB row with fields to inspect. **That is a design question, not a writing task**, and it
 > should get its own work order rather than being smuggled into a content slice — including the
 > honest possibility that some of them are better self-assessed against published criteria than
-> machine-checked. T3's remaining sandbox lessons (`ci-github-actions`, the `junit-to-testforge`
-> capstone) are the one part of this debt with an obvious mechanism: they produce a run in the
-> sandbox project through `/api/v1/junit`, which *is* inspectable, so the capstone can be graded on
-> the artefact the product already stores.
+> machine-checked.
+>
+> **The two CI lessons are the part with an obvious mechanism, and the eleventh slice specified it
+> without building it.** Both produce a run in the sandbox project through `/api/v1/junit`, which
+> *is* inspectable: `ingestResults()` already returns `matched`, `unmatched` and a pass/fail summary,
+> and the run is a `TestRun` row against the learner's own sandbox. What the work order still has to
+> decide is the pass bar — any run at all, a run with at least one *matched* case, or a matched run
+> that is also green — and the last is a trap, because the capstone's exercise deliberately asks the
+> learner to produce a 422 and a failing result on the way. Grading on "green" would fail the
+> learner for following the instructions.
 
 ### A-09 — Session-aware shell on `/academy` and `/docs/help` `[x]`
 

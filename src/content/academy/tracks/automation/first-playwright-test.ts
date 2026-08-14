@@ -213,8 +213,9 @@ attached to the case it exercises than sitting in a terminal, which is what the
 uploads it to \`/api/v1/junit\` so your sandbox project gains a run with a pass, a
 duration and a history.
 
-Name the test after the case now — \`"TC-12 a valid login lands on the
-dashboard"\` — and the matching is done for you when you get there.
+Name the test after the case now — \`"TC-SHOP-12 a valid login lands on the
+dashboard"\`, where \`SHOP\` is your project's slug — and the matching is done for
+you when you get there.
 
 **Next:** the choice this lesson kept deferring — locators that survive a
 refactor, and why the CSS chain your editor offers you breaks every sprint.
