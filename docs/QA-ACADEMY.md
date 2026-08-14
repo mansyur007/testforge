@@ -62,8 +62,9 @@
 > 2026-08-14 (T2 lessons 8–10, the quality-attribute block), fifth 2026-08-14 (T2 lessons 11–12,
 > **and the track published at 12 of 12** — the first A-08 slice with a visible change: thirteen
 > routes, thirteen sitemap entries, a clickable roadmap card, and T1's long-dangling link to
-> `/academy/manual-pro` finally resolving). T3, T4 and T5's lesson bodies, the T3 CI capstone and the
-> Indonesian routes are what remains of A-08. Created 2026-08-10.
+> `/academy/manual-pro` finally resolving), sixth 2026-08-14 (T3's first lesson, `what-to-automate`,
+> back to `draft` and invisible). T4 and T5's lesson bodies, the rest of T3 including the CI capstone,
+> and the Indonesian routes are what remains of A-08. Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
@@ -1103,6 +1104,27 @@ pointing at [Manual QA Professional](/academy/manual-pro) — a link that has be
 production for as long as T1 has been published, because `getTrack()` filters drafts. Publishing T2
 is what makes it resolve. Worth recording as the general hazard rather than the one instance: a
 published lesson may link to a draft route, and nothing in the build catches it.
+
+**Sixth slice 2026-08-14: T3 opens with one lesson** — `what-to-automate`, and nothing else. The
+same deliberate move the first slice made for T2: a sample of shape for the owner to judge before
+eleven more are written to it, and T3's shape genuinely differs from T2's (code blocks, an assumed
+repository, and a reader who will be running things rather than reading them). The track and the
+lesson stay `draft`, so this is again no route, no sitemap entry, no visible change.
+
+`src/content/academy/tracks/automation.ts` became a directory in the process, matching T1 and T2.
+
+**No language-path decision was needed:** A-01's outline already committed T3 to the JS/TS +
+Playwright path — lesson 2's summary says "JS/TS path" and the capstone uploads JUnit XML to
+`/api/v1/junit` — so the Python alternative §4 mentions is a later branch of the content, not an open
+question blocking this track. Recording it here so it is not re-litigated per slice.
+
+The lesson argues the economics rather than the tooling, because the tooling lessons that follow are
+worthless to someone automating the wrong things: the payback sum, the pyramid *and* its serious
+critics (trophy, honeycomb) reduced to the one principle they agree on — push each test as low as it
+can go while still saying something true about what the user gets — the wrong-layer mistake worked
+through as twelve UI tests for password rules, and the maintenance cost, where flake rate connects
+back to T2's metrics lesson. It closes on what automation is *not*, because "automation replaces
+manual QA" is the misconception this whole track is otherwise liable to reinforce.
 
 > **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
 > *track's* status, so the lesson-level status is what let the writing land in five reviewable

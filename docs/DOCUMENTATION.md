@@ -4268,14 +4268,19 @@ with the `SuiteFolderGrid` work noted above.
   attempt, checked against whichever questions the seed actually drew). See `docs/QA-ACADEMY.md`
   § A-06 for the full writeup, including a stale-session-cookie edge case found while manually
   walking the flow (pre-existing app-wide behaviour, not a regression, not fixed in this PR).
-- **A-08** `[ ]` in progress — content build-out and localised routes. Four content slices landed
-  2026-08-14 (#190–#193), all in Track 2 (`manual-pro`): `test-planning`, then lessons 2–4
-  (`risk-based-testing`, `exploratory-testing`, `test-oracles`), then the technical block 5–7
-  (`http-and-devtools`, `api-testing`, `sql-for-qa`), then the quality-attribute block 8–10
-  (`cross-browser-mobile`, `accessibility-basics`, `non-functional-basics`) — taking the track to
-  **10 of 12 written**. All of it is still `status: "draft"`, so nothing is routed or in the sitemap
-  and there is no visible change yet; the localised routes are untouched. See `docs/QA-ACADEMY.md`
-  §8. (A-07 shipped on 2026-08-13 — its entry is at the end of this list, in ship order.)
+- **A-08** `[ ]` in progress — content build-out and localised routes. Six content slices landed
+  2026-08-14 (#190–#193, #195, and this one). Five of them wrote Track 2 (`manual-pro`) end to end:
+  `test-planning`, then lessons 2–4 (`risk-based-testing`, `exploratory-testing`, `test-oracles`),
+  then the technical block 5–7 (`http-and-devtools`, `api-testing`, `sql-for-qa`), then the
+  quality-attribute block 8–10 (`cross-browser-mobile`, `accessibility-basics`,
+  `non-functional-basics`), then 11–12 (`metrics-that-mean-something`, `reporting-to-stakeholders`)
+  — at which point **the track flipped to `published` at 12 of 12**, the first visible change of the
+  work order: thirteen routes, thirteen sitemap entries, a clickable roadmap card, and T1's
+  long-dangling link to `/academy/manual-pro` finally resolving. The sixth slice opens Track 3
+  (`automation`) with one lesson, `what-to-automate`, back to `draft` and invisible. T4 and T5's
+  lesson bodies, the rest of T3 including the CI capstone, and the localised routes are what
+  remains. See `docs/QA-ACADEMY.md` §8. (A-07 shipped on 2026-08-13 — its entry is at the end of
+  this list, in ship order.)
 - **A-09** `[x]` (2026-08-12, branch `feat/academy-help-authed-shell`) — Session-aware shell on
   `/academy` and `/docs/help`: a signed-in visitor now gets the same sidebar/`AppShell` as the rest
   of the app (extracted into `src/components/AuthedAppShell.tsx`, reused by `(app)/layout.tsx`
