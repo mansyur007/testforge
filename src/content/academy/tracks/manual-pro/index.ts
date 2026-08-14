@@ -1,7 +1,10 @@
 import type { Lesson, Track } from "../../types";
+import { accessibilityBasics } from "./accessibility-basics";
 import { apiTesting } from "./api-testing";
+import { crossBrowserMobile } from "./cross-browser-mobile";
 import { exploratoryTesting } from "./exploratory-testing";
 import { httpAndDevtools } from "./http-and-devtools";
+import { nonFunctionalBasics } from "./non-functional-basics";
 import { riskBasedTesting } from "./risk-based-testing";
 import { sqlForQa } from "./sql-for-qa";
 import { testOracles } from "./test-oracles";
@@ -53,9 +56,9 @@ export const manualPro: Track = {
     httpAndDevtools,
     apiTesting,
     sqlForQa,
-    planned("cross-browser-mobile", "Cross-browser and mobile testing", "Building a device matrix from analytics instead of superstition.", 11),
-    planned("accessibility-basics", "Accessibility basics", "Keyboard, contrast, labels, screen readers — the checks that take ten minutes.", 12),
-    planned("non-functional-basics", "Non-functional testing you can do today", "Cheap first checks for performance, security and reliability.", 12),
+    crossBrowserMobile,
+    accessibilityBasics,
+    nonFunctionalBasics,
     planned("metrics-that-mean-something", "Metrics that mean something", "Pass-rate theatre, escape rate, and what to put on a dashboard.", 11, true),
     planned("reporting-to-stakeholders", "Reporting to stakeholders", "Turning results into a decision, in five sentences.", 10),
   ],
