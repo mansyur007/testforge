@@ -93,7 +93,7 @@
 > what remains** — gated by A-03 on measured ID organic traffic — **plus the sandbox checkers, which
 > belong in their own work order.**
 > Created 2026-08-10.
-> Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
+> Work orders are numbered `A-01 … A-11` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
 > `[x]` shipped. **Part IV §0 (repo conventions) and §1 (Definition of Done) are normative here** —
@@ -113,7 +113,7 @@
 - [5. The ISTQB Foundation practice exam](#5-the-istqb-foundation-practice-exam)
 - [6. Learn-by-doing: the Academy sandbox](#6-learn-by-doing-the-academy-sandbox)
 - [7. Legal & trademark constraints](#7-legal--trademark-constraints)
-- [8. Work orders A-01 … A-10](#8-work-orders)
+- [8. Work orders A-01 … A-11](#8-work-orders)
 - [9. Risks, open questions, deliberate exclusions](#9-risks-open-questions-deliberate-exclusions)
 
 ---
@@ -1857,6 +1857,13 @@ sandbox checkers, which every slice since the third has argued belong in their o
 > honest possibility that some of them are better self-assessed against published criteria than
 > machine-checked.
 >
+> > **Superseded 2026-08-15 by A-11, which re-read the schema instead of this paragraph.** The claim
+> > above is **wrong for six of the eight**: `Session`/`SessionNote` (charter, timebox, status, note
+> > kinds, and what each note was converted into), `TestPlan`, `Dashboard`/`DashboardWidget`,
+> > `TestRun` and `PublicShare` all exist and are as inspectable as a case row. Only `api-testing`
+> > and `first-playwright-test` are genuinely off-platform. This deferral was written once and quoted
+> > forward through nine slices without anyone re-opening `schema.prisma`.
+>
 > **The two CI lessons are the part with an obvious mechanism, and the eleventh slice specified it
 > without building it.** Both produce a run in the sandbox project through `/api/v1/junit`, which
 > *is* inspectable: `ingestResults()` already returns `matched`, `unmatched` and a pass/fail summary,
@@ -1865,6 +1872,9 @@ sandbox checkers, which every slice since the third has argued belong in their o
 > that is also green — and the last is a trap, because the capstone's exercise deliberately asks the
 > learner to produce a 422 and a failing result on the way. Grading on "green" would fail the
 > learner for following the instructions.
+>
+> > **Decided 2026-08-15 in A-11:** the bar is **a run with at least one *matched* case**. "Any run"
+> > passes a 422 that matched nothing; "green" punishes following the instructions.
 
 ### A-09 — Session-aware shell on `/academy` and `/docs/help` `[x]`
 
@@ -2746,6 +2756,144 @@ track, and makes the stored `trackSlug` the registry's rather than the caller's.
 > **TC-E2E-127** now waits for the sync round-trip and then asserts the captured request body is
 > `["fundamentals","what-qa-does"]`, so losing the race fails the test instead of quietly passing
 > it. Both directions were watched: with the guard removed the replay writes a `zzzz-qa-zzzz` row.
+
+### A-11 — Sandbox checkers for the remaining eight `[ ]`
+
+> **Opened 2026-08-15**, after A-08's content half finished. Every content slice since the third
+> deferred this with the same sentence — *that is a design question, not a writing task, and it
+> should get its own work order rather than being smuggled into a content slice.* This is that work
+> order. It is opened by re-reading the schema rather than by re-reading those deferrals, and the
+> first finding contradicts them.
+
+**The debt.** Eight lessons carry `sandbox: true` with no `SANDBOX_TASKS` entry, so each renders
+A-04b's generic "Open your sandbox" callout instead of a "Start this exercise" button. All eight are
+in published tracks. (Counted from source: 13 lessons carry `sandbox: true`, `SANDBOX_TASKS` has 5
+keys, all T1 — see the recount box above.)
+
+#### The finding that changes the shape of this work order
+
+The standing note above says these exercises "grade a charter, a Postman collection, a dashboard
+argument and a Playwright repository on the learner's own machine, **none of which is a DB row with
+fields to inspect**". **That is wrong for six of the eight, and it was wrong when it was written.**
+The models already exist:
+
+| Lesson | Track | What the exercise asks | Inspectable as |
+|---|---|---|---|
+| `test-planning` | T2 | Write the plan against ShopMini and **link it to cases you have already written** | `TestPlan` + its linked cases |
+| `exploratory-testing` | T2 | Run one 45-minute session **with a written charter and notes**, turn findings into a defect and ≥1 case | `Session.charter`, `timeboxMinutes`, `status`, `endedAt`; `SessionNote.kind`, `convertedType` |
+| `metrics-that-mean-something` | T2 | Build the one-screen view — **at most five numbers** | `Dashboard` + `DashboardWidget` |
+| `ci-github-actions` | T3 | Get a CI run uploading JUnit to the sandbox | `TestRun`, `ResultSubmission`, `TestRunResult` |
+| `junit-to-testforge` | T3 | The capstone, same endpoint | as above |
+| `portfolio` | T4 | Enable public sharing, with Cases/Runs/Reports on | `PublicShare.enabled`, `showCases`, `showRuns`, `showReports` |
+| `api-testing` | T2 | Call the sandbox's own REST API | **Off-platform** — but see below |
+| `first-playwright-test` | T3 | A Playwright test on the learner's machine | **Off-platform** |
+
+Six of eight are the same shape as the five T1 checkers: fetch rows created since the coach panel
+opened, hand them to a pure function in `checks-core.mjs`, return `{ passed, feedback }`. **The
+design question this work order was reserved for turns out to apply to two lessons, not eight.**
+
+Worth saying plainly because it is the lesson for next time: the deferral was written once and then
+quoted forward through nine slices without anyone re-opening `schema.prisma`. `Session` and
+`SessionNote` — charter, timebox, status, note kinds, and what each note was converted into — have
+been in the schema since long before A-08.
+
+#### Per-checker design
+
+Criteria follow A-04b's rule: **forgiving about wording, strict about structure**, and feedback
+always names what is missing.
+
+**`exploratory-testing`** — the one the deferral was most wrong about. A session is a row with a
+charter, a timebox and an end time.
+Assert: a session created since the panel opened; `charter` over ~40 characters and naming both a
+target and a purpose (the lesson's own "explore X with Y to discover Z" shape, matched loosely);
+`timeboxMinutes` set; **`status = ENDED`** — an open session is an unfinished exercise; ≥3
+`SessionNote` rows; ≥1 note of kind `BUG`; and at least one note with `convertedType` set, which is
+the exercise's actual demand (*turn what you find into a defect and at least one case*).
+
+**`test-planning`** — a `TestPlan` with a non-trivial `description` and **≥3 linked cases**, since
+the lesson's whole argument is that scope stops being prose and starts being a list you can count.
+Weakest of the six, because a plan's quality lives in its "Not covered" section and no checker can
+grade prose; grade the structure and say so in the feedback.
+
+**`metrics-that-mean-something`** — a `Dashboard` with **between 1 and 5 widgets**. The upper bound
+is the exercise (*pick at most five numbers, and be able to defend deleting everything else*), and a
+checker that enforced only a floor would invert the lesson. Note what cannot be checked: the
+existing widget types are `passRateTrend | statusPie | coverageBar | flakyList | runVelocity |
+textNote`, so **there is no raw case-count widget** for the lesson's "resist putting the case count
+on the dashboard" warning to catch. The count bound is the checkable half; the reasoning behind each
+number is not, and the feedback should say so rather than implying the dashboard was judged good.
+
+**`portfolio`** — `PublicShare.enabled` true with `showCases` on, and the feedback should name the
+sections that are still off rather than just failing.
+
+**`ci-github-actions` and `junit-to-testforge`** — a `TestRun` in the sandbox whose results arrived
+through `/api/v1/junit`.
+
+> **The pass bar, decided — and it needs less machinery than the eleventh slice assumed.** That
+> slice framed the choice as *any run / a run with ≥1 matched case / a matched run that is also
+> green*, and named the third as a trap: the capstone deliberately asks the learner to produce a 422
+> and a failing result on the way, so grading on green fails them for following the instructions.
+>
+> Reading `src/lib/result-ingest.ts` settles the first two as well. **`ingestResults()` returns 422
+> *before* creating anything when nothing matched** (`if (!matched.length)` precedes `createRun`), so
+> a `TestRun` in the sandbox with `source`/`origin` from the endpoint **already implies at least one
+> matched case**. "Any run exists" and "a run with a matched case" are the same predicate. The
+> checker is therefore: **a run created since the panel opened, with ≥1 result, and no assertion
+> about its statuses** — three lines, no new plumbing, and no way to punish the learner for the 422
+> the exercise asked them to produce.
+
+**`api-testing` and `first-playwright-test`** — the two that are genuinely off-platform. Three
+options, and the recommendation is the third:
+
+1. *Nothing* — leave the generic callout. Honest, and leaves two published lessons visibly thinner.
+2. *A proxy check* — for `api-testing`, a case or defect created **via the API** rather than the UI.
+   `TestCase` has no "created via API" column, so this needs one, or an `AuditLog` inspection. Real
+   work for a weak signal.
+3. **Self-assessment against published criteria** — the coach panel renders the criteria as a
+   checklist the learner ticks, with no server-side grading and no pass/fail claim. The lesson keeps
+   its "Start this exercise" affordance, and the product does not pretend to know something it
+   cannot. This needs a third `SandboxTaskTarget` kind (`{ kind: "self" }`) and a coach-panel
+   branch; it does **not** need a checker.
+
+#### Mechanism changes
+
+- `SandboxTaskTarget` widens from `case | defect` to also cover `session`, `plan`, `dashboard`,
+  `share`, `run`, and `self`. Each new kind is one `runChecker` branch and one Prisma `select` —
+  the registry pattern does not change.
+- **`since` needs re-examination for two of them**, because A-04b's rule (*only rows created after
+  the learner opened the exercise count*) assumes append-shaped work. `PublicShare` is one row per
+  project with `@unique projectId` — it has `updatedAt`, but a learner who enabled sharing before
+  opening the panel would still fail a `createdAt >= since` filter. **Accept that row regardless of
+  age**: enabling it once is the exercise, and there is nothing a stale row could replay. `Dashboard`
+  is worse — it has **`createdAt` only, no `updatedAt`** — so a learner who edits an existing
+  dashboard produces no timestamp to filter on. Either check the widgets' parent dashboard without a
+  time filter, or add `updatedAt` to the model; the first is cheaper and the exercise is
+  project-scoped to a sandbox nobody else touches.
+- Every new checker gets good/bad fixtures in `scripts/academy-checks-selftest.mjs`, which runs under
+  bare node in `prebuild`.
+- **Assert the debt count in that selftest** rather than maintaining it in prose: the number of
+  `sandbox: true` lessons without a `SANDBOX_TASKS` key is derivable, and this document got it wrong
+  twice by adding to a tally by hand.
+
+#### Slices
+
+1. **A-11a** — mechanism: widen the target type, the `runChecker` branches, the `since` fix, and the
+   selftest assertion. No new lesson tasks; the five existing checkers keep passing.
+2. **A-11b** — the four T2/T4 row-shaped checkers: `exploratory-testing`, `test-planning`,
+   `metrics-that-mean-something`, `portfolio`.
+3. **A-11c** — the two CI checkers, on the decided pass bar.
+4. **A-11d** — self-assessment mode, and the two off-platform lessons adopting it.
+
+#### Open for the owner
+
+- **Is self-assessment acceptable at all**, or is a lesson better left with the generic callout than
+  given a checklist the product does not verify? (Recommendation: acceptable, provided the panel
+  never says "passed" — it says "you have marked this done".)
+- **Should a self-assessed exercise count toward lesson progress** the way a checked one does?
+
+**Definition of done:** all eight lessons render "Start this exercise"; six have real checkers with
+selftest fixtures; two are explicitly self-assessed; the debt count is asserted by the build rather
+than written in this file; and `e2e/academy.spec.ts` covers one new checker end to end, per §1.
 
 ### Testing (applies to all)
 
