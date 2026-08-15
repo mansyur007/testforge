@@ -85,8 +85,13 @@
 > `ch4-test-analysis-design` alone — the K3 chapter, and the biggest lesson in the Academy — 4 of 7,
 > still `draft`), twentieth 2026-08-15 (T5's `ch5-managing-test-activities` alone — 16 objectives,
 > the most of any chapter — 5 of 7, still `draft`; the checker-debt tally was also recounted from
-> source and corrected to eight).
-> **The rest of T5 and the Indonesian routes are what remains of A-08.**
+> source and corrected to eight), twenty-first 2026-08-15 (T5's `ch6-test-tools` and `exam-strategy`,
+> **and the track published at 7 of 7** — the fourth A-08 slice with a visible change: eight routes,
+> eight sitemap entries, the fifth roadmap card becoming a link, and **no "coming soon" card left on
+> `/academy`**).
+> **A-08's content half is done: five tracks, 51 lessons, all `published`. The Indonesian routes are
+> what remains** — gated by A-03 on measured ID organic traffic — **plus the sandbox checkers, which
+> belong in their own work order.**
 > Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
@@ -1771,6 +1776,57 @@ exam lesson's job is to name what is examinable and hand off the working version
 **The checker-debt note above was recounted in this slice and corrected from seven to eight** — see
 the recount box there. `test-planning` had carried `sandbox: true` since A-08's first slice and was
 never in the tally.
+
+**Twenty-first slice 2026-08-15: T5's `ch6-test-tools` and `exam-strategy`, and the track published
+at 7 of 7.** The fourth A-08 slice with a visible change, and the last content slice of the Academy's
+English build-out: **eight new routes, eight new sitemap entries, and the fifth roadmap card becoming
+a link — there is now no "coming soon" card left on `/academy` at all.**
+
+`ch6-test-tools` is the smallest lesson in the track and says so, then argues against skipping it:
+2 of 40 questions is 5% of a paper with a 65% pass line, from **two objectives**, which makes it the
+cheapest chapter in the syllabus per mark. Its two load-bearing points are that **a tool is not
+necessarily a testing product** — a spreadsheet building a decision table is tool support in exactly
+the sense meant — and that the benefits and risks of automation are **two lists a question mixes on
+purpose**, of which the two worth memorising are that maintenance effort is routinely underestimated
+and that a tool can replace thinking rather than support it.
+
+**`exam-strategy` is the one T5 lesson with no syllabus objective behind it**, so its content
+discipline is different: everything in it is either a fact about *our* practice paper, verified
+against the code, or general technique.
+
+- **The timing argument is arithmetic, not advice.** 90 seconds is the average and nobody should
+  pace that way: K1 costs 20–30 seconds, K3 costs two to three minutes, so **bank time on recall and
+  spend it on application**. And the slow questions are locatable in advance — every K3 objective in
+  the syllabus is in chapters 4 and 5, which in our blueprint are 20 of the 40 questions. *Half the
+  paper is the two chapters holding all the calculation.*
+- **Two grading facts were read out of `exam-core.mjs` rather than assumed**: multiple-response
+  questions are graded as an **exact set with no partial credit** (`want.length === got.length &&
+  every`), and there is **no negative marking** — a wrong answer and a blank both score zero. That
+  second fact is what makes "every unanswered question gets an answer" the first move of the last ten
+  minutes rather than a platitude.
+- **The absolutes tell** — `always`, `never`, `only`, `guarantees`, `proves` — is given with its own
+  exception, because the syllabus does contain one famous guarantee: 100% branch coverage implying
+  100% statement coverage. A rule of thumb that cannot name its exception teaches a wrong answer.
+
+**§5.1's open item is handled in the lesson text, not hidden by it.** `exam-strategy` states plainly
+which numbers match the published exam structure (question count, duration, extra time, pass mark)
+and that **the per-chapter split is this project's own blueprint** rather than a published figure —
+"a reasonable approximation, and not a quotation". That is the same honesty the chapter lessons carry
+in their "in our practice paper" phrasing, said once in full where a reader planning their revision
+will meet it.
+
+**Verified against a running server, and this is the widest check A-08 has run**: all 8 T5 routes 200
+with 8 sitemap entries; **all five roadmap cards are now links and `border-dashed` appears zero times
+on `/academy`**; the non-affiliation notice renders on a T5 lesson page and **not** on a T2 one, which
+is `trademarkNotice` scoping proven rather than assumed; no console errors. And the `](/academy/`
+sweep was run as an actual request per link rather than by eye — **24 distinct cross-links across all
+five tracks, every one 200**, including the seven `/academy/istqb/practice-exam*` links the T5
+lessons introduced.
+
+**A-08's content half is done.** Five tracks, 51 lessons, all `published`. What remains under this
+work order is the Indonesian routes — `/id/academy/**` with `hreflang` and translated lesson bodies —
+which A-03 deliberately gated on measured ID organic traffic rather than deciding up front, and the
+sandbox checkers, which every slice since the third has argued belong in their own work order.
 
 > **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
 > *track's* status, so the lesson-level status is what let the writing land in five reviewable

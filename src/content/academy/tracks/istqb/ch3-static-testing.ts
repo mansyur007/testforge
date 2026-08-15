@@ -9,7 +9,7 @@ export const ch3StaticTesting: Lesson = {
   summary:
     "Reviews, the review process, and what static analysis catches that execution can't.",
   minutes: 18,
-  status: "draft",
+  status: "published",
   body: `
 ## What this chapter costs
 

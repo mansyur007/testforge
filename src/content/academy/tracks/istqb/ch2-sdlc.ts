@@ -9,7 +9,7 @@ export const ch2Sdlc: Lesson = {
   summary:
     "Development models, test levels, test types, and maintenance testing.",
   minutes: 22,
-  status: "draft",
+  status: "published",
   body: `
 ## What this chapter costs
 

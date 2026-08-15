@@ -1,25 +1,22 @@
-import type { Lesson, Track } from "../../types";
+import type { Track } from "../../types";
 import { ch1Fundamentals } from "./ch1-fundamentals";
 import { ch2Sdlc } from "./ch2-sdlc";
 import { ch3StaticTesting } from "./ch3-static-testing";
 import { ch4TestAnalysisDesign } from "./ch4-test-analysis-design";
 import { ch5ManagingTestActivities } from "./ch5-managing-test-activities";
+import { ch6TestTools } from "./ch6-test-tools";
+import { examStrategy } from "./exam-strategy";
 
-// T5 — outlined in A-01. The chapter lessons are written in A-08; the question
-// bank and the exam simulator are A-06. `istqb.ts` became this directory when
-// the first chapter was written, matching T1–T4.
+// T5 — outlined in A-01. The chapter lessons were written in A-08 over five
+// slices; the question bank and the exam simulator are A-06. `istqb.ts` became
+// this directory when the first chapter was written, matching T1–T4, and the
+// `planned()` stub helper is now gone as it is from every other track.
 //
-// Nothing here may be published until the trademark and originality constraints
-// in docs/QA-ACADEMY.md §7 are satisfied: original questions only, no ISTQB
-// logo, and the non-affiliation disclaimer on every page that names the scheme.
+// The §7 constraints this track publishes under (docs/QA-ACADEMY.md): original
+// questions only, no ISTQB logo, no syllabus text reproduced, and the
+// non-affiliation disclaimer on every page that names the scheme.
 // `trademarkNotice` below is what the track and lesson pages render it on, and
 // `scripts/academy-trademark-check.mjs` fails the build without it.
-const planned = (
-  slug: string,
-  title: string,
-  summary: string,
-  minutes: number,
-): Lesson => ({ slug, title, summary, minutes, status: "draft", body: "" });
 
 export const istqb: Track = {
   slug: "istqb",
@@ -28,7 +25,7 @@ export const istqb: Track = {
     "Six chapters aligned to the CTFL v4.0 syllabus, chapter drills, and a full timed practice exam with a per-chapter score breakdown.",
   level: "Certification prep",
   icon: "target",
-  status: "draft",
+  status: "published",
   // §7.1: this track names the scheme on every one of its pages, so its track
   // and lesson pages carry the non-affiliation notice in the footer — the same
   // one the roadmap, the exam and the certificate already render.
@@ -45,7 +42,7 @@ export const istqb: Track = {
     ch3StaticTesting,
     ch4TestAnalysisDesign,
     ch5ManagingTestActivities,
-    planned("ch6-test-tools", "Chapter 6 — Test tools", "Tool support for testing, and the risks of adopting one.", 12),
-    planned("exam-strategy", "Exam strategy", "Timing, K-levels, how the question styles work, and what to do with the last ten minutes.", 15),
+    ch6TestTools,
+    examStrategy,
   ],
 };

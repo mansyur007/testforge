@@ -9,7 +9,7 @@ export const ch1Fundamentals: Lesson = {
   summary:
     "What testing is, why it's needed, the seven principles, the test process, and the tester's mindset.",
   minutes: 25,
-  status: "draft",
+  status: "published",
   body: `
 ## How to read this track
 
