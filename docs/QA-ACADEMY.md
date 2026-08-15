@@ -2757,7 +2757,7 @@ track, and makes the stored `trackSlug` the registry's rather than the caller's.
 > `["fundamentals","what-qa-does"]`, so losing the race fails the test instead of quietly passing
 > it. Both directions were watched: with the guard removed the replay writes a `zzzz-qa-zzzz` row.
 
-### A-11 — Sandbox checkers for the remaining eight `[ ]` (A-11a, A-11b shipped)
+### A-11 — Sandbox checkers for the remaining eight `[ ]` (A-11a, A-11b, A-11c shipped)
 
 > **Opened 2026-08-15**, after A-08's content half finished. Every content slice since the third
 > deferred this with the same sentence — *that is a design question, not a writing task, and it
@@ -2952,6 +2952,24 @@ options, and the recommendation is the third:
    > and an approach but no *information goal* must fail, because that distinction is what the
    > lesson's own self-check q1 turns on. TC-E2E-129 walks both against a live session.
 3. **A-11c** — the two CI checkers, on the decided pass bar.
+
+   > **Shipped 2026-08-15** (branch `feat/academy-a11c-ci-checkers`). One target kind (`run`), one
+   > shared predicate, two feedback variants, and **TC-E2E-130**. The debt assertion derives 2.
+   >
+   > **`source` is what separates an uploaded run from a hand-made one**, and it works only because
+   > the UI's create action sets no `source` at all, so a manual run takes the schema default. That
+   > is a fact about `src/app/actions/runs.ts`, not a guarantee of the model — a future create form
+   > that let a user pick a source would quietly widen this checker.
+   >
+   > **The CI variant says out loud that it cannot tell a GitHub runner from a curl.** Both are the
+   > same POST, and `origin` is caller-supplied. Reported when present, never gated on. What proves
+   > the workflow is that it ran without the learner watching, which no row records — the same
+   > honesty the dashboard and plan checkers owe their exercises.
+   >
+   > **Found on the way, and not caused by this work:** `e2e-results/.api-key` was observed one run
+   > stale against the database (row `tf_0891…`, file `tf_26b7…`), which 401s every upload. Four
+   > specs read that file. TC-E2E-130 mints its own key instead, but the shared file is worth
+   > chasing — it is a suite-wide flake, not an Academy one.
 4. **A-11d** — self-assessment mode, and the two off-platform lessons adopting it.
 
 #### Open for the owner
