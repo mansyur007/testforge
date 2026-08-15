@@ -1,4 +1,5 @@
 import type { Lesson, Track } from "../../types";
+import { aiInQa } from "./ai-in-qa";
 import { contractTesting } from "./contract-testing";
 import { performanceTesting } from "./performance-testing";
 import { securityForTesters } from "./security-for-testers";
@@ -48,7 +49,7 @@ export const beyond: Track = {
     securityForTesters,
     contractTesting,
     testingInProduction,
-    planned("ai-in-qa", "AI in QA: what it does well, where it lies", "Generating cases, reviewing requirements, and why a plausible test is dangerous.", 13),
+    aiInQa,
     planned("portfolio", "Building a QA portfolio", "Publish a real project — suites, runs, results — that a hiring manager can open.", 12, true),
     planned("interview-prep", "Interview preparation", "The questions that always come, and how to answer with evidence.", 14),
   ],

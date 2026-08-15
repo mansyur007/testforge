@@ -75,7 +75,8 @@
 > resolving after 404ing since A-01), thirteenth 2026-08-15 (T4 opens with `performance-testing` and
 > `security-for-testers`, 2 of 7, back to `draft` and invisible), fourteenth 2026-08-15 (T4's
 > `contract-testing` and `testing-in-production` — the before-deploy and after-deploy halves of one
-> problem — 4 of 7, still `draft`).
+> problem — 4 of 7, still `draft`), fifteenth 2026-08-15 (T4's `ai-in-qa` alone, 5 of 7, still
+> `draft`).
 > **The rest of T4, all of T5, and the Indonesian routes are what remains of A-08.**
 > Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
@@ -1473,6 +1474,48 @@ holds the record but **will not page anyone at 3am**, and saying so beats lettin
 it during an outage.
 
 **No checker debt added** — neither carries `sandbox: true`. The count stays at six.
+
+**Fifteenth slice 2026-08-15: T4's `ai-in-qa`**, 5 of 7, still `draft`. One lesson on its own, which
+is the right size here for the opposite of T2's reason: this is not a sample being calibrated, it is
+the one lesson in T4 that pairs with nothing. The two remaining — `portfolio` and `interview-prep` —
+are the career pair, and folding the AI lesson into them would have made a slice of three topics
+joined only by being last.
+
+**The lesson is organised around one ranking rule rather than a list of tools:** *failing loudly is
+cheap, passing wrongly is expensive.* Every use is sorted by what happens when the model is wrong. A
+hallucinated locator or API fails on the first run and costs a minute; an assertion inferred from a
+function's name goes green forever and costs the defect it was supposed to catch. That gives the
+lesson a spine that survives the tooling changing, which matters more here than in any other lesson
+in the Academy.
+
+Its sharpest point is **oracle collapse**, and it is T2's `test-oracles` lesson reused deliberately
+(the same move `performance-testing` made with the non-functional lesson): an oracle must come from
+outside the implementation, and **a model that was shown the implementation is not outside it**. If
+one tool writes the code and the test, a misunderstanding of the requirement is encoded twice with
+nothing left to contradict it. The lesson does not conclude "don't use it for both" — it concludes
+the oracle stays human, supplied from the requirement before generation.
+
+The review checklist's third question is the one it argues nobody runs: **break the code on purpose
+and see whether the generated test goes red.** A test that cannot fail is decoration, and mutating
+the code is worth more than any amount of reading it.
+
+Two boundaries are stated as non-negotiable rather than advisory, in the same register
+`security-for-testers` used: **confidentiality** (unreleased specs, customer data, credentials and
+proprietary code do not go into an unapproved service — "it was just a snippet" is how source code
+leaves a company) and **accountability** ("the AI wrote it" is not a defence; whoever merges it owns
+it). The closing section is honest about which skills depreciate — typing the fortieth similar case —
+and which appreciate, which is a restatement of what the previous four tracks were for.
+
+**The TestForge tie-in is F-29 as designed, not as marketed.** AI assist is opt-in per click, runs on
+the organisation's own key and endpoint, and inserts generated cases as **`DRAFT`** — the product's
+own shape says the model produced a suggestion that a human promotes, which is the lesson's argument
+already built into a feature. The measurable follow-up it proposes is the only one that settles the
+question: tag AI-drafted cases and ask months later **which of them ever failed on a real defect**,
+because pass-rate theatre (T2's metrics lesson) applies harder to generated suites than to any other
+kind.
+
+**No checker debt added** — `ai-in-qa` does not carry `sandbox: true`. The count stays at six, and
+T4's only 🛠 lesson, `portfolio`, is the next slice.
 
 > **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
 > *track's* status, so the lesson-level status is what let the writing land in five reviewable
