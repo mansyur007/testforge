@@ -6,6 +6,9 @@ import {
   CASE_CHECKERS,
   DEFECT_CHECKERS,
   SHARE_CHECKERS,
+  SESSION_CHECKERS,
+  PLAN_CHECKERS,
+  DASHBOARD_CHECKERS,
 } from "./checks-core.mjs";
 
 export type { CheckResult };
@@ -33,6 +36,14 @@ type ShareSubmission = {
   showRuns: boolean;
   showReports: boolean;
 } | null;
+type SessionSubmission = {
+  charter: string;
+  timeboxMinutes: number | null;
+  status: string;
+  notes: { kind: string; convertedType: string | null }[];
+};
+type PlanSubmission = { description: string | null; linkedCaseIds: string[] };
+type DashboardSubmission = { name: string; widgetCount: number };
 
 const caseCheckers = CASE_CHECKERS as Record<
   string,
@@ -45,6 +56,18 @@ const defectCheckers = DEFECT_CHECKERS as Record<
 const shareCheckers = SHARE_CHECKERS as Record<
   string,
   (share: ShareSubmission) => CheckResult
+>;
+const sessionCheckers = SESSION_CHECKERS as Record<
+  string,
+  (sessions: SessionSubmission[]) => CheckResult
+>;
+const planCheckers = PLAN_CHECKERS as Record<
+  string,
+  (plans: PlanSubmission[]) => CheckResult
+>;
+const dashboardCheckers = DASHBOARD_CHECKERS as Record<
+  string,
+  (dashboards: DashboardSubmission[]) => CheckResult
 >;
 
 const FIXTURE_TITLES = new Set(SANDBOX_CASES.map((c) => c.title));
@@ -82,6 +105,68 @@ export async function runChecker(
       select: { enabled: true, showCases: true, showRuns: true, showReports: true },
     });
     return checker(share);
+  }
+
+  // A-11b. `Session` dates its start as `startedAt`, not `createdAt` — the
+  // `since` rule is the same, the column is not.
+  if (task.target.kind === "session") {
+    const checker = sessionCheckers[lessonSlug];
+    if (!checker) return { error: "That lesson has no checker yet." };
+    const sessions = await db.session.findMany({
+      where: { projectId, startedAt: { gte: since } },
+      select: {
+        charter: true,
+        timeboxMinutes: true,
+        status: true,
+        notes: { select: { kind: true, convertedType: true } },
+      },
+      orderBy: { startedAt: "desc" },
+    });
+    return checker(sessions);
+  }
+
+  // A plan's cases are two hops away — `TestPlan` has no case relation, only
+  // `runs`, and a run's `results` carry the `caseId`. Distinct because the same
+  // case can appear in more than one run under the plan.
+  if (task.target.kind === "plan") {
+    const checker = planCheckers[lessonSlug];
+    if (!checker) return { error: "That lesson has no checker yet." };
+    const plans = await db.testPlan.findMany({
+      where: { projectId, createdAt: { gte: since } },
+      select: {
+        description: true,
+        runs: { select: { results: { select: { caseId: true } } } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return checker(
+      plans.map((p) => ({
+        description: p.description,
+        linkedCaseIds: Array.from(
+          new Set(p.runs.flatMap((r) => r.results.map((x) => x.caseId))),
+        ),
+      })),
+    );
+  }
+
+  // A-11b's `since` exception. `Dashboard` has `createdAt` and **no
+  // `updatedAt`**, so a learner who edits an existing dashboard — which is
+  // exactly what the exercise's "delete until removing one more would cost you
+  // a decision" asks for — produces no timestamp to filter a revision by. The
+  // alternative was adding `updatedAt` to the model; this is cheaper and safe
+  // here because `seedSandbox` creates no dashboards, so anything in a sandbox
+  // was built by its owner.
+  if (task.target.kind === "dashboard") {
+    const checker = dashboardCheckers[lessonSlug];
+    if (!checker) return { error: "That lesson has no checker yet." };
+    const dashboards = await db.dashboard.findMany({
+      where: { projectId },
+      select: { name: true, _count: { select: { widgets: true } } },
+      orderBy: { createdAt: "desc" },
+    });
+    return checker(
+      dashboards.map((d) => ({ name: d.name, widgetCount: d._count.widgets })),
+    );
   }
 
   if (task.target.kind === "defect") {

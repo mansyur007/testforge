@@ -362,6 +362,246 @@ export function checkPortfolioShare(share) {
 }
 
 // ---------------------------------------------------------------------------
+// A-11b: session, plan and dashboard targets.
+// ---------------------------------------------------------------------------
+
+/**
+ * A charter names a *target*, an *approach*, and the *information* it is
+ * hunting for — the lesson's own "explore X with Y to discover Z" shape, and
+ * its self-check turns on exactly that third part. Matched loosely, per §6.2's
+ * rule: forgiving about wording, strict about structure. Requiring the literal
+ * words would fail "Poke at the discount code field using expired and
+ * malformed codes, looking for ways to get a discount I should not have",
+ * which is a better charter than most that would pass a keyword match.
+ */
+const CHARTER_PURPOSE_RE =
+  /\b(to discover|to find|to learn|looking for|hunting|in order to|so as to|find out|uncover|identify|to see (?:if|whether|how)|to check (?:if|whether|how)|to understand|risk|ways? to)\b/i;
+const CHARTER_APPROACH_RE =
+  /\b(with|using|via|through|by|explore|exploring|probe|probing|poke|poking|attack|attacking|try|trying|vary|varying)\b/i;
+
+/**
+ * T2 `exploratory-testing`. The exercise is "run one real session, and turn
+ * what you find into a defect and at least one case" — every clause of which
+ * is a column.
+ *
+ * @param {{ charter: string, timeboxMinutes: number|null, status: string,
+ *           notes: { kind: string, convertedType: string|null }[] }[]} sessions
+ * @returns {CheckResult}
+ */
+export function checkExploratorySession(sessions) {
+  if (!sessions.length) {
+    return {
+      passed: false,
+      feedback: [
+        "No session found. Open Sessions in your sandbox and start one — the charter is the first thing it asks you for.",
+      ],
+    };
+  }
+
+  // Grade the learner's best attempt rather than their most recent one: a
+  // second session started to re-read the form must not fail the exercise the
+  // first one already satisfied.
+  const ranked = [...sessions].sort((a, b) => rankSession(b) - rankSession(a));
+  const s = ranked[0];
+  const notes = s.notes ?? [];
+  const missing = [];
+
+  const charter = (s.charter ?? "").trim();
+  if (charter.length < 40) {
+    missing.push(
+      `The charter is ${charter.length} characters. A charter that fits in a tweet is usually a page name — say what you are exploring, how, and what you are hunting for.`,
+    );
+  } else if (!CHARTER_PURPOSE_RE.test(charter)) {
+    missing.push(
+      'The charter names what you will look at but not what you are hunting for. "Explore X with Y" is a destination; the part that ends a session well is "…to discover Z".',
+    );
+  } else if (!CHARTER_APPROACH_RE.test(charter)) {
+    missing.push(
+      "The charter names a target and a purpose but no approach — the resources, data or attack you will use to get there.",
+    );
+  }
+
+  if (!s.timeboxMinutes) {
+    missing.push("No timebox set. The clock is what makes the session a countable unit rather than an afternoon.");
+  }
+  if (s.status !== "ENDED") {
+    missing.push(
+      "The session is still open. End it — an unfinished session has no coverage statement, which is the half a release report actually needs.",
+    );
+  }
+
+  if (notes.length < 3) {
+    missing.push(
+      `Only ${notes.length} note${notes.length === 1 ? "" : "s"}. Take at least 3 as you go — notes written afterwards are a summary, and the exact input you used is the part that gets lost.`,
+    );
+  }
+  if (!notes.some((n) => n.kind === "BUG")) {
+    missing.push('No note marked BUG. Mark the findings as you hit them — "b" while the session runs.');
+  }
+  if (!notes.some((n) => n.convertedType)) {
+    missing.push(
+      'No note converted yet. "Convert to case" on a note is the step that makes the repeatable findings survive into the next release.',
+    );
+  }
+
+  if (missing.length) return { passed: false, feedback: missing };
+
+  return {
+    passed: true,
+    feedback: [
+      "A charter, a clock, notes, and a finding that outlived the session — that is a session that counts as work.",
+      "What the checker cannot see is whether the charter was worth an hour. The lesson's own test: could someone else read it and tell you the session went badly? If not, it was a to-do, not a charter.",
+    ],
+  };
+}
+
+/** Score a session by how much of the exercise it satisfies, so the best
+ *  attempt is the one graded and the feedback describes it. */
+function rankSession(s) {
+  const notes = s.notes ?? [];
+  return (
+    (s.status === "ENDED" ? 8 : 0) +
+    (notes.some((n) => n.convertedType) ? 4 : 0) +
+    (notes.some((n) => n.kind === "BUG") ? 2 : 0) +
+    Math.min(notes.length, 3) / 3 +
+    ((s.charter ?? "").trim().length >= 40 ? 1 : 0)
+  );
+}
+
+/**
+ * The worked example's section shape. Matched on any two, because the lesson's
+ * argument is that the page is short and honest, not that it uses these
+ * headings — and because "Not covered" is the section it says matters most,
+ * which is a prose judgement no checker should pretend to make.
+ */
+const PLAN_SECTIONS = [
+  { name: "scope", re: /\b(in scope|scope)\b/i },
+  { name: "what is not covered", re: /\b(not cover(?:ed|ing)?|out of scope|excluded?|exclusions?|won'?t test|not test(?:ed|ing)?)\b/i },
+  { name: "risks", re: /\brisks?\b/i },
+  { name: "environment", re: /\b(environment|staging|accounts?|test data)\b/i },
+  { name: "entry criteria", re: /\bentry\b/i },
+  { name: "exit criteria", re: /\bexit\b/i },
+];
+
+/**
+ * T2 `test-planning`. Weakest of the six by design, and the feedback says so:
+ * a plan's quality lives in its "Not covered" section, and no checker can grade
+ * prose. What *is* checkable is the lesson's own structural claim — that scope
+ * stops being prose and starts being a list you can count.
+ *
+ * **`linkedCaseIds` is not a plan→case relation.** There isn't one: `TestPlan`
+ * holds `runs`, a run holds `results`, and a result references a case. A-11's
+ * table said "`TestPlan` + its linked cases", which reads like a column and is
+ * not — `checks.ts` walks the two hops and passes the distinct ids in.
+ *
+ * Takes every plan created since the panel opened and grades the best of them,
+ * for the same reason `checkExploratorySession` does: a second plan started to
+ * re-read the form must not fail the exercise the first one satisfied.
+ *
+ * @param {{ description: string|null, linkedCaseIds: string[] }[]} plans
+ * @returns {CheckResult}
+ */
+export function checkTestPlan(plans) {
+  const plan = [...(plans ?? [])].sort(
+    (a, b) =>
+      (b.linkedCaseIds?.length ?? 0) - (a.linkedCaseIds?.length ?? 0) ||
+      (b.description ?? "").length - (a.description ?? "").length,
+  )[0];
+  if (!plan) {
+    return {
+      passed: false,
+      feedback: [
+        "No test plan found. Open Plans in your sandbox and create one — the guest-checkout example in the lesson is fifteen lines, and that is the target.",
+      ],
+    };
+  }
+
+  const description = (plan.description ?? "").trim();
+  const found = PLAN_SECTIONS.filter((s) => s.re.test(description));
+  const missing = [];
+
+  if (description.length < 80) {
+    missing.push(
+      "The plan has no real description yet. The plan *is* the description — scope, what is not covered, risks, entry and exit, on one page.",
+    );
+  } else if (found.length < 4) {
+    const absent = PLAN_SECTIONS.filter((s) => !s.re.test(description)).map((s) => s.name);
+    missing.push(
+      `The description is missing: ${absent.join(", ")}. The worked example carries all of them in fifteen lines.`,
+    );
+  }
+
+  const linked = plan.linkedCaseIds?.length ?? 0;
+  if (linked < 3) {
+    missing.push(
+      `${linked === 0 ? "No cases are" : `Only ${linked} case${linked === 1 ? " is" : "s are"}`} attached to this plan. Create a run under it and pick at least 3 of the cases you have already written — that is the step that turns scope into something you can count.`,
+    );
+  }
+
+  if (missing.length) return { passed: false, feedback: missing };
+
+  return {
+    passed: true,
+    feedback: [
+      `A plan with the sections that matter and ${linked} cases attached to it. Exit criteria can now read off the run instead of off somebody's memory.`,
+      "Read honestly: this checked the structure, not the thinking. Whether your \"Not covered\" list is the one a reviewer would argue with is the part that decides if the page was worth writing — and it is the section the lesson says to defend hardest.",
+    ],
+  };
+}
+
+/**
+ * T2 `metrics-that-mean-something`. The exercise is *at most* five numbers, so
+ * the ceiling is the graded half and a checker that enforced only a floor would
+ * invert the lesson.
+ *
+ * What cannot be checked, and the feedback says so: the widget types are
+ * `passRateTrend | statusPie | coverageBar | flakyList | runVelocity |
+ * textNote`, so there is **no raw case-count widget** for the lesson's "resist
+ * putting the case count on the dashboard" warning to catch. The count bound is
+ * checkable; the reasoning behind each number is not.
+ *
+ * @param {{ name: string, widgetCount: number }[]} dashboards
+ * @returns {CheckResult}
+ */
+export function checkMetricsDashboard(dashboards) {
+  const built = (dashboards ?? []).filter((d) => d.widgetCount > 0);
+  if (!built.length) {
+    return {
+      passed: false,
+      feedback: [
+        (dashboards ?? []).length
+          ? "The dashboard is empty. Add the numbers you would actually act on — the exercise is the subtraction that follows, not the adding."
+          : "No dashboard found. Open Dashboards in your sandbox and create one.",
+      ],
+    };
+  }
+
+  // The learner's best attempt again: an experiment left at seven widgets must
+  // not fail an exercise a second, disciplined dashboard already satisfies.
+  const within = built.filter((d) => d.widgetCount <= 5);
+  if (!within.length) {
+    const smallest = built.reduce((a, b) => (a.widgetCount <= b.widgetCount ? a : b));
+    return {
+      passed: false,
+      feedback: [
+        `"${smallest.name}" has ${smallest.widgetCount} widgets. The exercise is at most five — and the ceiling is the whole point, because the screen that shows everything is the screen nobody reads.`,
+        "Delete until removing one more would cost you a decision. If you cannot say what you would do differently when a number moves, it is not one of your five.",
+      ],
+    };
+  }
+
+  const best = within.reduce((a, b) => (a.widgetCount >= b.widgetCount ? a : b));
+  return {
+    passed: true,
+    feedback: [
+      `"${best.name}" holds ${best.widgetCount} widget${best.widgetCount === 1 ? "" : "s"} — inside the five the exercise allows.`,
+      "The count is all a checker can see. Whether each one answers a question and drives a decision is yours to defend, and it is the only part that decides whether the screen is worth having.",
+      "One thing the product cannot get wrong for you here: there is no raw case-count widget to add, so the lesson's most tempting number is not on offer.",
+    ],
+  };
+}
+
+// ---------------------------------------------------------------------------
 
 /** Keyed by lesson slug — same key `src/content/academy/sandbox.ts` uses for
  *  `SANDBOX_TASKS`, so `checks.ts` can look up both with one string. */
@@ -378,4 +618,16 @@ export const DEFECT_CHECKERS = {
 
 export const SHARE_CHECKERS = {
   portfolio: checkPortfolioShare,
+};
+
+export const SESSION_CHECKERS = {
+  "exploratory-testing": checkExploratorySession,
+};
+
+export const PLAN_CHECKERS = {
+  "test-planning": checkTestPlan,
+};
+
+export const DASHBOARD_CHECKERS = {
+  "metrics-that-mean-something": checkMetricsDashboard,
 };

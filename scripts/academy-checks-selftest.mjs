@@ -17,6 +17,9 @@ import {
   checkDecisionTables,
   checkBugReport,
   checkPortfolioShare,
+  checkExploratorySession,
+  checkTestPlan,
+  checkMetricsDashboard,
 } from "../src/lib/academy/checks-core.mjs";
 
 let failed = 0;
@@ -293,6 +296,215 @@ assert(
 );
 
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// A-11b: exploratory-testing
+// ---------------------------------------------------------------------------
+
+const GOOD_CHARTER =
+  "Explore ShopMini's discount code field with expired, over-long and mixed-case codes to discover ways to get a discount that should be rejected";
+
+function tsession({
+  charter = GOOD_CHARTER,
+  timeboxMinutes = 45,
+  status = "ENDED",
+  notes = [
+    { kind: "NOTE", convertedType: null },
+    { kind: "BUG", convertedType: "CASE" },
+    { kind: "QUESTION", convertedType: null },
+  ],
+} = {}) {
+  return { charter, timeboxMinutes, status, notes };
+}
+
+assert("exploratory-testing: no session fails", checkExploratorySession([]), false);
+assert(
+  "exploratory-testing: a full session passes",
+  checkExploratorySession([tsession()]),
+  true,
+);
+assert(
+  "exploratory-testing: a page name as a charter fails",
+  checkExploratorySession([tsession({ charter: "Test the checkout page" })]),
+  false,
+);
+// The lesson's own self-check q1: a charter must say what information it is
+// hunting for. This one names a target and an approach and stops there.
+assert(
+  "exploratory-testing: charter with no purpose fails",
+  checkExploratorySession([
+    tsession({
+      charter:
+        "Explore the ShopMini checkout flow with a member account and an international shipping address",
+    }),
+  ]),
+  false,
+);
+assert(
+  "exploratory-testing: an open session fails",
+  checkExploratorySession([tsession({ status: "ACTIVE" })]),
+  false,
+);
+assert(
+  "exploratory-testing: no timebox fails",
+  checkExploratorySession([tsession({ timeboxMinutes: null })]),
+  false,
+);
+assert(
+  "exploratory-testing: two notes fails",
+  checkExploratorySession([
+    tsession({
+      notes: [
+        { kind: "BUG", convertedType: "CASE" },
+        { kind: "NOTE", convertedType: null },
+      ],
+    }),
+  ]),
+  false,
+);
+assert(
+  "exploratory-testing: no BUG note fails",
+  checkExploratorySession([
+    tsession({
+      notes: [
+        { kind: "NOTE", convertedType: "CASE" },
+        { kind: "NOTE", convertedType: null },
+        { kind: "IDEA", convertedType: null },
+      ],
+    }),
+  ]),
+  false,
+);
+assert(
+  "exploratory-testing: nothing converted fails",
+  checkExploratorySession([
+    tsession({
+      notes: [
+        { kind: "BUG", convertedType: null },
+        { kind: "NOTE", convertedType: null },
+        { kind: "IDEA", convertedType: null },
+      ],
+    }),
+  ]),
+  false,
+);
+// The best attempt is the one graded: an abandoned first session must not fail
+// an exercise a later one satisfies.
+assert(
+  "exploratory-testing: a good session alongside an abandoned one passes",
+  checkExploratorySession([
+    tsession({ charter: "Test the cart", status: "ACTIVE", notes: [] }),
+    tsession(),
+  ]),
+  true,
+);
+// Forgiving about wording, strict about structure: this charter uses none of
+// the lesson's literal phrasing and is a better charter than most that would
+// pass a keyword match.
+assert(
+  "exploratory-testing: an idiomatic charter in the learner's own words passes",
+  checkExploratorySession([
+    tsession({
+      charter:
+        "Poke at cart quantity limits using pasted values, negative numbers and browser-back, looking for a way to get past 99 per line",
+    }),
+  ]),
+  true,
+);
+
+// ---------------------------------------------------------------------------
+// A-11b: test-planning
+// ---------------------------------------------------------------------------
+
+const GOOD_PLAN = `Feature: guest checkout (SM-214)
+
+In scope: guest order placement, email validation, order confirmation, and the
+existing signed-in path as regression.
+Not covered: the payment provider itself, iOS Safari below 15, bulk import.
+Risks: guest order not linked to email (H); signed-in checkout regressed by the
+shared component (H); duplicate order on double-submit (M).
+Environment: staging, payment provider in sandbox mode; guest and admin accounts.
+Entry: deployed to staging, smoke passes.
+Exit: all planned cases run, no open Critical or High.`;
+
+assert("test-planning: no plan fails", checkTestPlan([]), false);
+assert(
+  "test-planning: a full plan with three linked cases passes",
+  checkTestPlan([{ description: GOOD_PLAN, linkedCaseIds: ["c1", "c2", "c3"] }]),
+  true,
+);
+assert(
+  "test-planning: a plan with no description fails",
+  checkTestPlan([{ description: null, linkedCaseIds: ["c1", "c2", "c3"] }]),
+  false,
+);
+assert(
+  "test-planning: a full description with no linked cases fails",
+  checkTestPlan([{ description: GOOD_PLAN, linkedCaseIds: [] }]),
+  false,
+);
+assert(
+  "test-planning: two linked cases fails",
+  checkTestPlan([{ description: GOOD_PLAN, linkedCaseIds: ["c1", "c2"] }]),
+  false,
+);
+// Scope and risks but no exclusions, entry or exit — the sections the lesson
+// argues are the ones a reviewer actually uses.
+assert(
+  "test-planning: a description missing most sections fails",
+  checkTestPlan([
+    {
+      description:
+        "In scope: the whole checkout flow, including guest and signed-in paths, plus the confirmation email. Risks: the shared component might regress.",
+      linkedCaseIds: ["c1", "c2", "c3"],
+    },
+  ]),
+  false,
+);
+assert(
+  "test-planning: the best of several plans is the one graded",
+  checkTestPlan([
+    { description: "First attempt, abandoned.", linkedCaseIds: [] },
+    { description: GOOD_PLAN, linkedCaseIds: ["c1", "c2", "c3", "c4"] },
+  ]),
+  true,
+);
+
+// ---------------------------------------------------------------------------
+// A-11b: metrics-that-mean-something
+// ---------------------------------------------------------------------------
+
+assert("metrics: no dashboard fails", checkMetricsDashboard([]), false);
+assert(
+  "metrics: an empty dashboard fails",
+  checkMetricsDashboard([{ name: "QA", widgetCount: 0 }]),
+  false,
+);
+assert(
+  "metrics: five widgets passes",
+  checkMetricsDashboard([{ name: "QA", widgetCount: 5 }]),
+  true,
+);
+assert(
+  "metrics: one widget passes",
+  checkMetricsDashboard([{ name: "QA", widgetCount: 1 }]),
+  true,
+);
+// The ceiling is the exercise. A checker with only a floor would invert the
+// lesson, so this is the case that matters most in this block.
+assert(
+  "metrics: six widgets fails",
+  checkMetricsDashboard([{ name: "Everything", widgetCount: 6 }]),
+  false,
+);
+assert(
+  "metrics: a disciplined dashboard beside an overloaded one passes",
+  checkMetricsDashboard([
+    { name: "Everything", widgetCount: 11 },
+    { name: "The five", widgetCount: 4 },
+  ]),
+  true,
+);
+
 // A-11a: the checker debt, derived instead of counted by hand.
 //
 // docs/QA-ACADEMY.md carried this number in prose and got it wrong twice — it
@@ -344,11 +556,8 @@ function checkedSlugs() {
 const KNOWN_UNCHECKED = [
   "api-testing",
   "ci-github-actions",
-  "exploratory-testing",
   "first-playwright-test",
   "junit-to-testforge",
-  "metrics-that-mean-something",
-  "test-planning",
 ].sort();
 
 const unchecked = sandboxLessonSlugs().filter(
@@ -372,5 +581,5 @@ if (failed > 0) {
   process.exit(1);
 }
 console.log(
-  `academy-checks-selftest: OK (6 checkers, good and bad submissions; ${unchecked.length} sandbox lessons still uncheckered)`,
+  `academy-checks-selftest: OK (9 checkers, good and bad submissions; ${unchecked.length} sandbox lessons still uncheckered)`,
 );
