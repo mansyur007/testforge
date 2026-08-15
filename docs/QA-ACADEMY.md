@@ -73,7 +73,9 @@
 > 12** — the second A-08 slice with a visible change: thirteen routes, thirteen sitemap entries, a
 > third clickable roadmap card, and T1's `test-levels` link to `/academy/automation` finally
 > resolving after 404ing since A-01), thirteenth 2026-08-15 (T4 opens with `performance-testing` and
-> `security-for-testers`, 2 of 7, back to `draft` and invisible).
+> `security-for-testers`, 2 of 7, back to `draft` and invisible), fourteenth 2026-08-15 (T4's
+> `contract-testing` and `testing-in-production` — the before-deploy and after-deploy halves of one
+> problem — 4 of 7, still `draft`).
 > **The rest of T4, all of T5, and the Indonesian routes are what remains of A-08.**
 > Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
@@ -1414,6 +1416,63 @@ the assumption.
 
 **No checker debt added** — neither lesson carries `sandbox: true`; T4's only 🛠 lesson is
 `portfolio`, still a stub. The count stays at six.
+
+**Fourteenth slice 2026-08-15: T4's `contract-testing` and `testing-in-production`**, 4 of 7, still
+all `draft` — no route, no sitemap entry, no visible change.
+
+These two are a genuine pair despite T4 not being a chain, and the pairing is the argument: they are
+**the two halves of the same problem, which is confidence about a running system without a full
+integrated environment**. Contract testing is the half before deploy, production observability is the
+half after, and each lesson says so — `contract-testing` opens on the environment it lets you not
+build, `testing-in-production` opens by naming itself as the other half. Written together so the
+seam is deliberate rather than an accident of ordering.
+
+`contract-testing` picks up a debt the tenth slice created on purpose: `api-automation` states that
+an API suite **cannot tell you the real client sends the request your test constructs**, and names
+contract testing as the thing that closes it. The lesson's load-bearing point is therefore the
+*mechanism* rather than the tooling — the consumer's own test drives **the shipped client module,
+not a hand-written `fetch`**, or the pact records what the test author imagined instead of what the
+application does. The other two: **matchers, not literals** (`total: 19.99` as a literal makes the
+provider's test data part of the contract, and two reseeds later the verification job gets marked
+non-blocking, which costs the whole protection), and **contract tests do not replace anything** —
+business rules belong in the provider's own tests, so a contract test asserting a total is the
+pyramid mistake repeated one layer up.
+
+It also refuses to sell the machinery. A broker plus two wired pipelines plus a versioning
+discipline pays off when **several consumers you do not control** depend on one provider; for one
+consumer and one provider owned by the same team, the lesson says a schema check against an OpenAPI
+spec is usually enough and names what you give up. `can-i-deploy` is included because contract
+results that are not a deployment gate decay into a report nobody reads.
+
+`testing-in-production` opens by refusing the misreading in its own title — it is not permission to
+skip the other eleven lessons — and then sets **two prerequisites that are not optional**: you can
+see what happens (logs, metrics, traces, reachable by the tester), and you can limit the damage
+(flag, canary, fast rollback). A team with neither is not doing this as a strategy; it is happening
+to them.
+
+Its three most useful specifics. **Capture the trace id** when reproducing in production — one habit
+that removes an entire round trip from every bug report. **A flag's off state is the rollback path**,
+so an untested off branch is a recovery that fails during the incident it exists for; and ten live
+flags are 1024 combinations, which is why the discipline is keeping the live set small rather than
+testing the matrix. And **production is a source of test ideas, not just of incidents** — real usage
+ranking, the real device mix (T2's compatibility lesson said to build the matrix from your own
+analytics; this is that data), and untriaged error logs, plus the rule that an incident which does
+not produce a test is an incident you have agreed to have again.
+
+The synthetic-monitoring section carries rules of engagement in the same spirit as
+`security-for-testers`, and its hard line is **a synthetic payment is a real payment** — cover the
+journey to the provider's boundary and verify the integration in a sandbox built for it. Tagging
+synthetic traffic out of analytics and revenue reporting is in the list because it is the mistake
+that gets made exactly once.
+
+Both lessons route their TestForge tie-in through `/api/v1/junit` rather than inventing a mechanism
+— Pact's verification step and a scheduled synthetic run both emit JUnit XML, so it is the T3
+capstone's endpoint reused. Each is also honest about what the record is worth: for contracts, one
+green run proves almost nothing and the month of history is the evidence; for synthetics, TestForge
+holds the record but **will not page anyone at 3am**, and saying so beats letting a reader discover
+it during an outage.
+
+**No checker debt added** — neither carries `sandbox: true`. The count stays at six.
 
 > **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
 > *track's* status, so the lesson-level status is what let the writing land in five reviewable
