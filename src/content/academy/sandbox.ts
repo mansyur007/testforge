@@ -70,7 +70,12 @@ export type SandboxTaskTarget =
   | { kind: "session" }
   | { kind: "plan" }
   | { kind: "dashboard" }
-  | { kind: "run" };
+  | { kind: "run" }
+  // A-11d: the two exercises that genuinely happen off-platform. No checker and
+  // no server grading — the coach renders `criteria` as a checklist the learner
+  // ticks, and the panel never claims they passed. See the work order's §"the
+  // two that are genuinely off-platform", option 3.
+  | { kind: "self" };
 
 export type SandboxTask = {
   trackSlug: string;
@@ -218,6 +223,39 @@ export const SANDBOX_TASKS: Record<string, SandboxTask> = {
       "Pass or fail does not matter — the exercise asks you to produce a failing result on the way, and grading on green would punish you for following it.",
     ],
     hint: "Get the 422 on purpose first: upload a file where no test name matches anything, and read the error. Then rename a test to carry TC-<SLUG>-<n> and upload again.",
+  },
+  // A-11d: self-assessed. Both exercises are real work that leaves no row in
+  // this product — a Postman collection and a Playwright repository on the
+  // learner's own machine. The criteria below are the whole grading standard,
+  // which is why they are written as things the learner can check for
+  // themselves rather than as things a checker would look for.
+  "api-testing": {
+    trackSlug: "manual-pro",
+    lessonTitle: "API testing with Postman",
+    target: { kind: "self" },
+    task: "Point Postman at your sandbox's REST API: read /api/v1/openapi first, then list your cases, create one, and prove that a read-only key cannot POST.",
+    criteria: [
+      "I started from /api/v1/openapi rather than guessing endpoints.",
+      "I listed my sandbox's cases with a Bearer key, and got a 200.",
+      "I created a case through POST and saw it appear in the UI.",
+      "I tried the same POST with a read-only key and got a refusal — and I can say what the response was.",
+      "I know which of my requests would break if the case's fields changed, and which would not.",
+    ],
+    hint: "Settings → API Keys for the key, and note the two scopes. A read-only key that can POST is a defect — testing that is itself a good exercise, and it is the one item here you could report if it failed.",
+  },
+  "first-playwright-test": {
+    trackSlug: "automation",
+    lessonTitle: "Your first Playwright test",
+    target: { kind: "self" },
+    task: "Write and run one Playwright test against ShopMini on your own machine, named after the case it exercises, with the junit reporter configured.",
+    criteria: [
+      "The test runs green from a clean checkout, not just in my editor.",
+      "I removed the codegen noise — no recorded waits, no brittle nth-child chains I did not choose.",
+      "It asserts something the user would notice, not just that a page loaded.",
+      "It is named after the case it exercises — TC-<SLUG>-<n> — so the capstone's upload can match it.",
+      "The junit reporter is configured and results.xml appears when I run it.",
+    ],
+    hint: "The naming is the part that pays off two lessons from now: get it right here and the capstone's matching is done for you.",
   },
 };
 

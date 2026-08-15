@@ -2757,7 +2757,7 @@ track, and makes the stored `trackSlug` the registry's rather than the caller's.
 > `["fundamentals","what-qa-does"]`, so losing the race fails the test instead of quietly passing
 > it. Both directions were watched: with the guard removed the replay writes a `zzzz-qa-zzzz` row.
 
-### A-11 — Sandbox checkers for the remaining eight `[ ]` (A-11a, A-11b, A-11c shipped)
+### A-11 — Sandbox checkers for the remaining eight `[x]`
 
 > **Opened 2026-08-15**, after A-08's content half finished. Every content slice since the third
 > deferred this with the same sentence — *that is a design question, not a writing task, and it
@@ -2972,16 +2972,64 @@ options, and the recommendation is the third:
    > chasing — it is a suite-wide flake, not an Academy one.
 4. **A-11d** — self-assessment mode, and the two off-platform lessons adopting it.
 
-#### Open for the owner
+   > **Shipped 2026-08-15** (branch `feat/academy-a11d-self-assessment`), **which closes A-11**. One
+   > target kind (`self`), a coach-panel branch, `api-testing` and `first-playwright-test` adopting
+   > it, and **TC-E2E-131**.
+   >
+   > **Both owner questions were answered before building.** Self-assessment is acceptable *provided
+   > the panel never says "passed"* — it says "You have marked this done", followed by "Nothing was
+   > verified". And a self-assessed exercise **counts toward lesson progress exactly as a checked one
+   > does**, which is why no new state was added: it calls the same `markDone()`. The precedent that
+   > makes this coherent is one the product already had — "Mark done anyway" has accepted unverified
+   > completion since A-04b, so a separate class for self-assessment would have been a distinction
+   > the rest of the feature does not draw.
+   >
+   > **Three things the UI must not do, all of them asserted:** no "Check my work" button (offering
+   > one implies the product could grade it), no "Mark done anyway" (redundant — the checklist *is*
+   > the gate), and the word "pass" nowhere in the panel. `runChecker` also refuses a `self` target
+   > server-side, so a crafted call gets an honest refusal rather than a pass; that branch is not
+   > user-reachable by construction and is defence-in-depth, not a tested path.
+   >
+   > **The docking rule changed for this kind only.** A-04b keeps the panel docked while the learner
+   > is under their sandbox project — correct for every target whose work *is* a row in that project,
+   > and wrong for this one, whose own criteria send the learner to Settings → API Keys. A `self`
+   > task stays docked across the whole app, and its ticked criteria live in the same
+   > `sessionStorage` record so the walk there and back does not empty the checklist.
+   >
+   > **The debt assertion changed shape rather than being deleted.** It was a countdown; it is now a
+   > floor — *no* `sandbox: true` lesson may lack a `SANDBOX_TASKS` entry — plus a named list of the
+   > two self-assessed slugs. The countdown would have been satisfied forever by doing nothing; the
+   > floor fails the build the next time a hands-on lesson lands without an exercise, which is
+   > exactly how the debt reached eight without anyone noticing.
+   >
+   > **Checked in a real browser at 375×667 with the hint open**, the panel's worst case: 524px tall
+   > against a 667px viewport, fully on screen, with A-11a's reserved bottom padding keeping the page
+   > underneath scrollable. Five criteria make this the tallest the coach has ever been.
 
-- **Is self-assessment acceptable at all**, or is a lesson better left with the generic callout than
-  given a checklist the product does not verify? (Recommendation: acceptable, provided the panel
-  never says "passed" — it says "you have marked this done".)
-- **Should a self-assessed exercise count toward lesson progress** the way a checked one does?
+#### Open for the owner — ~~open~~ **both answered 2026-08-15, before A-11d was built**
+
+- ~~**Is self-assessment acceptable at all**, or is a lesson better left with the generic callout than
+  given a checklist the product does not verify?~~ **Yes, with the checklist** — and the
+  recommendation's condition is binding: the panel never says "passed".
+- ~~**Should a self-assessed exercise count toward lesson progress** the way a checked one does?~~
+  **Yes, identically.** Which is why A-11d added no new progress state.
 
 **Definition of done:** all eight lessons render "Start this exercise"; six have real checkers with
 selftest fixtures; two are explicitly self-assessed; the debt count is asserted by the build rather
 than written in this file; and `e2e/academy.spec.ts` covers one new checker end to end, per §1.
+
+> **Met, 2026-08-15.** All eight render "Start this exercise" (asserted as a floor, not a count);
+> six have checkers with 31 new selftest fixtures across A-11b/c; two are self-assessed and pinned
+> by name in the build; and the e2e went well past the one-checker bar — **TC-E2E-129** (session),
+> **TC-E2E-130** (the CI pass bar, including a real 422 and a red run), **TC-E2E-131**
+> (self-assessment). `academy.spec.ts` is 40 specs, green with `help-center.spec.ts` at 44/44.
+>
+> **What A-11 cost, against what it was reserved for.** The work order was opened on the argument
+> that grading a charter, a Postman collection, a dashboard and a Playwright repo was "a design
+> question, not a writing task". Re-reading `schema.prisma` cut that from eight lessons to two — and
+> then A-11b found the *replacement* claim was wrong too, in the same way: "`TestPlan` + its linked
+> cases" is not a relation either. Two rounds of the same mistake, both fixed by opening the schema
+> instead of the previous paragraph.
 
 ### Testing (applies to all)
 

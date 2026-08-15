@@ -1870,3 +1870,97 @@ test(`TC-${TC}-130 The capstone checker accepts a red run and never counts a 422
 
   await db.apiKey.delete({ where: { id: apiKeyId } });
 });
+
+// A-11d. The product's honesty rule made testable: a self-assessed exercise
+// gets the same "Start this exercise" affordance and counts toward the track
+// the same way, but the panel must never claim it verified anything, and the
+// server must refuse to grade it even if asked directly.
+test(`TC-${TC}-131 A self-assessed exercise records progress without ever claiming a pass`, async ({
+  page,
+}) => {
+  const email = `academy-self-${Date.now()}@testforge.local`;
+  const passwordHash = await bcrypt.hash("AcademySelf123", 10);
+  await db.user.create({
+    data: {
+      name: "Academy Self Test",
+      email,
+      passwordHash,
+      emailVerifiedAt: new Date(),
+      onboardedAt: new Date(),
+    },
+  });
+  await login(page, email, "AcademySelf123");
+
+  // The affordance is the point of the work order: these two lessons used to
+  // render the generic "Open your sandbox" link.
+  await page.goto("/academy/manual-pro/api-testing");
+  await expect(page.getByTestId("lesson-sandbox-link")).toHaveCount(0);
+  await page.click('[data-testid="lesson-start-exercise"]');
+  await page.waitForURL(/\/projects\/academy-[^/]+\?.*academy=api-testing/);
+
+  const coach = page.getByTestId("academy-coach");
+  await expect(coach).toContainText("yours to assess");
+  // No grading affordance at all — offering one would imply the product could.
+  await expect(page.getByTestId("academy-coach-check")).toHaveCount(0);
+  await expect(page.getByTestId("academy-coach-mark-done")).toHaveCount(0);
+
+  const doneButton = page.getByTestId("academy-coach-self-done");
+  await expect(doneButton).toBeDisabled();
+
+  // Scoped to the list, not `[data-testid^="academy-coach-self-"]` — that
+  // prefix also matches the list, the button and the result box.
+  const boxes = page.locator(
+    '[data-testid="academy-coach-self-list"] input[type="checkbox"]',
+  );
+  const total = await boxes.count();
+  expect(total).toBeGreaterThan(2);
+  for (let i = 0; i < total - 1; i++) {
+    await page.check(`[data-testid="academy-coach-self-${i}"]`);
+  }
+  // One short is still short: the gate is the learner's own checklist, so a
+  // partially ticked list must not be markable.
+  await expect(doneButton).toBeDisabled();
+
+  // The checklist has to survive leaving the sandbox — its own criteria send
+  // the learner to Settings → API Keys, and every other target kind's panel
+  // unmounts there.
+  await page.goto("/settings/api-keys");
+  await expect(page.getByTestId("academy-coach")).toBeVisible();
+  await expect(
+    page.locator('[data-testid="academy-coach-self-0"]'),
+  ).toBeChecked();
+
+  await page.check(`[data-testid="academy-coach-self-${total - 1}"]`);
+  await expect(page.getByTestId("academy-coach-self-done")).toBeEnabled();
+  await page.click('[data-testid="academy-coach-self-done"]');
+
+  const selfResult = page.getByTestId("academy-coach-self-result");
+  await expect(selfResult).toContainText("You have marked this done");
+  await expect(selfResult).toContainText("Nothing was verified");
+  // The wording the owner's decision turns on. "Passes" is what every other
+  // checker says, and this one may not.
+  await expect(selfResult).not.toContainText("passes");
+  await expect(page.getByTestId("academy-coach-result")).toHaveCount(0);
+
+  // Progress counts exactly as a checked exercise's does — the second half of
+  // that decision, and the reason no new state was added for it.
+  await expect
+    .poll(() =>
+      db.lessonProgress.count({
+        where: { user: { email }, lessonSlug: "api-testing" },
+      }),
+    )
+    .toBe(1);
+
+  // `runChecker` also refuses a `self` target server-side, which this spec does
+  // not exercise: the panel renders no "Check my work" for one, so there is no
+  // user-reachable path to it. It is defence-in-depth against a crafted call,
+  // in the same spirit as TC-*-127, and is left to the selftest's registry
+  // assertions rather than given a mock server action here.
+
+  // The sandbox has to go first: `Project.createdById` does not cascade from
+  // `User`, and unlike TC-*-127's throwaway account this one provisioned one by
+  // opening the exercise. Deleting the project cascades its cases and members.
+  await db.project.deleteMany({ where: { createdBy: { email } } });
+  await db.user.delete({ where: { email } });
+});

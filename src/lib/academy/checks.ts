@@ -97,6 +97,18 @@ export async function runChecker(
   const task = getSandboxTask(lessonSlug);
   if (!task) return { error: "That lesson has no sandbox exercise." };
 
+  // A-11d: a self-assessed exercise has no server-side grading, by design. The
+  // coach panel never calls `verifyTask` for one, so reaching here means a
+  // crafted call — and the honest answer is that there is nothing to grade, not
+  // a pass. Refusing here is what keeps "the product does not pretend to know
+  // something it cannot" true at the API boundary and not just in the UI.
+  if (task.target.kind === "self") {
+    return {
+      error:
+        "This exercise is self-assessed — there is nothing for the server to check.",
+    };
+  }
+
   // A-11a: `share` deliberately ignores `since`. `PublicShare` is one row per
   // project (`@unique projectId`) that is upserted rather than appended, so a
   // learner who turned sharing on before opening the coach panel — reading
