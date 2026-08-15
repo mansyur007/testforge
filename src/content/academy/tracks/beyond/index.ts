@@ -1,6 +1,8 @@
 import type { Lesson, Track } from "../../types";
+import { contractTesting } from "./contract-testing";
 import { performanceTesting } from "./performance-testing";
 import { securityForTesters } from "./security-for-testers";
+import { testingInProduction } from "./testing-in-production";
 
 // T4 — outlined in A-01, being written in A-08. `beyond.ts` became this
 // directory when the first lessons were written, matching T1, T2 and T3.
@@ -44,8 +46,8 @@ export const beyond: Track = {
   lessons: [
     performanceTesting,
     securityForTesters,
-    planned("contract-testing", "Contract testing", "Catching integration breakage without a full end-to-end environment.", 13),
-    planned("testing-in-production", "Observability and testing in production", "Feature flags, canaries, synthetic checks, and reading your own logs.", 14),
+    contractTesting,
+    testingInProduction,
     planned("ai-in-qa", "AI in QA: what it does well, where it lies", "Generating cases, reviewing requirements, and why a plausible test is dangerous.", 13),
     planned("portfolio", "Building a QA portfolio", "Publish a real project — suites, runs, results — that a hiring manager can open.", 12, true),
     planned("interview-prep", "Interview preparation", "The questions that always come, and how to answer with evidence.", 14),
