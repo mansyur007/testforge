@@ -163,7 +163,11 @@ export async function openSandboxTask(formData: FormData) {
   });
 
   let path: string;
-  if (task.target.kind === "defect") {
+  if (task.target.kind === "share") {
+    // A-11a: the exercise is a settings change, not a row the learner writes,
+    // so this lands on the project's own sharing panel rather than a form.
+    path = `/projects/${sandbox.slug}/sharing?academy=${lessonSlug}`;
+  } else if (task.target.kind === "defect") {
     path = `/projects/${sandbox.slug}/defects?academy=${lessonSlug}`;
   } else {
     // Suites are seeded by name (src/content/academy/sandbox.ts), not a fixed

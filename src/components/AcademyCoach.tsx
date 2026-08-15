@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { TFIcon } from "@/components/icons";
@@ -64,6 +64,7 @@ function AcademyCoachInner({ sandboxSlug }: { sandboxSlug: string | null }) {
 
   const [active, setActive] = useState<ActiveTask | null>(null);
   const [collapsed, setCollapsed] = useState(false);
+  const panelRef = useRef<HTMLElement | null>(null);
   const [result, setResult] = useState<CheckResult | { error: string } | null>(null);
   const [pending, setPending] = useState(false);
   const [showHint, setShowHint] = useState(false);
@@ -103,6 +104,39 @@ function AcademyCoachInner({ sandboxSlug }: { sandboxSlug: string | null }) {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paramLesson, pathname]);
+
+  // A-11a: the panel is `position: fixed` in the bottom-right corner, so it sits
+  // *on top of* whatever the page put there. That was harmless for the five T1
+  // exercises, which all land on a tall form whose controls are nowhere near
+  // that corner — and it stopped being harmless with the first exercise that
+  // lands on a short settings page: on the sandbox's sharing panel the coach
+  // covers "Make this project public", the one button the exercise asks the
+  // learner to press. Found by TC-E2E-128, not by looking at it.
+  //
+  // Reserving the space is the general fix: while the panel is docked, the page
+  // gets bottom padding equal to its height, so anything underneath can be
+  // scrolled clear of it. Measured rather than hardcoded — the panel grows with
+  // the criteria list, the hint and the feedback. Above the early returns
+  // below, because a hook may not run conditionally; `panelRef.current` is null
+  // whenever the panel is not rendered, which the guard covers.
+  useEffect(() => {
+    const el = panelRef.current;
+    if (collapsed || !el) return;
+
+    const apply = () =>
+      document.body.style.setProperty(
+        "padding-bottom",
+        `${el.getBoundingClientRect().height + 32}px`,
+      );
+    apply();
+
+    const observer = new ResizeObserver(apply);
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      document.body.style.removeProperty("padding-bottom");
+    };
+  }, [collapsed, active, result, showHint]);
 
   if (!active) return null;
   const task = getSandboxTask(active.lessonSlug);
@@ -150,6 +184,7 @@ function AcademyCoachInner({ sandboxSlug }: { sandboxSlug: string | null }) {
 
   return (
     <aside
+      ref={panelRef}
       data-testid="academy-coach"
       data-lesson={active.lessonSlug}
       className="fixed bottom-4 right-4 z-[45] w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-hairline bg-surface p-4 shadow-xl"

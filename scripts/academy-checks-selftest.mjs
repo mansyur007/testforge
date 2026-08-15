@@ -8,12 +8,15 @@
 // `npm run build`, the same shape as scripts/totp-selftest.mjs. The typed
 // wrapper (`checks.ts`) that fetches real rows and calls these is exercised by
 // the sandbox e2e specs instead, where a database is actually available.
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 import {
   checkWritingTestCases,
   checkBva,
   checkEquivalencePartitioning,
   checkDecisionTables,
   checkBugReport,
+  checkPortfolioShare,
 } from "../src/lib/academy/checks-core.mjs";
 
 let failed = 0;
@@ -240,9 +243,134 @@ Expected: The customer is shown a clear out-of-stock message and stays on the ca
 );
 
 // ---------------------------------------------------------------------------
+// A-11a: portfolio (share target)
+// ---------------------------------------------------------------------------
+
+assert("portfolio: no share row fails", checkPortfolioShare(null), false);
+
+assert(
+  "portfolio: share row present but disabled fails",
+  checkPortfolioShare({
+    enabled: false,
+    showCases: true,
+    showRuns: true,
+    showReports: true,
+  }),
+  false,
+);
+
+assert(
+  "portfolio: enabled without the cases section fails",
+  checkPortfolioShare({
+    enabled: true,
+    showCases: false,
+    showRuns: true,
+    showReports: true,
+  }),
+  false,
+);
+
+assert(
+  "portfolio: enabled with cases passes, and still says what is off",
+  checkPortfolioShare({
+    enabled: true,
+    showCases: true,
+    showRuns: false,
+    showReports: false,
+  }),
+  true,
+);
+
+assert(
+  "portfolio: all three sections on passes",
+  checkPortfolioShare({
+    enabled: true,
+    showCases: true,
+    showRuns: true,
+    showReports: true,
+  }),
+  true,
+);
+
+// ---------------------------------------------------------------------------
+// A-11a: the checker debt, derived instead of counted by hand.
+//
+// docs/QA-ACADEMY.md carried this number in prose and got it wrong twice — it
+// said six, then seven, while the real figure was eight, because `test-planning`
+// was `sandbox: true` from A-08's first slice and never entered the tally. A
+// number maintained by addition drifts; this derives it from source and names
+// the lessons, so adding a `sandbox: true` lesson without a task fails the
+// build with the slug in the message rather than silently growing the debt.
+//
+// Source text, not imports: these are TypeScript modules and this file runs
+// under bare `node` (same reasoning as scripts/academy-trademark-check.mjs).
+// ---------------------------------------------------------------------------
+
+const TRACKS_DIR = "src/content/academy/tracks";
+
+/** Lesson slugs whose module sets `sandbox: true`. */
+function sandboxLessonSlugs() {
+  const slugs = [];
+  for (const entry of readdirSync(TRACKS_DIR)) {
+    const path = join(TRACKS_DIR, entry);
+    const files = statSync(path).isDirectory()
+      ? readdirSync(path)
+          .filter((f) => f.endsWith(".ts") && f !== "index.ts")
+          .map((f) => join(path, f))
+      : entry.endsWith(".ts")
+        ? [path]
+        : [];
+    for (const file of files) {
+      const src = readFileSync(file, "utf8");
+      if (!/^\s*sandbox:\s*true\s*,/m.test(src)) continue;
+      const slug = /^\s*slug:\s*"([a-z0-9-]+)"/m.exec(src);
+      if (slug) slugs.push(slug[1]);
+    }
+  }
+  return slugs.sort();
+}
+
+/** Lesson slugs with a `SANDBOX_TASKS` entry. */
+function checkedSlugs() {
+  const src = readFileSync("src/content/academy/sandbox.ts", "utf8");
+  const body = src.slice(src.indexOf("SANDBOX_TASKS"));
+  return [...body.matchAll(/^ {2}"?([a-z0-9-]+)"?:\s*\{$/gm)]
+    .map((m) => m[1])
+    .sort();
+}
+
+// The debt A-11 is working through, newest-first in the work order's table.
+// Remove a slug here in the same commit that adds its checker.
+const KNOWN_UNCHECKED = [
+  "api-testing",
+  "ci-github-actions",
+  "exploratory-testing",
+  "first-playwright-test",
+  "junit-to-testforge",
+  "metrics-that-mean-something",
+  "test-planning",
+].sort();
+
+const unchecked = sandboxLessonSlugs().filter(
+  (s) => !checkedSlugs().includes(s),
+);
+
+if (JSON.stringify(unchecked) !== JSON.stringify(KNOWN_UNCHECKED)) {
+  failed++;
+  console.error("FAIL: the set of sandbox lessons without a checker has changed");
+  console.error(`  expected: ${JSON.stringify(KNOWN_UNCHECKED)}`);
+  console.error(`  actual:   ${JSON.stringify(unchecked)}`);
+  console.error(
+    "  Add the checker, or update KNOWN_UNCHECKED here and A-11's table in docs/QA-ACADEMY.md.",
+  );
+}
+
+// ---------------------------------------------------------------------------
 
 if (failed > 0) {
   console.error(`\nacademy-checks-selftest: ${failed} FAILED`);
   process.exit(1);
 }
-console.log("academy-checks-selftest: OK (5 checkers, good and bad submissions)");
+console.log(
+  `academy-checks-selftest: OK (6 checkers, good and bad submissions; ${unchecked.length} sandbox lessons still uncheckered)`,
+);
