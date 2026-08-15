@@ -89,6 +89,13 @@
 > **and the track published at 7 of 7** — the fourth A-08 slice with a visible change: eight routes,
 > eight sitemap entries, the fifth roadmap card becoming a link, and **no "coming soon" card left on
 > `/academy`**).
+> **Status, 2026-08-15 — A-11 closed, and everything left is parked rather than pending.** Every
+> work order above is shipped except two items, neither waiting on engineering time: A-08's
+> localised `/id/academy/**` routes (unblocks on a measured ID organic-traffic number) and A-10's
+> per-chapter blueprint split (unblocks on an ISTQB exam-structure document — owner action). The
+> sandbox checker debt is closed: all 13 hands-on lessons render "Start this exercise", 11 have real
+> checkers, 2 are explicitly self-assessed, and the build asserts it.
+>
 > **A-08's content half is done: five tracks, 51 lessons, all `published`. The Indonesian routes are
 > what remains** — gated by A-03 on measured ID organic traffic — **plus the sandbox checkers, which
 > belong in their own work order.**

@@ -4268,7 +4268,7 @@ with the `SuiteFolderGrid` work noted above.
   attempt, checked against whichever questions the seed actually drew). See `docs/QA-ACADEMY.md`
   § A-06 for the full writeup, including a stale-session-cookie edge case found while manually
   walking the flow (pre-existing app-wide behaviour, not a regression, not fixed in this PR).
-- **A-08** `[ ]` in progress — content build-out and localised routes. Eight content slices landed
+- **A-08** `[x]` content · `[ ]` localised routes (parked) — content build-out and localised routes. Eight content slices landed
   2026-08-14 (#190–#193, #195–#197, and this one). Five of them wrote Track 2 (`manual-pro`) end to end:
   `test-planning`, then lessons 2–4 (`risk-based-testing`, `exploratory-testing`, `test-oracles`),
   then the technical block 5–7 (`http-and-devtools`, `api-testing`, `sql-for-qa`), then the
@@ -4285,6 +4285,12 @@ with the `SuiteFolderGrid` work noted above.
   T3 including the CI capstone, and the localised routes are what remains. See
   `docs/QA-ACADEMY.md` §8. (A-07 shipped on 2026-08-13 — its entry is at the end of this list, in
   ship order.)
+  **Update 2026-08-15 — the content half is done and the rest is parked.** Twenty slices in total:
+  five tracks, **51 lessons, all `published`**. What this entry described as "what remains" is
+  finished except the localised `/id/academy/**` routes, and those are **parked, not pending** —
+  A-03 gated them on *measured* Indonesian organic traffic rather than deciding up front, so they
+  cannot start until that number exists. Unblocks on: an ID traffic measurement. The checker debt
+  this entry helped accumulate went to A-11 and is closed.
 - **A-09** `[x]` (2026-08-12, branch `feat/academy-help-authed-shell`) — Session-aware shell on
   `/academy` and `/docs/help`: a signed-in visitor now gets the same sidebar/`AppShell` as the rest
   of the app (extracted into `src/components/AuthedAppShell.tsx`, reused by `(app)/layout.tsx`
@@ -4401,6 +4407,36 @@ with the `SuiteFolderGrid` work noted above.
   with the completeness gate removed, and the second hang on a button a late `localStorage` overwrite
   had silently un-clicked. The test polls the row count now, and the idempotence sub-case moved to
   the exam path, which has no client cache in it.
+- **A-11** `[x]` (2026-08-15, four PRs #214/#215/#217/#218) — **sandbox checkers for the remaining
+  eight**, which had accumulated one content slice at a time since A-04b: eight lessons carrying
+  `sandbox: true` with no `SANDBOX_TASKS` entry, all in published tracks, each rendering the generic
+  "Open your sandbox" callout instead of "Start this exercise". Opened by re-reading
+  `schema.prisma`, which immediately contradicted the deferral that had been quoted forward through
+  nine slices: **six of the eight were as inspectable as a case row**, not two. **A-11a** the
+  mechanism — `SandboxTaskTarget` widened, the `since` decision for upsert-shaped targets, the
+  `portfolio` checker landed with it so no dispatch branch merged unreachable, and a coach panel
+  that had been covering the very button its exercise asked the learner to press (found by e2e, not
+  by reading). **A-11b** three row-shaped checkers (`session`, `plan`, `dashboard`) — and a second
+  round of the same mistake caught: "`TestPlan` + its linked cases" is *not* a relation either, so
+  the checker walks plan → runs → results → cases. **A-11c** the two CI checkers on the decided pass
+  bar, which `ingestResults()` turned out to have already settled — it returns 422 before creating
+  anything when nothing matched, so "any ingested run" and "a run with a matched case" are one
+  predicate, and statuses are deliberately not asserted because the capstone asks the learner to
+  produce a failing result. **A-11d** self-assessment for the two genuinely off-platform lessons:
+  the coach renders the criteria as a checklist, records progress identically to a checked exercise
+  (owner's call), and **never says "passed"** — it says "You have marked this done. Nothing was
+  verified." The debt tally, which this repo's docs got wrong twice by maintaining it as prose,
+  became a build assertion in A-11a and is now a *floor* rather than a countdown: no `sandbox: true`
+  lesson may lack an entry, plus a named list of the two self-assessed slugs. **TC-E2E-128**–**131**;
+  `e2e/academy.spec.ts` 40 specs. See `docs/QA-ACADEMY.md` § A-11.
+
+**Academy status, 2026-08-15.** Every `A-xx` work order is shipped except two deliberately parked
+items, neither of which is waiting on engineering time:
+
+| Parked | Unblocks on |
+|---|---|
+| A-08's localised `/id/academy/**` routes | a measured Indonesian organic-traffic number (A-03 gated this on data rather than deciding up front). If it goes ahead it is a translation job the size of A-08's content half. |
+| A-10's per-chapter exam blueprint split (8/6/4/11/9/2) | ISTQB's *"Exam Structures and Rules"* or *"Exam Structure Tables"*. Owner action. Every other exam parameter was confirmed 2026-08-13 and already matches `exams.ts`. The stated fallback if neither document can be had is to say in the exam UI that the blueprint is TestForge's approximation. |
 
 ---
 
