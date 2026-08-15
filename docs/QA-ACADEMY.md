@@ -83,7 +83,9 @@
 > `ch1-fundamentals`, 1 of 7, back to `draft` and invisible), eighteenth 2026-08-15 (T5's `ch2-sdlc`
 > and `ch3-static-testing`, 3 of 7, still `draft`), nineteenth 2026-08-15 (T5's
 > `ch4-test-analysis-design` alone — the K3 chapter, and the biggest lesson in the Academy — 4 of 7,
-> still `draft`).
+> still `draft`), twentieth 2026-08-15 (T5's `ch5-managing-test-activities` alone — 16 objectives,
+> the most of any chapter — 5 of 7, still `draft`; the checker-debt tally was also recounted from
+> source and corrected to eight).
 > **The rest of T5 and the Indonesian routes are what remains of A-08.**
 > Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
@@ -1728,19 +1730,70 @@ was reverted before committing and the route 404s again.
 syllabus (16) and should get its own slice; chapter 6 (2 of 40) and `exam-strategy` pair naturally as
 the slice that publishes the track.
 
+**Twentieth slice 2026-08-15: T5's `ch5-managing-test-activities` alone**, 5 of 7, still `draft`.
+
+**The chapter with the worst ratio in the syllabus, and the lesson says so in its first paragraph:**
+9 of 40 questions across **16 objectives**, more ground per mark than anywhere else. That is a
+revision instruction, not trivia — it means recognition beats depth here, and it is why the drill
+advice at the end is *check which section your misses come from*, since a wrong answer in this
+chapter usually means a topic never read rather than one misunderstood.
+
+**Its three K3 objectives are scattered**, unlike chapter 4's cluster — estimation and prioritisation
+in §5.1, the defect report in §5.5 — so the lesson gives each its own worked treatment:
+
+- **Three-point estimation with the arithmetic done**: E = (a + 4m + b) ÷ 6, SD = (b − a) ÷ 6, worked
+  through 8/12/28 → 14 ± 3.33. The lesson names what the weighting is *for* — the most likely value
+  counts four times, so a pessimistic outlier moves the answer far less than a plain average, which
+  is also the distractor a question offers.
+- **Prioritisation with its override**: risk-, coverage- and requirements-based ordering, and then
+  **dependency wins regardless of priority**. A question that lists priorities *and* a dependency is
+  testing whether the second was noticed.
+- **The defect report as production, not recognition**, since K3 means writing one.
+
+**Three distinctions carry most of the chapter's marks and are stated as flatly as possible.**
+Entry versus exit criteria, with **"the schedule ran out" named as an invalid exit criterion** — a
+common reason to stop and explicitly not the same thing. **Severity versus priority**, with the
+example that runs both ways (a typo everyone sees is low severity and high priority; a crash three
+customers a year could hit is the reverse). And **project versus product risk**, with a rule of thumb
+the syllabus does not give but the exam rewards: *if the harm would show up in the delivered
+software it is a product risk; if it would show up in the plan it is a project risk.*
+
+**The pyramid and the quadrants are separated deliberately**, because both are diagrams about
+organising tests and that is exactly why they get confused: **pyramid = how many at which level;
+quadrants = what for, and whose audience.**
+
+This is the most cross-linked lesson in T5 — four T2 lessons (`test-planning`, `risk-based-testing`,
+`metrics-that-mean-something`, `reporting-to-stakeholders`) and two T1 ones (`bug-reports`,
+`defect-lifecycle`), all verified 200 alongside the chapter 5 drill. That density is a property of
+the chapter rather than a choice: management is the material T2 already teaches as practice, so the
+exam lesson's job is to name what is examinable and hand off the working version.
+
+**The checker-debt note above was recounted in this slice and corrected from seven to eight** — see
+the recount box there. `test-planning` had carried `sandbox: true` since A-08's first slice and was
+never in the tally.
+
 > **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
 > *track's* status, so the lesson-level status is what let the writing land in five reviewable
 > pieces without a reader ever seeing a half-finished listing. The rule the next track inherits:
 > lesson status is for landing work, track status is for the promise on the roadmap card.
 >
-> **Debt, now at six hands-on lessons with no checker.** `exploratory-testing`, `api-testing`,
-> `metrics-that-mean-something`, T3's `first-playwright-test` (eighth slice) and — from the eleventh
-> — `ci-github-actions` and `junit-to-testforge` all carry
-> `sandbox: true` and no `SANDBOX_TASKS` entry, so all six
+> **Debt, now at eight hands-on lessons with no checker.** `test-planning`, `exploratory-testing`,
+> `api-testing`, `metrics-that-mean-something`, T3's `first-playwright-test` (eighth slice),
+> `ci-github-actions` and `junit-to-testforge` (eleventh), and T4's `portfolio` (sixteenth) all carry
+> `sandbox: true` and no `SANDBOX_TASKS` entry, so all eight
 > render A-04b's generic "Open your sandbox" callout instead of a "Start this exercise" button.
-> That degradation is deliberate and it works — and as of the twelfth slice **all six are shipped in
-> *published* tracks** (three in T2, three in T3), which raises the priority again without changing
-> the shape. The five T1 checkers all grade the *shape of a case
+> That degradation is deliberate and it works — and every one of them is shipped in a *published*
+> track (four in T2, three in T3, one in T4), which raises the priority again without changing
+> the shape.
+>
+> > **Recount 2026-08-15, twentieth slice.** This note said six, then seven, and both were wrong:
+> > `test-planning` has carried `sandbox: true` since the *first* A-08 slice and was never counted,
+> > because the debt tally started at the third slice with the two it introduced. Counted from the
+> > source rather than from this paragraph: 13 lessons carry `sandbox: true`, `SANDBOX_TASKS` has 5
+> > keys (all T1), so the debt is **8**. The lesson for whoever writes the checker work order is that
+> > a number maintained by addition drifts — derive it, or assert it in `academy-checks-selftest`.
+>
+> The five T1 checkers all grade the *shape of a case
 > row*; these grade a charter, a Postman collection, a dashboard argument and a Playwright
 > repository on the learner's own machine, none of
 > which is a DB row with fields to inspect. **That is a design question, not a writing task**, and it
