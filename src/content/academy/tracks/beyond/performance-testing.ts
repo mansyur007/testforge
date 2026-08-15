@@ -6,7 +6,7 @@ export const performanceTesting: Lesson = {
   summary:
     "Load, stress and soak — and what a p95 actually tells you.",
   minutes: 16,
-  status: "draft",
+  status: "published",
   body: `
 ## The average is the enemy
 

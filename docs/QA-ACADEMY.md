@@ -76,8 +76,11 @@
 > `security-for-testers`, 2 of 7, back to `draft` and invisible), fourteenth 2026-08-15 (T4's
 > `contract-testing` and `testing-in-production` — the before-deploy and after-deploy halves of one
 > problem — 4 of 7, still `draft`), fifteenth 2026-08-15 (T4's `ai-in-qa` alone, 5 of 7, still
-> `draft`).
-> **The rest of T4, all of T5, and the Indonesian routes are what remains of A-08.**
+> `draft`), sixteenth 2026-08-15 (T4's `portfolio` and `interview-prep`, **and the track published at
+> 7 of 7** — the third A-08 slice with a visible change: eight routes, eight sitemap entries, a
+> fourth clickable roadmap card, and `framework-design`'s forward pointer to `/academy/beyond`
+> becoming a link exactly as the twelfth slice predicted).
+> **All of T5 and the Indonesian routes are what remains of A-08.**
 > Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
@@ -1516,6 +1519,71 @@ kind.
 
 **No checker debt added** — `ai-in-qa` does not carry `sandbox: true`. The count stays at six, and
 T4's only 🛠 lesson, `portfolio`, is the next slice.
+
+**Sixteenth slice 2026-08-15: T4's `portfolio` and `interview-prep`, and the track published at 7 of
+7.** The career pair, and **the third A-08 slice with a visible change**: eight new routes, eight new
+sitemap entries, a fourth clickable roadmap card, and `framework-design`'s forward pointer finally
+becoming a link (see below).
+
+The two are a pair in the strictest sense in the track — `portfolio` builds the artefact and
+`interview-prep` spends it. The interview lesson's closing advice is literally *"I can show you"*,
+which only works because the previous lesson published something to show.
+
+`portfolio` is argued from the reviewer's side rather than the candidate's: every QA CV claims test
+design and attention to detail, none of it is checkable, and a hiring manager with two hundred
+applications is looking for **a reason to shortlist**. Its three artefacts are a suite against a
+*public* application (so the reviewer can hold the cases next to the real thing), execution history
+(design versus having actually run and maintained it), and — the differentiator — **a written
+statement of what was deliberately not tested**. Depth over breadth is argued with T2's
+pass-rate-theatre question turned on the candidate: three hundred shallow cases invite *"how many of
+these have ever failed?"*.
+
+Its hard line is publishing anything belonging to an employer, including "anonymised" material, with
+**check the git history, not just the working tree** stated explicitly — a secret removed in a later
+commit is still published.
+
+**The exercise is F-38 used as designed, and it is the first sandbox exercise whose subject is the
+learner's own project rather than a case row.** Enable public sharing, turn on Cases, Runs and
+Reports, open `/public/<slug>` in a private window and read it as a stranger, then fix the three
+worst things. The lesson states two facts the settings page also states — **public means public, not
+unlisted** (the URL is the project slug) and the page is `noindex` until a separate toggle says
+otherwise — and lists what F-38 never exposes under any setting: comments, attachments, assignees,
+defect links, per-result notes, member names. That is the Part B allow-list read back as a reason the
+learner can safely publish.
+
+`interview-prep` is organised around what is actually being assessed — can you find problems, explain
+reasoning, and disagree well — with a table mapping each stock question to which of the three it is
+wearing a costume of. Its most reusable piece is the four-move answer to *"how would you test X"*:
+ask before you answer, state assumptions aloud, go by **category rather than list**, and say where
+you would stop and why. That is T2 compressed to ninety seconds, and the lesson says so.
+
+The "developer says it's not a bug" answer is T2's observation-versus-judgement split reused:
+evidence, then the standard, then escalation **with the decision recorded** — an accepted risk
+becomes a choice on the record rather than an argument that was lost.
+
+**Two build assertions earned their keep in this slice.** `academy-trademark-check` failed the
+build: `interview-prep`'s closing named the certification scheme while pointing at T5, and §7.1
+requires the notice on every page that does. The fix was to reword rather than to set
+`trademarkNotice` on T4 — a disclaimer on eight pages for one forward pointer is the wrong trade, and
+the roadmap already names the scheme with the notice beside it. A self-check distractor mentioning
+the scheme was reworded for the same reason. Worth recording because the check caught a §7.1
+violation in content that had already been proofread, in a track that has nothing to do with
+certification.
+
+**And the twelfth slice's prediction came true in the right direction.** That slice recorded that
+`framework-design`'s closing link to `/academy/beyond` had to become plain prose because T4 was
+`draft`, "and it can become a link when T4 publishes". It now is. The `](/academy/` sweep across all
+published content is clean at five cross-links, all resolving — the first time every forward pointer
+in the Academy has had somewhere to go.
+
+**Checker debt is now seven**, not six: `portfolio` carries `sandbox: true` with no `SANDBOX_TASKS`
+entry, so it renders A-04b's generic "Open your sandbox" callout. It is the most tractable of the
+seven by some distance — "is `PublicShare.enabled` true for this learner's sandbox project, with
+`showCases` on" is a database question with an unambiguous answer, unlike grading a charter or a
+Playwright repository. The rest of the note below stands unchanged.
+
+**T5 is now the only track rendering as a "coming soon" card**, and the only remaining `planned()`
+stub helper in the content tree is gone from T4 as it was from T2 and T3.
 
 > **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
 > *track's* status, so the lesson-level status is what let the writing land in five reviewable
