@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { test, expect, type Browser, type Page } from "@playwright/test";
@@ -1731,7 +1732,15 @@ test(`TC-${TC}-129 The exploratory exercise grades a real session, and a page na
 
   await page.goto(sessionUrl);
   await page.click('[data-testid="session-end-button"]');
-  await expect(page.getByText("ENDED")).toBeVisible();
+  // Not a bare getByText("ENDED"): it is substring- and case-insensitive, so it
+  // also matches the coach panel's own criterion "…the session actually ended."
+  // — two elements, strict-mode violation. The coach is on screen for every
+  // assertion in this spec, which is exactly what the T1 specs never had to
+  // think about.
+  await expect(
+    page.locator('[data-testid="session-end-button"]'),
+  ).toHaveCount(0);
+  await expect(page.getByText("ENDED", { exact: true })).toBeVisible();
 
   await page.click('[data-testid="academy-coach-check"]');
   await expect(page.getByTestId("academy-coach-result")).toContainText(
@@ -1742,4 +1751,122 @@ test(`TC-${TC}-129 The exploratory exercise grades a real session, and a page na
   await expect(page.getByTestId("academy-coach-result")).toContainText(
     "What the checker cannot see",
   );
+});
+
+// A-11c. The capstone checker, and the reason its pass bar is what it is: the
+// exercise deliberately asks the learner to produce a 422 and a failing result
+// on the way, so this walks both and asserts neither is punished. The 422 half
+// is also what makes "any ingested run" and "a run with a matched case" the
+// same predicate — `ingestResults()` returns before `createRun` when nothing
+// matched, so there is no zero-match run to let through.
+test(`TC-${TC}-130 The capstone checker accepts a red run and never counts a 422`, async ({
+  page,
+  request,
+}) => {
+  const ts = Date.now();
+  await login(page);
+
+  await page.goto("/academy/automation/junit-to-testforge");
+  await page.click('[data-testid="lesson-start-exercise"]');
+  await page.waitForURL(
+    /\/projects\/(academy-[^/]+)\/runs\?.*academy=junit-to-testforge/,
+  );
+  const sandboxSlug = /\/projects\/(academy-[^/]+)\/runs/.exec(page.url())![1];
+
+  await page.click('[data-testid="academy-coach-check"]');
+  await expect(page.getByTestId("academy-coach-result")).toContainText(
+    "No uploaded run found yet",
+  );
+
+  // Mint a key for this test rather than reading `e2e-results/.api-key`.
+  // That file is written once by global-setup and is shared by four specs, and
+  // it was observed one run out of date against the DB during this work — the
+  // row said `tf_0891…` while the file still said `tf_26b7…`, so every upload
+  // 401'd. Whatever causes that, a checker test should not be able to fail on
+  // it: `api-v2.spec.ts` already mints its own the same way.
+  const rawKey = `tf_${crypto.randomBytes(24).toString("hex")}`;
+  const { id: apiKeyId } = await db.apiKey.create({
+    data: {
+      userId: (await db.user.findUniqueOrThrow({ where: { email: E2E.email } }))
+        .id,
+      name: `academy-a11c-${ts}`,
+      prefix: rawKey.slice(0, 11),
+      keyHash: crypto.createHash("sha256").update(rawKey).digest("hex"),
+    },
+    select: { id: true },
+  });
+  const apiKey = rawKey;
+  const upload = (body: string, name: string) =>
+    request.post(
+      `/api/v1/junit?project=${sandboxSlug}&name=${encodeURIComponent(name)}`,
+      {
+        data: body,
+        headers: {
+          "Content-Type": "application/xml",
+          Authorization: `Bearer ${apiKey}`,
+        },
+      },
+    );
+
+  // Step 4 of the lesson: get a 422 on purpose. Nothing matches, so no run is
+  // created — and the checker must still report the exercise as not done rather
+  // than counting the attempt.
+  const missed = await upload(
+    `<testsuite name="shopmini" tests="1"><testcase name="a test that matches nothing ${ts}"/></testsuite>`,
+    `academy-422-${ts}`,
+  );
+  expect(missed.status()).toBe(422);
+  await page.click('[data-testid="academy-coach-check"]');
+  await expect(page.getByTestId("academy-coach-result")).toContainText(
+    "No uploaded run found yet",
+  );
+
+  // Now a real upload, matched by identical title against a seeded fixture
+  // case — and deliberately **failing**. Grading on green would fail a learner
+  // for following the instructions, which is the trap the work order named.
+  const matched = await upload(
+    `<testsuite name="shopmini" tests="1" failures="1">
+       <testcase name="Cart — quantity above maximum (100) is rejected" time="1.5">
+         <failure message="Expected inline error, got none">assert failed</failure>
+       </testcase>
+     </testsuite>`,
+    `academy-capstone-${ts}`,
+  );
+  expect(matched.ok()).toBeTruthy();
+
+  await page.click('[data-testid="academy-coach-check"]');
+  await expect(page.getByTestId("academy-coach-result")).toContainText(
+    "A run arrived through the API with 1 result",
+  );
+  await expect(page.getByTestId("academy-coach-result")).toContainText(
+    "that is the loop this whole track was building toward",
+    { ignoreCase: true },
+  );
+
+  // A run made by hand in the UI is not this exercise. Asserted through the
+  // checker rather than the endpoint, because `source` is the only thing
+  // separating the two and it is set by default rather than by the caller.
+  await page.goto("/academy/automation/ci-github-actions");
+  await page.click('[data-testid="lesson-start-exercise"]');
+  await page.waitForURL(
+    /\/projects\/academy-[^/]+\/runs\?.*academy=ci-github-actions/,
+  );
+  await page.click('[data-testid="academy-coach-check"]');
+  // Fresh attempt clock: the capstone's upload predates this opening, so the
+  // CI exercise starts from nothing even though an ingested run exists.
+  await expect(page.getByTestId("academy-coach-result")).toContainText(
+    "No uploaded run found yet",
+  );
+
+  const fromCi = await upload(
+    `<testsuite name="shopmini" tests="1"><testcase name="Cart — quantity above maximum (100) is rejected" time="0.8"/></testsuite>`,
+    `academy-ci-${ts}`,
+  );
+  expect(fromCi.ok()).toBeTruthy();
+  await page.click('[data-testid="academy-coach-check"]');
+  await expect(page.getByTestId("academy-coach-result")).toContainText(
+    "cannot tell a GitHub runner from a curl",
+  );
+
+  await db.apiKey.delete({ where: { id: apiKeyId } });
 });

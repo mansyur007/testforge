@@ -602,6 +602,85 @@ export function checkMetricsDashboard(dashboards) {
 }
 
 // ---------------------------------------------------------------------------
+// A-11c: run targets — the two CI lessons.
+// ---------------------------------------------------------------------------
+
+/**
+ * T3 `ci-github-actions` and its capstone `junit-to-testforge`. Both exercises
+ * end the same way: a run in the sandbox whose results arrived through
+ * `/api/v1/junit`.
+ *
+ * **The pass bar needed less machinery than it looked like it would.** The
+ * eleventh A-08 slice framed the choice as *any run* / *a run with ≥1 matched
+ * case* / *a matched run that is also green*, and named the third as a trap —
+ * the capstone deliberately asks the learner to produce a 422 and a failing
+ * result on the way, so grading on green fails them for following the
+ * instructions. Reading `ingestResults()` settles the first two as well: it
+ * returns 422 **before** `createRun` when nothing matched, so a run that exists
+ * at all already implies at least one matched case. The two predicates are the
+ * same one.
+ *
+ * So: a run created since the panel opened, not `MANUAL` (the schema default,
+ * and the only thing the UI's own create action can produce — it sets no
+ * `source` at all), carrying at least one result. **No assertion about
+ * statuses**, deliberately.
+ *
+ * @param {{ source: string, origin: string|null, resultCount: number }[]} runs
+ * @param {"ci"|"capstone"} variant
+ * @returns {CheckResult}
+ */
+function checkIngestedRun(runs, variant) {
+  const ingested = (runs ?? []).filter(
+    (r) => r.source && r.source.toUpperCase() !== "MANUAL",
+  );
+  const withResults = ingested.filter((r) => r.resultCount > 0);
+
+  if (!withResults.length) {
+    const manualOnly = (runs ?? []).length > 0 && !ingested.length;
+    return {
+      passed: false,
+      feedback: [
+        manualOnly
+          ? "There are runs in your sandbox, but they were created by hand. This exercise wants one that arrived through the API — the upload is the part being practised."
+          : "No uploaded run found yet. POST your JUnit XML to /api/v1/junit with your sandbox's slug and an API key.",
+        "If you got a 422, that is the endpoint telling you nothing matched — no run is created in that case. Add a TC-<SLUG>-<n> annotation to a test name, or make the test name identical to a case title, and upload again.",
+      ],
+    };
+  }
+
+  const best = withResults.reduce((a, b) => (a.resultCount >= b.resultCount ? a : b));
+  const feedback = [
+    `A run arrived through the API with ${best.resultCount} result${best.resultCount === 1 ? "" : "s"} attached to your cases.`,
+  ];
+
+  if (variant === "ci") {
+    feedback.push(
+      best.origin
+        ? `It reports its origin as "${best.origin}".`
+        : "It carries no origin. Pass ?origin= on the upload so a run's page says where it came from — six months from now that is the difference between a result you trust and one you re-run.",
+      "Worth being straight about: the checker cannot tell a GitHub runner from a curl on your laptop — both are the same POST. What proves the workflow is that it ran without you, on a push you did not babysit.",
+    );
+  } else {
+    feedback.push(
+      "That is the loop this whole track was building toward: a test you wrote, producing a result, attached to the case it exercises, with a history that will still be there next month.",
+      "Open the run and then the case — the case's history now has an entry. That entry is the thing a spreadsheet of test results has never been able to give you.",
+    );
+  }
+
+  return { passed: true, feedback };
+}
+
+/** @param {object[]} runs @returns {CheckResult} */
+export function checkCiRun(runs) {
+  return checkIngestedRun(runs, "ci");
+}
+
+/** @param {object[]} runs @returns {CheckResult} */
+export function checkCapstoneRun(runs) {
+  return checkIngestedRun(runs, "capstone");
+}
+
+// ---------------------------------------------------------------------------
 
 /** Keyed by lesson slug — same key `src/content/academy/sandbox.ts` uses for
  *  `SANDBOX_TASKS`, so `checks.ts` can look up both with one string. */
@@ -630,4 +709,9 @@ export const PLAN_CHECKERS = {
 
 export const DASHBOARD_CHECKERS = {
   "metrics-that-mean-something": checkMetricsDashboard,
+};
+
+export const RUN_CHECKERS = {
+  "ci-github-actions": checkCiRun,
+  "junit-to-testforge": checkCapstoneRun,
 };

@@ -69,7 +69,8 @@ export type SandboxTaskTarget =
   | { kind: "share" }
   | { kind: "session" }
   | { kind: "plan" }
-  | { kind: "dashboard" };
+  | { kind: "dashboard" }
+  | { kind: "run" };
 
 export type SandboxTask = {
   trackSlug: string;
@@ -192,6 +193,31 @@ export const SANDBOX_TASKS: Record<string, SandboxTask> = {
       "Every widget earns its place: you can say what question it answers and what you would do differently if it moved.",
     ],
     hint: "The hard part is subtraction. Start by adding the ones you are sure about, then delete until removing one more would cost you a decision — that is the screen you keep.",
+  },
+  // A-11c: T3's two CI exercises. Same predicate, different feedback — the
+  // checker cannot tell a GitHub runner from a curl, and says so rather than
+  // implying it verified the workflow ran unattended.
+  "ci-github-actions": {
+    trackSlug: "automation",
+    lessonTitle: "Running in CI with GitHub Actions",
+    target: { kind: "run" },
+    task: "Add the JUnit reporter and the upload step to your workflow, and let CI create a run in your sandbox project.",
+    criteria: [
+      "A run in your sandbox that arrived through /api/v1/junit, not one created by hand.",
+      "At least one result attached to a case — a 422 means nothing matched and no run was created.",
+    ],
+    hint: "Upload with ?origin= so the run's page says where it came from. Store the API key as a repository secret, never in the workflow file.",
+  },
+  "junit-to-testforge": {
+    trackSlug: "automation",
+    lessonTitle: "Capstone: publish results to TestForge",
+    target: { kind: "run" },
+    task: "The capstone: emit JUnit XML from your Playwright suite, upload it to /api/v1/junit, and read back the run you just created — including the entry it added to the case's history.",
+    criteria: [
+      "A run in your sandbox created by the upload, with at least one result matched to a case.",
+      "Pass or fail does not matter — the exercise asks you to produce a failing result on the way, and grading on green would punish you for following it.",
+    ],
+    hint: "Get the 422 on purpose first: upload a file where no test name matches anything, and read the error. Then rename a test to carry TC-<SLUG>-<n> and upload again.",
   },
 };
 
