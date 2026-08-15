@@ -80,7 +80,8 @@
 > 7 of 7** — the third A-08 slice with a visible change: eight routes, eight sitemap entries, a
 > fourth clickable roadmap card, and `framework-design`'s forward pointer to `/academy/beyond`
 > becoming a link exactly as the twelfth slice predicted), seventeenth 2026-08-15 (T5 opens with
-> `ch1-fundamentals`, 1 of 7, back to `draft` and invisible).
+> `ch1-fundamentals`, 1 of 7, back to `draft` and invisible), eighteenth 2026-08-15 (T5's `ch2-sdlc`
+> and `ch3-static-testing`, 3 of 7, still `draft`).
 > **The rest of T5 and the Indonesian routes are what remains of A-08.**
 > Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
@@ -1637,6 +1638,46 @@ own drill safely at any time**, unlike the lesson-to-lesson forward links that c
 recorded three times above.
 
 **No checker debt added** — T5 has no `sandbox: true` lessons at all. The count stays at seven.
+
+**Eighteenth slice 2026-08-15: T5's `ch2-sdlc` and `ch3-static-testing`**, 3 of 7, still `draft`.
+The shape the seventeenth slice proposed is now applied rather than proposed, and it held without
+modification: cost and K-level ceiling up front, sections mapped to objective counts, distinctions
+table before the drill link.
+
+**Paired because chapter 3 cannot carry a slice alone.** It is 4 of 40 questions and 8 objectives,
+most of them short lists — the smallest unit of work in the track. Pairing it with chapter 2 also
+puts the two "where testing sits" chapters together: chapter 2 places testing in a lifecycle,
+chapter 3 is the half of it that runs before anything executes.
+
+**What the two lessons decided to emphasise, which is the part a reader cannot get from the
+objective list.** For chapter 2, that **§2.1 holds 6 of the 10 objectives but §2.2 is where the
+marks are lost** — the lesson says to read §2.1 for recognition and §2.2 for precision, because
+*level versus type* is the most reliably confused pair in the syllabus. It states the consequence
+flatly: **any test type can be applied at any test level**, and a question asserting that
+non-functional testing happens only at system level is offering a false statement. For chapter 3,
+that the chapter's centre of gravity is what static testing finds that execution cannot — **a
+requirement that contradicts itself will pass every test written against it**, because the tests
+inherit the contradiction — and that the recurring exam question in §3.2 is simply *who leads which
+review type*.
+
+Both lessons carry the caveats the syllabus makes and candidates skip: **shift left costs up-front
+effort and needs management buy-in**, DevOps automation **does not replace exploratory and manual
+testing**, and **retirement is a maintenance-testing trigger** (archived data has to stay
+retrievable), which is the one people forget because decommissioning sounds like the end of testing.
+
+`ch3`'s closing points at chapter 4 by name and warns that it is **the first chapter with K3
+objectives** — the first place where a question demands applying a technique rather than recognising
+one. That is a real change of gear and worth signposting a chapter early.
+
+**Cross-links, all verified against a running server:** the two drill routes
+(`/academy/istqb/practice-exam/chapter/{2,3}`) and the three T1 lessons the chapter-2 lesson leans on
+— `sdlc-and-stlc`, `test-levels`, `test-types` — all 200. The pattern established in the seventeenth
+slice holds: **drill links are safe at any time**, because the chapter-quiz route is gated on the
+blueprint slug rather than on track status, and T1 links are safe because T1 has been published since
+A-01.
+
+**Chapters 4, 5, 6 and `exam-strategy` remain.** Chapter 4 is the biggest single piece of writing
+left in A-08 — 11 of 40 questions, 14 objectives, and the K3 material — and should get its own slice.
 
 > **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
 > *track's* status, so the lesson-level status is what let the writing land in five reviewable
