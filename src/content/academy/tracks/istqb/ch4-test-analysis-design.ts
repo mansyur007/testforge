@@ -9,7 +9,7 @@ export const ch4TestAnalysisDesign: Lesson = {
   summary:
     "Black-box, white-box and experience-based techniques, plus collaboration-based approaches.",
   minutes: 30,
-  status: "draft",
+  status: "published",
   body: `
 ## The chapter that decides your result
 

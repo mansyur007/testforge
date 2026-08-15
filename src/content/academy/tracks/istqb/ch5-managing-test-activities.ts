@@ -9,7 +9,7 @@ export const ch5ManagingTestActivities: Lesson = {
   summary:
     "Planning, risk, monitoring and control, configuration management, and defect management.",
   minutes: 28,
-  status: "draft",
+  status: "published",
   body: `
 ## The chapter with the most objectives
 
