@@ -24,6 +24,13 @@ import { fundamentals } from "../src/content/academy/tracks/fundamentals";
 const TC = (process.env.TF_PROJECT ?? "e2e").toUpperCase();
 const db = new PrismaClient();
 
+// A-11b (TC-*-129): the session note hotkeys are suppressed while a field has
+// focus, so the kind picker only responds once the charter/timebox inputs are
+// blurred. Same helper, same reasoning as e2e/exploratory-sessions.spec.ts.
+async function blurActiveElement(page: Page) {
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+}
+
 // Only TC-E2E-93 needs a session — it checks the in-app entry point.
 async function login(page: Page, email = E2E.email, password = E2E.password) {
   await page.goto("/login");
@@ -1629,5 +1636,110 @@ test(`TC-${TC}-128 The portfolio exercise lands on the sharing panel and grades 
   await page.click('[data-testid="academy-coach-check"]');
   await expect(page.getByTestId("academy-coach-result")).toContainText(
     "cases, runs and reports",
+  );
+});
+
+// A-11b. The richest of the three row-shaped checkers, and the one the standing
+// deferral was most wrong about — it argued a session was "not a DB row with
+// fields to inspect" while `Session.charter`, `timeboxMinutes`, `status` and
+// `SessionNote.kind`/`convertedType` had been in the schema the whole time.
+// Walked end to end because that is the §1 bar, and because the charter rule is
+// the one place this checker could plausibly reject correct work.
+test(`TC-${TC}-129 The exploratory exercise grades a real session, and a page name is not a charter`, async ({
+  page,
+}) => {
+  const ts = Date.now();
+  await login(page);
+
+  await page.goto("/academy/manual-pro/exploratory-testing");
+  await page.click('[data-testid="lesson-start-exercise"]');
+  await page.waitForURL(
+    /\/projects\/academy-[^/]+\/sessions\?.*academy=exploratory-testing/,
+  );
+  await expect(page.getByTestId("academy-coach")).toContainText(
+    "Exploratory and session-based testing",
+  );
+  // The coach stays docked anywhere under the sandbox project (sessionStorage,
+  // not the query string), so the list URL is enough to get back to the start
+  // form with the same attempt clock still running.
+  const sessionsUrl = page.url();
+
+  // Nothing run yet. The sandbox is per-user and survives between runs, so this
+  // is the assertion that `since` is actually scoping — a session from a
+  // previous run of this spec must not satisfy today's attempt.
+  await page.click('[data-testid="academy-coach-check"]');
+  await expect(page.getByTestId("academy-coach-result")).toContainText(
+    "No session found",
+  );
+
+  // A charter that is really a page name. The lesson's own self-check turns on
+  // this distinction, so the checker has to make it too.
+  await page.fill('[data-testid="session-charter-input"]', `Test the cart ${ts}`);
+  await page.fill('[data-testid="session-timebox-input"]', "45");
+  await page.click('[data-testid="session-start-button"]');
+  await page.waitForURL("**/sessions/**");
+  await page.click('[data-testid="academy-coach-check"]');
+  await expect(page.getByTestId("academy-coach-result")).toContainText(
+    "usually a page name",
+  );
+
+  // A real charter — target, approach, and the information being hunted — in
+  // the learner's own words rather than the lesson's literal template.
+  await page.goto(sessionsUrl);
+  await page.fill(
+    '[data-testid="session-charter-input"]',
+    `Poke at cart quantity limits with pasted values and browser-back to discover ways past the 99 ceiling ${ts}`,
+  );
+  await page.fill('[data-testid="session-timebox-input"]', "45");
+  await page.click('[data-testid="session-start-button"]');
+  await page.waitForURL("**/sessions/**");
+  const sessionUrl = page.url();
+
+  // A charter alone is not the exercise: still open, still no notes.
+  await page.click('[data-testid="academy-coach-check"]');
+  await expect(page.getByTestId("academy-coach-result")).toContainText(
+    "Only 0 notes",
+  );
+
+  const noteText = (label: string) => `${label} ${ts}`;
+  for (const [hotkey, label] of [
+    ["b", "Quantity 100 pasted into the field is accepted until save"],
+    ["n", "The cart total updates before the quantity is validated"],
+    ["i", "Worth a case: browser-back after a rejected quantity"],
+  ] as const) {
+    await blurActiveElement(page);
+    await page.keyboard.press(hotkey);
+    await page.fill('[data-testid="session-note-input"]', noteText(label));
+    await page.click('[data-testid="session-note-submit"]');
+    await expect(
+      page.locator('[data-testid="session-notes-list"]'),
+    ).toContainText(noteText(label));
+  }
+
+  // Three notes including a BUG, but nothing converted and the clock still
+  // running — the two demands the exercise text actually makes.
+  await page.click('[data-testid="academy-coach-check"]');
+  await expect(page.getByTestId("academy-coach-result")).toContainText(
+    "still open",
+  );
+
+  const ideaNote = page.locator('[data-testid="session-notes-list"] li', {
+    hasText: noteText("Worth a case: browser-back after a rejected quantity"),
+  });
+  await ideaNote.locator('[data-testid="session-note-convert-case"]').click();
+  await expect(ideaNote.getByText("Converted to draft case")).toBeVisible();
+
+  await page.goto(sessionUrl);
+  await page.click('[data-testid="session-end-button"]');
+  await expect(page.getByText("ENDED")).toBeVisible();
+
+  await page.click('[data-testid="academy-coach-check"]');
+  await expect(page.getByTestId("academy-coach-result")).toContainText(
+    "that is a session that counts as work",
+  );
+  // The pass must not overclaim: a checker cannot tell whether the charter was
+  // worth an hour, and the feedback has to say so rather than implying a grade.
+  await expect(page.getByTestId("academy-coach-result")).toContainText(
+    "What the checker cannot see",
   );
 });

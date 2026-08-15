@@ -2757,7 +2757,7 @@ track, and makes the stored `trackSlug` the registry's rather than the caller's.
 > `["fundamentals","what-qa-does"]`, so losing the race fails the test instead of quietly passing
 > it. Both directions were watched: with the guard removed the replay writes a `zzzz-qa-zzzz` row.
 
-### A-11 — Sandbox checkers for the remaining eight `[ ]` (A-11a shipped)
+### A-11 — Sandbox checkers for the remaining eight `[ ]` (A-11a, A-11b shipped)
 
 > **Opened 2026-08-15**, after A-08's content half finished. Every content slice since the third
 > deferred this with the same sentence — *that is a design question, not a writing task, and it
@@ -2779,7 +2779,7 @@ The models already exist:
 
 | Lesson | Track | What the exercise asks | Inspectable as |
 |---|---|---|---|
-| `test-planning` | T2 | Write the plan against ShopMini and **link it to cases you have already written** | `TestPlan` + its linked cases |
+| `test-planning` | T2 | Write the plan against ShopMini and **link it to cases you have already written** | `TestPlan` → its runs → their results' cases (see A-11b: *not* a direct relation, which this row originally implied) |
 | `exploratory-testing` | T2 | Run one 45-minute session **with a written charter and notes**, turn findings into a defect and ≥1 case | `Session.charter`, `timeboxMinutes`, `status`, `endedAt`; `SessionNote.kind`, `convertedType` |
 | `metrics-that-mean-something` | T2 | Build the one-screen view — **at most five numbers** | `Dashboard` + `DashboardWidget` |
 | `ci-github-actions` | T3 | Get a CI run uploading JUnit to the sandbox | `TestRun`, `ResultSubmission`, `TestRunResult` |
@@ -2814,6 +2814,12 @@ the exercise's actual demand (*turn what you find into a defect and at least one
 the lesson's whole argument is that scope stops being prose and starts being a list you can count.
 Weakest of the six, because a plan's quality lives in its "Not covered" section and no checker can
 grade prose; grade the structure and say so in the feedback.
+
+> **Corrected 2026-08-15 in A-11b: "linked cases" is not a relation.** `TestPlan` has `runs` and no
+> case link at all, so the shipped checker counts distinct case ids across the plan's runs' results.
+> "Non-trivial `description`" also became something specific rather than a length: ≥80 characters
+> **and** at least four of the worked example's six sections (scope, not-covered, risks,
+> environment, entry, exit), matched on loose alternations so a learner's own headings pass.
 
 **`metrics-that-mean-something`** — a `Dashboard` with **between 1 and 5 widgets**. The upper bound
 is the exercise (*pick at most five numbers, and be able to defend deleting everything else*), and a
@@ -2910,6 +2916,41 @@ options, and the recommendation is the third:
    > track lands in `draft`.
 2. **A-11b** — the four T2/T4 row-shaped checkers: `exploratory-testing`, `test-planning`,
    `metrics-that-mean-something`, `portfolio`.
+
+   > **Shipped 2026-08-15** (branch `feat/academy-a11b-row-checkers`), covering the three that were
+   > left after A-11a took `portfolio` early. Three new target kinds (`session`, `plan`,
+   > `dashboard`), three pure checkers, twenty-four selftest fixtures, and **TC-E2E-129**. The debt
+   > assertion now derives 4 rather than 7.
+   >
+   > **The plan checker's design in this file was wrong, in the same way the deferral it replaced
+   > was wrong.** The table above reads "`TestPlan` + its linked cases" and the per-checker section
+   > asks for "**≥3 linked cases**" — but **there is no plan→case relation in the schema**.
+   > `TestPlan` holds `runs`; a run holds `results`; a result references a case. The lesson body says
+   > the same thing this document did ("a **Test Plan** object you attach real cases to"), so the
+   > mistake is older than A-11. What shipped walks the two hops and counts *distinct* case ids
+   > across the plan's runs, and the task text now tells the learner what the product actually asks
+   > of them: create the plan, then create a run under it. **Re-reading `schema.prisma` was A-11's
+   > own opening move, and it still only got applied to the models it went looking for.**
+   >
+   > **Three checkers grade the learner's best attempt, not their latest.** A session abandoned
+   > after two minutes, a first plan with an empty description, a dashboard left at eleven widgets
+   > while experimenting — each would have failed an exercise the learner had already satisfied on a
+   > second try. The rule this makes explicit, and which the T1 checkers got for free by taking a
+   > whole suite: when a target is one row rather than a collection, "which row" is a decision, and
+   > "the most recent" is the wrong default.
+   >
+   > **The `since` exception `dashboard` needed is the one the work order predicted**, and it is
+   > implemented as the cheaper of the two options: no time filter at all, rather than adding
+   > `updatedAt` to the model. Safe here because `seedSandbox()` creates no dashboards, so anything
+   > in a sandbox was built by its owner — recorded because that is a property of the *fixture*, not
+   > of the model, and a future sandbox that seeds an example dashboard would silently break it.
+   >
+   > **`checkExploratorySession` is the one with real brittleness risk**, per §9 — it is the only
+   > checker in the set that grades free text against a shape. Two fixtures exist specifically to
+   > pin the boundary: a charter using none of the lesson's literal phrasing must pass ("Poke at
+   > cart quantity limits with pasted values… looking for a way past 99"), and one naming a target
+   > and an approach but no *information goal* must fail, because that distinction is what the
+   > lesson's own self-check q1 turns on. TC-E2E-129 walks both against a live session.
 3. **A-11c** — the two CI checkers, on the decided pass bar.
 4. **A-11d** — self-assessment mode, and the two off-platform lessons adopting it.
 

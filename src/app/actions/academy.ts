@@ -169,6 +169,12 @@ export async function openSandboxTask(formData: FormData) {
     path = `/projects/${sandbox.slug}/sharing?academy=${lessonSlug}`;
   } else if (task.target.kind === "defect") {
     path = `/projects/${sandbox.slug}/defects?academy=${lessonSlug}`;
+  } else if (task.target.kind === "session") {
+    path = `/projects/${sandbox.slug}/sessions?academy=${lessonSlug}`;
+  } else if (task.target.kind === "plan") {
+    path = `/projects/${sandbox.slug}/plans?academy=${lessonSlug}`;
+  } else if (task.target.kind === "dashboard") {
+    path = `/projects/${sandbox.slug}/dashboards?academy=${lessonSlug}`;
   } else {
     // Suites are seeded by name (src/content/academy/sandbox.ts), not a fixed
     // id, so the exercise resolves the id at redirect time rather than the
