@@ -1,8 +1,10 @@
-import type { Lesson, Track } from "../../types";
+import type { Track } from "../../types";
 import { apiAutomation } from "./api-automation";
 import { assertionsAndWaiting } from "./assertions-and-waiting";
 import { ciGithubActions } from "./ci-github-actions";
 import { firstPlaywrightTest } from "./first-playwright-test";
+import { flakyTests } from "./flaky-tests";
+import { frameworkDesign } from "./framework-design";
 import { junitToTestforge } from "./junit-to-testforge";
 import { locators } from "./locators";
 import { pageObjects } from "./page-objects";
@@ -10,31 +12,14 @@ import { programmingFoundations } from "./programming-foundations";
 import { testData } from "./test-data";
 import { whatToAutomate } from "./what-to-automate";
 
-// T3 — outlined in A-01, being written in A-08. The capstone is deliberately the
-// real product loop: produce JUnit XML in CI and upload it to your sandbox
-// project through /api/v1/junit. See docs/QA-ACADEMY.md §6.2.
+// T3 — outlined in A-01, written across six A-08 slices and published at 12 of
+// 12 (docs/QA-ACADEMY.md §A-08). The `planned()` stub helper that carried the
+// unwritten lessons is gone with the last of them, the same way T2's did; one
+// module per lesson. The track flipped to `published` only when every lesson
+// was, so nobody lands on a listing with dead entries in it.
 //
-// Lessons still to be written are `planned()` stubs: `draft`, empty body, no
-// routes and no sitemap entries, so the roadmap renders the track as a "coming
-// soon" card built from these titles (docs/QA-ACADEMY.md §4). A written lesson
-// gets its own module next to this one, the same way T1 and T2 are laid out —
-// and T2's rule applies here too: the track flips to `published` when every
-// lesson is, not one at a time.
-const planned = (
-  slug: string,
-  title: string,
-  summary: string,
-  minutes: number,
-  sandbox = false,
-): Lesson => ({
-  slug,
-  title,
-  summary,
-  minutes,
-  status: "draft",
-  ...(sandbox ? { sandbox: true } : {}),
-  body: "",
-});
+// The capstone is deliberately the real product loop: produce JUnit XML in CI
+// and upload it to your sandbox project through /api/v1/junit. See §6.2.
 
 export const automation: Track = {
   slug: "automation",
@@ -43,7 +28,7 @@ export const automation: Track = {
     "From your first script to a suite a team can maintain — and results that land back in TestForge.",
   level: "Mid → automation engineer",
   icon: "automation",
-  status: "draft",
+  status: "published",
   outcomes: [
     "Decide what is worth automating, and say why the rest isn't",
     "Write Playwright tests with locators that survive a refactor",
@@ -62,7 +47,7 @@ export const automation: Track = {
     apiAutomation,
     ciGithubActions,
     junitToTestforge,
-    planned("flaky-tests", "Flaky tests: diagnosis and quarantine", "Finding the cause, and muting honestly instead of retrying forever.", 14),
-    planned("framework-design", "Designing a framework you can hand over", "Config, reporting, conventions, and the README that makes it survivable.", 15),
+    flakyTests,
+    frameworkDesign,
   ],
 };

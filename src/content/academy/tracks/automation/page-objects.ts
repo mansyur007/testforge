@@ -6,7 +6,7 @@ export const pageObjects: Lesson = {
   summary:
     "Structure that pays off, structure that becomes a second application.",
   minutes: 14,
-  status: "draft",
+  status: "published",
   body: `
 ## The problem is real before the pattern is
 

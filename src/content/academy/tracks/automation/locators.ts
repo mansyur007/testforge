@@ -6,7 +6,7 @@ export const locators: Lesson = {
   summary:
     "Roles, labels and test ids — and why CSS chains break every sprint.",
   minutes: 14,
-  status: "draft",
+  status: "published",
   body: `
 ## The thing that breaks your suite is not the application
 

@@ -6,7 +6,7 @@ export const programmingFoundations: Lesson = {
   summary:
     "Variables, functions, async, and reading someone else's code — JS/TS path.",
   minutes: 18,
-  status: "draft",
+  status: "published",
   body: `
 ## You are not becoming a developer
 

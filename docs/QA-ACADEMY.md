@@ -68,9 +68,13 @@
 > 2026-08-14 (T3's `assertions-and-waiting` and `page-objects`, 6 of 12 — halfway, still `draft`),
 > tenth 2026-08-14 (T3's `test-data` and `api-automation` as a genuine pair, 8 of 12), eleventh
 > 2026-08-15 (T3's `ci-github-actions` and the `junit-to-testforge` capstone, 10 of 12 — and a fix to
-> four earlier lessons that taught a `TC-<n>` test-naming convention the real matcher rejects).
-> T4 and T5's lesson bodies, T3's last two lessons, and the Indonesian routes are
-> what remains of A-08. Created 2026-08-10.
+> four earlier lessons that taught a `TC-<n>` test-naming convention the real matcher rejects),
+> twelfth 2026-08-15 (T3's `flaky-tests` and `framework-design`, **and the track published at 12 of
+> 12** — the second A-08 slice with a visible change: thirteen routes, thirteen sitemap entries, a
+> third clickable roadmap card, and T1's `test-levels` link to `/academy/automation` finally
+> resolving after 404ing since A-01).
+> **T4 and T5's lesson bodies and the Indonesian routes are what remains of A-08.**
+> Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
 > subsystem delivered over several PRs rather than one feature). Status legend: `[ ]` not started ·
@@ -1325,6 +1329,47 @@ below rules out. What this slice does contribute is a **concrete specification f
 order**: the capstone's exercise now has six numbered steps whose success is visible in product
 state, including a deliberate 422, which is more than any of the other five hands-on lessons offers.
 
+**Twelfth slice 2026-08-15: T3's `flaky-tests` and `framework-design`, and the track published** —
+12 of 12, `automation` flips to `published`. **The second A-08 slice with a visible change**:
+thirteen new routes, thirteen new sitemap entries, and a third roadmap card that is now a link
+rather than a "coming soon" panel. T4 and T5 stay unlinked and out of the sitemap, as intended.
+
+The two lessons close two different loops. `flaky-tests` is where `retries: 2` finally earns the
+hedge every earlier lesson attached to it: Playwright reports failed-then-passed as **flaky**, a
+third state, and that number is the work queue — so **"green with 2 flaky" is not a green run**. Its
+argument is that the cost of flakiness is not the wasted reruns but that a suite which cries wolf
+trains people to re-run red, and the next genuine regression gets re-run and shipped. The five
+causes are ordered by what to suspect first, with the alone-versus-suite failure-rate comparison as
+the cheapest discriminator, and quarantine is given four requirements (owner, date, ticket, visible
+count) that are what separate it from burial.
+
+`framework-design` is written against one test: **a new person clones on Monday and opens a correct
+pull request by Wednesday without asking you.** Nothing in it is new material — the config is
+assembled from lines earlier lessons introduced — and that is the point: the lesson is about
+arranging what exists so somebody else can pick it up. It ends on the track's own thesis, that what
+you have built is a feedback loop rather than a pile of scripts.
+
+**The `planned()` stub helper is gone from `automation/index.ts`, exactly as T2's was**, which is
+the visible marker that a track is complete. `docs/QA-ACADEMY.md` §4's "coming soon" rendering now
+applies only to T4 and T5.
+
+**It closes the live 404 the fifth slice predicted.** That entry recorded the hazard in general
+terms — *a published lesson may link to a draft route, and nothing in the build catches it* — after
+T1's `testing-in-agile` had been pointing at a 404 for as long as T1 had been published. The same
+thing was true a second time: T1's `test-levels` links to [the automation track](/academy/automation)
+and has been 404ing since A-01. Publishing T3 resolves it.
+
+**And this slice re-created the hazard before catching it.** `framework-design`'s closing paragraph
+originally linked to `/academy/beyond` — a track that is still `draft` and still 404s — so the final
+lesson of a newly published track would have shipped pointing at nothing. Caught during the render
+check by testing the link rather than the page. The link is now plain prose that points at the
+roadmap instead, and it can become a link when T4 publishes.
+
+Worth stating as a rule now that it has happened twice in three slices: **the last lesson of a track
+is the most likely place for this bug**, because closing lessons naturally point forward, and
+forward is by definition the unwritten track. A sweep of `](/academy/` across all published content
+confirms the current state is clean — four cross-links, all resolving.
+
 > **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
 > *track's* status, so the lesson-level status is what let the writing land in five reviewable
 > pieces without a reader ever seeing a half-finished listing. The rule the next track inherits:
@@ -1335,8 +1380,9 @@ state, including a deliberate 422, which is more than any of the other five hand
 > — `ci-github-actions` and `junit-to-testforge` all carry
 > `sandbox: true` and no `SANDBOX_TASKS` entry, so all six
 > render A-04b's generic "Open your sandbox" callout instead of a "Start this exercise" button.
-> That degradation is deliberate and it works — and it is now shipped in a *published* track, which
-> raises its priority without changing its shape. The five T1 checkers all grade the *shape of a case
+> That degradation is deliberate and it works — and as of the twelfth slice **all six are shipped in
+> *published* tracks** (three in T2, three in T3), which raises the priority again without changing
+> the shape. The five T1 checkers all grade the *shape of a case
 > row*; these grade a charter, a Postman collection, a dashboard argument and a Playwright
 > repository on the learner's own machine, none of
 > which is a DB row with fields to inspect. **That is a design question, not a writing task**, and it

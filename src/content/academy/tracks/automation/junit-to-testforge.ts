@@ -6,7 +6,7 @@ export const junitToTestforge: Lesson = {
   summary:
     "Emit JUnit XML, upload it via /api/v1/junit, and read the run you just created.",
   minutes: 15,
-  status: "draft",
+  status: "published",
   sandbox: true,
   body: `
 ## Closing the loop

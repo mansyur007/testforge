@@ -6,7 +6,7 @@ export const ciGithubActions: Lesson = {
   summary:
     "Workflows, matrices, artifacts, and keeping the pipeline under ten minutes.",
   minutes: 16,
-  status: "draft",
+  status: "published",
   sandbox: true,
   body: `
 ## A suite nobody runs is a suite nobody trusts
