@@ -299,6 +299,69 @@ export function checkBugReport(defects) {
 }
 
 // ---------------------------------------------------------------------------
+// A-11a: share targets. Takes the project's `PublicShare` row or null.
+// ---------------------------------------------------------------------------
+
+/**
+ * T4 `portfolio`. The exercise is "publish your sandbox and read it as a
+ * stranger", so the only machine-checkable half is which sections are on.
+ *
+ * Feedback names the sections still off rather than reporting a bare failure,
+ * and it never claims the portfolio is *good* — a checker that said so would
+ * be overstating what a boolean can tell you.
+ *
+ * @param {{ enabled: boolean, showCases: boolean, showRuns: boolean, showReports: boolean } | null} share
+ * @returns {CheckResult}
+ */
+export function checkPortfolioShare(share) {
+  if (!share || !share.enabled) {
+    return {
+      passed: false,
+      feedback: [
+        "Public sharing is still off. Open Settings → Public sharing in your sandbox project and turn on the master toggle.",
+      ],
+    };
+  }
+
+  const off = [];
+  if (!share.showCases) off.push("Test Cases");
+  if (!share.showRuns) off.push("Runs");
+  if (!share.showReports) off.push("Reports");
+
+  // Cases is the one that decides pass/fail: a public project with no case
+  // browser is an empty page with a description on it, which is not a
+  // portfolio. Runs and Reports are strongly advised and reported as such.
+  if (!share.showCases) {
+    return {
+      passed: false,
+      feedback: [
+        `Sharing is on, but these sections are off: ${off.join(", ")}.`,
+        "Test Cases is the one a reviewer opens first — without it the public page shows a description and two counters.",
+      ],
+    };
+  }
+
+  if (off.length) {
+    return {
+      passed: true,
+      feedback: [
+        "Published, and your cases are visible — that is the exercise.",
+        `Still off: ${off.join(", ")}. Cases show that you can design; runs show that you executed and maintained them, which is the half most portfolios are missing.`,
+        "Now open the public URL logged out and score yourself on the sixty-second pass in the lesson.",
+      ],
+    };
+  }
+
+  return {
+    passed: true,
+    feedback: [
+      "Published with cases, runs and reports visible.",
+      "The checker can only see which sections are on. Whether the page is worth opening is the part you have to judge — open it in a private window and read it as a stranger.",
+    ],
+  };
+}
+
+// ---------------------------------------------------------------------------
 
 /** Keyed by lesson slug — same key `src/content/academy/sandbox.ts` uses for
  *  `SANDBOX_TASKS`, so `checks.ts` can look up both with one string. */
@@ -311,4 +374,8 @@ export const CASE_CHECKERS = {
 
 export const DEFECT_CHECKERS = {
   "bug-reports": checkBugReport,
+};
+
+export const SHARE_CHECKERS = {
+  portfolio: checkPortfolioShare,
 };

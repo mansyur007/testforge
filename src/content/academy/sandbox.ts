@@ -48,9 +48,20 @@ export const SANDBOX_SUITES = ["Authentication", "Cart", "Checkout", "Search"];
 // than round-tripping through a server action just to render a heading. Keyed
 // by lesson slug because that is what `?academy=<lessonSlug>` carries and what
 // `src/lib/academy/checks.ts` uses to pick a checker — one key, two lookups.
+// A-11a: `kind` picks both the landing page (`openSandboxTask`) and the rows
+// `runChecker` fetches — one discriminant, two dispatches, which is why adding
+// a target kind is two small branches rather than a new subsystem.
+//
+// **`share` is the first non-append-shaped target.** A case or a defect is a
+// new row, so A-04b's "only rows created since the panel opened" rule works;
+// `PublicShare` is one row per project (`@unique projectId`) that gets
+// upserted, so a learner who enabled sharing before opening the exercise would
+// fail a `createdAt >= since` filter for doing the exercise early. The checker
+// for it ignores `since` deliberately — see `runChecker`.
 export type SandboxTaskTarget =
   | { kind: "case"; suite: string }
-  | { kind: "defect" };
+  | { kind: "defect" }
+  | { kind: "share" };
 
 export type SandboxTask = {
   trackSlug: string;
@@ -120,6 +131,20 @@ export const SANDBOX_TASKS: Record<string, SandboxTask> = {
       "A description with an Environment line, numbered steps to reproduce, an Actual result and an Expected result.",
     ],
     hint: "Reuse the shape from the lesson's before/after example: Environment, Preconditions, Steps, Actual, Expected.",
+  },
+  // A-11a: the first checker outside T1, and the simplest of the eight the
+  // work order covers — the exercise's whole demand is a boolean on one row.
+  portfolio: {
+    trackSlug: "beyond",
+    lessonTitle: "Building a QA portfolio",
+    target: { kind: "share" },
+    task: "Publish your sandbox project: turn on public sharing, then enable the Test Cases, Runs and Reports sections. Open the public URL in a private window and read it as a stranger would.",
+    criteria: [
+      "Public sharing is on.",
+      "The Test Cases section is enabled — a portfolio with no cases in it shows nothing.",
+      "Runs and Reports are on too, so a reviewer can see you executed and maintained the suite.",
+    ],
+    hint: "Settings → Public sharing. The URL is your project slug, so treat anything you enable as readable by anyone who guesses it — that is the point of the exercise, not a warning against doing it.",
   },
 };
 

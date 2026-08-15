@@ -33,21 +33,32 @@ async function login(page: Page, email = E2E.email, password = E2E.password) {
   await page.waitForURL("**/dashboard");
 }
 
-test(`TC-${TC}-88 Academy roadmap lists published tracks and marks the rest in progress`, async ({
+test(`TC-${TC}-88 Academy roadmap links every published track`, async ({
   page,
 }) => {
   await page.goto("/academy");
   await expect(page.getByRole("heading", { name: "QA Academy", level: 1 })).toBeVisible();
 
-  // The published track is a link; a track still being written is not — a card
-  // people can click into an empty shell is worse than one that says so.
-  const live = page.getByTestId("academy-track-fundamentals");
-  await expect(live).toHaveAttribute("href", "/academy/fundamentals");
-
-  const draft = page.getByTestId("academy-track-istqb");
-  await expect(draft).toBeVisible();
-  await expect(draft).not.toHaveAttribute("href", /./);
-  await expect(draft).toContainText("In progress");
+  // A-08's last slice published T5, so every one of the five tracks is now a
+  // link. This spec used to assert the other half of the rule — that a track
+  // still being written renders as a card with no href and an "In progress"
+  // chip, because a card people can click into an empty shell is worse than
+  // one that says so. **There is no draft track left to point at**, so that
+  // half now has no live content and is covered by the unit-level filter in
+  // `getTrack()` plus the 404 assertion in TC-90. Re-add it here the next time
+  // a track lands in `draft`.
+  for (const slug of [
+    "fundamentals",
+    "manual-pro",
+    "automation",
+    "beyond",
+    "istqb",
+  ]) {
+    await expect(page.getByTestId(`academy-track-${slug}`)).toHaveAttribute(
+      "href",
+      `/academy/${slug}`,
+    );
+  }
 
   // §7: the disclaimer travels with any surface that names the scheme.
   await expect(page.getByText(/registered trademark of the International/)).toBeVisible();
@@ -89,12 +100,15 @@ test(`TC-${TC}-90 Hands-on lessons carry the exercise callout; unwritten routes 
   await page.goto("/academy/fundamentals/seven-principles");
   await expect(page.getByTestId("academy-sandbox-callout")).toHaveCount(0);
 
-  // `dynamicParams = false` is what keeps drafts out of production: a track
-  // that exists in the content module but isn't published has no route at all.
-  const draftTrack = await page.goto("/academy/istqb");
-  expect(draftTrack?.status()).toBe(404);
-  const draftLesson = await page.goto("/academy/fundamentals/not-a-lesson");
-  expect(draftLesson?.status()).toBe(404);
+  // `getTrack()`/`getLesson()` filter to published and the pages call
+  // `notFound()`, so anything not published has no route. This used to assert
+  // it against `/academy/istqb` while T5 was a draft; T5 published in A-08's
+  // last slice, so the assertion moved to a slug that resolves to nothing —
+  // the same code path, minus the dependency on some track staying unfinished.
+  const unknownTrack = await page.goto("/academy/not-a-track");
+  expect(unknownTrack?.status()).toBe(404);
+  const unknownLesson = await page.goto("/academy/fundamentals/not-a-lesson");
+  expect(unknownLesson?.status()).toBe(404);
 });
 
 test(`TC-${TC}-91 Academy routes don't overflow a 375px phone`, async ({ page }) => {
@@ -130,8 +144,13 @@ test(`TC-${TC}-92 Academy is reachable from the landing page and listed in the s
   expect(sitemap).toContain("/academy");
   expect(sitemap).toContain("/academy/fundamentals");
   expect(sitemap).toContain("/academy/fundamentals/boundary-value-analysis");
-  // Drafts have no route, so they must not be advertised to crawlers.
-  expect(sitemap).not.toContain("/academy/istqb");
+  // T5 published in A-08's last slice, so its eight routes are now advertised
+  // — this line previously asserted the opposite, while it was a draft. The
+  // rule being checked is unchanged (the sitemap is built from published
+  // content), which is why the assertion flipped rather than being deleted.
+  expect(sitemap).toContain("/academy/istqb/exam-strategy");
+  // A slug that resolves to nothing is never in it.
+  expect(sitemap).not.toContain("/academy/not-a-track");
 
   // The track page carries Course markup with the real lesson workload.
   await page.goto("/academy/fundamentals");
@@ -545,7 +564,11 @@ test(`TC-${TC}-103 /academy/me and the dashboard's "Continue learning" widget re
   await expect(page.getByTestId("dashboard-academy-widget")).toBeVisible();
   await expect(page.getByTestId("dashboard-academy-resume")).toBeVisible();
   await page.click('[data-testid="dashboard-academy-resume"]');
-  await page.waitForURL(/\/academy\/fundamentals\/.+/);
+  // Any track's lesson, not `fundamentals` specifically: the widget resumes
+  // wherever the user last made progress, and TC-128 marks a T4 lesson done
+  // when its checker passes. Pinning the track here re-encoded file order,
+  // which is the same thing the comment above refuses to do with the count.
+  await page.waitForURL(/\/academy\/[a-z-]+\/.+/);
 
   await page.goto("/academy/me");
   await expect(page.getByTestId("me-total-progress")).toContainText(
@@ -1522,4 +1545,89 @@ test(`TC-${TC}-127 A crafted "mark done" cannot write progress for a lesson that
   expect(rows[0].trackSlug).toBe("fundamentals");
 
   await db.user.delete({ where: { email } }); // cascades LessonProgress
+});
+
+// A-11a: the first checker on a non-append-shaped target. Two things are under
+// test that the T1 checkers cannot exercise — the `share` branch of
+// `openSandboxTask` (which lands on a settings panel rather than a form) and
+// the deliberate absence of a `since` filter in `runChecker` for `PublicShare`.
+test(`TC-${TC}-128 The portfolio exercise lands on the sharing panel and grades the published sections`, async ({
+  page,
+}) => {
+  await login(page);
+
+  await page.goto("/academy/beyond/portfolio");
+  await page.click('[data-testid="lesson-start-exercise"]');
+  await page.waitForURL(/\/projects\/academy-[^/]+\/sharing\?.*academy=portfolio/);
+  await expect(page.getByTestId("academy-coach")).toBeVisible();
+  await expect(page.getByTestId("academy-coach")).toContainText(
+    "Building a QA portfolio",
+  );
+
+  // The sandbox is per-user and survives between runs, and unlike a case row
+  // this exercise's state cannot be scoped away with `since` — so start from a
+  // known state rather than assuming a never-published project.
+  const disable = page.locator('[data-testid="public-share-disable"]');
+  if (await disable.isVisible()) await disable.click();
+  await expect(
+    page.locator('[data-testid="public-share-enable"]'),
+  ).toBeVisible();
+
+  // Nothing published: the checker must fail and say which switch is off,
+  // not just "not yet".
+  await page.click('[data-testid="academy-coach-check"]');
+  await expect(page.getByTestId("academy-coach-result")).toContainText(
+    "Public sharing is still off",
+  );
+
+  // Publishing with cases only is already a pass — cases are what a reviewer
+  // opens — but the feedback has to keep naming what is missing rather than
+  // going quiet on a pass.
+  await page.click('[data-testid="public-share-enable"]');
+  await expect(
+    page.locator('[data-testid="public-share-cases-toggle"]'),
+  ).toBeChecked();
+  // Re-enabling keeps whatever section flags the row already had, so a rerun
+  // would arrive here with runs/reports already on. Normalise instead of
+  // trusting the defaults.
+  await page.uncheck('[data-testid="public-share-runs-toggle"]');
+  await page.uncheck('[data-testid="public-share-reports-toggle"]');
+  await page.click('[data-testid="public-share-save"]');
+  await expect(
+    page.locator('[data-testid="public-share-runs-toggle"]'),
+  ).not.toBeChecked();
+
+  await page.click('[data-testid="academy-coach-check"]');
+  await expect(page.getByTestId("academy-coach-result")).toContainText("Runs");
+  await expect(page.getByTestId("academy-coach-result")).toContainText(
+    "Reports",
+  );
+
+  // Turning the remaining two on and saving clears the "still off" list.
+  await page.check('[data-testid="public-share-runs-toggle"]');
+  await page.check('[data-testid="public-share-reports-toggle"]');
+  await page.click('[data-testid="public-share-save"]');
+  await expect(
+    page.locator('[data-testid="public-share-runs-toggle"]'),
+  ).toBeChecked();
+
+  await page.click('[data-testid="academy-coach-check"]');
+  await expect(page.getByTestId("academy-coach-result")).toContainText(
+    "cases, runs and reports",
+  );
+  await expect(page.getByTestId("academy-coach-result")).not.toContainText(
+    "Still off",
+  );
+
+  // The `since` question this target exists to answer: the share row predates
+  // *this* opening of the exercise, so a `createdAt >= since` filter would now
+  // fail a learner who has already done the work. Re-opening the coach must
+  // still pass.
+  await page.goto("/academy/beyond/portfolio");
+  await page.click('[data-testid="lesson-start-exercise"]');
+  await page.waitForURL(/\/projects\/academy-[^/]+\/sharing\?.*academy=portfolio/);
+  await page.click('[data-testid="academy-coach-check"]');
+  await expect(page.getByTestId("academy-coach-result")).toContainText(
+    "cases, runs and reports",
+  );
 });

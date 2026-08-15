@@ -2757,7 +2757,7 @@ track, and makes the stored `trackSlug` the registry's rather than the caller's.
 > `["fundamentals","what-qa-does"]`, so losing the race fails the test instead of quietly passing
 > it. Both directions were watched: with the guard removed the replay writes a `zzzz-qa-zzzz` row.
 
-### A-11 — Sandbox checkers for the remaining eight `[ ]`
+### A-11 — Sandbox checkers for the remaining eight `[ ]` (A-11a shipped)
 
 > **Opened 2026-08-15**, after A-08's content half finished. Every content slice since the third
 > deferred this with the same sentence — *that is a design question, not a writing task, and it
@@ -2879,6 +2879,35 @@ options, and the recommendation is the third:
 
 1. **A-11a** — mechanism: widen the target type, the `runChecker` branches, the `since` fix, and the
    selftest assertion. No new lesson tasks; the five existing checkers keep passing.
+
+   > **Shipped 2026-08-15, with one deliberate change to this plan: it carries the `portfolio`
+   > checker too.** A slice that widened the target type and added dispatch branches for six kinds
+   > nothing calls would have been six pieces of unreachable code merged on the promise of a later
+   > PR. Landing the simplest target (`share`) with the mechanism means every line of the slice is
+   > exercised — including the `since` decision, since `PublicShare` is exactly the upsert-shaped
+   > case that motivated it. A-11b therefore covers three checkers rather than four.
+   >
+   > **The e2e found a real bug that reading the code did not.** The coach panel is
+   > `position: fixed` bottom-right, which was harmless for the five T1 exercises — they all land on
+   > a tall case form whose controls are nowhere near that corner. The first exercise to land on a
+   > short *settings* page put the panel directly on top of "Make this project public", the one
+   > button the exercise asks the learner to press. Fixed generally rather than for this page:
+   > while docked, the panel reserves its own height as `body` bottom padding (measured with a
+   > `ResizeObserver`, since the panel grows with the hint and the feedback), so anything underneath
+   > can be scrolled clear. Every future target kind inherits the fix.
+   >
+   > **It also caught four specs that publishing T5 had already broken** — TC-E2E-88, 90, 92 and 103
+   > asserted that `istqb` was a draft: no `href` on its roadmap card, a 404 on its route, absent
+   > from the sitemap. A-08's last slice published it and **those specs were not run before that PR
+   > merged**. All four are updated here: 88 now asserts every one of the five tracks is a link, 90
+   > and 92 moved their assertions to a slug that resolves to nothing (same code path, no dependency
+   > on some track staying unfinished), and 103 stopped pinning the resume link to `fundamentals`,
+   > which its own comment had already argued against doing with the lesson count.
+   >
+   > **The draft-route guarantee now has no live content to assert against.** With every track
+   > published, "a draft has no route" is covered only by `getTrack()`'s filter and the
+   > nonexistent-slug 404. TC-E2E-88 carries a note to re-add the real assertion the next time a
+   > track lands in `draft`.
 2. **A-11b** — the four T2/T4 row-shaped checkers: `exploratory-testing`, `test-planning`,
    `metrics-that-mean-something`, `portfolio`.
 3. **A-11c** — the two CI checkers, on the decided pass bar.
