@@ -20,6 +20,8 @@ import {
   checkExploratorySession,
   checkTestPlan,
   checkMetricsDashboard,
+  checkCiRun,
+  checkCapstoneRun,
 } from "../src/lib/academy/checks-core.mjs";
 
 let failed = 0;
@@ -505,6 +507,53 @@ assert(
   true,
 );
 
+// ---------------------------------------------------------------------------
+// A-11c: ci-github-actions and junit-to-testforge
+// ---------------------------------------------------------------------------
+
+assert("ci-github-actions: no runs fails", checkCiRun([]), false);
+assert(
+  "ci-github-actions: a hand-made run fails",
+  checkCiRun([{ source: "MANUAL", origin: null, resultCount: 4 }]),
+  false,
+);
+assert(
+  "ci-github-actions: an uploaded run with results passes",
+  checkCiRun([
+    { source: "JUNIT", origin: "CI · GitHub Actions (Linux)", resultCount: 3 },
+  ]),
+  true,
+);
+assert(
+  "ci-github-actions: an uploaded run with no origin still passes",
+  checkCiRun([{ source: "JUNIT", origin: null, resultCount: 1 }]),
+  true,
+);
+// The whole point of the decided pass bar: the capstone deliberately asks the
+// learner to produce a failing result, so a red run is a pass. Statuses are not
+// selected from the database at all — this asserts the shape stays that way.
+assert(
+  "junit-to-testforge: a run of nothing but failures passes",
+  checkCapstoneRun([{ source: "JUNIT", origin: null, resultCount: 2 }]),
+  true,
+);
+// `ingestResults()` returns 422 before `createRun` when nothing matched, so a
+// zero-result ingested run should not exist — if one ever does, it is not the
+// exercise, and the feedback must point at the 422 rather than pass.
+assert(
+  "junit-to-testforge: an ingested run with zero results fails",
+  checkCapstoneRun([{ source: "JUNIT", origin: null, resultCount: 0 }]),
+  false,
+);
+assert(
+  "junit-to-testforge: the uploaded run is found among manual ones",
+  checkCapstoneRun([
+    { source: "MANUAL", origin: null, resultCount: 9 },
+    { source: "PLAYWRIGHT", origin: "Local · Windows", resultCount: 2 },
+  ]),
+  true,
+);
+
 // A-11a: the checker debt, derived instead of counted by hand.
 //
 // docs/QA-ACADEMY.md carried this number in prose and got it wrong twice — it
@@ -553,12 +602,7 @@ function checkedSlugs() {
 
 // The debt A-11 is working through, newest-first in the work order's table.
 // Remove a slug here in the same commit that adds its checker.
-const KNOWN_UNCHECKED = [
-  "api-testing",
-  "ci-github-actions",
-  "first-playwright-test",
-  "junit-to-testforge",
-].sort();
+const KNOWN_UNCHECKED = ["api-testing", "first-playwright-test"].sort();
 
 const unchecked = sandboxLessonSlugs().filter(
   (s) => !checkedSlugs().includes(s),
@@ -581,5 +625,5 @@ if (failed > 0) {
   process.exit(1);
 }
 console.log(
-  `academy-checks-selftest: OK (9 checkers, good and bad submissions; ${unchecked.length} sandbox lessons still uncheckered)`,
+  `academy-checks-selftest: OK (11 checkers, good and bad submissions; ${unchecked.length} sandbox lessons still uncheckered)`,
 );

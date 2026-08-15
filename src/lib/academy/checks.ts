@@ -9,6 +9,7 @@ import {
   SESSION_CHECKERS,
   PLAN_CHECKERS,
   DASHBOARD_CHECKERS,
+  RUN_CHECKERS,
 } from "./checks-core.mjs";
 
 export type { CheckResult };
@@ -44,6 +45,7 @@ type SessionSubmission = {
 };
 type PlanSubmission = { description: string | null; linkedCaseIds: string[] };
 type DashboardSubmission = { name: string; widgetCount: number };
+type RunSubmission = { source: string; origin: string | null; resultCount: number };
 
 const caseCheckers = CASE_CHECKERS as Record<
   string,
@@ -68,6 +70,10 @@ const planCheckers = PLAN_CHECKERS as Record<
 const dashboardCheckers = DASHBOARD_CHECKERS as Record<
   string,
   (dashboards: DashboardSubmission[]) => CheckResult
+>;
+const runCheckers = RUN_CHECKERS as Record<
+  string,
+  (runs: RunSubmission[]) => CheckResult
 >;
 
 const FIXTURE_TITLES = new Set(SANDBOX_CASES.map((c) => c.title));
@@ -166,6 +172,31 @@ export async function runChecker(
     });
     return checker(
       dashboards.map((d) => ({ name: d.name, widgetCount: d._count.widgets })),
+    );
+  }
+
+  // A-11c. `source` is the discriminant: the UI's own create action sets none,
+  // so a hand-made run takes the schema default `MANUAL`, while anything
+  // through `/api/v1/junit` carries the endpoint's. The status of the results
+  // is deliberately not selected — see `checkIngestedRun`.
+  if (task.target.kind === "run") {
+    const checker = runCheckers[lessonSlug];
+    if (!checker) return { error: "That lesson has no checker yet." };
+    const runs = await db.testRun.findMany({
+      where: { projectId, createdAt: { gte: since } },
+      select: {
+        source: true,
+        origin: true,
+        _count: { select: { results: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return checker(
+      runs.map((r) => ({
+        source: r.source,
+        origin: r.origin,
+        resultCount: r._count.results,
+      })),
     );
   }
 

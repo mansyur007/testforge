@@ -175,6 +175,11 @@ export async function openSandboxTask(formData: FormData) {
     path = `/projects/${sandbox.slug}/plans?academy=${lessonSlug}`;
   } else if (task.target.kind === "dashboard") {
     path = `/projects/${sandbox.slug}/dashboards?academy=${lessonSlug}`;
+  } else if (task.target.kind === "run") {
+    // A-11c: the learner does the work in their own repo and terminal; this
+    // page is where the result lands, and where they read `matched`/`unmatched`
+    // back. The API key they need is one level up, under Settings.
+    path = `/projects/${sandbox.slug}/runs?academy=${lessonSlug}`;
   } else {
     // Suites are seeded by name (src/content/academy/sandbox.ts), not a fixed
     // id, so the exercise resolves the id at redirect time rather than the
