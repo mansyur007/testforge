@@ -175,6 +175,13 @@ export async function openSandboxTask(formData: FormData) {
     path = `/projects/${sandbox.slug}/plans?academy=${lessonSlug}`;
   } else if (task.target.kind === "dashboard") {
     path = `/projects/${sandbox.slug}/dashboards?academy=${lessonSlug}`;
+  } else if (task.target.kind === "self") {
+    // A-11d: the work happens in Postman or the learner's editor, so there is
+    // no form to land on. The sandbox's own overview is the closest thing to
+    // "where this exercise lives" — and unlike every other kind, the coach for
+    // a self-assessed task stays docked across the whole app, so a learner can
+    // walk to Settings → API Keys without losing their checklist.
+    path = `/projects/${sandbox.slug}?academy=${lessonSlug}`;
   } else if (task.target.kind === "run") {
     // A-11c: the learner does the work in their own repo and terminal; this
     // page is where the result lands, and where they read `matched`/`unmatched`

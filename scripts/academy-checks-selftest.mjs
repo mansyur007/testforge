@@ -600,21 +600,53 @@ function checkedSlugs() {
     .sort();
 }
 
-// The debt A-11 is working through, newest-first in the work order's table.
-// Remove a slug here in the same commit that adds its checker.
-const KNOWN_UNCHECKED = ["api-testing", "first-playwright-test"].sort();
-
+// A-11d closed the debt: every `sandbox: true` lesson now has a `SANDBOX_TASKS`
+// entry, so every one of them renders "Start this exercise" rather than A-04b's
+// generic callout. The assertion stays — as a floor, not a countdown. A new
+// hands-on lesson that lands without an entry silently reintroduces the
+// degradation this work order existed to remove, and does it one lesson at a
+// time, which is exactly how the debt reached eight unnoticed.
 const unchecked = sandboxLessonSlugs().filter(
   (s) => !checkedSlugs().includes(s),
 );
 
-if (JSON.stringify(unchecked) !== JSON.stringify(KNOWN_UNCHECKED)) {
+if (unchecked.length) {
   failed++;
-  console.error("FAIL: the set of sandbox lessons without a checker has changed");
-  console.error(`  expected: ${JSON.stringify(KNOWN_UNCHECKED)}`);
-  console.error(`  actual:   ${JSON.stringify(unchecked)}`);
   console.error(
-    "  Add the checker, or update KNOWN_UNCHECKED here and A-11's table in docs/QA-ACADEMY.md.",
+    "FAIL: these sandbox lessons have no SANDBOX_TASKS entry, so they render the generic callout:",
+  );
+  console.error(`  ${JSON.stringify(unchecked)}`);
+  console.error(
+    "  Add the task (with a checker, or `{ kind: \"self\" }` if the work is genuinely off-platform).",
+  );
+}
+
+/** Lesson slugs whose task is self-assessed — a task, deliberately no checker. */
+function selfAssessedSlugs() {
+  const src = readFileSync("src/content/academy/sandbox.ts", "utf8");
+  const body = src.slice(src.indexOf("SANDBOX_TASKS"));
+  const slugs = [];
+  for (const m of body.matchAll(/^ {2}"?([a-z0-9-]+)"?:\s*\{([\s\S]*?)^ {2}\},$/gm)) {
+    if (/kind:\s*"self"/.test(m[2])) slugs.push(m[1]);
+  }
+  return slugs.sort();
+}
+
+// A-11d: the two exercises the product deliberately does not grade. Pinned by
+// name rather than by count, because "how many do we not check" is a product
+// claim — §7's honesty rule — and it should take an explicit edit to change,
+// not a quiet one. Anything else claiming to be self-assessed is a checker
+// someone skipped.
+const KNOWN_SELF_ASSESSED = ["api-testing", "first-playwright-test"].sort();
+const selfAssessed = selfAssessedSlugs();
+
+if (JSON.stringify(selfAssessed) !== JSON.stringify(KNOWN_SELF_ASSESSED)) {
+  failed++;
+  console.error("FAIL: the set of self-assessed exercises has changed");
+  console.error(`  expected: ${JSON.stringify(KNOWN_SELF_ASSESSED)}`);
+  console.error(`  actual:   ${JSON.stringify(selfAssessed)}`);
+  console.error(
+    "  A self-assessed lesson is one the product admits it cannot verify — add it here and to A-11 in docs/QA-ACADEMY.md deliberately.",
   );
 }
 
@@ -625,5 +657,5 @@ if (failed > 0) {
   process.exit(1);
 }
 console.log(
-  `academy-checks-selftest: OK (11 checkers, good and bad submissions; ${unchecked.length} sandbox lessons still uncheckered)`,
+  `academy-checks-selftest: OK (11 checkers, good and bad submissions; every sandbox lesson has a task, ${selfAssessed.length} of them self-assessed)`,
 );

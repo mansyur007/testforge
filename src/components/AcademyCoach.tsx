@@ -25,7 +25,15 @@ import type { CheckResult } from "@/lib/academy/types";
 
 const STORAGE_KEY = "tf_academy_active";
 
-type ActiveTask = { lessonSlug: string; startedAtIso: string };
+// A-11d: `selfChecked` carries the ticked criteria of a self-assessed exercise.
+// It lives here rather than in component state because that exercise is the one
+// the learner leaves the app to do — Postman, an editor, Settings → API Keys —
+// and losing the checklist on the way back would make it useless.
+type ActiveTask = {
+  lessonSlug: string;
+  startedAtIso: string;
+  selfChecked?: number[];
+};
 
 function readActive(): ActiveTask | null {
   if (typeof window === "undefined") return null;
@@ -68,7 +76,12 @@ function AcademyCoachInner({ sandboxSlug }: { sandboxSlug: string | null }) {
   const [result, setResult] = useState<CheckResult | { error: string } | null>(null);
   const [pending, setPending] = useState(false);
   const [showHint, setShowHint] = useState(false);
+  const [selfDone, setSelfDone] = useState(false);
 
+  // A-11d: a self-assessed exercise is done off-platform, so scoping its panel
+  // to the sandbox project would drop the checklist the moment the learner went
+  // to Settings → API Keys — which its own criteria tell them to do. Every
+  // other kind keeps the A-04b rule, because their work *is* in the project.
   const inSandbox = Boolean(sandboxSlug) && pathname.startsWith(`/projects/${sandboxSlug}`);
 
   useEffect(() => {
@@ -96,11 +109,15 @@ function AcademyCoachInner({ sandboxSlug }: { sandboxSlug: string | null }) {
     // still somewhere in their sandbox project, otherwise pick up whatever
     // was stored (first mount after a redirect) or hide.
     setActive((prev) => {
-      if (prev && inSandbox) return prev;
-      const stored = readActive();
-      if (stored && inSandbox) return stored;
-      if (!inSandbox) return null;
-      return prev;
+      const candidate = prev ?? readActive();
+      if (!candidate) return null;
+      // Resolved from the candidate rather than from component state, because
+      // the case this exists for is a *fresh mount* on a page outside the
+      // sandbox — `prev` is null there and only sessionStorage knows which
+      // exercise is running.
+      const isSelf = getSandboxTask(candidate.lessonSlug)?.target.kind === "self";
+      if (!inSandbox && !isSelf) return null;
+      return candidate;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paramLesson, pathname]);
@@ -168,6 +185,35 @@ function AcademyCoachInner({ sandboxSlug }: { sandboxSlug: string | null }) {
     setResult({ passed: true, feedback: ["Marked done — the checker was skipped."] });
   }
 
+  // A-11d ------------------------------------------------------------------
+  const isSelf = task.target.kind === "self";
+  const ticked = active.selfChecked ?? [];
+  const allTicked = ticked.length === task.criteria.length;
+
+  function toggleCriterion(index: number) {
+    setActive((prev) => {
+      if (!prev) return prev;
+      const set = new Set(prev.selfChecked ?? []);
+      if (set.has(index)) set.delete(index);
+      else set.add(index);
+      const next = { ...prev, selfChecked: Array.from(set) };
+      writeActive(next);
+      return next;
+    });
+  }
+
+  /**
+   * The decision this whole target kind turns on: progress is recorded exactly
+   * as a checked exercise records it (the owner's call — a self-assessed lesson
+   * counts the same, and "Mark done anyway" already meant the product accepted
+   * unverified completion), but the panel never says "passed". It says the
+   * learner marked it done, because that is the only thing that happened.
+   */
+  function markSelfDone() {
+    markDone(active!.lessonSlug, task!.trackSlug);
+    setSelfDone(true);
+  }
+
   if (collapsed) {
     return (
       <button
@@ -214,14 +260,41 @@ function AcademyCoachInner({ sandboxSlug }: { sandboxSlug: string | null }) {
       </h2>
       <p className="mt-1 text-sm text-content">{task.task}</p>
 
-      <ul className="mt-2.5 space-y-1 text-xs text-content-muted">
-        {task.criteria.map((c) => (
-          <li key={c} className="flex gap-1.5">
-            <span aria-hidden>•</span>
-            <span>{c}</span>
-          </li>
-        ))}
-      </ul>
+      {isSelf ? (
+        <>
+          <p className="mt-2.5 text-xs font-medium text-content-muted">
+            This one is yours to assess — nothing here is sent to a checker.
+          </p>
+          <ul
+            data-testid="academy-coach-self-list"
+            className="mt-1.5 space-y-1.5 text-xs text-content"
+          >
+            {task.criteria.map((c, i) => (
+              <li key={c}>
+                <label className="flex cursor-pointer items-start gap-2">
+                  <input
+                    type="checkbox"
+                    data-testid={`academy-coach-self-${i}`}
+                    checked={ticked.includes(i)}
+                    onChange={() => toggleCriterion(i)}
+                    className="mt-0.5 h-3.5 w-3.5 shrink-0 rounded border-hairline accent-accent"
+                  />
+                  <span>{c}</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <ul className="mt-2.5 space-y-1 text-xs text-content-muted">
+          {task.criteria.map((c) => (
+            <li key={c} className="flex gap-1.5">
+              <span aria-hidden>•</span>
+              <span>{c}</span>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {!showHint ? (
         <button
@@ -236,6 +309,20 @@ function AcademyCoachInner({ sandboxSlug }: { sandboxSlug: string | null }) {
         <p data-testid="academy-coach-hint" className="mt-2 rounded-lg bg-surface-muted p-2 text-xs text-content">
           {task.hint}
         </p>
+      )}
+
+      {selfDone && (
+        <div
+          data-testid="academy-coach-self-result"
+          className="mt-3 rounded-lg bg-success-soft p-2.5 text-xs text-success-soft-fg"
+        >
+          <p className="font-medium">You have marked this done.</p>
+          <p className="mt-1">
+            Nothing was verified — this lesson&apos;s exercise happens outside
+            TestForge, and the criteria above are the standard you held yourself
+            to. It counts toward the track either way.
+          </p>
+        </div>
       )}
 
       {result && (
@@ -263,24 +350,46 @@ function AcademyCoachInner({ sandboxSlug }: { sandboxSlug: string | null }) {
       )}
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          data-testid="academy-coach-check"
-          disabled={pending}
-          onClick={check}
-          className="min-h-[36px] rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent-hover disabled:opacity-50"
-        >
-          {pending ? "Checking…" : "Check my work"}
-        </button>
-        {!(result && "passed" in result && result.passed) && (
-          <button
-            type="button"
-            data-testid="academy-coach-mark-done"
-            onClick={markDoneAnyway}
-            className="min-h-[36px] rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium text-content hover:bg-surface-muted"
-          >
-            Mark done anyway
-          </button>
+        {isSelf ? (
+          // No "Check my work": there is nothing to check, and offering the
+          // button would imply otherwise. The gate is the learner's own
+          // checklist, which is also why this is disabled rather than hidden —
+          // it has to be visible for the ticking to have a point.
+          !selfDone && (
+            <button
+              type="button"
+              data-testid="academy-coach-self-done"
+              disabled={!allTicked}
+              onClick={markSelfDone}
+              className="min-h-[36px] rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent-hover disabled:opacity-50"
+            >
+              {allTicked
+                ? "Mark this done"
+                : `Tick all ${task.criteria.length} to mark done`}
+            </button>
+          )
+        ) : (
+          <>
+            <button
+              type="button"
+              data-testid="academy-coach-check"
+              disabled={pending}
+              onClick={check}
+              className="min-h-[36px] rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent-hover disabled:opacity-50"
+            >
+              {pending ? "Checking…" : "Check my work"}
+            </button>
+            {!(result && "passed" in result && result.passed) && (
+              <button
+                type="button"
+                data-testid="academy-coach-mark-done"
+                onClick={markDoneAnyway}
+                className="min-h-[36px] rounded-lg border border-hairline px-3 py-1.5 text-xs font-medium text-content hover:bg-surface-muted"
+              >
+                Mark done anyway
+              </button>
+            )}
+          </>
         )}
         <Link
           href={`/academy/${task.trackSlug}/${active.lessonSlug}`}
