@@ -6,7 +6,7 @@ export const testingInProduction: Lesson = {
   summary:
     "Feature flags, canaries, synthetic checks, and reading your own logs.",
   minutes: 14,
-  status: "draft",
+  status: "published",
   body: `
 ## What this is not
 

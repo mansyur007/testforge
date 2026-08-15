@@ -6,7 +6,7 @@ export const securityForTesters: Lesson = {
   summary:
     "The OWASP Top 10 through a tester's eyes, with checks you can run today.",
   minutes: 16,
-  status: "draft",
+  status: "published",
   body: `
 ## Read this part first
 

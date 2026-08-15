@@ -1,34 +1,18 @@
-import type { Lesson, Track } from "../../types";
+import type { Track } from "../../types";
 import { aiInQa } from "./ai-in-qa";
 import { contractTesting } from "./contract-testing";
+import { interviewPrep } from "./interview-prep";
 import { performanceTesting } from "./performance-testing";
+import { portfolio } from "./portfolio";
 import { securityForTesters } from "./security-for-testers";
 import { testingInProduction } from "./testing-in-production";
 
-// T4 — outlined in A-01, being written in A-08. `beyond.ts` became this
-// directory when the first lessons were written, matching T1, T2 and T3.
+// T4 — outlined in A-01, written in A-08 over four slices. `beyond.ts` became
+// this directory when the first lessons were written, matching T1, T2 and T3.
 //
-// Lessons still to be written are `planned()` stubs: `draft`, empty body, no
-// routes and no sitemap entries, so the roadmap renders the track as a "coming
-// soon" card built from these titles (docs/QA-ACADEMY.md §4). The rule T2 and T3
-// both followed applies here too: the track flips to `published` when every
-// lesson is, not one at a time.
-const planned = (
-  slug: string,
-  title: string,
-  summary: string,
-  minutes: number,
-  sandbox = false,
-): Lesson => ({
-  slug,
-  title,
-  summary,
-  minutes,
-  status: "draft",
-  ...(sandbox ? { sandbox: true } : {}),
-  body: "",
-});
-
+// The `planned()` stub helper is gone, as T2's and T3's were: every lesson is
+// written and `published`, so the track is too. §4's "coming soon" card
+// rendering now applies to T5 alone.
 export const beyond: Track = {
   slug: "beyond",
   title: "Beyond Functional",
@@ -36,7 +20,7 @@ export const beyond: Track = {
     "Performance, security, production, and the career conversation nobody teaches you.",
   level: "Mid → senior",
   icon: "trend",
-  status: "draft",
+  status: "published",
   outcomes: [
     "Run a load test and interpret the numbers honestly",
     "Find the security problems a tester is well placed to find",
@@ -50,7 +34,7 @@ export const beyond: Track = {
     contractTesting,
     testingInProduction,
     aiInQa,
-    planned("portfolio", "Building a QA portfolio", "Publish a real project — suites, runs, results — that a hiring manager can open.", 12, true),
-    planned("interview-prep", "Interview preparation", "The questions that always come, and how to answer with evidence.", 14),
+    portfolio,
+    interviewPrep,
   ],
 };

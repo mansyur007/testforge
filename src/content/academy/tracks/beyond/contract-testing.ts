@@ -6,7 +6,7 @@ export const contractTesting: Lesson = {
   summary:
     "Catching integration breakage without a full end-to-end environment.",
   minutes: 13,
-  status: "draft",
+  status: "published",
   body: `
 ## The gap this fills
 

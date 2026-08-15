@@ -6,7 +6,7 @@ export const aiInQa: Lesson = {
   summary:
     "Generating cases, reviewing requirements, and why a plausible test is dangerous.",
   minutes: 13,
-  status: "draft",
+  status: "published",
   body: `
 ## The property that should worry a tester
 

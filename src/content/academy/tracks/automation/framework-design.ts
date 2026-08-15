@@ -234,10 +234,9 @@ Two next steps worth taking:
   portfolio piece a hiring manager can open — which is where the Beyond
   Functional track picks up.
 
-**You have finished QA Automation.** The Beyond Functional track goes further
-out — performance, security, contract testing, observability, and building the
-portfolio this track has been quietly assembling. It is being written now, and
-the roadmap lists its lessons.
+**You have finished QA Automation.** The [Beyond Functional](/academy/beyond)
+track goes further out — performance, security, contract testing, observability,
+and building the portfolio this track has been quietly assembling.
 `,
   selfCheck: [
     {
