@@ -1,6 +1,15 @@
-import type { Lesson, Track } from "../types";
+import type { Lesson, Track } from "../../types";
+import { performanceTesting } from "./performance-testing";
+import { securityForTesters } from "./security-for-testers";
 
-// T4 — outlined in A-01, written in A-08.
+// T4 — outlined in A-01, being written in A-08. `beyond.ts` became this
+// directory when the first lessons were written, matching T1, T2 and T3.
+//
+// Lessons still to be written are `planned()` stubs: `draft`, empty body, no
+// routes and no sitemap entries, so the roadmap renders the track as a "coming
+// soon" card built from these titles (docs/QA-ACADEMY.md §4). The rule T2 and T3
+// both followed applies here too: the track flips to `published` when every
+// lesson is, not one at a time.
 const planned = (
   slug: string,
   title: string,
@@ -33,8 +42,8 @@ export const beyond: Track = {
     "Build a portfolio and interview like someone with judgement",
   ],
   lessons: [
-    planned("performance-testing", "Performance testing with k6", "Load, stress and soak — and what a p95 actually tells you.", 16),
-    planned("security-for-testers", "Security testing for QA", "The OWASP Top 10 through a tester's eyes, with checks you can run today.", 16),
+    performanceTesting,
+    securityForTesters,
     planned("contract-testing", "Contract testing", "Catching integration breakage without a full end-to-end environment.", 13),
     planned("testing-in-production", "Observability and testing in production", "Feature flags, canaries, synthetic checks, and reading your own logs.", 14),
     planned("ai-in-qa", "AI in QA: what it does well, where it lies", "Generating cases, reviewing requirements, and why a plausible test is dangerous.", 13),

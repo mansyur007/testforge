@@ -72,8 +72,9 @@
 > twelfth 2026-08-15 (T3's `flaky-tests` and `framework-design`, **and the track published at 12 of
 > 12** — the second A-08 slice with a visible change: thirteen routes, thirteen sitemap entries, a
 > third clickable roadmap card, and T1's `test-levels` link to `/academy/automation` finally
-> resolving after 404ing since A-01).
-> **T4 and T5's lesson bodies and the Indonesian routes are what remains of A-08.**
+> resolving after 404ing since A-01), thirteenth 2026-08-15 (T4 opens with `performance-testing` and
+> `security-for-testers`, 2 of 7, back to `draft` and invisible).
+> **The rest of T4, all of T5, and the Indonesian routes are what remains of A-08.**
 > Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
@@ -1369,6 +1370,50 @@ Worth stating as a rule now that it has happened twice in three slices: **the la
 is the most likely place for this bug**, because closing lessons naturally point forward, and
 forward is by definition the unwritten track. A sweep of `](/academy/` across all published content
 confirms the current state is clean — four cross-links, all resolving.
+
+**Thirteenth slice 2026-08-15: T4 opens with `performance-testing` and `security-for-testers`**,
+2 of 7, `draft` — no route, no sitemap entry, no visible change. `beyond.ts` became a directory in
+the process, matching T1, T2 and T3.
+
+**T4 opens with two lessons rather than one, unlike T2 and T3, and the reason is the track's
+shape.** Those tracks opened with a single sample because their lessons form a chain — each one's
+`**Next:**` promises the following one, so the shape of lesson 1 determines eleven more. T4 is not a
+chain: it is seven largely self-contained introductions to seven different disciplines, and the open
+question is not "what does a lesson look like here" but **"how much of an entire discipline fits in
+one lesson"**. One lesson cannot answer that; two calibrations can be compared.
+
+The answer both lessons commit to: **teach the judgement, not the tool.** Performance testing and
+security testing are each a career, and a 16-minute lesson that tried to be a tutorial would be
+useless in both directions. So `performance-testing` spends its opening on why an average is the
+wrong statistic before k6 appears at all, and `security-for-testers` spends its opening on rules of
+engagement.
+
+`performance-testing`'s load-bearing points are that **percentiles beat averages** (nine requests at
+100ms and one at 1.2s averages to a comfortable-looking 210ms while one user in ten waits over a
+second), that **thresholds are what make it a test** — `check()` records and continues, only
+thresholds set the exit code, so a k6 script without them is the same non-test as a UI test with no
+assertion — and that **a number without its conditions is an opinion**, which is T2's non-functional
+lesson reused deliberately rather than restated by accident.
+
+`security-for-testers` leads with the boundaries, at more length than T2's version, because this
+lesson teaches IDOR and privilege escalation directly: written authorisation, named environments
+only, no third parties, no destructive payloads, and on a real finding **stop, document, report** —
+proving the door is unlocked is the job, taking inventory is not. Its argument for why a tester is
+worth pointing at this at all is the honest one: you will not out-tool a penetration tester, but
+**a scanner does not know that project 7 belongs to someone else, and you do**, which is why
+authorisation and business-logic failures are the classes testers find and tools miss. The
+authorisation matrix is given as a grid where every cell is a test, and then handed to
+`api-automation`'s viewer-token pattern as the thing that automates cleanly.
+
+**A rendering risk worth recording:** this is the first lesson whose body contains XSS payloads as
+teaching material — `<script>alert(1)</script>` and an `onerror` image tag, inside a markdown table.
+`<Markdown>` sanitizes and disallows raw HTML (§2.1), so they render as visible text; the render
+check confirmed both appear as text with **zero `<script>` or `<img>` elements injected into the
+article** and no console errors. Any future lesson quoting markup needs the same check rather than
+the assumption.
+
+**No checker debt added** — neither lesson carries `sandbox: true`; T4's only 🛠 lesson is
+`portfolio`, still a stub. The count stays at six.
 
 > **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
 > *track's* status, so the lesson-level status is what let the writing land in five reviewable
