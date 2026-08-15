@@ -1,10 +1,15 @@
-import type { Lesson, Track } from "../types";
+import type { Lesson, Track } from "../../types";
+import { ch1Fundamentals } from "./ch1-fundamentals";
 
 // T5 — outlined in A-01. The chapter lessons are written in A-08; the question
-// bank and the exam simulator are A-06. Nothing here may be published until the
-// trademark and originality constraints in docs/QA-ACADEMY.md §7 are satisfied:
-// original questions only, no ISTQB logo, and the non-affiliation disclaimer on
-// every page that names the scheme.
+// bank and the exam simulator are A-06. `istqb.ts` became this directory when
+// the first chapter was written, matching T1–T4.
+//
+// Nothing here may be published until the trademark and originality constraints
+// in docs/QA-ACADEMY.md §7 are satisfied: original questions only, no ISTQB
+// logo, and the non-affiliation disclaimer on every page that names the scheme.
+// `trademarkNotice` below is what the track and lesson pages render it on, and
+// `scripts/academy-trademark-check.mjs` fails the build without it.
 const planned = (
   slug: string,
   title: string,
@@ -31,7 +36,7 @@ export const istqb: Track = {
     "See which chapter is costing you the pass mark, and go back to it",
   ],
   lessons: [
-    planned("ch1-fundamentals", "Chapter 1 — Fundamentals of testing", "What testing is, why it's needed, the seven principles, the test process, and the tester's mindset.", 25),
+    ch1Fundamentals,
     planned("ch2-sdlc", "Chapter 2 — Testing throughout the SDLC", "Development models, test levels, test types, and maintenance testing.", 22),
     planned("ch3-static-testing", "Chapter 3 — Static testing", "Reviews, the review process, and what static analysis catches that execution can't.", 18),
     planned("ch4-test-analysis-design", "Chapter 4 — Test analysis and design", "Black-box, white-box and experience-based techniques, plus collaboration-based approaches.", 30),
