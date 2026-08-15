@@ -79,8 +79,9 @@
 > `draft`), sixteenth 2026-08-15 (T4's `portfolio` and `interview-prep`, **and the track published at
 > 7 of 7** — the third A-08 slice with a visible change: eight routes, eight sitemap entries, a
 > fourth clickable roadmap card, and `framework-design`'s forward pointer to `/academy/beyond`
-> becoming a link exactly as the twelfth slice predicted).
-> **All of T5 and the Indonesian routes are what remains of A-08.**
+> becoming a link exactly as the twelfth slice predicted), seventeenth 2026-08-15 (T5 opens with
+> `ch1-fundamentals`, 1 of 7, back to `draft` and invisible).
+> **The rest of T5 and the Indonesian routes are what remains of A-08.**
 > Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
 > [`DOCUMENTATION.md` Part IV](DOCUMENTATION.md#part-iv--feature-work-orders), because Academy is a
@@ -1584,6 +1585,58 @@ Playwright repository. The rest of the note below stands unchanged.
 
 **T5 is now the only track rendering as a "coming soon" card**, and the only remaining `planned()`
 stub helper in the content tree is gone from T4 as it was from T2 and T3.
+
+**Seventeenth slice 2026-08-15: T5 opens with `ch1-fundamentals`**, 1 of 7, `draft` — no route, no
+sitemap entry, no visible change. `istqb.ts` became a directory, matching T1–T4.
+
+**One lesson, deliberately, for T2's reason rather than T4's:** T5 *is* a chain of a kind — six
+chapters in syllabus order plus an exam-strategy closer — and more importantly it is a **new genre**.
+The first four tracks teach; this one revises for a paper, and the shape it commits to should be
+judged on one chapter before five more are written to it.
+
+**The shape.** Not a first course — the lesson says so in its opening line and points at T1 for the
+teaching version. What a chapter lesson is instead: the same material arranged the way the paper asks
+about it. Concretely, four things the other tracks' lessons do not do.
+
+1. **It states the chapter's cost and its K-level ceiling up front.** Chapter 1 supplies 8 of the 40
+   questions, and every one of its 14 objectives is K1 or K2 — so **no question in this chapter can
+   require applying a technique**, and "if you find yourself calculating, you have misread the
+   question" is a usable exam instruction rather than a slogan.
+2. **It maps the five sections to their objective counts**, which is how a reader decides where to
+   spend revision time. §1.4 alone is 5 of 14, and the lesson says to weight accordingly.
+3. **It teaches the distinctions rather than the definitions**, because that is what multiple choice
+   can test: testing/debugging, QA/testing, error/defect/failure, verification/validation,
+   analysis/design, test cases/test procedures, clustering/tests wearing out, role/job title. The
+   closing table is that list on one screen.
+4. **It ends in a drill, not a summary** — a link to the chapter 1 quiz with a threshold (below 6 of
+   8, read the explanations rather than re-read the page).
+
+**Two accuracy decisions worth recording.**
+
+**The exam weight is described as ours, not theirs.** The lesson says chapter 1 supplies "8 of the 40
+questions **in our practice paper**". §5.1's warning is still open — the per-chapter split is the one
+number in the blueprint with no document behind it — so a lesson that told a reader "chapter 1 is 8
+questions of the real exam" would be publishing the guess as fact. Every chapter lesson must use this
+phrasing until the owner supplies "Exam Structure Tables" or equivalent.
+
+**§7.3 is a writing constraint, not just a legal one.** Nothing in the lesson reproduces syllabus
+wording: the objective topics are paraphrased, the seven principles are given as *what each one
+licenses* rather than as their canonical sentences, and the four self-check questions are original
+scenarios. The file carries a header comment saying so, which is where a reviewer will look first.
+
+**Verified by temporarily publishing, the same check A-09b used**, because this is the first lesson
+in a track carrying `trademarkNotice` and the first whose forward link is an *exam* route rather than
+a lesson: with the track flipped locally, `/academy/istqb/ch1-fundamentals` renders the
+non-affiliation notice once, and both of its links resolve —
+`/academy/istqb/practice-exam/chapter/1` **200s while the track is still `draft`**, because the
+chapter-quiz route is gated on the blueprint slug rather than on track status. The flip was reverted
+before committing and the route 404s again.
+
+That last fact is the one to remember for the remaining chapters: **a chapter lesson may link to its
+own drill safely at any time**, unlike the lesson-to-lesson forward links that caused the 404 hazard
+recorded three times above.
+
+**No checker debt added** — T5 has no `sandbox: true` lessons at all. The count stays at seven.
 
 > **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
 > *track's* status, so the lesson-level status is what let the writing land in five reviewable
