@@ -6,7 +6,7 @@ export const assertionsAndWaiting: Lesson = {
   summary:
     "Web-first assertions, auto-waiting, and why sleep() is a bug.",
   minutes: 13,
-  status: "draft",
+  status: "published",
   body: `
 ## A test that never fails is not a passing test
 

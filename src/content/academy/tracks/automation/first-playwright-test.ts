@@ -6,7 +6,7 @@ export const firstPlaywrightTest: Lesson = {
   summary:
     "Install, record, run, and understand every line of what you just wrote.",
   minutes: 16,
-  status: "draft",
+  status: "published",
   sandbox: true,
   body: `
 ## Twenty minutes to a running suite

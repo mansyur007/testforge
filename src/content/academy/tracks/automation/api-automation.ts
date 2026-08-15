@@ -6,7 +6,7 @@ export const apiAutomation: Lesson = {
   summary:
     "Faster, steadier tests below the UI — and using the API to set up UI tests.",
   minutes: 14,
-  status: "draft",
+  status: "published",
   body: `
 ## The layer most suites under-use
 

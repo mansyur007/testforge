@@ -6,7 +6,7 @@ export const whatToAutomate: Lesson = {
   summary:
     "The pyramid, its critics, and the maintenance cost nobody budgets for.",
   minutes: 12,
-  status: "draft",
+  status: "published",
   body: `
 ## "Automate everything" is a plan to maintain two products
 

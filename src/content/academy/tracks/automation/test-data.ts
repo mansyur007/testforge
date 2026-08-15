@@ -6,7 +6,7 @@ export const testData: Lesson = {
   summary:
     "Independent tests, seeded state, and cleaning up after yourself.",
   minutes: 13,
-  status: "draft",
+  status: "published",
   body: `
 ## The failure that teaches this lesson
 
