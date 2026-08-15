@@ -81,7 +81,9 @@
 > fourth clickable roadmap card, and `framework-design`'s forward pointer to `/academy/beyond`
 > becoming a link exactly as the twelfth slice predicted), seventeenth 2026-08-15 (T5 opens with
 > `ch1-fundamentals`, 1 of 7, back to `draft` and invisible), eighteenth 2026-08-15 (T5's `ch2-sdlc`
-> and `ch3-static-testing`, 3 of 7, still `draft`).
+> and `ch3-static-testing`, 3 of 7, still `draft`), nineteenth 2026-08-15 (T5's
+> `ch4-test-analysis-design` alone — the K3 chapter, and the biggest lesson in the Academy — 4 of 7,
+> still `draft`).
 > **The rest of T5 and the Indonesian routes are what remains of A-08.**
 > Created 2026-08-10.
 > Work orders are numbered `A-01 … A-10` (a new track alongside `F-xx`/`L-xx` in
@@ -1678,6 +1680,53 @@ A-01.
 
 **Chapters 4, 5, 6 and `exam-strategy` remain.** Chapter 4 is the biggest single piece of writing
 left in A-08 — 11 of 40 questions, 14 objectives, and the K3 material — and should get its own slice.
+
+**Nineteenth slice 2026-08-15: T5's `ch4-test-analysis-design` alone**, 4 of 7, still `draft`. The
+biggest single lesson in the Academy at 30 minutes, and the one slice in T5 that was always going to
+be one lesson: 11 of 40 questions, 14 objectives, and **five K3 objectives — four of them in §4.2**.
+
+**K3 changes what a lesson has to do, and this is the first one that faces it.** K1 and K2 are
+answered by recall and explanation, so a chapter lesson can arrange facts and name distinctions. K3
+prints material in the question and asks the candidate to *produce* an answer — a value set, a rule
+count, a coverage percentage. A lesson that only described the techniques would leave the reader
+unable to do the thing they will be asked to do, so §4.2 is built from **worked examples with the
+counting rules made explicit**, and the closing advice for this chapter alone is *do not re-read
+this — work the four techniques against fresh material until the mechanics are automatic.*
+
+The mechanics it commits to stating precisely, because they are what a K3 question actually turns on:
+
+- **2-value versus 3-value BVA.** For 18–65: 17, 18, 65, 66 against 17, 18, 19, 64, 65, 66. The
+  lesson says outright that a question asks for one variant and expects you to have noticed which.
+- **One invalid partition per test**, and the *diagnostic* reason — a rejection that could have come
+  from either input hides the second defect. Valid partitions may be combined freely.
+- **Full coverage of a decision table is one test per rule**, a full table is 2ⁿ columns for *n*
+  binary conditions, and **a collapsed table is counted as printed rather than as 2ⁿ**.
+- **State diagram versus state table**: valid transitions only against every state–event pair, which
+  is exactly the difference a question exploits when it asks for a count.
+- **100% branch coverage guarantees 100% statement coverage; the reverse never holds** — carried by
+  a four-line `if` with no `else`, where one test gives 100% statements and 50% branches. This is
+  the most examined fact in §4.3 and the lesson gives it its own display quote.
+
+Two limits are stated as flatly as the mechanics: **white-box testing cannot find a requirement that
+was never implemented** (there is no code to cover), and **exploratory testing is not ad hoc
+testing** — chartered, time-boxed, documented. The checklist-based weakness is labelled as chapter
+1's *tests wear out* principle in different clothing, which is the cross-chapter link the exam
+rewards.
+
+**§4.5's K3 objective is easy to under-serve and was not.** ATDD is not a vocabulary item here: the
+lesson derives a test set from one Given/When/Then criterion and shows that derivation produces
+**positive and negative tests** and surfaces the ambiguity in "over 50" before any code exists —
+chapter 3's argument for static testing, arriving from the other direction.
+
+**Verified against a running server**, including a temporary publish because this is the first T5
+lesson with a fenced code block and unicode mathematics: the page renders with the non-affiliation
+notice once, the code block and the `2ⁿ`/`⇒`/`÷` characters survive `<Markdown>` intact, and all
+five links resolve — the chapter 4 drill plus the four T1 technique lessons it hands off to. The flip
+was reverted before committing and the route 404s again.
+
+**Chapters 5, 6 and `exam-strategy` remain.** Chapter 5 has the most objectives of any chapter in the
+syllabus (16) and should get its own slice; chapter 6 (2 of 40) and `exam-strategy` pair naturally as
+the slice that publishes the track.
 
 > **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
 > *track's* status, so the lesson-level status is what let the writing land in five reviewable

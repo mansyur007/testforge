@@ -2,6 +2,7 @@ import type { Lesson, Track } from "../../types";
 import { ch1Fundamentals } from "./ch1-fundamentals";
 import { ch2Sdlc } from "./ch2-sdlc";
 import { ch3StaticTesting } from "./ch3-static-testing";
+import { ch4TestAnalysisDesign } from "./ch4-test-analysis-design";
 
 // T5 — outlined in A-01. The chapter lessons are written in A-08; the question
 // bank and the exam simulator are A-06. `istqb.ts` became this directory when
@@ -41,7 +42,7 @@ export const istqb: Track = {
     ch1Fundamentals,
     ch2Sdlc,
     ch3StaticTesting,
-    planned("ch4-test-analysis-design", "Chapter 4 — Test analysis and design", "Black-box, white-box and experience-based techniques, plus collaboration-based approaches.", 30),
+    ch4TestAnalysisDesign,
     planned("ch5-managing-test-activities", "Chapter 5 — Managing the test activities", "Planning, risk, monitoring and control, configuration management, and defect management.", 28),
     planned("ch6-test-tools", "Chapter 6 — Test tools", "Tool support for testing, and the risks of adopting one.", 12),
     planned("exam-strategy", "Exam strategy", "Timing, K-levels, how the question styles work, and what to do with the last ten minutes.", 15),
