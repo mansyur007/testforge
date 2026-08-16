@@ -1778,12 +1778,11 @@ test(`TC-${TC}-130 The capstone checker accepts a red run and never counts a 422
     "No uploaded run found yet",
   );
 
-  // Mint a key for this test rather than reading `e2e-results/.api-key`.
-  // That file is written once by global-setup and is shared by four specs, and
-  // it was observed one run out of date against the DB during this work — the
-  // row said `tf_0891…` while the file still said `tf_26b7…`, so every upload
-  // 401'd. Whatever causes that, a checker test should not be able to fail on
-  // it: `api-v2.spec.ts` already mints its own the same way.
+  // A key of this test's own, scoped to it and revoked at the end, the way
+  // `api-v2.spec.ts` does it — a checker test shouldn't share credentials with
+  // the rest of the suite. (The staleness that first prompted this is fixed at
+  // the source now: E2E.apiKey is a fixed token global-setup upserts, so no run
+  // can revoke another run's key. This stays private on its own merits.)
   const rawKey = `tf_${crypto.randomBytes(24).toString("hex")}`;
   const { id: apiKeyId } = await db.apiKey.create({
     data: {

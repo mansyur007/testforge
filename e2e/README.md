@@ -18,8 +18,10 @@ npm run e2e            # starts the dev server (port 3456), seeds a fixture, run
 
 `globalSetup` ([global-setup.ts](global-setup.ts)) seeds a verified ADMIN account
 (`e2e@testforge.local` / `E2eDemo123`) and an `e2e` project whose cases (seq 1–4)
-map to the `TC-E2E-<n>` test names. It also mints a local API key into
-`e2e-results/.api-key`.
+map to the `TC-E2E-<n>` test names. It also settles the local API key — a fixed
+token (`E2E.apiKey`, upserted by its hash so concurrent runs converge on one row
+instead of revoking each other) which it writes to `e2e-results/.api-key` for
+the upload script. Specs read the token from `E2E.apiKey` directly.
 
 JUnit output is written to `e2e-results/junit.xml`.
 

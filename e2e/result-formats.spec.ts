@@ -83,12 +83,14 @@ test(`TC-${TC}-24 legacy /api/v1/junit alias keeps its original response shape`,
 }) => {
   // /api/v1/junit predates guard() and only accepts a bare Bearer API key
   // (no browser-session auth) — unchanged on purpose, see result-ingest.ts.
-  const apiKey = fs.readFileSync(path.join(__dirname, "../e2e-results/.api-key"), "utf8").trim();
+  // Token straight off the fixture rather than out of `e2e-results/.api-key`:
+  // that file is cwd-relative and was observed holding a token a second run had
+  // already revoked.
   const res = await page.request.post(
     `/api/v1/junit?project=${E2E.projectSlug}&name=legacy-alias-${Date.now()}`,
     {
       data: fixture("junit.xml"),
-      headers: { "Content-Type": "application/xml", Authorization: `Bearer ${apiKey}` },
+      headers: { "Content-Type": "application/xml", Authorization: `Bearer ${E2E.apiKey}` },
     }
   );
   expect(res.status(), await res.text()).toBe(200);
