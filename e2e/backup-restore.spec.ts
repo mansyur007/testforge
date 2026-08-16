@@ -39,10 +39,26 @@ function freshInstanceB() {
   fs.rmSync(B_FILE, { force: true });
   fs.rmSync(`${B_FILE}-journal`, { force: true });
   fs.rmSync(B_UPLOADS, { recursive: true, force: true });
-  execFileSync("npx", ["prisma", "db", "push", "--skip-generate", "--accept-data-loss"], {
-    env: { ...process.env, DATABASE_URL: B_URL },
-    stdio: "pipe",
-  });
+  // Run the Prisma CLI's entry point under `node` rather than via `npx`, the
+  // same way the other specs invoke tooling. `execFileSync` without a shell
+  // cannot resolve `npx` on Windows (PATH only carries the extensionless bash
+  // script and npx.cmd, neither of which a non-shell spawn will execute), so
+  // this line used to ENOENT there; going direct also survives a missing
+  // node_modules/.bin.
+  execFileSync(
+    "node",
+    [
+      path.join("node_modules", "prisma", "build", "index.js"),
+      "db",
+      "push",
+      "--skip-generate",
+      "--accept-data-loss",
+    ],
+    {
+      env: { ...process.env, DATABASE_URL: B_URL },
+      stdio: "pipe",
+    }
+  );
 }
 
 type RunResult = { status: number; stdout: string; stderr: string };
@@ -146,8 +162,15 @@ test.describe.serial("L-05 backup & restore", () => {
     // 1. Download the backup from instance A.
     const a = new PrismaClient();
     let projectId: string;
+    let badgeTokensA: string[];
     try {
       projectId = await plantIntegration(a);
+      // Snapshot what instance A's badges actually are, so the restore can be
+      // checked against them below rather than against a shape the tokens only
+      // happen to have on a freshly pushed schema.
+      badgeTokensA = (await a.badgeToken.findMany({ select: { token: true } }))
+        .map((t) => t.token)
+        .sort();
       const res = await page.request.get("/api/admin/backup");
       expect(res.status()).toBe(200);
       expect(res.headers()["content-type"]).toBe("application/zip");
@@ -202,10 +225,14 @@ test.describe.serial("L-05 backup & restore", () => {
       expect(restored.equals(PNG_1PX)).toBe(true);
 
       // Badge tokens (L-01) carry their token string — that string IS what makes
-      // /badge/<token>.svg serve, so an intact row is an intact badge.
-      for (const badge of await b.badgeToken.findMany()) {
-        expect(badge.token).toHaveLength(64);
-      }
+      // /badge/<token>.svg serve, so an intact row is an intact badge. Compare
+      // against instance A's own tokens: asserting a 64-char length instead only
+      // held on a database nothing had seeded, and prisma/seed.mjs plants a
+      // literal "demo-badge-token" (16 chars), so every local dev.db failed here.
+      const badgeTokensB = (await b.badgeToken.findMany({ select: { token: true } }))
+        .map((t) => t.token)
+        .sort();
+      expect(badgeTokensB).toEqual(badgeTokensA);
 
       // Same TF_SECRET on both instances ⇒ integrations stay live, with their
       // encrypted credentials carried across untouched (the contrast to TC-61).
