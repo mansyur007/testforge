@@ -19,9 +19,6 @@ const ROOT = path.join(__dirname, "..");
 const BASE = "http://localhost:3456";
 const db = new PrismaClient();
 
-const apiKey = () =>
-  fs.readFileSync(path.join(ROOT, "e2e-results", ".api-key"), "utf8").trim();
-
 type Ctx = { slug: string; projectId: string; dir: string };
 
 /** A private project (admin is OWNER) + a temp dir for its case files. */
@@ -84,6 +81,9 @@ async function seedCases(ctx: Ctx, titles: string[]) {
 }
 
 /** Run the CLI; returns {code, stdout, stderr} instead of throwing. */
+// The token comes straight off the fixture rather than out of
+// `e2e-results/.api-key`: that file is cwd-relative and was observed holding a
+// token a second run had already revoked.
 function cli(ctx: Ctx, args: string[]) {
   try {
     const stdout = execFileSync(
@@ -91,7 +91,7 @@ function cli(ctx: Ctx, args: string[]) {
       ["packages/cli/bin/testforge.js", "cases", ...args, "--project", ctx.slug, "--dir", ctx.dir],
       {
         cwd: ROOT,
-        env: { ...process.env, TESTFORGE_URL: BASE, TESTFORGE_TOKEN: apiKey() },
+        env: { ...process.env, TESTFORGE_URL: BASE, TESTFORGE_TOKEN: E2E.apiKey },
         encoding: "utf8",
       }
     );
@@ -181,7 +181,7 @@ expected: User lands on the dashboard
     select: { rev: true, title: true },
   });
   const res = await request.post(`/api/v1/projects/${ctx.slug}/cases/sync`, {
-    headers: { Authorization: `Bearer ${apiKey()}` },
+    headers: { Authorization: `Bearer ${E2E.apiKey}` },
     data: {
       upserts: seeded.map((s, i) => ({
         displayId: s.displayId,
@@ -347,7 +347,7 @@ test(`TC-${TC}-58 Cases as code: batch applies clean items and reports the confl
     select: { rev: true },
   });
   const res = await request.post(`/api/v1/projects/${ctx.slug}/cases/sync`, {
-    headers: { Authorization: `Bearer ${apiKey()}` },
+    headers: { Authorization: `Bearer ${E2E.apiKey}` },
     data: {
       upserts: seeded.map((s, i) => ({
         displayId: s.displayId,

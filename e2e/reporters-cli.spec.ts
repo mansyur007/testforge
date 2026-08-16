@@ -13,16 +13,13 @@ const TC = (process.env.TF_PROJECT ?? "e2e").toUpperCase();
 const BASE = "http://localhost:3456";
 const ROOT = path.join(__dirname, "..");
 
-function apiKey(): string {
-  return fs
-    .readFileSync(path.join(ROOT, "e2e-results", ".api-key"), "utf8")
-    .trim();
-}
-
+// The token comes straight off the fixture (E2E.apiKey) rather than out of
+// `e2e-results/.api-key`: that file is cwd-relative and was observed holding a
+// token a second run had already revoked.
 function runNode(args: string[], input?: string): string {
   return execFileSync("node", args, {
     cwd: ROOT,
-    env: { ...process.env, TESTFORGE_URL: BASE, TESTFORGE_TOKEN: apiKey() },
+    env: { ...process.env, TESTFORGE_URL: BASE, TESTFORGE_TOKEN: E2E.apiKey },
     encoding: "utf8",
     input,
   });
@@ -72,7 +69,7 @@ test(`TC-${TC}-46 Reporter client: create run → stream result → complete`, a
 
   const res = await request.get(
     `/api/v1/projects/${E2E.projectSlug}/runs/${runId}/results`,
-    { headers: { Authorization: `Bearer ${apiKey()}` } }
+    { headers: { Authorization: `Bearer ${E2E.apiKey}` } }
   );
   expect(res.ok()).toBe(true);
   const body = await res.json();

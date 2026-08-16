@@ -1,4 +1,3 @@
-import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { PrismaClient } from "@prisma/client";
@@ -246,9 +245,9 @@ test(`TC-${TC}-53 Gate: requiredTags + typo guard; CLI exit codes`, async ({
 
   // AC 4: CLI subprocess — exit 1 on FAIL (run above is latest), 0 on PASS.
   await setPolicy(f.projectId, { requiredTags: ["smoke"] });
-  const apiKey = fs
-    .readFileSync(path.join(ROOT, "e2e-results", ".api-key"), "utf8")
-    .trim();
+  // Token straight off the fixture rather than out of `e2e-results/.api-key`:
+  // that file is cwd-relative and was observed holding a token a second run had
+  // already revoked.
   const cli = (expectExit: number) => {
     try {
       const out = execFileSync(
@@ -259,7 +258,7 @@ test(`TC-${TC}-53 Gate: requiredTags + typo guard; CLI exit codes`, async ({
           env: {
             ...process.env,
             TESTFORGE_URL: "http://localhost:3456",
-            TESTFORGE_TOKEN: apiKey,
+            TESTFORGE_TOKEN: E2E.apiKey,
           },
           encoding: "utf8",
         }

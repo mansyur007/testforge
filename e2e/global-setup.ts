@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
 import fs from "node:fs";
+import path from "node:path";
 
 const db = new PrismaClient();
 
@@ -25,6 +26,24 @@ export const E2E = {
   twoFactorEmail: "twofa@testforge.local",
   twoFactorPassword: "E2eDemo123",
   twoFactorName: "E2E TwoFactor",
+  // The local API key the API-driving specs authenticate with. FIXED, not
+  // random, and that is the whole point: the key is one row in a dev.db shared
+  // by everything on this machine, and globalSetup used to `deleteMany` +
+  // `create` it, publishing the fresh token to a *cwd-relative*
+  // `e2e-results/.api-key`. So a second `playwright test` against that same
+  // database revoked the token the first run was still using, without touching
+  // the file the first run reads — and `verifyApiKey()` looks tokens up by
+  // sha256 hash, so every later request 401'd. Two runs is not exotic here:
+  // concurrent agent sessions share this tree, and a run launched from a git
+  // worktree resolves `file:./dev.db` back to the main checkout's database
+  // (the junctioned node_modules carries the generated client's schema path)
+  // while process.cwd() — and therefore the file — stays in the worktree.
+  //
+  // A constant token upserted by its hash makes concurrent runs converge on
+  // the same row instead of racing to invalidate each other, and leaves the
+  // file unable to go stale. It never leaves a local dev.db, and it has the
+  // same standing as the fixture passwords above.
+  apiKey: "tf_56936734eb2c7a96814b2c9905af3fb40a85e9970ea356c3",
 };
 
 // Seed a deterministic fixture into the LOCAL dev.db before the suite runs:
@@ -256,15 +275,39 @@ async function globalSetup() {
     });
   }
 
-  // Mint a fresh local API key (same scheme as the app: tf_<hex>, sha256 hash).
-  await db.apiKey.deleteMany({ where: { userId: user.id, name: "e2e-local" } });
-  const raw = `tf_${crypto.randomBytes(24).toString("hex")}`;
-  const keyHash = crypto.createHash("sha256").update(raw).digest("hex");
-  await db.apiKey.create({
-    data: { userId: user.id, name: "e2e-local", prefix: raw.slice(0, 11), keyHash },
+  // Settle the local API key (same scheme as the app: tf_<hex>, sha256 hash).
+  // Upsert on the hash rather than delete-then-create — see E2E.apiKey for why
+  // re-minting a random token every run was the bug. The update clause resets
+  // the fields the key could have drifted on (scope/project/rate limit), in the
+  // same crash-recovery spirit as the fixtures above.
+  const keyHash = crypto.createHash("sha256").update(E2E.apiKey).digest("hex");
+  await db.apiKey.upsert({
+    where: { keyHash },
+    update: {
+      userId: user.id,
+      name: "e2e-local",
+      scope: "WRITE",
+      projectId: null,
+      rateLimitPerMin: null,
+    },
+    create: {
+      userId: user.id,
+      name: "e2e-local",
+      prefix: E2E.apiKey.slice(0, 11),
+      keyHash,
+    },
   });
-  fs.mkdirSync("e2e-results", { recursive: true });
-  fs.writeFileSync("e2e-results/.api-key", raw);
+  // Sweep the random keys older runs left behind, after the fixed one exists so
+  // there is never a moment with no "e2e-local" key for a parallel run to hit.
+  await db.apiKey.deleteMany({
+    where: { userId: user.id, name: "e2e-local", keyHash: { not: keyHash } },
+  });
+  // Resolved from this file, not process.cwd(): the specs read the key straight
+  // off E2E.apiKey now, but scripts/upload-junit.mjs still reads this file, and
+  // it should land in the checkout that owns it however playwright was invoked.
+  const outDir = path.join(__dirname, "..", "e2e-results");
+  fs.mkdirSync(outDir, { recursive: true });
+  fs.writeFileSync(path.join(outDir, ".api-key"), E2E.apiKey);
 
   await db.$disconnect();
 }
