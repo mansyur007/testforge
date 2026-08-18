@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { NOINDEX } from "@/lib/seo";
 import { Logo } from "@/components/icons";
@@ -14,6 +15,35 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 50;
+
+type Dir = "asc" | "desc";
+
+// Every column header is a sort link. The direction a column opens in is the
+// one an operator wants first: newest dates, busiest accounts, A–Z for text.
+const SORTS = {
+  user: { dir: "asc", orderBy: (d: Dir) => ({ name: d }) },
+  org: { dir: "asc", orderBy: (d: Dir) => ({ organization: { name: d } }) },
+  role: { dir: "asc", orderBy: (d: Dir) => ({ role: d }) },
+  projects: {
+    dir: "desc",
+    orderBy: (d: Dir) => ({ memberships: { _count: d } }),
+  },
+  status: { dir: "asc", orderBy: (d: Dir) => ({ emailVerifiedAt: d }) },
+  created: { dir: "desc", orderBy: (d: Dir) => ({ createdAt: d }) },
+  // "Last action" lives in AuditLog, not User — see the raw ordering below.
+  last: { dir: "desc", orderBy: null },
+} satisfies Record<
+  string,
+  { dir: Dir; orderBy: ((d: Dir) => Prisma.UserOrderByWithRelationInput) | null }
+>;
+
+type SortKey = keyof typeof SORTS;
+
+const DEFAULT_SORT: SortKey = "created";
+
+function isDefaultSort(sort: SortKey, dir: Dir) {
+  return sort === DEFAULT_SORT && dir === SORTS[DEFAULT_SORT].dir;
+}
 
 function fmtDate(d: Date) {
   return d.toLocaleString("en-US", {
@@ -44,15 +74,78 @@ function Stat({ label, value }: { label: string; value: number | string }) {
   );
 }
 
+function SortHeader({
+  col,
+  label,
+  sort,
+  dir,
+  q,
+}: {
+  col: SortKey;
+  label: string;
+  sort: SortKey;
+  dir: Dir;
+  q: string;
+}) {
+  const active = sort === col;
+  // Clicking the active column flips it; a fresh column opens in its own
+  // preferred direction. No `page` — a new sort sends you back to page 1.
+  const next = active ? (dir === "asc" ? "desc" : "asc") : SORTS[col].dir;
+  const href = `/superadmin?${new URLSearchParams({
+    ...(q ? { q } : {}),
+    sort: col,
+    dir: next,
+  })}`;
+
+  return (
+    <th
+      className="px-5 py-3"
+      aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}
+    >
+      <Link
+        href={href}
+        data-testid={`superadmin-sort-${col}`}
+        className="group inline-flex items-center gap-1 hover:text-content-strong"
+      >
+        {label}
+        <span
+          aria-hidden
+          className={
+            active
+              ? "text-content-strong"
+              : "opacity-0 transition-opacity group-hover:opacity-60"
+          }
+        >
+          {/* Active: where you are. Inactive (hover only): where a click goes. */}
+          {(active ? dir : next) === "asc" ? "▲" : "▼"}
+        </span>
+      </Link>
+    </th>
+  );
+}
+
+// SQLite's LIKE treats % and _ as wildcards; Prisma escapes them inside
+// `contains`, so the raw path below has to do the same or the two orderings
+// would disagree on a query like "50%".
+function likeParam(q: string) {
+  return `%${q.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+}
+
 export default async function SuperadminUsersPage({
   searchParams,
 }: {
-  searchParams: { q?: string; page?: string };
+  searchParams: { q?: string; page?: string; sort?: string; dir?: string };
 }) {
   const session = await requireSuperadmin();
 
   const q = (searchParams.q ?? "").trim();
   const page = Math.max(1, Number(searchParams.page ?? "1") || 1);
+  const sort: SortKey =
+    searchParams.sort && searchParams.sort in SORTS
+      ? (searchParams.sort as SortKey)
+      : DEFAULT_SORT;
+  const dir: Dir = searchParams.dir === "asc" ? "asc" : "desc";
+  const skip = (page - 1) * PAGE_SIZE;
 
   // SQLite's LIKE is case-insensitive for ASCII, so `contains` needs no mode.
   const where = q
@@ -64,29 +157,69 @@ export default async function SuperadminUsersPage({
       }
     : {};
 
+  const select = {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    emailVerifiedAt: true,
+    totpEnabledAt: true,
+    createdAt: true,
+    organization: { select: { name: true, slug: true } },
+    _count: { select: { memberships: true } },
+  };
+
+  // Sorting by "Last action" orders on an aggregate of another table, which
+  // Prisma's orderBy cannot express — so that one column picks the page's ids
+  // in SQL first and hydrates them afterwards. Accounts that never wrote
+  // anything sort last in both directions: "never" is not "oldest".
+  const idsByLastAction = async () => {
+    const filter = q
+      ? Prisma.sql`WHERE u."name" LIKE ${likeParam(q)} ESCAPE '\\' OR u."email" LIKE ${likeParam(q)} ESCAPE '\\'`
+      : Prisma.empty;
+    // `dir` is narrowed to the two literals above, so Prisma.raw sees no input.
+    const rows = await db.$queryRaw<{ id: string }[]>`
+      SELECT u."id" AS id
+      FROM "User" u
+      LEFT JOIN (
+        SELECT "userId", MAX("createdAt") AS "lastAt"
+        FROM "AuditLog"
+        WHERE "userId" IS NOT NULL
+        GROUP BY "userId"
+      ) a ON a."userId" = u."id"
+      ${filter}
+      ORDER BY a."lastAt" IS NULL, a."lastAt" ${Prisma.raw(dir.toUpperCase())}, u."id"
+      LIMIT ${PAGE_SIZE} OFFSET ${skip}
+    `;
+    return rows.map((r) => r.id);
+  };
+
+  const findPage = async () => {
+    const byColumn = SORTS[sort].orderBy;
+    if (byColumn) {
+      return db.user.findMany({
+        where,
+        select,
+        orderBy: byColumn(dir),
+        skip,
+        take: PAGE_SIZE,
+      });
+    }
+    const ids = await idsByLastAction();
+    if (ids.length === 0) return [];
+    const rows = await db.user.findMany({ where: { id: { in: ids } }, select });
+    // `in` promises no ordering — restore the one the raw query chose.
+    const byId = new Map(rows.map((r) => [r.id, r]));
+    return ids.flatMap((id) => byId.get(id) ?? []);
+  };
+
   const [total, matching, verified, admins, orgCount, users] = await Promise.all([
     db.user.count(),
     db.user.count({ where }),
     db.user.count({ where: { emailVerifiedAt: { not: null } } }),
     db.user.count({ where: { role: "ADMIN" } }),
     db.organization.count(),
-    db.user.findMany({
-      where,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        emailVerifiedAt: true,
-        totpEnabledAt: true,
-        createdAt: true,
-        organization: { select: { name: true, slug: true } },
-        _count: { select: { memberships: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-    }),
+    findPage(),
   ]);
 
   // Second round-trip on purpose: the ids only exist once the page is sliced,
@@ -104,7 +237,11 @@ export default async function SuperadminUsersPage({
 
   const pages = Math.max(1, Math.ceil(matching / PAGE_SIZE));
   const qs = (p: number) =>
-    `/superadmin?${new URLSearchParams({ ...(q ? { q } : {}), page: String(p) })}`;
+    `/superadmin?${new URLSearchParams({
+      ...(q ? { q } : {}),
+      ...(isDefaultSort(sort, dir) ? {} : { sort, dir }),
+      page: String(p),
+    })}`;
 
   return (
     <main className="min-h-screen bg-canvas px-4 py-8">
@@ -162,6 +299,13 @@ export default async function SuperadminUsersPage({
             data-testid="superadmin-search"
             className="w-full max-w-sm rounded-lg border border-hairline-strong bg-surface px-3 py-2 text-sm text-content-strong focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-ring"
           />
+          {/* Searching keeps whichever column you were sorting by. */}
+          {!isDefaultSort(sort, dir) && (
+            <>
+              <input type="hidden" name="sort" value={sort} />
+              <input type="hidden" name="dir" value={dir} />
+            </>
+          )}
           <button
             type="submit"
             className="rounded-lg border border-hairline-strong px-4 py-2 text-sm font-medium text-content hover:bg-surface"
@@ -182,13 +326,43 @@ export default async function SuperadminUsersPage({
           <table className="w-full text-sm" data-testid="superadmin-users">
             <thead className="bg-canvas text-left text-xs uppercase text-content-muted">
               <tr>
-                <th className="px-5 py-3">User</th>
-                <th className="px-5 py-3">Organization</th>
-                <th className="px-5 py-3">Role</th>
-                <th className="px-5 py-3">Projects</th>
-                <th className="px-5 py-3">Status</th>
-                <th className="px-5 py-3">Signed up</th>
-                <th className="px-5 py-3">Last action</th>
+                <SortHeader col="user" label="User" sort={sort} dir={dir} q={q} />
+                <SortHeader
+                  col="org"
+                  label="Organization"
+                  sort={sort}
+                  dir={dir}
+                  q={q}
+                />
+                <SortHeader col="role" label="Role" sort={sort} dir={dir} q={q} />
+                <SortHeader
+                  col="projects"
+                  label="Projects"
+                  sort={sort}
+                  dir={dir}
+                  q={q}
+                />
+                <SortHeader
+                  col="status"
+                  label="Status"
+                  sort={sort}
+                  dir={dir}
+                  q={q}
+                />
+                <SortHeader
+                  col="created"
+                  label="Signed up"
+                  sort={sort}
+                  dir={dir}
+                  q={q}
+                />
+                <SortHeader
+                  col="last"
+                  label="Last action"
+                  sort={sort}
+                  dir={dir}
+                  q={q}
+                />
               </tr>
             </thead>
             <tbody className="divide-y divide-hairline-subtle">
