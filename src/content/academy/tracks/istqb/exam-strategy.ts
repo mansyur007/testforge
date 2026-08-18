@@ -18,12 +18,26 @@ The Foundation Level exam is **40 questions in 60 minutes**, and the pass mark i
 entitled to **15 extra minutes**, which is offered as a checkbox when you start
 our practice paper.
 
-Two honesties about the practice paper before you plan around it. The question
-count, duration, extra-time allowance and pass mark match the published exam
-structure. **The per-chapter split — 8 / 6 / 4 / 11 / 9 / 2 — is this project's
-own blueprint**, not a published figure, so treat the chapter weighting in these
-lessons as our approximation of emphasis rather than a promise about your paper.
-It is a reasonable approximation, and it is not a quotation.
+**Our practice paper is built to the published exam structure**, and you can
+plan around the shape of it. The question count, duration, extra-time allowance,
+pass mark and the per-chapter split all match the structure ISTQB publishes for
+CTFL v4.0:
+
+| Ch | Topic | Questions | K1 | K2 | K3 |
+|---:|---|---:|---:|---:|---:|
+| 1 | Fundamentals of Testing | 8 | 2 | 6 | 0 |
+| 2 | Testing Throughout the SDLC | 6 | 2 | 4 | 0 |
+| 3 | Static Testing | 4 | 2 | 2 | 0 |
+| 4 | Test Analysis and Design | 11 | 0 | 6 | 5 |
+| 5 | Managing the Test Activities | 9 | 1 | 5 | 3 |
+| 6 | Test Tools | 2 | 1 | 1 | 0 |
+| | **Total** | **40** | **8** | **24** | **8** |
+
+Read that table once before you revise, because it prices your effort. One
+honesty about it: **our draw matches the question counts, not the K-level
+columns** — we draw the right number of questions per chapter, and we do not yet
+guarantee that exactly five of chapter 4's eleven are K3. Use the K columns to
+plan your revision, and the chapter counts to predict our paper.
 
 ## The timing arithmetic, and why uniform pacing is wrong
 
@@ -40,12 +54,20 @@ So the plan is: **bank time on the recall questions and spend it on the K3 ones.
 A first pass answering everything you know quickly should leave you fifteen to
 twenty minutes for the handful that need real work.
 
-**Where the slow questions live** is knowable in advance. Every K3 objective in
-the syllabus sits in **chapter 4** (the four black-box techniques and ATDD) and
-**chapter 5** (estimation, prioritisation, defect reports). In our blueprint
-those two chapters are 20 of the 40 questions — **half the paper is the two
-chapters that hold all the calculation**, and the other half is almost entirely
-recognition.
+**Where the slow questions live** is knowable in advance, and the table above
+prices it exactly. Every K3 objective in the syllabus sits in **chapter 4** (the
+four black-box techniques and ATDD) and **chapter 5** (estimation,
+prioritisation, defect reports) — and the published structure agrees: all
+**eight** K3 questions are in those two chapters, five and three, and every
+other chapter is K3-free. Those two chapters are also 20 of the 40 questions, so
+**half the paper is the two chapters that hold all the calculation**, and the
+other half is almost entirely recognition.
+
+Put the two facts together and the arithmetic closes: eight K3 questions at two
+to three minutes is roughly twenty minutes, which leaves forty for the other
+thirty-two. **That is the whole pacing plan** — the remaining thirty-two average
+75 seconds, and the twenty-four K2 questions are what actually consume it, since
+eight K1 questions cost about four minutes between them.
 
 ## The question styles, and how each one breaks
 

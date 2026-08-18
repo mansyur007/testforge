@@ -4379,6 +4379,15 @@ with the `SuiteFolderGrid` work noted above.
   Structure Tables" or equivalent. Deliberately not upgraded by association: it came from the same
   authored-from-memory process A-10e had to correct 70 refs out of. Owner action. See
   `docs/QA-ACADEMY.md` § A-10e and §5.1.
+  **Closed 2026-08-18** — the owner supplied *Exam Structure Tables* v1.18 (2026-05-27) and the split
+  was already exactly right, as were all four confirmed numbers. The caution was still correct to
+  hold: being right by luck and right by evidence look identical until the document arrives. The
+  split is now asserted against the document in `scripts/academy-bank-check.mjs`, which also stopped
+  keeping a second hand-typed copy of the weights; the exam start screen states the provenance
+  (`exam-blueprint-provenance`, scoped to the full paper) and `exam-strategy` carries the published
+  table with its K-level columns. **TC-E2E-132**, and TC-E2E-107 extended to assert the split per
+  chapter rather than via the total. The K-level split is recorded, not drawn on — honouring it would
+  change which questions a stored `seed` re-derives, which is what makes an attempt reproducible.
 - **A-07** `[x]` (2026-08-13, branch `feat/academy-a07-certificates`) — **Certificates**, for a
   completed track and a passing full practice exam. `Certificate` model; the serial is
   `HMAC(secret, kind|refSlug|userId)` rendered as 16 Crockford base32 symbols (`TF-XXXX-XXXX-XXXX-
@@ -4430,13 +4439,25 @@ with the `SuiteFolderGrid` work noted above.
   lesson may lack an entry, plus a named list of the two self-assessed slugs. **TC-E2E-128**–**131**;
   `e2e/academy.spec.ts` 40 specs. See `docs/QA-ACADEMY.md` § A-11.
 
-**Academy status, 2026-08-15.** Every `A-xx` work order is shipped except two deliberately parked
-items, neither of which is waiting on engineering time:
+**Academy status, 2026-08-18.** Every `A-xx` work order is shipped. One deliberately parked item
+remains, and it is not waiting on engineering time:
 
 | Parked | Unblocks on |
 |---|---|
 | A-08's localised `/id/academy/**` routes | a measured Indonesian organic-traffic number (A-03 gated this on data rather than deciding up front). If it goes ahead it is a translation job the size of A-08's content half. |
-| A-10's per-chapter exam blueprint split (8/6/4/11/9/2) | ISTQB's *"Exam Structures and Rules"* or *"Exam Structure Tables"*. Owner action. Every other exam parameter was confirmed 2026-08-13 and already matches `exams.ts`. The stated fallback if neither document can be had is to say in the exam UI that the blueprint is TestForge's approximation. |
+
+**A-10's per-chapter blueprint split closed 2026-08-18**, on the document rather than on its
+fallback. The owner supplied ISTQB's *Exam Structure Tables* v1.18 (2026-05-27), whose "CTFL v4.0"
+page gives the split as **8 / 6 / 4 / 11 / 9 / 2** — exactly what `exams.ts` had been running since
+A-06, authored from memory of the syllabus. Every other parameter matched too (40 questions, 26/40
+pass, 60 minutes, 75 under the language allowance). Because it closed on evidence rather than on the
+planned "say it is our approximation" hedge, the visible change is the reverse of what was planned:
+the exam start screen now states which numbers are the published ones, and `exam-strategy` carries
+the full table. The split is asserted against the document in `scripts/academy-bank-check.mjs`, which
+also stopped keeping its own second copy of the weights. The same page's per-chapter K-level
+breakdown (8 K1 / 24 K2 / 8 K3) is recorded but deliberately not wired into the draw — that would
+change which questions a stored `seed` re-derives, which is what makes a past attempt reproducible
+and a certificate checkable. See `docs/QA-ACADEMY.md` §5.1.
 
 ---
 

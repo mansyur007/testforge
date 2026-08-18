@@ -689,9 +689,45 @@ test(`TC-${TC}-107 The full practice exam start screen shows the real blueprint 
   await expect(page.getByTestId("exam-start")).toContainText("60 min");
   await expect(page.getByTestId("exam-extra-time")).toBeVisible();
 
+  // A-10, closed 2026-08-18: the per-chapter weights are the published CTFL
+  // v4.0 ones, so the screen says so. Asserted per chapter rather than on the
+  // total, because a total of 40 survives a split being wrong.
+  const start = page.getByTestId("exam-start");
+  for (const line of [
+    "Ch 1 — Fundamentals of Testing: 8 questions",
+    "Ch 2 — Testing Throughout the SDLC: 6 questions",
+    "Ch 3 — Static Testing: 4 questions",
+    "Ch 4 — Test Analysis and Design: 11 questions",
+    "Ch 5 — Managing the Test Activities: 9 questions",
+    "Ch 6 — Test Tools: 2 questions",
+  ]) {
+    await expect(start.getByText(line, { exact: true })).toBeVisible();
+  }
+
   await page.click('[data-testid="chapter-quiz-link-3"]');
   await page.waitForURL("**/academy/istqb/practice-exam/chapter/3");
   await expect(page.getByTestId("exam-start")).toContainText("Untimed");
+});
+
+test(`TC-${TC}-132 The full paper states its blueprint's provenance, and the chapter quizzes do not`, async ({
+  page,
+}) => {
+  // A-10's last parked item closed on ISTQB's Exam Structure Tables v1.18
+  // rather than on the planned "call it an approximation" fallback, so this
+  // asserts the opposite of what the plan expected to ship. The scoping half
+  // matters as much as the line itself: a chapter quiz is 8 questions of
+  // TestForge's own choosing and must not borrow the full paper's provenance.
+  await page.goto("/academy/istqb/practice-exam");
+  const provenance = page.getByTestId("exam-blueprint-provenance");
+  await expect(provenance).toBeVisible();
+  await expect(provenance).toContainText("published for CTFL v4.0");
+  // §7.1: stating the structure is published must not become a claim that the
+  // paper is the real exam.
+  await expect(provenance).toContainText("not from any real examination");
+
+  await page.goto("/academy/istqb/practice-exam/chapter/4");
+  await expect(page.getByTestId("exam-start")).toBeVisible();
+  await expect(page.getByTestId("exam-blueprint-provenance")).toHaveCount(0);
 });
 
 test(`TC-${TC}-108 The exam answer key never reaches the page before submission`, async ({

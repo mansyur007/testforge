@@ -6,12 +6,19 @@ import type { ExamBlueprint } from "./types";
 // belongs anywhere a client bundle could see it, even though a blueprint
 // alone contains no answer key. See docs/QA-ACADEMY.md §5.1.
 //
-// **Verify before seeding**, per the doc's own warning: chapter weights below
-// are taken from the CTFL v4.0 syllabus's Exam Structure & Rules document as
-// read for this work order. Re-check the currently published numbers (and
-// that v4.0 is still current) before this blueprint is treated as a source of
-// truth for anyone studying for the real exam — see docs/QA-ACADEMY.md §7.1
-// for why we never call this "the ISTQB exam".
+// **Verified 2026-08-18, and no longer a warning.** Every number below now
+// matches ISTQB's *Exam Structure Tables* v1.18 (2026-05-27), page "CTFL v4.0":
+// 40 questions as 8 / 6 / 4 / 11 / 9 / 2, pass at 65% (26 of 40), 60 minutes,
+// and 75 minutes total under the non-native-language allowance. The
+// per-chapter split was the last number in this file with no document behind
+// it — it had been authored from memory of the syllabus and was correct, which
+// is a good outcome and was not a safe assumption.
+//
+// Do not edit the weights here alone: `scripts/academy-bank-check.mjs` holds
+// the published table and fails `npm run build` if this object drifts from it.
+// A real change to the exam structure means editing both, with the document
+// version in hand. See docs/QA-ACADEMY.md §5.1 — and §7.1 for why this is still
+// never called "the ISTQB exam".
 
 const FULL_PASS_PCT = 65; // 26/40
 

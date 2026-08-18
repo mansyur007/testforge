@@ -95,6 +95,13 @@
 > per-chapter blueprint split (unblocks on an ISTQB exam-structure document — owner action). The
 > sandbox checker debt is closed: all 13 hands-on lessons render "Start this exercise", 11 have real
 > checkers, 2 are explicitly self-assessed, and the build asserts it.
+> **Status, 2026-08-18 — A-10 is fully closed, and one parked item is left.** The owner supplied
+> ISTQB's *Exam Structure Tables* v1.18, whose "CTFL v4.0" page confirms the per-chapter split
+> 8 / 6 / 4 / 11 / 9 / 2 exactly as authored. The item closed on the document rather than on the
+> planned "call it an approximation" fallback, the split is now asserted against the document at
+> build time, and the prose that hedged it is corrected. §5.1 has the account, including the
+> per-chapter K-level breakdown the same page supplies and why the draw deliberately does not use it
+> yet. **The only item still parked is A-08's localised `/id/academy/**` routes.**
 >
 > **A-08's content half is done: five tracks, 51 lessons, all `published`. The Indonesian routes are
 > what remains** — gated by A-03 on measured ID organic traffic — **plus the sandbox checkers, which
@@ -377,53 +384,53 @@ half-written track can be merged and 404s in production.
 Modelled on the CTFL v4.0 exam structure: **40 questions, 60 minutes** (75 for non-native English
 speakers — offered as a checkbox at start), **pass at 65% = 26/40**, points distributed by chapter:
 
-| Ch | Topic | Questions |
-|---:|---|---:|
-| 1 | Fundamentals of Testing | 8 |
-| 2 | Testing Throughout the SDLC | 6 |
-| 3 | Static Testing | 4 |
-| 4 | Test Analysis and Design | 11 |
-| 5 | Managing the Test Activities | 9 |
-| 6 | Test Tools | 2 |
+| Ch | Topic | Questions | K1 | K2 | K3 |
+|---:|---|---:|---:|---:|---:|
+| 1 | Fundamentals of Testing | 8 | 2 | 6 | 0 |
+| 2 | Testing Throughout the SDLC | 6 | 2 | 4 | 0 |
+| 3 | Static Testing | 4 | 2 | 2 | 0 |
+| 4 | Test Analysis and Design | 11 | 0 | 6 | 5 |
+| 5 | Managing the Test Activities | 9 | 1 | 5 | 3 |
+| 6 | Test Tools | 2 | 1 | 1 | 0 |
+| | **Total** | **40** | **8** | **24** | **8** |
 
-> **Verify before seeding.** These figures are taken from the v4.0 syllabus and its Exam Structure
-> & Rules document. The implementer must re-check the current published numbers (and whether v4.0
-> is still current) before writing `ctfl-v4-full` — the blueprint is one object in
-> `src/content/academy/exams.ts`, so a correction is a one-line change, but shipping wrong weights
-> makes the whole simulation worthless.
+> **Closed 2026-08-18. The weights are the published ones, and the build now checks that.**
+> ISTQB's *Exam Structure Tables* v1.18 (2026-05-27) is in hand, and its "CTFL v4.0" page settles
+> the last open number in A-10 — the per-chapter split. **8 / 6 / 4 / 11 / 9 / 2 was already
+> exactly right.** So was every other figure: 40 questions, pass at 26 of 40, 60 minutes, and 75
+> minutes total under the non-native-language allowance. The K-level columns in the table above are
+> new information from the same page.
 >
-> **Half-answered 2026-08-12, against the real CTFL v4.0.1 syllabus PDF (2024-09-15) and the
-> official Sample Exam set A v1.6.** What the two documents settle:
+> **The right conclusion is not "we were right, so the process was fine".** The split was authored
+> from memory of the syllabus — the same process that produced the 70 `syllabusRef` tags and 73
+> K-levels A-10e had to correct. It came out right; it could as easily not have. What changed is
+> that the number is now *checked* rather than *trusted*, and the check is a build assertion rather
+> than a paragraph:
 >
-> - **v4.0 is still the current version.** v4.0.1 is an errata to v4.0, not a new version — its
->   Release Notes list only wording alignments to the glossary. `ctfl-v4-full` keeps its slug.
-> - **40 questions is right.** Sample Exam set A is 40 questions at 1 point each.
-> - **The learning objectives are now verified**, all 64 of them, with their K-levels. That half of
->   the warning is closed and enforced in code — see A-10e.
+> - `scripts/academy-bank-check.mjs` holds `PUBLISHED_CTFL_V4` — the document's numbers, transcribed
+>   as numbers — and parses `CTFL_V4_FULL` out of `src/content/academy/exams.ts` to compare against
+>   it. A weight edited in `exams.ts` alone fails `npm run build`. Verified by breaking chapter 3 to
+>   5 and watching the build fail with both splits printed, then restoring it.
+> - The checker's own `FULL_EXAM_CHAPTERS` used to be a **second hand-typed copy** of the split. It
+>   is now derived from `exams.ts`, so the simulations run against what the app ships. Two copies of
+>   a number that must agree is the drift A-11a's tally lesson warned about, and it was sitting in
+>   the file that exists to catch drift.
 >
-> What they **do not** settle, and what therefore remains open: **the per-chapter weights in the
-> table above, and the 65% pass line.** Syllabus §0.6 explicitly defers both to two separate ISTQB
-> documents — *"Exam Structures and Rules"* and *"Exam Structure Tables"* — neither of which is in
-> hand. Until one of them is, the weights and the pass mark are an informed guess, and **the exam
-> result page must not claim equivalence with the real exam**. Getting hold of either document
-> closes this item outright.
+> **What the document does not change.** The bank, the questions, the chapter quizzes and the
+> 8-question quiz size are all still TestForge's own, and §7.1 still governs how this is described:
+> the structure is published, the paper is ours, and neither the start screen nor the result page
+> claims to *be* the ISTQB exam. Only the prose that called the split "our approximation" was wrong,
+> and it is corrected — in `exam-strategy`, on the exam start screen, and here.
 >
-> **Narrowed again 2026-08-13, owner-supplied.** The exam structure for CTFL v4.0: **40 questions,
-> pass at 65% (26 of 40), 60 minutes, plus 15 further minutes when the exam is not sat in the
-> candidate's native language.** That confirms three of the four numbers this project has been
-> running on since A-06 — the pass line, the base duration and the extra-time allowance — and
-> `exams.ts` already matches all three (`passPct` 65, `durationSec` 60 min, `extraTimeSec` 75 min,
-> which is the *total* under the allowance rather than the increment; see the field's own note).
->
-> **What is still open is only the per-chapter weights** — the 8 / 6 / 4 / 11 / 9 / 2 split. Note the
-> provenance difference, because it is the whole point of A-10e: the version, question count and
-> learning objectives were read off documents the project holds, while the line above was supplied by
-> the owner and is not backed by a document here. That is good enough to stop calling the pass mark a
-> guess, and not good enough to promote the weights by association. They were "authored from memory
-> of the syllabus" exactly like the `syllabusRef` tags A-10e had to correct 70 of, and 40 questions
-> can be split six ways in a great many plausible-looking ways. **Owner action is now narrower: the
-> per-chapter question counts, from "Exam Structure Tables" or equivalent.** Until then the exam
-> result page still must not claim equivalence with the real paper.
+> **Recorded and deliberately not implemented: the K-level split.** The document gives a per-chapter
+> K1/K2/K3 breakdown (8 / 24 / 8 overall), and `drawQuestionIds` is chapter-weighted only, so our
+> paper matches the chapter counts but does not guarantee that exactly five of chapter 4's eleven
+> are K3. **Making the draw honour K-levels would change which questions a stored `seed`
+> re-derives**, and re-deriving a paper from its seed is what makes a past attempt reproducible and
+> a certificate checkable (§2.3, A-10b). That is a migration, not a tweak, and it belongs in its own
+> work order with a decision about existing attempts. `PUBLISHED_CTFL_V4.k` records the numbers and
+> asserts only that they total each chapter's count; `exam-strategy` tells the learner plainly that
+> our draw matches the counts and not the K columns.
 
 Bank target, as settled by A-10d's seventh and eighth slices: **≥7× the number drawn per chapter for
 chapters 4 and 5, ≥5× for the rest, and ≥3 questions per learning objective.** All three are
@@ -1822,6 +1829,13 @@ and that **the per-chapter split is this project's own blueprint** rather than a
 in their "in our practice paper" phrasing, said once in full where a reader planning their revision
 will meet it.
 
+> **Overtaken 2026-08-18, and the lesson now says the opposite.** The *Exam Structure Tables*
+> document arrived and the split turned out to be the published one, so "our approximation" was the
+> inaccurate sentence on the page — an over-hedge rather than an over-claim, which is the safer way
+> round to be wrong and still wrong. `exam-strategy` now carries the full published table with its
+> K-level columns and one narrower honesty in its place: our draw matches the chapter counts, not
+> the K columns. See §5.1.
+
 **Verified against a running server, and this is the widest check A-08 has run**: all 8 T5 routes 200
 with 8 sitemap entries; **all five roadmap cards are now links and `border-dashed` appears zero times
 on `/academy`**; the non-affiliation notice renders on a T5 lesson page and **not** on a T2 one, which
@@ -1976,7 +1990,7 @@ regression: `e2e/academy.spec.ts` + `e2e/help-center.spec.ts` 39/39, `tsc --noEm
 clean, and `next build`'s route table confirms all three routes moved from `●` (SSG) to `ƒ`
 (Dynamic).
 
-### A-10 — Exam integrity: answer-key balance, single-use tickets, resumable attempts `[x]` (code) / `[ ]` (content)
+### A-10 — Exam integrity: answer-key balance, single-use tickets, resumable attempts `[x]`
 
 > **Opened 2026-08-12** from an audit of what A-06 actually shipped, run against the real bank and
 > the real `drawQuestionIds` rather than against this document's account of them. Every number below
@@ -2739,6 +2753,11 @@ pass before anyone studies for the real exam from this bank.
 > to sit, and worth saying plainly so nobody re-opens the research from scratch. **Owner action:
 > obtain either document.** If neither can be had, the fallback is to state in the exam UI that the
 > blueprint is TestForge's approximation, rather than to keep implying equivalence.
+>
+> **Closed 2026-08-18 — the owner supplied *Exam Structure Tables* v1.18, and the fallback was never
+> needed.** The split was already correct. The exam UI gained a provenance line saying which numbers
+> are the published ones, which is the opposite of the hedge planned here, and the split is now a
+> build assertion against the document rather than a claim in prose. Full account in §5.1.
 >
 > **Narrowed to one number, 2026-08-13.** The owner supplied the exam structure: 40 questions, pass
 > at 65% (26 of 40), 60 minutes plus 15 when the exam is not sat in the candidate's native language.

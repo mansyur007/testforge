@@ -375,6 +375,23 @@ export function ExamRunner({
           ))}
         </ul>
 
+        {/* A-10, closed 2026-08-18. This line exists because the split above was
+            for months the one number on this screen with no document behind it,
+            and the plan's fallback was to label it an approximation. The
+            document arrived and the split was already right, so the honest note
+            is provenance rather than a hedge — and it is deliberately specific
+            about *which* numbers are the published ones, because the bank, the
+            questions and the chapter quizzes remain ours. See
+            docs/QA-ACADEMY.md §5.1 and §7.1. */}
+        {templateSlug === "ctfl-v4-full" && (
+          <p className="mt-3 text-xs text-content-muted" data-testid="exam-blueprint-provenance">
+            The question count, per-chapter split, time limit and pass mark
+            follow the exam structure published for CTFL v4.0. The questions
+            themselves are written by TestForge from the syllabus objectives and
+            are not from any real examination.
+          </p>
+        )}
+
         {timed && !!extraTimeSec && (
           <label className="mt-5 flex items-center gap-2 text-sm text-content">
             <input
