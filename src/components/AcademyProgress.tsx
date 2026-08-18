@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { Lang } from "@/lib/i18n";
+import { academyChrome } from "@/lib/academy/chrome";
 import {
   PROGRESS_EVENT,
   countDone,
@@ -47,10 +49,13 @@ function useProgressTick(): boolean {
 export function TrackProgress({
   lessonSlugs,
   className = "",
+  lang = "en",
 }: {
   lessonSlugs: string[];
   className?: string;
+  lang?: Lang;
 }) {
+  const t = academyChrome[lang];
   const mounted = useProgressTick();
   const total = lessonSlugs.length;
   const done = mounted ? countDone(lessonSlugs) : 0;
@@ -60,7 +65,9 @@ export function TrackProgress({
     <div className={className} data-testid="track-progress">
       <div className="flex items-center justify-between text-xs text-content-muted">
         <span>
-          {mounted ? `${done} of ${total} lessons done` : `${total} lessons`}
+          {mounted
+            ? t.progress.doneOf(done, total)
+            : `${total} ${t.lessons}`}
         </span>
         {mounted && done > 0 && <span className="tabular-nums">{pct}%</span>}
       </div>
@@ -70,7 +77,7 @@ export function TrackProgress({
         aria-valuenow={done}
         aria-valuemin={0}
         aria-valuemax={total}
-        aria-label="Track progress"
+        aria-label={t.progress.label}
       >
         <div
           className="h-full rounded-full bg-accent motion-safe:transition-[width] motion-safe:duration-panel motion-safe:ease-tf-out"
@@ -79,9 +86,7 @@ export function TrackProgress({
       </div>
       {mounted && (
         <p className="mt-1.5 text-[11px] text-content-subtle">
-          {isAuthed()
-            ? "Saved to your account."
-            : "Saved in this browser only — sign in to keep it."}
+          {isAuthed() ? t.progress.savedAccount : t.progress.savedLocal}
         </p>
       )}
     </div>
@@ -93,10 +98,13 @@ export function TrackProgress({
 export function LessonDoneToggle({
   lessonSlug,
   trackSlug,
+  lang = "en",
 }: {
   lessonSlug: string;
   trackSlug: string;
+  lang?: Lang;
 }) {
+  const t = academyChrome[lang];
   const mounted = useProgressTick();
   const done = mounted ? Boolean(readProgress()[lessonSlug]) : false;
 
@@ -122,7 +130,7 @@ export function LessonDoneToggle({
       >
         {done ? "✓" : ""}
       </span>
-      {done ? "Done" : "Mark as done"}
+      {done ? t.progress.done : t.progress.markDone}
     </button>
   );
 }

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { gradeSelfCheck } from "@/app/actions/academy";
 import { markDone } from "@/lib/academy/progress";
 import type { PublicQuestion, QuestionVerdict } from "@/lib/academy/types";
+import type { Lang } from "@/lib/i18n";
+import { academyChrome } from "@/lib/academy/chrome";
 
 // A-02: the in-lesson self-check. The questions arrive already sanitized (no
 // `correct`, no explanation — see src/lib/academy/questions.ts), and grading is
@@ -15,11 +17,14 @@ export function SelfCheck({
   track,
   lesson,
   questions,
+  lang = "en",
 }: {
   track: string;
   lesson: string;
   questions: PublicQuestion[];
+  lang?: Lang;
 }) {
+  const t = academyChrome[lang];
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const [verdicts, setVerdicts] = useState<QuestionVerdict[] | null>(null);
   const [score, setScore] = useState(0);
@@ -58,7 +63,7 @@ export function SelfCheck({
       // can still tick it by hand with the toggle below if they disagree.
       if (result.score === result.total) markDone(lesson, track);
     } catch {
-      setError("Couldn't reach the server. Try again.");
+      setError(t.selfCheck.unreachable);
     } finally {
       setPending(false);
     }
@@ -82,11 +87,10 @@ export function SelfCheck({
         id="self-check-heading"
         className="text-lg font-semibold text-content-strong"
       >
-        Check your understanding
+        {t.selfCheck.title}
       </h2>
       <p className="mt-1 text-sm text-content-muted">
-        {questions.length} questions. No account needed, nothing is sent anywhere
-        but the grader.
+        {t.selfCheck.intro(questions.length)}
       </p>
 
       <ol className="mt-6 space-y-6">
@@ -145,7 +149,7 @@ export function SelfCheck({
                   className="mt-2 rounded-lg bg-surface-muted p-3 text-sm text-content"
                 >
                   <strong className="text-content-strong">
-                    {v.correct ? "Correct." : "Not quite."}
+                    {v.correct ? t.selfCheck.correct : t.selfCheck.notQuite}
                   </strong>{" "}
                   {v.explanation}
                 </p>
@@ -170,13 +174,13 @@ export function SelfCheck({
             onClick={submit}
             className="min-h-[44px] rounded-lg bg-accent px-5 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {pending ? "Checking…" : "Check answers"}
+            {pending ? t.selfCheck.checking : t.selfCheck.check}
           </button>
         ) : (
           <>
             <p data-testid="self-check-score" className="text-sm font-medium">
-              {score} / {questions.length} correct
-              {score === questions.length && " — lesson marked done"}
+              {t.selfCheck.score(score, questions.length)}
+              {score === questions.length && t.selfCheck.allCorrect}
             </p>
             <button
               type="button"
@@ -184,13 +188,13 @@ export function SelfCheck({
               onClick={retry}
               className="min-h-[44px] rounded-lg border border-hairline px-4 py-2 text-sm font-medium text-content hover:bg-surface-muted"
             >
-              Try again
+              {t.selfCheck.retry}
             </button>
           </>
         )}
         {!answeredAll && !verdicts && (
           <span className="text-xs text-content-muted">
-            Answer every question first.
+            {t.selfCheck.answerAll}
           </span>
         )}
       </div>

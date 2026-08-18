@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { HELP_TOPICS } from "@/content/help";
 import { publishedLessons, publishedTracks } from "@/content/academy";
+import { visibleLessons } from "@/content/academy/i18n";
 import { db } from "@/lib/db";
 import { absoluteUrl } from "@/lib/seo";
 
@@ -86,6 +87,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.7,
       })),
     ]),
+    // A-08: the Indonesian routes, listed from the same source the routes
+    // themselves gate on (`visibleLessons`), so the sitemap cannot advertise a
+    // URL that 404s — which was the failure mode worth designing against here,
+    // since A-08 translates one track at a time and every intermediate state
+    // has more English lessons than Indonesian ones. A track appears only once
+    // at least one of its lessons does; `/id/academy` itself appears only once
+    // some track does.
+    ...(publishedTracks().some((track) => visibleLessons(track, "id").length > 0)
+      ? [
+          {
+            url: absoluteUrl("/id/academy"),
+            changeFrequency: "weekly" as const,
+            priority: 0.9,
+          },
+        ]
+      : []),
+    ...publishedTracks().flatMap((track) => {
+      const lessons = visibleLessons(track, "id");
+      if (lessons.length === 0) return [];
+      return [
+        {
+          url: absoluteUrl(`/id/academy/${track.slug}`),
+          changeFrequency: "weekly" as const,
+          priority: 0.8,
+        },
+        ...lessons.map((lesson) => ({
+          url: absoluteUrl(`/id/academy/${track.slug}/${lesson.slug}`),
+          changeFrequency: "monthly" as const,
+          priority: 0.7,
+        })),
+      ];
+    }),
     { url: absoluteUrl("/login"), changeFrequency: "monthly", priority: 0.4 },
     { url: absoluteUrl("/terms"), changeFrequency: "yearly", priority: 0.3 },
     { url: absoluteUrl("/privacy"), changeFrequency: "yearly", priority: 0.3 },
