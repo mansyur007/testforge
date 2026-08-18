@@ -149,15 +149,116 @@ for (const q of bank) {
 // The guessing strategy, end to end against the real bank and the real draw
 // ---------------------------------------------------------------------------
 
-const FULL_EXAM_CHAPTERS = [
-  { chapter: 1, count: 8 },
-  { chapter: 2, count: 6 },
-  { chapter: 3, count: 4 },
-  { chapter: 4, count: 11 },
-  { chapter: 5, count: 9 },
-  { chapter: 6, count: 2 },
-];
-const PASS_PCT = 65;
+// The published CTFL v4.0 exam structure, from ISTQB's *Exam Structure Tables*
+// v1.18 (2026-05-27), page "CTFL v4.0". This is the document §5.1 spent four
+// months calling for, and it settles the last open number in A-10: the
+// per-chapter split. **The project's 8 / 6 / 4 / 11 / 9 / 2 was already exactly
+// right** — authored from memory, and now checked rather than trusted.
+//
+// It is transcribed here as *numbers*, which is the whole of what we use: the
+// document's prose, its learning-objective groupings and its layout are ISTQB's
+// and are not reproduced. §7.2's rule for the bank applies to the blueprint too.
+//
+// Why a constant in the checker rather than a comment in `exams.ts`: A-11a's
+// lesson was that a number maintained by prose drifts — derive it, or assert it.
+// `exams.ts` is now checked against this table on every build, and the
+// simulations below run against `exams.ts` rather than against a second copy,
+// so there is exactly one place a weight can be changed and it fails the build
+// unless the document changed too.
+const PUBLISHED_CTFL_V4 = {
+  passPct: 65, // 26 of 40
+  durationSec: 60 * 60,
+  extraTimeSec: 75 * 60, // total under the non-native-language allowance, not the increment
+  // `k` is the document's K-level split per chapter. Nothing draws on it yet —
+  // `drawQuestionIds` is chapter-weighted only — so it is recorded, reported and
+  // deliberately not asserted against the bank. Making the draw honour it would
+  // change which questions a stored `seed` re-derives, which is what makes a
+  // past attempt reproducible; that is its own work order. See docs/QA-ACADEMY.md §5.1.
+  chapters: [
+    { chapter: 1, count: 8, k: { K1: 2, K2: 6, K3: 0 } },
+    { chapter: 2, count: 6, k: { K1: 2, K2: 4, K3: 0 } },
+    { chapter: 3, count: 4, k: { K1: 2, K2: 2, K3: 0 } },
+    { chapter: 4, count: 11, k: { K1: 0, K2: 6, K3: 5 } },
+    { chapter: 5, count: 9, k: { K1: 1, K2: 5, K3: 3 } },
+    { chapter: 6, count: 2, k: { K1: 1, K2: 1, K3: 0 } },
+  ],
+};
+
+/** `CTFL_V4_FULL` as authored, read out of the TS source the app actually uses.
+ *  Same approach as `academy-checks-selftest.mjs` takes to `sandbox.ts`: the
+ *  file is data with a fixed shape, and a regex over it beats a second copy. */
+function authoredFullExam() {
+  const src = readFileSync("src/content/academy/exams.ts", "utf8");
+  const body = src.slice(src.indexOf("export const CTFL_V4_FULL"));
+  // Values are either a product of literals (`60 * 60`) or a named constant
+  // declared earlier in the file (`passPct: FULL_PASS_PCT`). Resolve one level
+  // of indirection and evaluate the arithmetic; anything else throws, so a
+  // future refactor of `exams.ts` fails the build loudly instead of silently
+  // checking nothing — the same contract `loadBank` above holds itself to.
+  const product = (expr, field) => {
+    const parts = expr.trim().split("*").map((p) => p.trim());
+    if (!parts.every((p) => /^\d+$/.test(p))) {
+      throw new Error(`exams.ts: CTFL_V4_FULL.${field} is not a product of literals: "${expr}"`);
+    }
+    return parts.reduce((a, p) => a * Number(p), 1);
+  };
+  const num = (field) => {
+    const m = body.match(new RegExp(`${field}:\\s*([A-Za-z0-9_*\\s]+?),`));
+    if (!m) throw new Error(`exams.ts: could not read CTFL_V4_FULL.${field}`);
+    const raw = m[1].trim();
+    if (/^[A-Za-z_]\w*$/.test(raw)) {
+      const decl = src.match(new RegExp(`const\\s+${raw}\\s*=\\s*([^;]+);`));
+      if (!decl) throw new Error(`exams.ts: CTFL_V4_FULL.${field} names ${raw}, which is not declared here`);
+      return product(decl[1], field);
+    }
+    return product(raw, field);
+  };
+  const chapters = [...body.matchAll(/\{\s*chapter:\s*(\d)\s*,\s*topic:\s*"[^"]*"\s*,\s*count:\s*(\d+)\s*\}/g)]
+    .map((m) => ({ chapter: Number(m[1]), count: Number(m[2]) }));
+  return {
+    passPct: num("passPct"),
+    durationSec: num("durationSec"),
+    extraTimeSec: num("extraTimeSec"),
+    chapters,
+  };
+}
+
+const authored = authoredFullExam();
+
+for (const field of ["passPct", "durationSec", "extraTimeSec"]) {
+  assert(
+    `exams.ts CTFL_V4_FULL.${field} matches the published CTFL v4.0 exam structure`,
+    authored[field] === PUBLISHED_CTFL_V4[field],
+    `authored ${authored[field]}, published ${PUBLISHED_CTFL_V4[field]}`,
+  );
+}
+const authoredSplit = authored.chapters.map((c) => `${c.chapter}:${c.count}`).join(" ");
+const publishedSplit = PUBLISHED_CTFL_V4.chapters.map((c) => `${c.chapter}:${c.count}`).join(" ");
+assert(
+  "exams.ts CTFL_V4_FULL per-chapter weights match the published CTFL v4.0 exam structure",
+  authoredSplit === publishedSplit,
+  `authored ${authoredSplit}, published ${publishedSplit}`,
+);
+const publishedTotal = PUBLISHED_CTFL_V4.chapters.reduce((n, c) => n + c.count, 0);
+assert(
+  "the published per-chapter weights total 40 questions",
+  publishedTotal === 40,
+  `they total ${publishedTotal}`,
+);
+for (const c of PUBLISHED_CTFL_V4.chapters) {
+  const kTotal = c.k.K1 + c.k.K2 + c.k.K3;
+  assert(
+    `published chapter ${c.chapter}: K-level split totals its question count`,
+    kTotal === c.count,
+    `K1 ${c.k.K1} + K2 ${c.k.K2} + K3 ${c.k.K3} = ${kTotal}, count ${c.count}`,
+  );
+}
+
+// The simulations run against what the app ships, not against the table above —
+// the table is the guard, `exams.ts` is the subject. If the two disagree the
+// assertions above have already failed and this is running on the real weights.
+const FULL_EXAM_CHAPTERS = authored.chapters;
+const PASS_PCT = authored.passPct;
 const SEEDS = 300;
 
 const byId = new Map(bank.map((q) => [q.id, q]));
