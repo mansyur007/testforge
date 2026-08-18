@@ -1,5 +1,7 @@
 import type { TrackTranslation } from "../../../types";
 import { whatQaDoesId } from "./what-qa-does";
+import { sdlcAndStlcId } from "./sdlc-and-stlc";
+import { testLevelsId } from "./test-levels";
 
 // T1 in Indonesian. Lesson order is not restated — `localiseTrack` walks the
 // English track and matches by slug, so this array is a *set* of what has been
@@ -17,5 +19,5 @@ export const fundamentalsId: TrackTranslation = {
     "Membuat laporan cacat yang berujung diperbaiki, bukan ditutup sebagai “tidak bisa direproduksi”",
     "Membedakan severity dari priority, dan tahu siapa yang memutuskan masing-masing",
   ],
-  lessons: [whatQaDoesId],
+  lessons: [whatQaDoesId, sdlcAndStlcId, testLevelsId],
 };
