@@ -78,6 +78,25 @@ export function localiseTrack(track: Track, lang: Lang): Track {
 }
 
 /**
+ * One lesson's `selfCheck` as a reader of `lang` sees it.
+ *
+ * `LessonPage` already sanitizes the *localised* questions into the page, so
+ * the stems and choices a reader answers are in their language. The grader is
+ * a separate lookup, and it was the one that stayed English — which showed up
+ * only after answering, as an English explanation under an Indonesian
+ * question. `correct` is unaffected in either direction: `localiseQuestion`
+ * takes the answer key from the English bank whatever language it is asked for.
+ */
+export function localiseSelfCheck(
+  track: Track,
+  lessonSlug: string,
+  lang: Lang,
+): SelfCheckQuestion[] | undefined {
+  return localiseTrack(track, lang).lessons.find((l) => l.slug === lessonSlug)
+    ?.selfCheck;
+}
+
+/**
  * The lesson slugs of `trackSlug` that have Indonesian text, as a Set.
  *
  * **This is what the `/id` routes gate on, and it is the whole fallback

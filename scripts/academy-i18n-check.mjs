@@ -33,6 +33,16 @@
 //    track page with Indonesian lessons and an English title/tagline is the
 //    half-done state that looks finished.
 //
+// 6. **The self-check grader resolves questions in the reader's language.**
+//    The page sanitizes the *localised* questions, but grading is a second,
+//    separate lookup in `gradeSelfCheck`, and it originally used the English
+//    registry. Nothing about that is visible until you answer a question: the
+//    stem and choices are Indonesian, the verdict is right, and the
+//    explanation underneath it is a paragraph of English. Every translated
+//    `explanation` in this tree was dead text. Asserted here because it is
+//    unreachable from the content files — it is a code path, and it is the
+//    only one that can make correct translations never render.
+//
 // Reads the TypeScript as text, the way `academy-checks-selftest.mjs` reads
 // `sandbox.ts` and `academy-trademark-check.mjs` reads the track files: these
 // are data modules with a fixed shape, and parsing them beats maintaining a
@@ -236,6 +246,41 @@ if (en7 && id7) {
     id7[1].includes("ISTQB"),
   );
 }
+
+// (6). `\r` is normalised away first: the repo is developed on Windows, and
+// matching a closing brace at the start of a line is otherwise a no-op that
+// silently passes every assertion below it.
+const actionSrc = stripComments(
+  readFileSync("src/app/actions/academy.ts", "utf8"),
+).replace(/\r\n/g, "\n");
+const grader = actionSrc.slice(actionSrc.indexOf("export async function gradeSelfCheck"));
+const end = grader.indexOf("\n}\n");
+const graderBody = end === -1 ? grader : grader.slice(0, end + 1);
+assert(
+  "the gradeSelfCheck body was located (this file's other assertions rest on it)",
+  end !== -1 && graderBody.length > 0,
+);
+assert(
+  "gradeSelfCheck grades the questions the reader was actually asked",
+  /localiseSelfCheck\(/.test(graderBody),
+  "it resolves the lesson through the English registry only, so an Indonesian " +
+    "reader gets an English explanation under an Indonesian question",
+);
+assert(
+  "gradeSelfCheck takes the reader's language from its caller",
+  /\blang\?:\s*string/.test(graderBody),
+  "without a `lang` argument there is nothing to localise the explanations by",
+);
+assert(
+  "SelfCheck passes its language to the grader",
+  /gradeSelfCheck\(\{[^}]*\blang\b/.test(
+    stripComments(readFileSync("src/components/SelfCheck.tsx", "utf8")).replace(
+      /\r\n/g,
+      "\n",
+    ),
+  ),
+  "the component knows the language and the server action cannot guess it",
+);
 
 if (failed > 0) {
   console.error(`academy-i18n-check: FAILED (${failed} assertion(s))`);

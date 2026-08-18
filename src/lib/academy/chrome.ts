@@ -78,6 +78,7 @@ const en = {
     title: "Check your understanding",
     intro: (n: number) =>
       `${n} questions. No account needed, nothing is sent anywhere but the grader.`,
+    chooseAll: "(choose all that apply)",
     correct: "Correct.",
     notQuite: "Not quite.",
     check: "Check answers",
@@ -156,6 +157,7 @@ const id: typeof en = {
     title: "Uji pemahaman Anda",
     intro: (n: number) =>
       `${n} pertanyaan. Tidak perlu akun, dan tidak ada yang dikirim ke mana pun selain ke pemeriksa jawaban.`,
+    chooseAll: "(pilih semua yang sesuai)",
     correct: "Benar.",
     notQuite: "Belum tepat.",
     check: "Periksa jawaban",

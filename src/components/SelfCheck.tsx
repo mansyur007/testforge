@@ -51,7 +51,7 @@ export function SelfCheck({
     setPending(true);
     setError(null);
     try {
-      const result = await gradeSelfCheck({ track, lesson, answers });
+      const result = await gradeSelfCheck({ track, lesson, answers, lang });
       if ("error" in result) {
         setError(result.error);
         return;
@@ -104,7 +104,7 @@ export function SelfCheck({
                 {q.stem}
                 {q.multi && (
                   <span className="ml-2 text-xs font-normal text-content-muted">
-                    (choose all that apply)
+                    {t.selfCheck.chooseAll}
                   </span>
                 )}
               </p>
