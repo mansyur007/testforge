@@ -4268,7 +4268,7 @@ with the `SuiteFolderGrid` work noted above.
   attempt, checked against whichever questions the seed actually drew). See `docs/QA-ACADEMY.md`
   § A-06 for the full writeup, including a stale-session-cookie edge case found while manually
   walking the flow (pre-existing app-wide behaviour, not a regression, not fixed in this PR).
-- **A-08** `[x]` content · `[ ]` localised routes (parked) — content build-out and localised routes. Eight content slices landed
+- **A-08** `[x]` — content build-out and localised routes. Eight content slices landed
   2026-08-14 (#190–#193, #195–#197, and this one). Five of them wrote Track 2 (`manual-pro`) end to end:
   `test-planning`, then lessons 2–4 (`risk-based-testing`, `exploratory-testing`, `test-oracles`),
   then the technical block 5–7 (`http-and-devtools`, `api-testing`, `sql-for-qa`), then the
@@ -4291,6 +4291,20 @@ with the `SuiteFolderGrid` work noted above.
   A-03 gated them on *measured* Indonesian organic traffic rather than deciding up front, so they
   cannot start until that number exists. Unblocks on: an ID traffic measurement. The checker debt
   this entry helped accumulate went to A-11 and is closed.
+  **Closed 2026-08-19 (#224) — the Indonesian Academy at 51 of 51.** Five slices after the routing
+  half, one track each in roadmap order (T1 13, T2 12, T3 12, T4 7, T5 7). Every published lesson
+  now has an Indonesian sibling, so `/id/academy/**` resolves for all 57 routes, `hreflang` is
+  reciprocal on every pair rather than on one, and the sitemap carries 57 Indonesian URLs against
+  the English 57. The exam simulator is the one thing still English-only — A-06's bank has no
+  `QuestionTranslation` path and there is no `/id` route for it — so T5's lessons point at it with
+  the path in a code span and a note, because an `/academy/…` markdown link fails the i18n check's
+  link rule and an `/id/…/practice-exam/chapter/1` link would 404. Localising the bank is its own
+  work order. **TC-E2E-134**–**136** were rewritten in the same PR: they asserted the *partial*
+  state (three paths 404, a bare canonical on `/academy/manual-pro/test-planning`, a
+  "Belum diterjemahkan" card) and all three went red on completion, which is the suite doing its
+  job. They now assert parity — every English lesson URL has an Indonesian one at the same slug,
+  reciprocity in both directions, every track card linking into `/id` — plus the 404 gate on an
+  unknown slug, which is the part of the fallback still reachable from content.
 - **A-09** `[x]` (2026-08-12, branch `feat/academy-help-authed-shell`) — Session-aware shell on
   `/academy` and `/docs/help`: a signed-in visitor now gets the same sidebar/`AppShell` as the rest
   of the app (extracted into `src/components/AuthedAppShell.tsx`, reused by `(app)/layout.tsx`
@@ -4453,6 +4467,16 @@ one set of components rather than two copies, and `scripts/academy-i18n-check.mj
 quiet failure modes into build failures — including the register rule, since `Anda` is capitalised
 mid-sentence and English `you` is not. **Translation progress is printed by that checker on every
 build**, so it cannot drift the way a hand-maintained tally does. See `docs/QA-ACADEMY.md` § A-08.
+
+**Academy status, 2026-08-19 — A-08 is closed, and every `A-xx` work order in this repository is
+shipped.** The translation finished at **51/51** (#224): five slices, one track each. Everything the
+routing half built as a parameter is now exercised in its true branch — reciprocal `hreflang` on
+every Academy page in both languages, 57 Indonesian sitemap URLs against the English 57, and no
+"Belum diterjemahkan" card left to render. The 404-not-fallback rule is unchanged and still live;
+what changed is that no *published* lesson can reach it, so `TC-E2E-135` now exercises it with an
+unknown slug and the branch returns to content coverage the day an English lesson lands ahead of
+its translation. Still open as future work, and deliberately not smuggled into this work order:
+localising A-06's question bank so the exam simulator has an Indonesian route.
 
 **A-10's per-chapter blueprint split closed 2026-08-18**, on the document rather than on its
 fallback. The owner supplied ISTQB's *Exam Structure Tables* v1.18 (2026-05-27), whose "CTFL v4.0"

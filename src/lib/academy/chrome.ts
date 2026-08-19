@@ -51,10 +51,17 @@ const en = {
       "A free roadmap from zero to professional QA: testing fundamentals, manual QA at work, automation, and Foundation Level exam prep — practised in a real test management tool.",
     intro:
       "A roadmap from zero to professional QA — and then to automation. Free, open source, and practised where the work actually happens: in a real test management tool, on a real project.",
-    availableNow: (n: number) => `${n} lessons available now · more tracks in progress`,
+    // A-08 published the fifth and last track on 2026-08-15, so "more tracks in
+    // progress" and "one track is finished" both went false and stayed false.
+    // Neither clause is replaced with a new count: copy that asserts how many
+    // tracks exist goes stale the next time one is added, and the per-track
+    // status badges already say it from `status`, where it cannot drift. The
+    // beta framing is deliberately kept — that is a product claim, not a fact
+    // about the track list.
+    availableNow: (n: number) => `${n} lessons available now`,
     betaTitle: "QA Academy is in beta.",
     betaBody:
-      "One track is finished; the rest are still being written, and published lessons may still change. Nothing here needs an account — if something is wrong or missing,",
+      "Published lessons may still change. Nothing here needs an account — if something is wrong or missing,",
     betaLink: "tell us on GitHub",
     inProgress: "In progress",
     planned: " planned",
@@ -128,11 +135,10 @@ const id: typeof en = {
       "Peta belajar gratis dari nol sampai QA profesional: dasar-dasar pengujian, QA manual di dunia kerja, otomasi, dan persiapan ujian Foundation Level — dipraktikkan di alat manajemen pengujian sungguhan.",
     intro:
       "Peta belajar dari nol sampai QA profesional — lalu berlanjut ke otomasi. Gratis, open source, dan dipraktikkan di tempat pekerjaannya benar-benar terjadi: di alat manajemen pengujian sungguhan, pada proyek sungguhan.",
-    availableNow: (n: number) =>
-      `${n} pelajaran tersedia sekarang · track lain sedang ditulis`,
+    availableNow: (n: number) => `${n} pelajaran tersedia sekarang`,
     betaTitle: "QA Academy masih dalam tahap beta.",
     betaBody:
-      "Satu track sudah selesai; sisanya masih ditulis, dan pelajaran yang sudah terbit pun masih mungkin berubah. Tidak ada yang memerlukan akun di sini — kalau ada yang keliru atau kurang,",
+      "Pelajaran yang sudah terbit masih mungkin berubah. Tidak ada yang memerlukan akun di sini — kalau ada yang keliru atau kurang,",
     betaLink: "beri tahu kami di GitHub",
     inProgress: "Sedang ditulis",
     planned: " direncanakan",

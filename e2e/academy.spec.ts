@@ -2031,7 +2031,7 @@ test(`TC-${TC}-133 An Indonesian lesson renders in Indonesian and pairs with its
   await expect(page.locator("main")).toHaveAttribute("lang", "en");
 });
 
-test(`TC-${TC}-134 hreflang is reciprocal where both languages exist, and absent where one does not`, async ({
+test(`TC-${TC}-134 hreflang is reciprocal on every translated pair, in both directions`, async ({
   request,
 }) => {
   const alternates = async (path: string) => {
@@ -2042,66 +2042,93 @@ test(`TC-${TC}-134 hreflang is reciprocal where both languages exist, and absent
       .map((m) => `${m[1]}=${new URL(m[2]).pathname}`)
       .sort();
   };
-  const pair = [
-    "en=/academy/fundamentals/what-qa-does",
-    "id=/id/academy/fundamentals/what-qa-does",
-    "x-default=/academy/fundamentals/what-qa-does",
-  ];
-  expect(await alternates("/academy/fundamentals/what-qa-does")).toEqual(pair);
-  expect(await alternates("/id/academy/fundamentals/what-qa-does")).toEqual(pair);
 
-  // An English page with no Indonesian sibling must claim none. Advertising an
-  // hreflang that 404s is worse for the English page than advertising nothing,
-  // and most pages are in this state for most of A-08's roll-out.
-  expect(await alternates("/academy/manual-pro/test-planning")).toEqual([]);
+  // A-08 finished at 51/51, so `bilingual(path, translated)` now takes its true
+  // branch for every lesson and every track. This asserts the pair from both
+  // sides on one lesson per track — the reciprocity is the claim, and a
+  // one-sided `hreflang` is the specific bug it exists to catch.
+  for (const path of [
+    "/academy",
+    "/academy/fundamentals",
+    "/academy/fundamentals/what-qa-does",
+    "/academy/manual-pro/test-planning",
+    "/academy/automation/junit-to-testforge",
+    "/academy/beyond/portfolio",
+    "/academy/istqb/exam-strategy",
+  ]) {
+    const pair = [
+      `en=${path}`,
+      `id=/id${path}`,
+      `x-default=${path}`,
+    ].sort();
+    expect(await alternates(path), path).toEqual(pair);
+    expect(await alternates(`/id${path}`), `/id${path}`).toEqual(pair);
+  }
 });
 
-test(`TC-${TC}-135 An untranslated page has no Indonesian route and is not in the sitemap`, async ({
+test(`TC-${TC}-135 Every published lesson has an Indonesian route, and the sitemap lists exactly those`, async ({
   request,
 }) => {
-  // The fallback policy: 404, never the English body at an Indonesian URL.
-  // Duplicate content under a second path is the exact thing hreflang exists
-  // to prevent, so serving it would make these routes worth less than nothing.
+  const xml = await (await request.get("/sitemap.xml")).text();
+  const paths = Array.from(xml.matchAll(/<loc>([^<]*)<\/loc>/g)).map(
+    (m) => new URL(m[1]).pathname,
+  );
+  const lesson = /^\/academy\/[a-z0-9-]+\/[a-z0-9-]+$/;
+  const en = paths.filter((p) => lesson.test(p)).sort();
+  const id = paths
+    .filter((p) => p.startsWith("/id/") && lesson.test(p.slice(3)))
+    .sort();
+
+  // Parity is the guarantee A-08 closed on: every English lesson URL has an
+  // Indonesian one at the same slug. Slugs are never translated, so this is a
+  // set comparison rather than a count.
+  expect(en.length).toBeGreaterThan(0);
+  expect(id).toEqual(en.map((p) => `/id${p}`));
+
+  // The sitemap is built from the same `visibleLessons` the routes gate on;
+  // requesting every Indonesian URL is what proves the two cannot drift apart.
+  for (const path of id) {
+    expect((await request.get(path)).status(), path).toBe(200);
+  }
+
+  // The 404-not-fallback policy is unchanged and still live, even though no
+  // *published* lesson can reach it any more: serving the English body at an
+  // Indonesian URL is duplicate content under a second path, which is the exact
+  // thing hreflang exists to prevent. An unknown slug is what still exercises
+  // the gate — and the branch goes back under content coverage the day someone
+  // writes an English lesson ahead of its translation.
   for (const path of [
-    "/id/academy/fundamentals/bug-reports", // published in English, not yet translated
-    "/id/academy/manual-pro", // whole track untranslated
-    "/id/academy/manual-pro/test-planning",
+    "/id/academy/fundamentals/no-such-lesson",
+    "/id/academy/no-such-track",
+    "/id/academy/no-such-track/no-such-lesson",
   ]) {
     expect((await request.get(path)).status(), path).toBe(404);
   }
-
-  const xml = await (await request.get("/sitemap.xml")).text();
-  const idUrls = Array.from(xml.matchAll(/<loc>([^<]*)<\/loc>/g))
-    .map((m) => new URL(m[1]).pathname)
-    .filter((p) => p.startsWith("/id/"));
-  // Every Indonesian URL listed must actually resolve — the sitemap is built
-  // from the same `visibleLessons` the routes gate on, and this is what proves
-  // the two cannot drift apart.
-  expect(idUrls.length).toBeGreaterThan(0);
-  for (const path of idUrls) {
-    expect((await request.get(path)).status(), path).toBe(200);
-  }
-  expect(idUrls).not.toContain("/id/academy/manual-pro");
 });
 
-test(`TC-${TC}-136 The Indonesian roadmap shows untranslated tracks and routes them to English`, async ({
+test(`TC-${TC}-136 The Indonesian roadmap links every track into Indonesian`, async ({
   page,
 }) => {
   await page.goto("/id/academy");
   await expect(page.locator("main")).toHaveAttribute("lang", "id");
-  // T1 is translated, so it is a link into Indonesian.
-  await expect(page.getByTestId("academy-track-fundamentals")).toHaveAttribute(
-    "href",
-    "/id/academy/fundamentals",
-  );
-  // T2 is not, and the card says so rather than being hidden — an Indonesian
-  // reader should not be told the Academy is one track big.
-  const untranslated = page.getByTestId("academy-track-manual-pro");
-  await expect(untranslated).toContainText("Belum diterjemahkan");
-  await expect(page.getByTestId("academy-track-en-manual-pro")).toHaveAttribute(
-    "href",
-    "/academy/manual-pro",
-  );
+
+  // All five tracks are translated, so all five cards are links into `/id`.
+  // Before A-08 finished, four of these were "Belum diterjemahkan" cards
+  // pointing at the English track instead.
+  for (const slug of [
+    "fundamentals",
+    "manual-pro",
+    "automation",
+    "beyond",
+    "istqb",
+  ]) {
+    await expect(page.getByTestId(`academy-track-${slug}`)).toHaveAttribute(
+      "href",
+      `/id/academy/${slug}`,
+    );
+    await expect(page.getByTestId(`academy-track-en-${slug}`)).toHaveCount(0);
+  }
+  await expect(page.locator("main")).not.toContainText("Belum diterjemahkan");
 
   // §7.1 applies to Indonesian pages too, and in Indonesian.
   await expect(page.getByTestId("istqb-disclaimer")).toContainText(
