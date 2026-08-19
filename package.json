@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/totp-selftest.mjs && node scripts/backup-selfcheck.mjs && node scripts/academy-checks-selftest.mjs && node scripts/academy-exam-selftest.mjs && node scripts/academy-certificate-selftest.mjs && node scripts/academy-bank-check.mjs && node scripts/academy-trademark-check.mjs",
+    "prebuild": "node scripts/totp-selftest.mjs && node scripts/backup-selfcheck.mjs && node scripts/academy-checks-selftest.mjs && node scripts/academy-exam-selftest.mjs && node scripts/academy-certificate-selftest.mjs && node scripts/academy-bank-check.mjs && node scripts/academy-trademark-check.mjs && node scripts/academy-i18n-check.mjs",
     "check:theme": "node scripts/check-theme-tokens.mjs",
     "build": "next build",
     "postbuild": "node scripts/academy-bundle-check.mjs",

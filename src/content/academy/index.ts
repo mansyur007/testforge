@@ -40,6 +40,21 @@ export const TRACKS: Track[] = [
 export const ISTQB_DISCLAIMER =
   "ISTQB® is a registered trademark of the International Software Testing Qualifications Board. TestForge QA Academy is not affiliated with, endorsed by, or accredited by the ISTQB or any of its member boards. Practice questions are written from the published syllabus learning objectives and are not reproduced from any real examination.";
 
+/**
+ * A-08: the same notice in Indonesian, for `/id/academy/**`.
+ *
+ * §7.1 requires the notice on every page that names the scheme, and a page
+ * that names the scheme in Indonesian is such a page — serving the English
+ * paragraph under Indonesian prose would satisfy the letter of that rule and
+ * not its point, which is that the reader understands they are not looking at
+ * an ISTQB product. **The English text above stays authoritative**: this is a
+ * translation of it, and the two must be changed together.
+ * `scripts/academy-i18n-check.mjs` asserts both exist and that neither is a
+ * copy of the other.
+ */
+export const ISTQB_DISCLAIMER_ID =
+  "ISTQB® adalah merek dagang terdaftar milik International Software Testing Qualifications Board. TestForge QA Academy tidak berafiliasi dengan, tidak didukung oleh, dan tidak terakreditasi oleh ISTQB maupun member board mana pun di bawahnya. Soal latihan ditulis berdasarkan learning objective pada silabus yang diterbitkan dan bukan salinan dari ujian sungguhan mana pun.";
+
 export function publishedTracks(): Track[] {
   return TRACKS.filter((t) => t.status === "published");
 }

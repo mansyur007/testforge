@@ -7,8 +7,10 @@ import { getSession, requireSession } from "@/lib/auth";
 import { logAudit } from "@/lib/audit";
 import { ensureSandbox, findSandbox, resetSandbox } from "@/lib/academy/sandbox";
 import { findLessonTrack, getLesson } from "@/content/academy";
+import { localiseSelfCheck } from "@/content/academy/i18n";
 import { gradeQuestions } from "@/lib/academy/questions";
 import type { SelfCheckResult } from "@/lib/academy/types";
+import type { Lang } from "@/lib/i18n";
 import { rateLimit } from "@/lib/rate-limit";
 import { getSandboxTask } from "@/content/academy/sandbox";
 import { runChecker } from "@/lib/academy/checks";
@@ -65,6 +67,7 @@ export async function gradeSelfCheck(input: {
   track: string;
   lesson: string;
   answers: Record<string, string[]>;
+  lang?: string;
 }): Promise<SelfCheckResult> {
   if (!rateLimit(clientKey(), RATE_LIMIT_PER_MIN).ok) {
     return { error: "Too many attempts. Wait a minute and try again." };
@@ -86,7 +89,17 @@ export async function gradeSelfCheck(input: {
       .slice(0, 12);
   }
 
-  return gradeQuestions(found.lesson.selfCheck, answers);
+  // A-08: a verdict carries `explanation`, which is prose, so it has to come
+  // back in the language the question was asked in. `lang` arrives from the
+  // browser like everything else here and is narrowed to the two we have rather
+  // than trusted — and it cannot reach the answer key, because a translation
+  // has no `correct` to reach it with.
+  const lang: Lang = input.lang === "id" ? "id" : "en";
+  const selfCheck =
+    localiseSelfCheck(found.track, found.lesson.slug, lang) ??
+    found.lesson.selfCheck;
+
+  return gradeQuestions(selfCheck, answers);
 }
 
 // ---------------------------------------------------------------------------

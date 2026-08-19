@@ -1999,3 +1999,112 @@ test(`TC-${TC}-131 A self-assessed exercise records progress without ever claimi
   await db.project.deleteMany({ where: { createdBy: { email } } });
   await db.user.delete({ where: { email } });
 });
+
+// ---------------------------------------------------------------------------
+// A-08 — the Indonesian routes
+// ---------------------------------------------------------------------------
+
+test(`TC-${TC}-133 An Indonesian lesson renders in Indonesian and pairs with its English original`, async ({
+  page,
+}) => {
+  await page.goto("/id/academy/fundamentals/what-qa-does");
+  const main = page.locator("main");
+  // The language is marked on the page subtree, not on <html> — the root
+  // layout cannot see the pathname without middleware. See LessonPage.tsx.
+  await expect(main).toHaveAttribute("lang", "id");
+  await expect(page.locator("h1")).toHaveText(
+    "Apa yang sebenarnya dikerjakan seorang tester",
+  );
+  // Chrome, not just the body: an Indonesian lesson wrapped in English buttons
+  // is the failure A-03 predicted and refused to ship.
+  await expect(main).toContainText("Semua track");
+  await expect(main).toContainText("Uji pemahaman Anda");
+  await expect(page.getByTestId("lesson-done-toggle")).toHaveText("Tandai selesai");
+
+  // The switch is a real link to a real URL, not a cookie — that is the whole
+  // point of the work order, since a cookie is invisible to a crawler.
+  const link = page.getByTestId("academy-language-link");
+  await expect(link).toHaveAttribute("href", "/academy/fundamentals/what-qa-does");
+  await link.click();
+  await page.waitForURL("**/academy/fundamentals/what-qa-does");
+  await expect(page.locator("h1")).toHaveText("What a tester actually does");
+  await expect(page.locator("main")).toHaveAttribute("lang", "en");
+});
+
+test(`TC-${TC}-134 hreflang is reciprocal where both languages exist, and absent where one does not`, async ({
+  request,
+}) => {
+  const alternates = async (path: string) => {
+    const html = await (await request.get(path)).text();
+    return Array.from(
+      html.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)"/gi),
+    )
+      .map((m) => `${m[1]}=${new URL(m[2]).pathname}`)
+      .sort();
+  };
+  const pair = [
+    "en=/academy/fundamentals/what-qa-does",
+    "id=/id/academy/fundamentals/what-qa-does",
+    "x-default=/academy/fundamentals/what-qa-does",
+  ];
+  expect(await alternates("/academy/fundamentals/what-qa-does")).toEqual(pair);
+  expect(await alternates("/id/academy/fundamentals/what-qa-does")).toEqual(pair);
+
+  // An English page with no Indonesian sibling must claim none. Advertising an
+  // hreflang that 404s is worse for the English page than advertising nothing,
+  // and most pages are in this state for most of A-08's roll-out.
+  expect(await alternates("/academy/manual-pro/test-planning")).toEqual([]);
+});
+
+test(`TC-${TC}-135 An untranslated page has no Indonesian route and is not in the sitemap`, async ({
+  request,
+}) => {
+  // The fallback policy: 404, never the English body at an Indonesian URL.
+  // Duplicate content under a second path is the exact thing hreflang exists
+  // to prevent, so serving it would make these routes worth less than nothing.
+  for (const path of [
+    "/id/academy/fundamentals/bug-reports", // published in English, not yet translated
+    "/id/academy/manual-pro", // whole track untranslated
+    "/id/academy/manual-pro/test-planning",
+  ]) {
+    expect((await request.get(path)).status(), path).toBe(404);
+  }
+
+  const xml = await (await request.get("/sitemap.xml")).text();
+  const idUrls = Array.from(xml.matchAll(/<loc>([^<]*)<\/loc>/g))
+    .map((m) => new URL(m[1]).pathname)
+    .filter((p) => p.startsWith("/id/"));
+  // Every Indonesian URL listed must actually resolve — the sitemap is built
+  // from the same `visibleLessons` the routes gate on, and this is what proves
+  // the two cannot drift apart.
+  expect(idUrls.length).toBeGreaterThan(0);
+  for (const path of idUrls) {
+    expect((await request.get(path)).status(), path).toBe(200);
+  }
+  expect(idUrls).not.toContain("/id/academy/manual-pro");
+});
+
+test(`TC-${TC}-136 The Indonesian roadmap shows untranslated tracks and routes them to English`, async ({
+  page,
+}) => {
+  await page.goto("/id/academy");
+  await expect(page.locator("main")).toHaveAttribute("lang", "id");
+  // T1 is translated, so it is a link into Indonesian.
+  await expect(page.getByTestId("academy-track-fundamentals")).toHaveAttribute(
+    "href",
+    "/id/academy/fundamentals",
+  );
+  // T2 is not, and the card says so rather than being hidden — an Indonesian
+  // reader should not be told the Academy is one track big.
+  const untranslated = page.getByTestId("academy-track-manual-pro");
+  await expect(untranslated).toContainText("Belum diterjemahkan");
+  await expect(page.getByTestId("academy-track-en-manual-pro")).toHaveAttribute(
+    "href",
+    "/academy/manual-pro",
+  );
+
+  // §7.1 applies to Indonesian pages too, and in Indonesian.
+  await expect(page.getByTestId("istqb-disclaimer")).toContainText(
+    "merek dagang terdaftar",
+  );
+});

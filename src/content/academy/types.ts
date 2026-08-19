@@ -120,3 +120,64 @@ export type Track = {
    *  mentions ISTQB without it. */
   trademarkNotice?: boolean;
 };
+
+// ---------------------------------------------------------------------------
+// A-08 — Indonesian translations
+// ---------------------------------------------------------------------------
+//
+// **Why a parallel tree instead of the `{ en, id? }` field shape A-03 sketched.**
+// A-03 planned to make each localisable field a `{ en, id? }` object, and said
+// so when there were 13 lessons and no Indonesian content. There are now 51
+// lessons and 578 KB of prose, and at that size the field shape has two costs
+// it did not have then: every English edit diffs against a file twice its size
+// with the other language interleaved, and every one of the ~40 places that
+// reads `lesson.body` has to learn to resolve. A separate `translations/id`
+// tree keeps the English files untouched (they are the source text, and a
+// translation slice must not be able to break them), makes each slice purely
+// additive, and makes "which lessons are translated" a set that the sitemap and
+// the `hreflang` tags can be derived from rather than a scan of every field.
+//
+// **The answer key is deliberately not translatable.** A `SelfCheckQuestion`
+// carries `correct`; a `QuestionTranslation` carries only text, keyed by the
+// English question's `id`. `localiseLesson` merges the translated wording onto
+// the English question's own `correct` flags. So a translation cannot move the
+// answer — not by accident, and not by a translator misreading which option was
+// right. The same reasoning as A-02's `server-only` boundary: make the class of
+// error unrepresentable rather than reviewable.
+
+/** One self-check question's wording in another language. No `correct` field —
+ *  see the note above; `id` and every `choices[].id` must match the English
+ *  question, which `scripts/academy-i18n-check.mjs` asserts at build time. */
+export type QuestionTranslation = {
+  id: string;
+  stem: string;
+  choices: { id: string; text: string }[];
+  explanation: string;
+};
+
+/** One lesson's prose in another language. `slug`, `minutes`, `status` and
+ *  `sandbox` are not restated: they are structure, not text, and a translation
+ *  that could change them could publish a lesson the English tree considers a
+ *  draft. */
+export type LessonTranslation = {
+  /** The English lesson slug this translates. Its route is unchanged — slugs
+   *  stay English so `/academy/x/y` and `/id/academy/x/y` are the same page in
+   *  two languages, which is what `hreflang` has to be able to say. */
+  slug: string;
+  title: string;
+  summary: string;
+  body: string;
+  selfCheck?: QuestionTranslation[];
+};
+
+/** One track's own copy. `lessons` are translated separately and matched by
+ *  slug, so a partly translated track is representable — which it has to be,
+ *  because A-08's Indonesian half lands one track at a time. */
+export type TrackTranslation = {
+  slug: string;
+  title: string;
+  tagline: string;
+  level: string;
+  outcomes: string[];
+  lessons: LessonTranslation[];
+};

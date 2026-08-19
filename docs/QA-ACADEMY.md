@@ -1844,6 +1844,66 @@ sweep was run as an actual request per link rather than by eye — **24 distinct
 five tracks, every one 200**, including the seven `/academy/istqb/practice-exam*` links the T5
 lessons introduced.
 
+> **A-08's routing half shipped 2026-08-18 — `/id/academy/**` is live, and the translation is now
+> the only thing left in this work order.** The gate A-03 set (a measured Indonesian organic-traffic
+> number) was lifted by the owner, who asked for all 51 lessons translated. That is a content job the
+> size of A-08's English half, so it lands the same way: one track per slice. This slice built
+> everything that makes those slices mechanical.
+>
+> **What shipped.**
+>
+> - **Three `/id/academy/**` routes**, and the three English ones rewritten to call the same
+>   components (`RoadmapPage`, `TrackPage`, `LessonPage`). Two copies of these pages would have
+>   doubled every future change to them and made "the Indonesian one drifted" a normal kind of bug.
+>   `lang` decides three things and nothing else: which text, which lessons are visible, and where
+>   links point.
+> - **A parallel `translations/id` tree, not the `{ en, id? }` field shape A-03 sketched.** That
+>   shape was proposed when there were 13 lessons and no Indonesian text; at 51 lessons and 578 KB it
+>   would make every English edit diff against a file twice its size and teach ~40 call sites to
+>   resolve. The parallel tree leaves the English files — the source text — untouched by a
+>   translation slice, and makes "which lessons are translated" a set the sitemap and `hreflang` are
+>   derived from. Recorded as a deviation, with its reason, in `src/content/academy/types.ts`.
+> - **A translation cannot move an answer key.** `QuestionTranslation` has no `correct` field;
+>   `localiseQuestion` merges translated wording onto the *English* question's own flags, by id. The
+>   same move as A-02's `server-only` boundary — make the class of error unrepresentable rather than
+>   reviewable. `academy-bundle-check` still reports 0 leaks with the new path in place.
+> - **The fallback policy is 404, not the English body.** An untranslated lesson has no `/id` route
+>   at all. Serving English text at an Indonesian URL is duplicate content under a second path, which
+>   is the precise thing `hreflang` exists to prevent, and it would make these routes worth less than
+>   not having them. The roadmap says so out loud instead: an untranslated track gets a
+>   "Belum diterjemahkan" card linking to the English one, because hiding it would tell an Indonesian
+>   reader the Academy is one track big.
+> - **`hreflang` is claimed only where the sibling exists.** `bilingual(path, translated)` returns a
+>   bare canonical when it does not. A dead `hreflang="id"` is worse for the English page than no
+>   alternates at all, and *most pages are in that state for most of this roll-out* — which is why
+>   the flag is a parameter rather than an assumption.
+> - **The language switch is a link, not the `tf_lang` cookie.** A cookie is invisible to a crawler;
+>   that limitation is exactly what A-03 deferred to this work order.
+> - **`scripts/academy-i18n-check.mjs`**, wired into `prebuild`. Seven assertions, every one of them
+>   a failure mode that *ships a page* rather than erroring: a typo'd slug translates nothing, a
+>   renamed choice id silently falls back to English for one option, a copied `/academy/` link drops
+>   the reader out of their language mid-sentence, an untranslated track title looks finished. Each
+>   was proved to fail by breaking it and watching the build stop.
+> - **Register is `Anda`** (owner's decision, 2026-08-18) — deliberately unlike the rest of the
+>   product's Indonesian copy, which says `kamu`. Academy lessons are long-form instructional prose
+>   read by working adults preparing for a certification or an interview. Both halves are build
+>   assertions, because `Anda` is a proper pronoun that is capitalised mid-sentence and English `you`
+>   is not: the first draft of the first lesson had 15 lowercase `anda` in it, and it rendered
+>   perfectly.
+> - **`lang` is marked on the page subtree, not `<html>`.** The root layout cannot see the pathname
+>   without middleware, and this app has none; introducing one for an attribute would put code in
+>   front of every request in the product. `lang` on a subtree is what HTML5 defines for exactly this.
+>
+> **Verified against a running server**: all six routes 200 with correct canonicals; reciprocal
+> `hreflang` on the translated pair and *none* on `/academy/manual-pro`; three untranslated `/id`
+> paths 404; the sitemap's Indonesian URLs are exactly the translated ones and every one resolves.
+> Two real bugs the console caught and this fixed: `<a>` nested inside `<a>` (the shared public
+> chrome wrapped `Logo`, which renders its own link) and `<html lang="en">` on Indonesian pages.
+> **TC-E2E-133**–**136**; full `academy.spec.ts` green at 45 specs.
+>
+> **Translation progress: 1 / 51.** `academy-i18n-check` prints the count on every build, so the
+> number in this document cannot drift the way the sandbox-checker tally did (A-11a's lesson).
+
 **A-08's content half is done.** Five tracks, 51 lessons, all `published`. What remains under this
 work order is the Indonesian routes — `/id/academy/**` with `hreflang` and translated lesson bodies —
 which A-03 deliberately gated on measured ID organic traffic rather than deciding up front, and the

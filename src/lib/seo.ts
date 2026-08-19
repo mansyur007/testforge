@@ -26,6 +26,51 @@ export function canonical(path: string): Metadata["alternates"] {
 }
 
 /**
+ * A-08: canonical plus `hreflang` alternates for a page that exists in both
+ * languages. `path` is the English path (`/academy/fundamentals/bug-reports`);
+ * the Indonesian one is the same path under `/id`, which is the whole reason
+ * slugs are not translated.
+ *
+ * **`translated` is what makes this honest.** Pass `false` and the page gets a
+ * canonical and no alternates at all, because claiming an `hreflang="id"`
+ * sibling that 404s is worse for the English page than claiming nothing: it
+ * tells Google an Indonesian version exists and hands it a dead URL. A-08 lands
+ * one track at a time, so most pages are in that state for most of the roll-out.
+ *
+ * `x-default` points at English — the site's default language, the one every
+ * page has, and where a reader from an unlisted locale should land.
+ */
+export function bilingual(
+  path: string,
+  translated: boolean,
+): Metadata["alternates"] {
+  if (!translated) return { canonical: path };
+  return {
+    canonical: path,
+    languages: {
+      en: path,
+      id: `/id${path}`,
+      "x-default": path,
+    },
+  };
+}
+
+/** The same alternates as seen *from* the Indonesian page: its own canonical is
+ *  the `/id` path, and the pair it advertises is identical. Split from
+ *  `bilingual` rather than parameterised because getting a canonical backwards
+ *  is the one mistake in this file that silently de-indexes a page. */
+export function bilingualId(path: string): Metadata["alternates"] {
+  return {
+    canonical: `/id${path}`,
+    languages: {
+      en: path,
+      id: `/id${path}`,
+      "x-default": path,
+    },
+  };
+}
+
+/**
  * Everything behind a login, plus one-shot token pages. `nocache` also keeps
  * these out of search caches if a URL ever leaks into a crawler's queue.
  */

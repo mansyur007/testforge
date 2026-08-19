@@ -4439,12 +4439,20 @@ with the `SuiteFolderGrid` work noted above.
   lesson may lack an entry, plus a named list of the two self-assessed slugs. **TC-E2E-128**–**131**;
   `e2e/academy.spec.ts` 40 specs. See `docs/QA-ACADEMY.md` § A-11.
 
-**Academy status, 2026-08-18.** Every `A-xx` work order is shipped. One deliberately parked item
-remains, and it is not waiting on engineering time:
+**Academy status, 2026-08-18.** Every `A-xx` work order is shipped or in progress; **nothing is
+parked any more.** Both items that were parked this morning are resolved: A-10's blueprint split
+closed on the document (below), and **A-08's localised routes were un-gated by the owner**, who
+asked for all 51 lessons in Indonesian rather than waiting on a traffic measurement.
 
-| Parked | Unblocks on |
-|---|---|
-| A-08's localised `/id/academy/**` routes | a measured Indonesian organic-traffic number (A-03 gated this on data rather than deciding up front). If it goes ahead it is a translation job the size of A-08's content half. |
+**A-08's routing half shipped 2026-08-18**; the translation lands one track per slice, the same way
+its English half did. `/id/academy/**` is live with reciprocal `hreflang`, a sitemap derived from
+what is actually translated, and a 404 — never the English body — for anything that is not. The
+design decisions worth knowing: a translation carries no answer key (`QuestionTranslation` has no
+`correct`; wording is merged onto the English question by id), the English and Indonesian routes are
+one set of components rather than two copies, and `scripts/academy-i18n-check.mjs` turns seven
+quiet failure modes into build failures — including the register rule, since `Anda` is capitalised
+mid-sentence and English `you` is not. **Translation progress is printed by that checker on every
+build**, so it cannot drift the way a hand-maintained tally does. See `docs/QA-ACADEMY.md` § A-08.
 
 **A-10's per-chapter blueprint split closed 2026-08-18**, on the document rather than on its
 fallback. The owner supplied ISTQB's *Exam Structure Tables* v1.18 (2026-05-27), whose "CTFL v4.0"
