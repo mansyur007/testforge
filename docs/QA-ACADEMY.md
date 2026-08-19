@@ -1911,6 +1911,11 @@ lessons introduced.
 > **Translation progress: 1 / 51.** `academy-i18n-check` prints the count on every build, so the
 > number in this document cannot drift the way the sandbox-checker tally did (A-11a's lesson).
 
+**A-08's content half is done.** Five tracks, 51 lessons, all `published`. What remains under this
+work order is the Indonesian routes — `/id/academy/**` with `hreflang` and translated lesson bodies —
+which A-03 deliberately gated on measured ID organic traffic rather than deciding up front, and the
+sandbox checkers, which every slice since the third has argued belong in their own work order.
+
 > **Translation slices, 2026-08-18 → 2026-08-19: 51 / 51, and A-08 is closed.** Five slices, one
 > track each, in roadmap order: T1 (13), T2 (12), T3 (12), T4 (7), T5 (7). Every published lesson
 > now has an Indonesian sibling, so `getVisibleLessons` no longer intersects down to a subset and
@@ -1948,11 +1953,6 @@ lessons introduced.
 > answers submitted, **explanations returned in Indonesian**, which is the `gradeSelfCheck` path
 > the second slice fixed and the check has asserted since. `next build` compiles, and
 > `academy-bundle-check` still reports **0 leaks** across 564 explanations.
-
-**A-08's content half is done.** Five tracks, 51 lessons, all `published`. What remains under this
-work order is the Indonesian routes — `/id/academy/**` with `hreflang` and translated lesson bodies —
-which A-03 deliberately gated on measured ID organic traffic rather than deciding up front, and the
-sandbox checkers, which every slice since the third has argued belong in their own work order.
 
 > **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
 > *track's* status, so the lesson-level status is what let the writing land in five reviewable

@@ -36,19 +36,47 @@ test(`TC-${TC}-81 Instance console: operator sees every registered user`, async 
   await expect(table).toContainText(E2E.email);
   await expect(table).toContainText("outsider@testforge.local");
 
-  // 4. Search narrows to one row.
+  // 4. Every header sorts. Asserting on the *relative* order of the two known
+  //    fixtures keeps this honest however many other accounts the run left
+  //    behind: "E2E User" < "Outsider" alphabetically, so flipping the User
+  //    column has to swap them.
+  const rowOrder = async () => {
+    const emails = await table.locator("tbody tr td:first-child").allInnerTexts();
+    const at = (needle: string) => emails.findIndex((t) => t.includes(needle));
+    return { e2e: at(E2E.email), outsider: at("outsider@testforge.local") };
+  };
+
+  await page.click('[data-testid="superadmin-sort-user"]');
+  await page.waitForURL("**/superadmin?sort=user&dir=asc");
+  const asc = await rowOrder();
+  expect(asc.e2e).toBeLessThan(asc.outsider);
+
+  await page.click('[data-testid="superadmin-sort-user"]');
+  await page.waitForURL("**/superadmin?sort=user&dir=desc");
+  const desc = await rowOrder();
+  expect(desc.e2e).toBeGreaterThan(desc.outsider);
+
+  // "Last action" is the one column ordered by a SQL aggregate rather than a
+  // User field — worth proving it renders at all.
+  await page.click('[data-testid="superadmin-sort-last"]');
+  await page.waitForURL("**/superadmin?sort=last&dir=desc");
+  await expect(table).toContainText(E2E.email);
+
+  await page.goto("/superadmin");
+
+  // 5. Search narrows to one row.
   await page.fill('[data-testid="superadmin-search"]', "outsider");
   await page.keyboard.press("Enter");
   await page.waitForURL("**/superadmin?q=outsider*");
   await expect(table).toContainText("outsider@testforge.local");
   await expect(table).not.toContainText(E2E.email);
 
-  // 5. CSV export is served to the operator session.
+  // 6. CSV export is served to the operator session.
   const csv = await page.request.get("/superadmin/export");
   expect(csv.status()).toBe(200);
   expect(await csv.text()).toContain("outsider@testforge.local");
 
-  // 6. Sign out kills the cookie — and the export with it.
+  // 7. Sign out kills the cookie — and the export with it.
   await page.goto("/superadmin");
   await page.click('[data-testid="superadmin-logout"]');
   await page.waitForURL("**/superadmin/login");
