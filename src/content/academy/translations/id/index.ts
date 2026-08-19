@@ -1,5 +1,9 @@
 import type { TrackTranslation } from "../../types";
 import { fundamentalsId } from "./fundamentals";
+import { manualProId } from "./manual-pro";
+import { automationId } from "./automation";
+import { beyondId } from "./beyond";
+import { istqbId } from "./istqb";
 
 // A-08: the Indonesian text, one module per track, mirroring `../../tracks`.
 // A track appears here as soon as its own copy is translated; its lessons
@@ -27,4 +31,10 @@ import { fundamentalsId } from "./fundamentals";
 // - **Code, output, table headers inside code fences, and TestForge UI labels
 //   stay verbatim.** The reader is going to type them into a real product whose
 //   interface is English.
-export const ID_TRACK_TRANSLATIONS: TrackTranslation[] = [fundamentalsId];
+export const ID_TRACK_TRANSLATIONS: TrackTranslation[] = [
+  fundamentalsId,
+  manualProId,
+  automationId,
+  beyondId,
+  istqbId,
+];

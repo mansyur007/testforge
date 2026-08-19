@@ -4,6 +4,14 @@ import { sdlcAndStlcId } from "./sdlc-and-stlc";
 import { testLevelsId } from "./test-levels";
 import { testTypesId } from "./test-types";
 import { sevenPrinciplesId } from "./seven-principles";
+import { equivalencePartitioningId } from "./equivalence-partitioning";
+import { boundaryValueAnalysisId } from "./boundary-value-analysis";
+import { decisionTablesId } from "./decision-tables";
+import { stateTransitionTestingId } from "./state-transition-testing";
+import { writingTestCasesId } from "./writing-test-cases";
+import { bugReportsId } from "./bug-reports";
+import { defectLifecycleId } from "./defect-lifecycle";
+import { testingInAgileId } from "./testing-in-agile";
 
 // T1 in Indonesian. Lesson order is not restated — `localiseTrack` walks the
 // English track and matches by slug, so this array is a *set* of what has been
@@ -27,5 +35,13 @@ export const fundamentalsId: TrackTranslation = {
     testLevelsId,
     testTypesId,
     sevenPrinciplesId,
+    equivalencePartitioningId,
+    boundaryValueAnalysisId,
+    decisionTablesId,
+    stateTransitionTestingId,
+    writingTestCasesId,
+    bugReportsId,
+    defectLifecycleId,
+    testingInAgileId,
   ],
 };
