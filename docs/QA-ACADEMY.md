@@ -1953,6 +1953,31 @@ sandbox checkers, which every slice since the third has argued belong in their o
 > answers submitted, **explanations returned in Indonesian**, which is the `gradeSelfCheck` path
 > the second slice fixed and the check has asserted since. `next build` compiles, and
 > `academy-bundle-check` still reports **0 leaks** across 564 explanations.
+>
+> **Three specs went red on completion, which is the suite working.** `TC-E2E-134`–`136` were
+> written against the *partial* state and asserted it precisely: three paths 404, a bare canonical
+> on `/academy/manual-pro/test-planning` because it had no sibling, and a "Belum diterjemahkan"
+> card on the roadmap. All three are false now, and all three failed before this slice touched
+> them — a suite that had stayed green through a change this size would have been telling us
+> nothing. They now assert the guarantee that replaced them: **sitemap parity** (every English
+> lesson URL has an Indonesian one at the same slug, compared as sets rather than counts),
+> reciprocity in both directions on a lesson from each of the five tracks, and every roadmap card
+> linking into `/id`. The 404 gate keeps its coverage through an unknown slug, which is the part of
+> the fallback still reachable from content — the branch returns to content coverage the day an
+> English lesson lands ahead of its translation, which is the normal way the next one will arrive.
+> Full `academy.spec.ts` green at **45 specs**.
+>
+> **Two lines of roadmap copy had been false since 2026-08-15 and this fixes them.** The header said
+> *"51 lessons available now · more tracks in progress"* and the beta banner said *"One track is
+> finished; the rest are still being written"* — both written when T1 was the only published track,
+> and both left behind when T5 published four days earlier. The translation reproduced them
+> faithfully into Indonesian, which is how they were noticed: a false claim is easier to see when
+> you have to write it twice. Neither is replaced with a new count. Copy that asserts how many
+> tracks exist goes stale the next time one is added, and the roadmap already shows per-track status
+> from `status` where it cannot drift; the clauses are simply removed, leaving *"51 lessons
+> available now"* and *"Published lessons may still change."* The BETA badge and the GitHub link
+> stay — that is a product claim about the Academy, not a fact about the track list, and it is the
+> owner's to make.
 
 > **A track flips to `published` when *all* of its lessons are.** `getTrack()` filters on the
 > *track's* status, so the lesson-level status is what let the writing land in five reviewable
