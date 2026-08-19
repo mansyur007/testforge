@@ -103,6 +103,13 @@
 > per-chapter K-level breakdown the same page supplies and why the draw deliberately does not use it
 > yet. **The only item still parked is A-08's localised `/id/academy/**` routes.**
 >
+> **Status, 2026-08-19 — A-08 is closed, and with it every work order in this document.** The owner
+> lifted A-03's organic-traffic gate and asked for all 51 lessons in Indonesian; the routing half
+> shipped 2026-08-18 (PR #223) and the translation landed one track per slice over five more. Every
+> published lesson now has an Indonesian sibling, `/id/academy/**` resolves for all 57 routes,
+> `hreflang` is reciprocal on every pair rather than on one, and the sitemap carries 57 Indonesian
+> URLs against the English 57. Nothing in the Academy is parked.
+>
 > **A-08's content half is done: five tracks, 51 lessons, all `published`. The Indonesian routes are
 > what remains** — gated by A-03 on measured ID organic traffic — **plus the sandbox checkers, which
 > belong in their own work order.**
@@ -1067,7 +1074,7 @@ have); administrative revocation with a reason and a "this credential was withdr
 which is a different feature wearing the same column's name; and a LinkedIn "add to profile" deep
 link, which wants a real issuing-organisation id and would overstate what this is.
 
-### A-08 — Content build-out & localised routes `[ ]`
+### A-08 — Content build-out & localised routes `[x]`
 
 T2/T3/T4 to `published`; the remaining sandbox checkers; the T3 CI capstone;
 Indonesian lesson bodies; and — if ID organic traffic justifies it — `/id/academy/**` with
@@ -1903,6 +1910,44 @@ lessons introduced.
 >
 > **Translation progress: 1 / 51.** `academy-i18n-check` prints the count on every build, so the
 > number in this document cannot drift the way the sandbox-checker tally did (A-11a's lesson).
+
+> **Translation slices, 2026-08-18 → 2026-08-19: 51 / 51, and A-08 is closed.** Five slices, one
+> track each, in roadmap order: T1 (13), T2 (12), T3 (12), T4 (7), T5 (7). Every published lesson
+> now has an Indonesian sibling, so `getVisibleLessons` no longer intersects down to a subset and
+> the "Belum diterjemahkan" card the roadmap was built to render has nothing left to render.
+>
+> **What the completion changes, beyond the word count.** `hreflang` was a parameter precisely
+> because most pages had no sibling for most of the roll-out; now the reciprocal pair is claimed on
+> every Academy page in both languages, and the sitemap carries **57 Indonesian URLs against the
+> English 57** rather than a handful. The 404-not-fallback policy is unchanged and now unreachable
+> for lessons — which is the point: it was never a stopgap, it was the rule that made a partial
+> translation safe to ship.
+>
+> **The one thing not translated, and why it is a code span rather than a link.** The exam
+> simulator — `/academy/istqb/practice-exam` and the six chapter quizzes — is English-only; A-08's
+> routing half built no `/id` equivalent, and A-06's question bank has no `QuestionTranslation`
+> path. T5's seven lessons each ended by linking to their chapter quiz, and neither available link
+> was honest: an `/academy/…` markdown link is what `academy-i18n-check`'s rule 3 forbids (it drops
+> the reader out of their language mid-sentence), and an `/id/academy/istqb/practice-exam/chapter/1`
+> link would 404, because `[track]/[lesson]` cannot match four segments. So the pointer is the path
+> in a code span with a sentence saying the simulator is in English. A reader can still reach it;
+> nothing pretends it was translated. Localising the bank is a work order, not a slice.
+>
+> **Register held across 578 KB.** `Anda`, capitalised, and no `kamu`. The check passed on every
+> one of these five slices, which is the outcome an assertion is for rather than evidence it was
+> unnecessary — the first lesson written to this register had 15 lowercase `anda` in it and
+> rendered perfectly, and that is still the only reason anyone would know. Slugs stayed English
+> throughout, so every `hreflang` claim is a claim about the same page.
+>
+> **Verified against a running server, and this is the widest sweep the work order has run.** All
+> **51** Indonesian lesson routes 200, requested individually rather than sampled; all five
+> Indonesian track pages and the roadmap 200; **17 distinct `/id/academy/…` cross-links** extracted
+> from the translated bodies and each requested — every one 200; reciprocal `hreflang` and correct
+> canonicals on the pairs checked in both directions; the Indonesian ISTQB notice rendering on a T5
+> lesson; no console errors. And the self-check was graded in the browser on an Indonesian page:
+> answers submitted, **explanations returned in Indonesian**, which is the `gradeSelfCheck` path
+> the second slice fixed and the check has asserted since. `next build` compiles, and
+> `academy-bundle-check` still reports **0 leaks** across 564 explanations.
 
 **A-08's content half is done.** Five tracks, 51 lessons, all `published`. What remains under this
 work order is the Indonesian routes — `/id/academy/**` with `hreflang` and translated lesson bodies —
