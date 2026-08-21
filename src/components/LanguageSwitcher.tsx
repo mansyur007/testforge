@@ -1,7 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { LANG_COOKIE, type Lang } from "@/lib/i18n";
+// `@/lib/lang`, not `@/lib/i18n`: this is a client component, and the latter
+// would pull the whole landing/auth dictionary into the bundle for a cookie
+// name. See the header of src/lib/lang.ts.
+import { setLangCookie, type Lang } from "@/lib/lang";
 
 // Pilihan bahasa via cookie agar SSR (tanpa flash). Default: English.
 export function LanguageSwitcher({ current }: { current: Lang }) {
@@ -9,7 +12,7 @@ export function LanguageSwitcher({ current }: { current: Lang }) {
 
   const setLang = (lang: Lang) => {
     if (lang === current) return;
-    document.cookie = `${LANG_COOKIE}=${lang};path=/;max-age=31536000;samesite=lax`;
+    setLangCookie(lang);
     router.refresh();
   };
 

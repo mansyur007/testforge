@@ -2135,3 +2135,61 @@ test(`TC-${TC}-136 The Indonesian roadmap links every track into Indonesian`, as
     "merek dagang terdaftar",
   );
 });
+
+test(`TC-${TC}-137 A reader's language survives crossing between the Academy and the rest of the site`, async ({
+  page,
+  context,
+}) => {
+  // The reported bug, from both ends: "saat di academy bahasa selalu berubah ke
+  // english saat ganti page atau refresh". A-08 made the Academy's language a
+  // property of the path and left `tf_lang` governing the landing and auth
+  // pages, and nothing joined the two — so every crossing reset the reader.
+
+  // 1. Site set to Indonesian → the Academy entry points lead into Indonesian.
+  //    Before the fix all four were hard-coded `/academy`, so choosing
+  //    Indonesian and clicking "Buka QA Academy" landed in English, and no
+  //    amount of refreshing came back — past that link the path decides.
+  await context.addCookies([
+    { name: "tf_lang", value: "id", url: "http://localhost:3456" },
+  ]);
+  await page.goto("/");
+  for (const testid of ["hero-academy-link", "landing-academy-cta"]) {
+    await expect(page.getByTestId(testid)).toHaveAttribute("href", "/id/academy");
+  }
+  // The five track cards are part of the same complaint: they read straight off
+  // the English tree, so they were the one English block on a translated page.
+  await expect(page.locator("#academy")).toContainText("Dasar-Dasar QA");
+
+  await page.getByTestId("landing-academy-cta").click();
+  await page.waitForURL("**/id/academy");
+  await expect(page.locator("main")).toHaveAttribute("lang", "id");
+  // Refreshing does not lose it — the language is in the URL.
+  await page.reload();
+  await expect(page.locator("main")).toHaveAttribute("lang", "id");
+
+  // 2. The other direction: arrive on an Indonesian page with no cookie at all
+  //    (a search result, a shared link) and the rest of the site follows.
+  await context.clearCookies();
+  await page.goto("/id/academy/fundamentals/what-qa-does");
+  // The write happens once the page hydrates, so wait for it rather than
+  // racing it: a reader spends minutes on a lesson, but `goto` immediately
+  // followed by `goto` can leave before React has run a single effect. Asserted
+  // as the cookie itself because that *is* the mechanism under test.
+  await expect
+    .poll(async () =>
+      (await context.cookies()).find((c) => c.name === "tf_lang")?.value,
+    )
+    .toBe("id");
+  await page.goto("/login");
+  await expect(page.locator("main")).toContainText("Belum punya akun?");
+
+  // 3. And a reader can still leave: the switch writes the choice, so English
+  //    stays English rather than being pulled back by step 2's memory.
+  await page.goto("/id/academy");
+  await page.getByTestId("academy-language-link").click();
+  // Matched on the exact pathname: `**/academy` also matches `/id/academy`,
+  // so the glob would pass without the click having gone anywhere.
+  await page.waitForURL((u) => u.pathname === "/academy");
+  await page.goto("/login");
+  await expect(page.locator("main")).toContainText("Don't have an account?");
+});

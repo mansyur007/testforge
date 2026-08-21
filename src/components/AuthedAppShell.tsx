@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { db } from "@/lib/db";
 import type { Session } from "@/lib/auth";
 import { memberScope } from "@/lib/projects";
@@ -13,6 +14,10 @@ import { AcademySync } from "@/components/AcademySync";
 import { NOT_SANDBOX, findSandbox } from "@/lib/academy/sandbox";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { loadMyWorkCounts } from "@/lib/my-work";
+// The selection, not the dictionary — this shell needs to know which language
+// the reader is in, and none of the landing/auth copy. See src/lib/lang.ts.
+import { resolveLang, LANG_COOKIE } from "@/lib/lang";
+import { academyPath } from "@/lib/academy/chrome";
 
 // A-09: the sidebar+AppShell wiring that used to live only in
 // src/app/(app)/layout.tsx, pulled out so any signed-in page can render the
@@ -44,6 +49,9 @@ export async function AuthedAppShell({
   const myWorkCounts = await loadMyWorkCounts(session.userId);
   const myWorkTotal = myWorkCounts.results + myWorkCounts.cases + myWorkCounts.reviews;
 
+  const lang = resolveLang(cookies().get(LANG_COOKIE)?.value);
+  const academyHref = academyPath(lang);
+
   const nav = [
     { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
     { href: "/my-work", label: "My Work", icon: "checklist", badge: myWorkTotal },
@@ -55,11 +63,19 @@ export async function AuthedAppShell({
     { href: "/settings/backup", label: "Backup", icon: "nav-backup" },
     { href: "/settings/account", label: "Account", icon: "nav-account" },
     // A-03: Academy sits with Help — both are reference material rather than
-    // project work. English-only per repo conventions §0.5 (app UI is not
-    // translated); /academy and /docs/help now render this same shell for a
-    // signed-in visitor (A-09), so they carry their own SEO chrome only for
-    // guests.
-    { href: "/academy", label: "Academy", icon: "target", beta: true },
+    // project work. The *label* stays English per repo conventions §0.5 (app UI
+    // is not translated); /academy and /docs/help now render this same shell
+    // for a signed-in visitor (A-09), so they carry their own SEO chrome only
+    // for guests.
+    //
+    // The *destination* follows the reader, though, and that is not a breach of
+    // §0.5 — it is A-03's own rule that entry points lead somewhere
+    // language-appropriate. A signed-in reader working through the Indonesian
+    // Academy got this shell wrapped around their lesson, and its one Academy
+    // link took them back to the English roadmap with no way back but the URL
+    // bar. "My progress" below is a different case: `/id/academy/me` does not
+    // exist, so it stays English rather than pointing at a 404.
+    { href: academyHref, label: "Academy", icon: "target", beta: true },
     { href: "/docs/help", label: "Help", icon: "nav-help" },
   ];
 
@@ -97,7 +113,7 @@ export async function AuthedAppShell({
               {item.href === "/projects" && (
                 <SidebarProjects projects={projects} />
               )}
-              {item.href === "/academy" && (
+              {item.href === academyHref && (
                 <ul className="mb-1 ml-4 space-y-0.5 border-l border-sidebar-border pl-2">
                   <li>
                     <Link

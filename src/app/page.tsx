@@ -9,6 +9,8 @@ import { Logo, TFIcon, BrandIcon } from "@/components/icons";
 import { BetaChip } from "@/components/BetaChip";
 import { JsonLd } from "@/components/JsonLd";
 import { TRACKS, publishedLessons } from "@/content/academy";
+import { localiseTrack } from "@/content/academy/i18n";
+import { academyPath } from "@/lib/academy/chrome";
 import {
   canonical,
   faqLd,
@@ -145,6 +147,16 @@ export default async function HomePage() {
   const t = dict[lang].landing;
   const [session, stars] = await Promise.all([getSession(), getGitHubStars()]);
 
+  // A-03 translated the Academy entry points' *labels* and left every one of
+  // them pointing at `/academy`, because at the time that was the only Academy
+  // there was. A-08 then built `/id/academy/**` and never came back for these
+  // four links — so a reader who had switched the whole site to Indonesian
+  // clicked "Buka QA Academy" and landed in English, and no amount of
+  // refreshing brought their language back, because from there on the *path*
+  // decides. That is the bug; this is the fix. The label was always translated,
+  // now the destination is too.
+  const academyHref = academyPath(lang);
+
   return (
     <div className="tf-landing bg-canvas text-content-strong">
       {/* F-40: structured data. The FAQ block is the same copy rendered in the
@@ -174,7 +186,7 @@ export default async function HomePage() {
                 organic entry point, so it needs a link from the page crawlers
                 actually reach. This nav is `hidden md:flex`, so the hero link
                 and the Academy section below are what carry it on a phone. */}
-            <Link href="/academy" className="flex items-center gap-1.5 hover:text-content-strong">
+            <Link href={academyHref} className="flex items-center gap-1.5 hover:text-content-strong">
               {t.nav.academy}
               <BetaChip />
             </Link>
@@ -242,7 +254,7 @@ export default async function HomePage() {
                 no hamburger, so without this a mobile visitor would have to
                 reach the footer to find it at all. */}
             <Link
-              href="/academy"
+              href={academyHref}
               data-testid="hero-academy-link"
               className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-accent-text hover:underline"
             >
@@ -317,14 +329,22 @@ export default async function HomePage() {
             {t.academy.body}
           </p>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {TRACKS.map((track) => {
-              const live = track.status === "published";
+            {TRACKS.map((source) => {
+              const live = source.status === "published";
               const count = live
-                ? publishedLessons(track).length
-                : track.lessons.length;
+                ? publishedLessons(source).length
+                : source.lessons.length;
+              // A-03 shipped these cards reading `track.title`/`track.level`
+              // straight off the English tree, which was the only tree there
+              // was. A-08's translations landed all five track titles and every
+              // level, so on an Indonesian landing page these five cards were
+              // the one English block in the middle of translated copy — the
+              // same "the language keeps reverting" complaint, in the place a
+              // reader meets the Academy first.
+              const track = localiseTrack(source, lang);
               return (
                 <div
-                  key={track.slug}
+                  key={source.slug}
                   className={`rounded-2xl border p-5 ${
                     live
                       ? "border-hairline bg-surface"
@@ -337,7 +357,7 @@ export default async function HomePage() {
                         live ? "bg-accent-soft" : "bg-surface-muted"
                       }`}
                     >
-                      <TFIcon name={track.icon} className="h-5 w-5" />
+                      <TFIcon name={source.icon} className="h-5 w-5" />
                     </span>
                     <div className="min-w-0">
                       <h3 className="font-semibold text-content-strong">
@@ -357,7 +377,7 @@ export default async function HomePage() {
             })}
             <div className="flex flex-col justify-center rounded-2xl border border-hairline bg-surface p-5">
               <Link
-                href="/academy"
+                href={academyHref}
                 data-testid="landing-academy-cta"
                 className={`rounded-lg bg-accent px-5 py-3 text-center font-medium text-white hover:bg-accent-hover ${CTA_MOTION}`}
               >
@@ -546,7 +566,7 @@ export default async function HomePage() {
               <li><a href="#features" className="hover:text-content-strong">{t.footer.features}</a></li>
               <li><a href="#comparison" className="hover:text-content-strong">{t.footer.comparison}</a></li>
               <li><Link href="/docs/self-hosting" className="hover:text-content-strong">{t.footer.selfHosting}</Link></li>
-              <li><Link href="/academy" className="inline-flex items-center gap-1.5 hover:text-content-strong">{t.footer.academy}<BetaChip /></Link></li>
+              <li><Link href={academyHref} className="inline-flex items-center gap-1.5 hover:text-content-strong">{t.footer.academy}<BetaChip /></Link></li>
               <li><Link href="/signup" className="hover:text-content-strong">{t.footer.signup}</Link></li>
             </ul>
           </div>

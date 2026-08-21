@@ -7,6 +7,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { AcademyNav, SandboxBadge } from "@/components/AcademyNav";
 import { AcademyPublicChrome } from "@/components/academy/PublicChrome";
 import { AcademyLanguageLink } from "@/components/academy/LanguageLink";
+import { AcademyLangMemory } from "@/components/academy/LangMemory";
 import { TrackProgress } from "@/components/AcademyProgress";
 import { TrademarkNotice } from "@/components/TrademarkNotice";
 import { getTrack, trackMinutes } from "@/content/academy";
@@ -88,6 +89,7 @@ export async function AcademyTrackPage({
 
   const body = (
     <div className="flex gap-10">
+      <AcademyLangMemory lang={lang} />
       <AcademyNav track={track} lessons={shown} lang={lang} />
 
       <div className="min-w-0 flex-1">

@@ -43,6 +43,16 @@
 //    unreachable from the content files — it is a code path, and it is the
 //    only one that can make correct translations never render.
 //
+// 7. **The entry points lead into the reader's own language.** The landing page
+//    and the signed-in sidebar are where a reader meets the Academy, and both
+//    hard-coded `/academy` — A-03 wrote them when that was the only Academy
+//    there was, and A-08 built `/id/academy/**` without coming back for them.
+//    The effect was the one thing this whole subsystem exists to prevent: a
+//    reader with the site in Indonesian clicked "Buka QA Academy" and landed in
+//    English, and refreshing could not get them back, because past that link
+//    the *path* decides the language. Nothing else catches it — both links
+//    render perfectly, and their labels are correctly translated.
+//
 // Reads the TypeScript as text, the way `academy-checks-selftest.mjs` reads
 // `sandbox.ts` and `academy-trademark-check.mjs` reads the track files: these
 // are data modules with a fixed shape, and parsing them beats maintaining a
@@ -281,6 +291,26 @@ assert(
   ),
   "the component knows the language and the server action cannot guess it",
 );
+
+// (7). Asserted as "no bare href to the English Academy" rather than "calls
+// `academyPath`", because the failure is a *hard-coded destination* and there
+// is more than one right way to spell the fix. `href="/academy/me"` and the
+// like are exempt: those routes have no `/id` sibling, and pointing them at one
+// would trade an English page for a 404.
+for (const [file, what] of [
+  ["src/app/page.tsx", "the landing page's Academy entry points"],
+  ["src/components/AuthedAppShell.tsx", "the signed-in sidebar's Academy link"],
+]) {
+  const src = stripComments(readFileSync(file, "utf8"));
+  const hard = [...src.matchAll(/href=(?:"(\/academy)"|\{"(\/academy)"\})/g)];
+  assert(
+    `${what} lead into the reader's language`,
+    hard.length === 0,
+    `${hard.length} hard-coded href="/academy" in ${file} — use ` +
+      "academyPath(lang), or an Indonesian reader is dropped into English " +
+      "and the path keeps them there",
+  );
+}
 
 if (failed > 0) {
   console.error(`academy-i18n-check: FAILED (${failed} assertion(s))`);
