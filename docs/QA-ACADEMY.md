@@ -110,6 +110,13 @@
 > `hreflang` is reciprocal on every pair rather than on one, and the sitemap carries 57 Indonesian
 > URLs against the English 57. Nothing in the Academy is parked.
 >
+> **Status, 2026-08-21 — A-08a, the loose end A-08 left between the two language systems.** Closing
+> A-08 made the Academy's language a property of the path and left `tf_lang` governing the rest of
+> the public site, with nothing joining them, so a reader's language reset on every crossing between
+> the two — reported as *"di academy bahasa selalu berubah ke english"* (issue #226). Entry points
+> now lead into the reader's language, an explicit switch is remembered, and reading an `/id` URL
+> counts as a choice. Details in **A-08a** below.
+>
 > **A-08's content half is done: five tracks, 51 lessons, all `published`. The Indonesian routes are
 > what remains** — gated by A-03 on measured ID organic traffic — **plus the sandbox checkers, which
 > belong in their own work order.**
@@ -2026,6 +2033,76 @@ sandbox checkers, which every slice since the third has argued belong in their o
 >
 > > **Decided 2026-08-15 in A-11:** the bar is **a run with at least one *matched* case**. "Any run"
 > > passes a 422 that matched nothing; "green" punishes following the instructions.
+
+#### A-08a — The two language systems, joined `[x]`
+
+> **Status: DONE** (2026-08-21, branch `fix/academy-language-persists`, issue #226). Reported by the
+> owner in the words that name the symptom better than any of the analysis below:
+> *"saat di academy bahasa selalu berubah ke english saat ganti page atau refresh."*
+
+**A-08 left the site with two language systems and nothing joining them.** The Academy's language
+became a property of the *path* (`/id/academy/**`) — for the good reason recorded above, that a
+cookie is invisible to a crawler. Everything else on the public site — landing, login, signup,
+password reset, the self-hosting doc — kept rendering from the `tf_lang` cookie. Neither one could
+see the other, so **every crossing between them reset the reader**, in both directions:
+
+- Switch the site to Indonesian on the landing page, click *"Buka QA Academy"* → English. All four
+  Academy entry points were hard-coded `/academy`. A-03 wrote them when that was the only Academy
+  there was and translated their *labels*; A-08 built `/id/academy/**` and never came back for their
+  *destinations*. And once there, refreshing could not recover it — past that link the path decides,
+  which is exactly why the report says "atau refresh".
+- Arrive on an Indonesian lesson from a search result, click *"Masuk"* → an English login page. The
+  reader had been reading Indonesian for twenty minutes and the auth pages had never heard of it.
+- The signed-in sidebar's Academy link had the same hard-coded `/academy`, so a logged-in reader
+  working through the Indonesian Academy was returned to the English roadmap.
+- The landing page's five Academy track cards read `track.title`/`track.level` straight off the
+  English tree. All five titles have been translated since A-08 closed, so on an Indonesian landing
+  page these cards were the one English block in the middle of translated copy.
+
+**The fix is three moves, and none of them touches A-08's routing decision.**
+
+1. **Entry points lead into the reader's language** — `academyPath(lang)` in place of a literal
+   `/academy`, on the landing page's four links and the signed-in sidebar's one. This is A-03's own
+   rule ("only the entry points are translated") finally applied to where they *point* rather than
+   only what they say. The sidebar label stays English per §0.5; "My progress" stays English too,
+   because `/id/academy/me` does not exist and pointing it at one would trade an English page for a
+   404.
+2. **An explicit choice is remembered** — `AcademyLanguageLink` writes `tf_lang` on click. The href
+   is untouched, so a crawler (which never fires `onClick`) still sees the same two URLs and the
+   `hreflang` claim is unchanged. The cookie is for the half of the site that is not the Academy.
+3. **Reading an `/id` URL counts as a choice** — `AcademyLangMemory`, a null-rendering client
+   component on the three Academy pages. **Only `id` is ever written, and the asymmetry is the
+   design, not an omission**: reading `/id/...` is always evidence of a preference, while reading
+   `/academy` is just the default path, and writing `en` there would silently undo a deliberate
+   choice — the same bug in the other direction.
+
+**A bundle regression this introduced, caught by the build and fixed before it shipped.** The three
+components that write the cookie are all *client* components, and `LANG_COOKIE` lived in
+`src/lib/i18n.ts` — the landing/auth dictionary, both languages. Importing six characters of that
+module pulled the whole thing into every Academy page's client bundle; `grep` for one landing string
+found it in all six Academy chunks. Selection now lives in **`src/lib/lang.ts`** (the cookie name,
+`Lang`, `resolveLang`, and one `setLangCookie` shared by all three writers), with `i18n.ts`
+re-exporting it so server callers are unchanged. Same split, same reason, as
+`src/lib/academy/chrome.ts`. Re-verified: zero Academy client chunks carry the dictionary, and
+`academy-bundle-check` still reports 0 leaks.
+
+**`academy-i18n-check` gained rule 7** — no hard-coded `href="/academy"` in the landing page or the
+sidebar. It is the only thing that catches this class: both links rendered perfectly and their
+labels were correctly translated, so there was nothing for review or a type to notice. Proved by
+reintroducing the bug and watching the build stop, per this file's standing rule.
+
+**Verified against a running server, in both directions.** Cookie `id` → all four entry points read
+`/id/academy` and the track cards read *"Dasar-Dasar QA"*; cookie cleared → arriving on an
+Indonesian lesson leaves `tf_lang=id` and `/login` renders *"Belum punya akun?"*; cookie `en` on
+`/academy` is **not** overwritten; and the English switch still gets a reader out — cookie back to
+`en` and staying there, which is the one way this could have stranded someone. **TC-E2E-137** covers
+all three, and was proved to fail against each half of the fix separately. `academy.spec.ts` green
+at **46 specs**; `help-center`, `seo` and `responsive` green.
+
+> **Two failures that are not this change**, both confirmed on a clean `main` in the same checkout:
+> `TC-E2E-117` (the certificate share-card request) and `next build`'s `/opengraph-image` prerender,
+> which is `@vercel/og` calling `fileURLToPath` on a Windows path containing a space. Same root
+> cause, local to this machine. `next build` reports **Compiled successfully** and types valid.
 
 ### A-09 — Session-aware shell on `/academy` and `/docs/help` `[x]`
 

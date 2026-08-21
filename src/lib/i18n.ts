@@ -1,14 +1,20 @@
 // i18n halaman publik (landing + auth). Default: English (en).
 // Bahasa dipilih via cookie tf_lang agar bisa di-render di server (SSR,
 // HP-010) tanpa flash. UI internal aplikasi menyusul di v0.3 sesuai PRD §7.3.
+//
+// Pemilihan bahasa — cookie, nama cookie, `resolveLang` — kini tinggal di
+// `./lang`, yang tidak membawa `dict` sama sekali; komponen client cukup
+// mengimpor dari sana. Re-export di bawah ini menjaga agar semua kode server
+// yang sudah ada tetap bisa mengimpor keduanya dari satu tempat.
+export {
+  LANG_COOKIE,
+  DEFAULT_LANG,
+  resolveLang,
+  setLangCookie,
+  type Lang,
+} from "./lang";
 
-export type Lang = "en" | "id";
-export const LANG_COOKIE = "tf_lang";
-export const DEFAULT_LANG: Lang = "en";
-
-export function resolveLang(value: string | undefined): Lang {
-  return value === "id" ? "id" : "en";
-}
+import type { Lang } from "./lang";
 
 const en = {
   landing: {

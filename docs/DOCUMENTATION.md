@@ -4478,6 +4478,29 @@ unknown slug and the branch returns to content coverage the day an English lesso
 its translation. Still open as future work, and deliberately not smuggled into this work order:
 localising A-06's question bank so the exam simulator has an Indonesian route.
 
+**A-08a, 2026-08-21 (issue #226) — the two language systems, joined.** Closing A-08 left the site
+with two of them and nothing between: the Academy's language is a property of the *path*
+(`/id/academy/**`, so a crawler can see it), while the landing and auth pages render from the
+`tf_lang` cookie. Neither could see the other, so **every crossing reset the reader** — reported as
+*"saat di academy bahasa selalu berubah ke english saat ganti page atau refresh"*. Switching the
+site to Indonesian and clicking "Buka QA Academy" landed in English, because all four entry points
+were hard-coded `/academy` — A-03 translated their labels when that was the only Academy there was,
+and A-08 built the Indonesian routes without coming back for their destinations; refreshing could
+not recover it, because past that link the path decides. The reverse crossing failed too: arriving
+on an Indonesian lesson from a search result and clicking "Masuk" gave an English login page. Three
+moves, none of them touching A-08's routing decision: entry points resolve through
+`academyPath(lang)` (landing and the signed-in sidebar, whose *label* stays English per §0.5); the
+Academy's switch writes `tf_lang` on click, with the href untouched so `hreflang` is unaffected; and
+reading an `/id` URL is treated as a choice — **`id` only**, since `/academy` is merely the default
+path and writing `en` there would undo a deliberate choice. The landing page's five Academy track
+cards are localised too; they had been reading the English tree since A-03. A bundle regression this
+introduced was caught by the build and fixed before shipping: `LANG_COOKIE` lived in the
+landing/auth dictionary, so three client components importing it pulled that whole module into every
+Academy chunk — language *selection* now lives in `src/lib/lang.ts`, with `i18n.ts` re-exporting it.
+`academy-i18n-check` gained rule 7 (no hard-coded `href="/academy"` in either file), proved by
+reintroducing the bug and watching the build stop. **TC-E2E-137**, proved to fail against each half
+of the fix separately. See `docs/QA-ACADEMY.md` § A-08a.
+
 **A-10's per-chapter blueprint split closed 2026-08-18**, on the document rather than on its
 fallback. The owner supplied ISTQB's *Exam Structure Tables* v1.18 (2026-05-27), whose "CTFL v4.0"
 page gives the split as **8 / 6 / 4 / 11 / 9 / 2** — exactly what `exams.ts` had been running since

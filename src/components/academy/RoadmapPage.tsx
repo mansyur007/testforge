@@ -7,6 +7,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { SandboxBadge } from "@/components/AcademyNav";
 import { AcademyPublicChrome } from "@/components/academy/PublicChrome";
 import { AcademyLanguageLink } from "@/components/academy/LanguageLink";
+import { AcademyLangMemory } from "@/components/academy/LangMemory";
 import { TRACKS, ISTQB_DISCLAIMER, ISTQB_DISCLAIMER_ID } from "@/content/academy";
 import { idLessonSlugs, localiseTrack, visibleLessons } from "@/content/academy/i18n";
 import type { Lang } from "@/lib/i18n";
@@ -63,6 +64,7 @@ export async function AcademyRoadmapPage({ lang }: { lang: Lang }) {
 
   const body = (
     <>
+      <AcademyLangMemory lang={lang} />
       <div className="flex items-start justify-between gap-3">
         <h1 className="flex flex-wrap items-center gap-3 text-3xl font-bold text-content-strong sm:text-4xl">
           {t.brand}
