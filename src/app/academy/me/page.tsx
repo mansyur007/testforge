@@ -53,16 +53,22 @@ export default async function AcademyMePage() {
       <div className="mx-auto max-w-3xl">
       <AcademyMeSync />
 
-      <h1 className="flex flex-wrap items-center gap-3 text-3xl font-bold text-content-strong">
+      <h1 className="flex flex-wrap items-center gap-3 font-display text-[34px] font-bold leading-none tracking-tight text-content-strong sm:text-[40px]">
         My progress
-        <BetaChip className="translate-y-1" />
+        <BetaChip className="translate-y-0.5" />
       </h1>
-      <p className="mt-2 text-content-muted" data-testid="me-total-progress">
+      <p
+        className="mt-4 font-mono text-[10px] uppercase tracking-[0.16em] text-content-subtle"
+        data-testid="me-total-progress"
+      >
         {totalDone} of {totalLessons} lessons done across {tracks.length}{" "}
         {tracks.length === 1 ? "track" : "tracks"}.
       </p>
 
-      <div className="mt-8 space-y-4">
+      {/* A-12: ruled rows, matching the roadmap and track index. The cards
+          these replaced gave every track the same weight as every other, on
+          the one page whose whole job is to say which one you are in. */}
+      <div className="mt-8 border-t border-hairline-strong">
         {tracks.map(({ track, lessons, done, complete, target }) => {
           const total = lessons.length;
           const pct = total ? Math.round((done / total) * 100) : 0;
@@ -70,18 +76,19 @@ export default async function AcademyMePage() {
             <div
               key={track.slug}
               data-testid={`me-track-${track.slug}`}
-              className="rounded-xl border border-hairline bg-surface p-5"
+              className="border-b border-hairline py-5"
             >
               <div className="flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-soft">
-                    <TFIcon name={track.icon} className="h-5 w-5" />
-                  </span>
+                  <TFIcon
+                    name={track.icon}
+                    className="h-5 w-5 shrink-0 text-content-muted"
+                  />
                   <div className="min-w-0">
-                    <h2 className="truncate font-semibold text-content-strong">
+                    <h2 className="truncate font-display text-[17px] font-bold tracking-tight text-content-strong">
                       {track.title}
                     </h2>
-                    <p className="text-xs text-content-muted">
+                    <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.14em] text-content-subtle">
                       {done} of {total} lessons done
                     </p>
                   </div>
@@ -97,7 +104,7 @@ export default async function AcademyMePage() {
                 )}
               </div>
               <div
-                className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-muted"
+                className="mt-3 h-1 overflow-hidden rounded-full bg-surface-muted"
                 role="progressbar"
                 aria-valuenow={done}
                 aria-valuemin={0}
@@ -126,8 +133,10 @@ export default async function AcademyMePage() {
 
       {/* A-06: exam and chapter-quiz attempt history. Newest first, same
           resume-link shape as the tracks above. */}
-      <section className="mt-10" data-testid="me-exam-history">
-        <h2 className="text-lg font-semibold text-content-strong">Exam attempts</h2>
+      <section className="mt-12" data-testid="me-exam-history">
+        <h2 className="font-mono text-[10px] uppercase tracking-[0.14em] text-content-muted">
+          Exam attempts
+        </h2>
         {attempts.length === 0 ? (
           <p className="mt-2 text-sm text-content-muted">
             No attempts yet —{" "}
@@ -142,7 +151,7 @@ export default async function AcademyMePage() {
               <li
                 key={a.id}
                 data-testid={`me-exam-attempt-${a.id}`}
-                className="flex items-center justify-between rounded-lg border border-hairline bg-surface px-4 py-3"
+                className="flex items-center justify-between border-b border-hairline py-3"
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium text-content-strong">

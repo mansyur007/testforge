@@ -18,6 +18,7 @@ import { loadMyWorkCounts } from "@/lib/my-work";
 // the reader is in, and none of the landing/auth copy. See src/lib/lang.ts.
 import { resolveLang, LANG_COOKIE } from "@/lib/lang";
 import { academyPath } from "@/lib/academy/chrome";
+import { DEFAULT_APP_SETTINGS_HREF } from "@/lib/app-settings-nav";
 
 // A-09: the sidebar+AppShell wiring that used to live only in
 // src/app/(app)/layout.tsx, pulled out so any signed-in page can render the
@@ -56,12 +57,6 @@ export async function AuthedAppShell({
     { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
     { href: "/my-work", label: "My Work", icon: "checklist", badge: myWorkTotal },
     { href: "/projects", label: "Projects", icon: "nav-projects" },
-    { href: "/settings/team", label: "Team", icon: "nav-team" },
-    { href: "/settings/api-keys", label: "API Keys", icon: "nav-keys" },
-    { href: "/settings/ai", label: "AI Assist", icon: "ai" },
-    { href: "/settings/audit-log", label: "Audit Log", icon: "nav-audit" },
-    { href: "/settings/backup", label: "Backup", icon: "nav-backup" },
-    { href: "/settings/account", label: "Account", icon: "nav-account" },
     // A-03: Academy sits with Help — both are reference material rather than
     // project work. The *label* stays English per repo conventions §0.5 (app UI
     // is not translated); /academy and /docs/help now render this same shell
@@ -76,6 +71,12 @@ export async function AuthedAppShell({
     // bar. "My progress" below is a different case: `/id/academy/me` does not
     // exist, so it stays English rather than pointing at a 404.
     { href: academyHref, label: "Academy", icon: "target", beta: true },
+    // Team, API Keys, AI assist, Audit Log, Backup and Account were six
+    // top-level entries pointing at six `/settings/*` pages — over half the
+    // sidebar spent on one category. They now sit behind this single item and
+    // reach each other through the tab row in `(app)/settings/layout.tsx`;
+    // `lib/app-settings-nav.ts` holds the list both of them read.
+    { href: DEFAULT_APP_SETTINGS_HREF, label: "Settings", icon: "gear" },
     { href: "/docs/help", label: "Help", icon: "nav-help" },
   ];
 

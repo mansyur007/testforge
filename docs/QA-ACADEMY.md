@@ -3264,6 +3264,62 @@ than written in this file; and `e2e/academy.spec.ts` covers one new checker end 
 > cases" is not a relation either. Two rounds of the same mistake, both fixed by opening the schema
 > instead of the previous paragraph.
 
+### A-12 — Editorial layout for the Academy `[x]`
+
+**Why.** Owner review, 2026-08-21: "kurang suka dengan design dan layout academy". Four directions
+were mocked as working HTML against the real tokens and type stack, kept at
+`docs/design/academy-redesign-directions.html`, and the editorial one was picked on 2026-08-22.
+The other three are recorded there with their trade-offs — the gamified one ("Jalur") is the
+direction §9 already rules out, since streaks and milestone unlocks are the engagement mechanics
+this project deliberately excludes.
+
+**Six problems it was chosen to fix**, all of them findable in the diff rather than in taste:
+
+1. `mx-auto max-w-5xl` sat *inside* the app shell on all three Academy pages. On a 1900px screen
+   the lesson rail began ~390px right of the sidebar with nothing in between, and the body it left
+   over was ~740px.
+2. The track page listed its lessons twice — `AcademyNav` down the left and the same lessons again
+   as cards in the body.
+3. The rail never read progress. `lessonProgress` has been per-lesson since A-05; the rail marked
+   the current page and nothing else.
+4. "Mark as done" and the next lesson waited at the bottom of eight minutes of prose and a quiz.
+5. Everything was the same card — beta banner, outcomes, each lesson, "how to use this" — all
+   `rounded-xl border-hairline bg-surface p-5`. Uniform weight is no hierarchy.
+6. **Lesson bodies could not reflow.** `.tf-markdown p` sets `white-space: pre-wrap`, and lesson
+   sources are hard-wrapped at ~78 columns like the prose files they are, so every authored newline
+   rendered as a line break. The reading column was ragged at *any* width. This is the one that was
+   invisible as a design problem and obvious as a CSS one.
+
+**What changed.**
+
+- `src/app/globals.css` gained a `.tf-lesson` block, applied alongside `.tf-markdown` on lesson
+  bodies only: reading scale (1rem/1.75), display-face headings, pull-quote blockquotes, ruled
+  tables instead of boxed ones, and `white-space: normal` (problem 6). Nothing else in the app
+  moves — `.tf-markdown` is untouched.
+- `RoadmapPage` and `TrackPage` are ruled indexes: a mono numeral in the margin, the title in the
+  display face, status and duration in a right-hand column. `TrackPage` opens like a chapter — set
+  numeral, kicker, oversized title, four facts — and no longer renders `AcademyNav` (problem 2).
+- `LessonRail` and `TrackIndex` are new client components that read `readProgress()` and state each
+  lesson's status *in words* — "Done" / "Reading now" / "Up next" / a duration (problems 3 and 5).
+  Written rather than drawn, which is also what makes it survive a screen reader. Both take plain
+  slug/title/minutes props: `@/content/academy` is `server-only` and must stay out of client code.
+- The lesson page pins "mark as done" plus prev/next to the bottom of the viewport while the lesson
+  is on screen (problem 4), and drops its `max-w-5xl` wrapper so the rail sits at the left edge of
+  the content area with the measure on the prose (problem 1).
+- `academyChrome` gained the strings all of this needed, in both languages: `track.position`,
+  `track.contents`, the four fact labels, `lesson.position`, `lesson.nextUp`/`prevUp`, and
+  `progress.reading`/`upNext`/`notStarted`.
+- `TrackProgress` is finally passed `lang` on the track page; it had been rendering "1 of 13 lessons
+  done" in English on `/id`.
+
+**Deliberately not done:** the split theory/practice layout ("Studio", direction 3 in the mockup).
+It is the strongest of the four and the one no other QA course could copy, but only 11 of 51
+lessons have a sandbox task, so the practice pane would be empty on four fifths of the Academy.
+It is worth revisiting when the checker coverage from A-11 grows, not before.
+
+**Every `data-testid` on these pages is unchanged**, which is what keeps `e2e/academy.spec.ts`
+honest across a rewrite of the markup it walks.
+
 ### Testing (applies to all)
 
 Playwright specs in `e2e/academy.spec.ts`, continuing the `TC-E2E-*` sequence (last used 127,
