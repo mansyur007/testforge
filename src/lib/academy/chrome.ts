@@ -80,6 +80,12 @@ const en = {
   track: {
     outcomesTitle: "By the end you’ll be able to",
     startFirst: "Start the first lesson",
+    contents: "Contents",
+    position: (a: number, b: number) => `Track ${a} of ${b}`,
+    factLessons: "Lessons",
+    factTime: "Time",
+    factHandsOn: "Exercises",
+    factYou: "Your place",
   },
   selfCheck: {
     title: "Check your understanding",
@@ -103,6 +109,11 @@ const en = {
     savedLocal: "Saved in this browser only — sign in to keep it.",
     done: "Done",
     markDone: "Mark as done",
+    // Written, not drawn: the lesson rail states a lesson's state in words so
+    // it survives a screen reader and a colour-blind reader alike.
+    reading: "Reading now",
+    upNext: "Up next",
+    notStarted: "Not started",
   },
   lesson: {
     exerciseTitle: "This lesson has an exercise.",
@@ -114,6 +125,9 @@ const en = {
     prev: "← Previous",
     next: "Next →",
     nav: "Lesson navigation",
+    position: (a: number, b: number) => `Lesson ${a} of ${b}`,
+    nextUp: "Next lesson",
+    prevUp: "Previous lesson",
   },
 };
 
@@ -158,6 +172,12 @@ const id: typeof en = {
   track: {
     outcomesTitle: "Di akhir track ini Anda akan bisa",
     startFirst: "Mulai pelajaran pertama",
+    contents: "Daftar isi",
+    position: (a: number, b: number) => `Track ke-${a} dari ${b}`,
+    factLessons: "Pelajaran",
+    factTime: "Waktu",
+    factHandsOn: "Latihan",
+    factYou: "Posisi Anda",
   },
   selfCheck: {
     title: "Uji pemahaman Anda",
@@ -181,6 +201,9 @@ const id: typeof en = {
     savedLocal: "Tersimpan hanya di browser ini — masuk agar tetap tersimpan.",
     done: "Selesai",
     markDone: "Tandai selesai",
+    reading: "Sedang dibaca",
+    upNext: "Berikutnya",
+    notStarted: "Belum dibaca",
   },
   lesson: {
     exerciseTitle: "Pelajaran ini punya latihan.",
@@ -192,6 +215,9 @@ const id: typeof en = {
     prev: "← Sebelumnya",
     next: "Berikutnya →",
     nav: "Navigasi pelajaran",
+    position: (a: number, b: number) => `Pelajaran ${a} dari ${b}`,
+    nextUp: "Pelajaran berikutnya",
+    prevUp: "Pelajaran sebelumnya",
   },
 };
 

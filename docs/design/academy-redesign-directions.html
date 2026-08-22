@@ -1,0 +1,1668 @@
+<title>Academy Redesign Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+/* ============================================================
+   WRAPPER — lapisan komentar. Theme-aware.
+   Instrument Serif + Archivo  = "ini saya yang bicara".
+   Space Grotesk / IBM Plex    = "ini layar produknya".
+   ============================================================ */
+:root{
+  --ground:#f4f5f9;
+  --panel:#ffffff;
+  --panel-2:#e9ebf3;
+  --ink:#12141c;
+  --ink-2:#3f4457;
+  --muted:#6b7188;
+  --line:#dde0ea;
+  --line-soft:#e8eaf1;
+  --accent:#4f46e5;
+  --flag:#a8480e;
+  --good:#0f766e;
+  --shadow:0 1px 2px rgba(18,20,28,.05), 0 12px 34px -18px rgba(18,20,28,.35);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0a0c12;
+    --panel:#14171f;
+    --panel-2:#1b1f2a;
+    --ink:#e9ebf3;
+    --ink-2:#b8bdcd;
+    --muted:#8d93a8;
+    --line:#262b38;
+    --line-soft:#1e222d;
+    --accent:#9092fb;
+    --flag:#f0a67f;
+    --good:#4fd1c0;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 18px 44px -20px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0a0c12;
+  --panel:#14171f;
+  --panel-2:#1b1f2a;
+  --ink:#e9ebf3;
+  --ink-2:#b8bdcd;
+  --muted:#8d93a8;
+  --line:#262b38;
+  --line-soft:#1e222d;
+  --accent:#9092fb;
+  --flag:#f0a67f;
+  --good:#4fd1c0;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 18px 44px -20px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink-2);
+  font-family:Archivo,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16.5px;
+  line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1280px;margin:0 auto;padding:0 clamp(16px,4vw,44px)}
+.prose{max-width:70ch}
+
+h1,h2,h3,h4{color:var(--ink);text-wrap:balance;margin:0}
+h1{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:clamp(2.9rem,7vw,4.9rem);line-height:1.02;letter-spacing:-.015em}
+h2{font-family:"Instrument Serif",Georgia,serif;font-weight:400;font-size:clamp(2rem,4.4vw,3.1rem);line-height:1.08;letter-spacing:-.01em}
+h3{font-family:Archivo,sans-serif;font-weight:600;font-size:1.12rem;letter-spacing:-.005em}
+h4{font-family:Archivo,sans-serif;font-weight:600;font-size:.95rem}
+p{margin:0}
+.it{font-family:"Instrument Serif",Georgia,serif;font-style:italic;font-size:1.08em}
+
+.eyebrow{
+  font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);font-variant-numeric:tabular-nums;
+}
+.lede{font-size:1.16rem;line-height:1.6;color:var(--ink-2)}
+.small{font-size:.86rem;line-height:1.55}
+.mut{color:var(--muted)}
+code{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.86em;background:var(--panel-2);padding:.1em .38em;border-radius:4px;color:var(--ink)}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+
+.topbar{
+  position:sticky;top:0;z-index:60;
+  background:color-mix(in srgb,var(--ground) 88%,transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line-soft);
+}
+.topbar-in{max-width:1280px;margin:0 auto;padding:9px clamp(16px,4vw,44px);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tb-name{font-family:"Instrument Serif",serif;font-size:1.18rem;color:var(--ink);margin-right:auto;white-space:nowrap}
+.tb-link{
+  font-size:.78rem;font-weight:500;color:var(--muted);text-decoration:none;
+  padding:5px 10px;border-radius:99px;border:1px solid transparent;white-space:nowrap;
+}
+.tb-link:hover{color:var(--ink);border-color:var(--line);background:var(--panel)}
+
+.hero{padding:clamp(52px,9vw,104px) 0 clamp(28px,5vw,50px)}
+.hero h1{margin-top:14px}
+.hero .lede{margin-top:22px;max-width:58ch}
+.hr{height:1px;background:var(--line);border:0;margin:0}
+
+.section{padding:clamp(44px,7vw,84px) 0}
+.stack{display:flex;flex-direction:column}
+.g6{gap:6px}.g10{gap:10px}.g14{gap:14px}.g22{gap:22px}.g30{gap:30px}
+
+.flaws{display:grid;grid-template-columns:repeat(auto-fit,minmax(268px,1fr));gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);border-radius:14px;overflow:hidden;margin-top:34px}
+.flaw{background:var(--panel);padding:20px 22px;display:flex;flex-direction:column;gap:7px}
+.flaw-n{font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--flag);letter-spacing:.06em}
+.flaw p{font-size:.88rem;color:var(--muted);line-height:1.55}
+
+.dir{border-top:1px solid var(--line);padding-top:clamp(34px,5vw,58px);margin-top:clamp(40px,6vw,80px)}
+.dir-head{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(240px,.85fr);gap:clamp(24px,4vw,56px);align-items:start}
+@media (max-width:900px){.dir-head{grid-template-columns:1fr}}
+.dir-num{font-family:"IBM Plex Mono",monospace;font-size:.78rem;color:var(--accent);letter-spacing:.1em}
+.dir h2{margin-top:10px}
+.dir .lede{margin-top:16px}
+.changes{list-style:none;padding:0;margin:22px 0 0;display:flex;flex-direction:column;gap:9px}
+.changes li{position:relative;padding-left:20px;font-size:.92rem;color:var(--ink-2)}
+.changes li::before{content:"";position:absolute;left:0;top:.62em;width:9px;height:1px;background:var(--accent)}
+.changes b{color:var(--ink);font-weight:600}
+
+.meta-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow)}
+.meta-row{display:flex;flex-direction:column;gap:3px}
+.meta-row .k{font-size:.66rem;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+.meta-row .v{font-size:.88rem;color:var(--ink);line-height:1.45}
+.pill{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;font-size:.72rem;font-weight:600;padding:3px 9px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.pill.hi{color:var(--good);border-color:color-mix(in srgb,var(--good) 40%,transparent);background:color-mix(in srgb,var(--good) 10%,transparent)}
+
+.caption{display:flex;align-items:baseline;gap:10px;margin:34px 0 10px;flex-wrap:wrap}
+.caption .lbl{font-size:.7rem;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--accent)}
+.caption .txt{font-size:.86rem;color:var(--muted)}
+
+.shot{border:1px solid var(--line);border-radius:13px;overflow:hidden;background:var(--panel);box-shadow:var(--shadow)}
+.shot-bar{display:flex;align-items:center;gap:7px;padding:9px 13px;background:var(--panel-2);border-bottom:1px solid var(--line)}
+.dot{width:9px;height:9px;border-radius:99px;background:var(--line);flex:none}
+.shot-url{
+  font-family:"IBM Plex Mono",monospace;font-size:.68rem;color:var(--muted);
+  margin-left:8px;background:var(--panel);border:1px solid var(--line);
+  border-radius:99px;padding:2px 11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.shot-scroll{overflow-x:auto;overflow-y:hidden}
+
+/* ============================================================
+   MOCKUP KIT — token TestForge asli (globals.css).
+   Ini "foto layar", jadi warnanya dikunci, tidak ikut tema host.
+   ============================================================ */
+.mk{
+  --canvas:#f8fafc; --surface:#ffffff; --smuted:#f1f5f9;
+  --tstrong:#0f172a; --text:#334155; --tmuted:#64748b; --tsubtle:#94a3b8;
+  --bord:#e2e8f0; --bsub:#f1f5f9; --bstrong:#cbd5e1;
+  --acc:#4f46e5; --acctext:#4f46e5; --accsoft:#eef2ff; --accsoftfg:#4338ca; --accring:#6366f1;
+  --side:#0f172a; --sidefg:#cbd5e1; --sidehov:#1e293b;
+  --ok:#16a34a; --oksoft:#dcfce7; --okfg:#15803d;
+  --warn:#d97706; --warnsoft:#fef3c7; --warnfg:#92400e;
+  width:1180px;min-width:1180px;
+  font-family:"IBM Plex Sans",sans-serif;
+  font-size:13px;line-height:1.55;
+  color:var(--text);background:var(--canvas);
+  display:flex;
+}
+.mk.dk{
+  --canvas:#020617; --surface:#0f172a; --smuted:#1e293b;
+  --tstrong:#f1f5f9; --text:#cbd5e1; --tmuted:#94a3b8; --tsubtle:#7889a0;
+  --bord:#334155; --bsub:#1e293b; --bstrong:#475569;
+  --acc:#6366f1; --acctext:#a5b4fc; --accsoft:#1e2052; --accsoftfg:#c7d2fe; --accring:#818cf8;
+  --side:#020617; --sidefg:#cbd5e1; --sidehov:#0f172a;
+  --ok:#4ade80; --oksoft:#052e16; --okfg:#86efac;
+  --warn:#fbbf24; --warnsoft:#452706; --warnfg:#fde68a;
+}
+.mk h1,.mk h2,.mk h3,.mk h4{font-family:"IBM Plex Sans",sans-serif;color:var(--tstrong);text-wrap:balance;margin:0}
+.mk .disp{font-family:"Space Grotesk",sans-serif}
+.mk p{margin:0}
+.mk .num{font-variant-numeric:tabular-nums}
+.mk ul,.mk ol{margin:0;padding:0;list-style:none}
+
+.sb{width:196px;min-width:196px;background:var(--side);color:var(--sidefg);padding:16px 0;display:flex;flex-direction:column;gap:2px}
+.sb-logo{display:flex;align-items:center;gap:8px;padding:0 16px 18px;font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:15px;color:#fff}
+.sb-mark{width:20px;height:20px;border-radius:6px;background:#4f46e5;display:grid;place-items:center;flex:none}
+.sb-mark svg{width:12px;height:12px;stroke:#fff;fill:none;stroke-width:2}
+.sb-search{margin:0 12px 12px;display:flex;align-items:center;gap:7px;font-size:11.5px;color:#94a3b8;border:1px solid #1e293b;border-radius:8px;padding:6px 9px;background:#0b1220}
+.sb-i{display:flex;align-items:center;gap:10px;padding:6px 16px;font-size:12.5px;color:#cbd5e1}
+.sb-i.on{background:#1e293b;color:#fff;box-shadow:inset 2px 0 0 #6366f1}
+.sb-i svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.7;flex:none;opacity:.85}
+.sb-sub{padding:4px 16px 4px 40px;font-size:12px;color:#94a3b8}
+.sb-chip{margin-left:auto;font-size:9px;font-weight:700;letter-spacing:.05em;background:#1e293b;color:#a5b4fc;padding:1px 5px;border-radius:4px}
+.sb-foot{margin-top:auto;padding:14px 16px 0;border-top:1px solid #1e293b;font-size:11px;color:#94a3b8}
+
+.mk .chip{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;padding:2px 7px;border-radius:6px;background:var(--smuted);color:var(--tmuted)}
+.mk .chip.acc{background:var(--accsoft);color:var(--accsoftfg)}
+.mk .chip.ok{background:var(--oksoft);color:var(--okfg)}
+.mk .chip.warn{background:var(--warnsoft);color:var(--warnfg)}
+.mk .btn{display:inline-flex;align-items:center;gap:7px;font-family:"IBM Plex Sans",sans-serif;font-size:12px;font-weight:500;padding:7px 13px;border-radius:8px;background:var(--acc);color:#fff;border:0}
+.mk .btn.ghost{background:transparent;color:var(--acctext);border:1px solid var(--bord)}
+.mk .ico{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;flex:none}
+.mk .ico.sm{width:11px;height:11px}
+.mk .ico.lg{width:18px;height:18px}
+.sprite{display:none}
+</style>
+
+<svg class="sprite" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5 9.5 18 20 6.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-chevl" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></symbol>
+  <symbol id="i-task" viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="m8.5 11 2 2 4-4.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 6h6l2 2.5h10V19H3z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5"/><path d="M17 6.5a3 3 0 0 1 0 5.5M18 20c0-2.4-.9-4-2.5-4.6"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3.5M15.5 12v2.5"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3.5 13.8 9 19 11l-5.2 2L12 18.5 10.2 13 5 11l5.2-2z" stroke-linejoin="round"/></symbol>
+  <symbol id="i-log" viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M8.5 9h7M8.5 13h7M8.5 17h4"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M4 7h16v13H4zM4 4h16v3H4z"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.6 3-6 7-6s7 2.4 7 6"/></symbol>
+  <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.4"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.5 2.5 0 1 1 3 2.5v1.4" stroke-linecap="round"/><path d="M12.6 17h-.02" stroke-linecap="round" stroke-width="2.2"/></symbol>
+  <symbol id="i-dash" viewBox="0 0 24 24"><path d="M4 4h7v6H4zM4 13h7v7H4zM13 4h7v10h-7zM13 17h7v3h-7z"/></symbol>
+  <symbol id="i-wrench" viewBox="0 0 24 24"><path d="M20 5.5a4.6 4.6 0 0 1-6 6L6.5 19a2 2 0 0 1-3-3L11 8.5a4.6 4.6 0 0 1 6-6l-3 3 2.5 2.5z" stroke-linejoin="round"/></symbol>
+  <symbol id="i-tree" viewBox="0 0 24 24"><path d="M5 5h5v4H5zM14 4h5v4h-5zM14 11h5v4h-5zM14 18h5v4h-5z"/><path d="M7.5 9v11h6.5M7.5 13H14"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.4"/><path d="M12 7.4V12l3.2 2" stroke-linecap="round"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5 18.5 12 8 18.5z" stroke-linejoin="round"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><path d="M6 11h12v9H6z"/><path d="M9 11V8a3 3 0 0 1 6 0v3"/></symbol>
+  <symbol id="i-bot" viewBox="0 0 24 24"><path d="M5 9h14v9H5z"/><circle cx="9.3" cy="13" r="1.1" fill="currentColor" stroke="none"/><circle cx="14.7" cy="13" r="1.1" fill="currentColor" stroke="none"/><path d="M12 5v4M8 18v2M16 18v2"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 19h16M7 16V9M12 16V5M17 16v-5" stroke-linecap="round"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.4"/><path d="M3.6 12h16.8M12 3.6c4 4.4 4 12.4 0 16.8-4-4.4-4-12.4 0-16.8"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M6 21V4M6 4h11l-2 3.5L17 11H6"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/></symbol>
+</svg>
+<nav class="topbar">
+  <div class="topbar-in">
+    <span class="tb-name">Academy · empat arah desain</span>
+    <a class="tb-link" href="#masalah">Masalah sekarang</a>
+    <a class="tb-link" href="#d1">1 · Reader</a>
+    <a class="tb-link" href="#d2">2 · Jalur</a>
+    <a class="tb-link" href="#d3">3 · Studio</a>
+    <a class="tb-link" href="#d4">4 · Editorial</a>
+    <a class="tb-link" href="#banding">Perbandingan</a>
+  </div>
+</nav>
+
+<header class="wrap hero">
+  <p class="eyebrow">TestForge QA Academy · eksplorasi desain · 21 Agustus 2026</p>
+  <h1>Empat cara<br>membaca Academy.</h1>
+  <p class="lede">
+    Empat arah yang <span class="it">benar-benar berbeda</span> — bukan empat variasi warna dari
+    layout yang sama. Masing-masing datang dengan mockup HTML asli memakai token warna dan font
+    TestForge yang sekarang, supaya bisa dinilai sebagai layar, bukan sebagai deskripsi.
+    Pilih satu, atau ambil potongan dari beberapa; di bagian akhir ada rekomendasi saya.
+  </p>
+</header>
+
+<section class="wrap section" id="masalah" style="padding-top:clamp(20px,3vw,34px)">
+  <hr class="hr">
+  <div class="prose" style="margin-top:clamp(34px,5vw,60px)">
+    <p class="eyebrow">Titik berangkat</p>
+    <h2 style="margin-top:12px">Yang bikin halamannya terasa hambar</h2>
+    <p style="margin-top:18px;color:var(--muted)">
+      Enam hal ini bukan soal selera — semuanya bisa ditunjuk barisnya di kode, dan tiga di
+      antaranya kelihatan langsung di screenshot yang tadi dikirim. Setiap arah desain di bawah
+      menjawab keenamnya, hanya dengan taruhan yang berbeda.
+    </p>
+  </div>
+
+  <div class="flaws">
+    <div class="flaw">
+      <span class="flaw-n">01</span>
+      <h4>Kolom baca mengambang di tengah ruang kosong</h4>
+      <p>Halaman Academy dibungkus <code>mx-auto max-w-5xl</code> <em>di dalam</em> app shell. Di layar 1900px hasilnya: sidebar gelap, lalu ±390px kosong, baru daftar lesson. Isi yang sebenarnya cuma ±740px lebar.</p>
+    </div>
+    <div class="flaw">
+      <span class="flaw-n">02</span>
+      <h4>Daftar lesson muncul dua kali</h4>
+      <p>Di halaman track, <code>AcademyNav</code> menampilkan 13 lesson di rail kiri, lalu badan halaman menampilkan 13 lesson yang sama sebagai kartu. Satu layar, dua daftar identik.</p>
+    </div>
+    <div class="flaw">
+      <span class="flaw-n">03</span>
+      <h4>Rail tidak tahu sudah sampai mana</h4>
+      <p>Progres sudah tersimpan per-lesson di database, tapi rail hanya menandai halaman aktif. Tidak ada centang, tidak ada "tinggal 12 lagi" — padahal datanya sudah ada.</p>
+    </div>
+    <div class="flaw">
+      <span class="flaw-n">04</span>
+      <h4>Langkah berikutnya terkubur</h4>
+      <p>Tombol "selesai" dan link lesson berikutnya baru muncul setelah 8 menit bacaan plus kuis. Momen paling penting dalam kursus — melanjutkan — justru yang paling jauh dijangkau.</p>
+    </div>
+    <div class="flaw">
+      <span class="flaw-n">05</span>
+      <h4>Semua diberi bobot visual yang sama</h4>
+      <p>Banner beta, kartu outcomes, tiap lesson, blok "cara pakai": semuanya <code>rounded-xl border-hairline bg-surface p-5</code>. Kalau semua penting, tidak ada yang menonjol.</p>
+    </div>
+    <div class="flaw">
+      <span class="flaw-n">06</span>
+      <h4>Halaman progres tidak memberi tahu apa pun</h4>
+      <p><code>/academy/me</code> adalah tumpukan kartu <code>max-w-3xl</code> berisi angka yang sama dengan halaman track. Ujian dan sertifikat — dua hal yang paling ingin dikejar orang — jadi catatan kaki di bawah.</p>
+    </div>
+  </div>
+</section>
+<section class="wrap" style="padding-top:clamp(18px,3vw,30px)">
+  <div style="border:1px solid var(--line);border-left:3px solid var(--good);border-radius:14px;background:var(--panel);padding:clamp(18px,2.6vw,26px);box-shadow:var(--shadow)">
+    <p class="eyebrow" style="color:var(--good)">Keputusan · 22 Agustus 2026</p>
+    <h3 style="margin-top:9px;font-size:1.16rem">Arah 04 dipilih, dan sudah diimplementasikan</h3>
+    <p style="margin-top:11px;font-size:.94rem;color:var(--muted);max-width:78ch">
+      Halaman roadmap, track, lesson dan progres kini memakai perlakuan editorial di bawah, ditambah
+      tiga perbaikan struktur dari Arah 01: rail yang membaca progres, batas lebar yang pindah dari
+      pembungkus halaman ke kolom teks, dan bar "selesai + lanjut" yang menempel di dasar layar.
+      Arah 02 tidak diambil — rentetan dan status terkunci menuntut data yang belum direkam, dan
+      §9 dokumen Academy memang sudah mengecualikan mekanik semacam itu. Arah 03 ditahan sampai
+      cakupan pemeriksa sandbox tumbuh; hari ini hanya 11 dari 51 pelajaran yang punya latihan.
+      Catatan lengkapnya ada di <code>docs/QA-ACADEMY.md</code>, work order A-12.
+    </p>
+    <p style="margin-top:11px;font-size:.86rem;color:var(--muted)">
+      Mockup di bawah sengaja dibiarkan seperti saat dipresentasikan — ini catatan pilihan, bukan
+      dokumentasi hasil akhir.
+    </p>
+  </div>
+</section>
+<style>
+/* ---------- Arah 1 · Reader ---------- */
+.d1-main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--canvas)}
+.d1-prog{height:3px;background:var(--bsub);flex:none}
+.d1-prog i{display:block;height:100%;width:8%;background:var(--acc)}
+.d1-top{display:flex;align-items:center;gap:10px;padding:9px 22px;border-bottom:1px solid var(--bord);background:var(--surface);flex:none}
+.d1-crumb{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--tmuted)}
+.d1-crumb b{color:var(--tstrong);font-weight:500}
+.d1-top .right{margin-left:auto;display:flex;align-items:center;gap:9px}
+.d1-lang{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--tmuted);border:1px solid var(--bord);border-radius:99px;padding:3px 9px}
+.d1-count{font-size:11.5px;color:var(--tmuted)}
+
+.d1-body{flex:1;display:grid;grid-template-columns:236px minmax(0,1fr) 224px;min-height:0}
+.d1-rail{border-right:1px solid var(--bord);background:var(--surface);padding:16px 14px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+.d1-rail-head{display:flex;flex-direction:column;gap:9px;padding:0 6px}
+.d1-back{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--tmuted)}
+.d1-rail-title{font-size:13.5px;font-weight:600;color:var(--tstrong);display:flex;align-items:center;gap:8px}
+.d1-ring{width:30px;height:30px;flex:none;position:relative}
+.d1-ring svg{transform:rotate(-90deg)}
+.d1-ring span{position:absolute;inset:0;display:grid;place-items:center;font-size:9px;font-weight:600;color:var(--acctext)}
+.d1-meta{font-size:11px;color:var(--tmuted)}
+.d1-list{display:flex;flex-direction:column;gap:1px}
+.d1-l{display:flex;align-items:flex-start;gap:9px;padding:6px 8px;border-radius:8px;font-size:12.3px;color:var(--text);line-height:1.4}
+.d1-l .st{width:15px;height:15px;border-radius:99px;border:1.5px solid var(--bstrong);flex:none;margin-top:1px;display:grid;place-items:center}
+.d1-l.done .st{background:var(--ok);border-color:var(--ok)}
+.d1-l.done .st svg{width:9px;height:9px;stroke:#fff;stroke-width:3;fill:none}
+.d1-l.done{color:var(--tmuted)}
+.d1-l.now{background:var(--accsoft);color:var(--accsoftfg);font-weight:600}
+.d1-l.now .st{border-color:var(--acc);border-width:4px}
+.d1-l .mn{margin-left:auto;font-size:10.5px;color:var(--tsubtle);padding-left:6px}
+.d1-l .wr{margin-left:auto;padding-left:6px;color:var(--acctext)}
+
+.d1-art{padding:26px 40px 0;overflow:hidden;min-width:0}
+.d1-art .measure{max-width:64ch}
+.d1-eyebrow{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--acctext);font-weight:600}
+.d1-h1{font-size:29px;line-height:1.15;letter-spacing:-.02em;margin-top:8px}
+.d1-sum{margin-top:9px;font-size:14.5px;color:var(--tmuted);line-height:1.5}
+.d1-sep{height:1px;background:var(--bord);margin:20px 0}
+.d1-h2{font-size:16px;margin-bottom:7px}
+.d1-p{font-size:13.5px;line-height:1.72;color:var(--text)}
+.d1-p + .d1-p{margin-top:10px}
+.d1-quote{margin-top:14px;border-left:2px solid var(--accring);padding:2px 0 2px 14px;display:flex;flex-direction:column;gap:7px}
+.d1-quote i{font-style:italic;color:var(--tmuted);font-size:13px}
+.d1-tbl{margin-top:16px;border:1px solid var(--bord);border-radius:10px;overflow:hidden;font-size:12.5px}
+.d1-tbl .r{display:grid;grid-template-columns:150px 1fr;border-top:1px solid var(--bsub)}
+.d1-tbl .r:first-child{border-top:0;background:var(--smuted);font-weight:600;color:var(--tstrong)}
+.d1-tbl .r > *{padding:7px 12px}
+.d1-tbl .r > *:first-child{border-right:1px solid var(--bsub);color:var(--tmuted)}
+
+.d1-aside{border-left:1px solid var(--bord);background:var(--surface);padding:20px 16px;display:flex;flex-direction:column;gap:18px;overflow:hidden}
+.d1-aside .lbl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tsubtle)}
+.d1-toc{display:flex;flex-direction:column;gap:7px;margin-top:9px;border-left:1px solid var(--bord);padding-left:11px}
+.d1-toc a{font-size:11.8px;color:var(--tmuted);text-decoration:none;line-height:1.35}
+.d1-toc a.on{color:var(--acctext);font-weight:600;box-shadow:-12px 0 0 -11px var(--acc)}
+.d1-card{border:1px solid var(--bord);border-radius:11px;padding:13px;display:flex;flex-direction:column;gap:9px;background:var(--surface)}
+.d1-card.acc{background:var(--accsoft);border-color:transparent}
+.d1-card h4{font-size:12.5px;display:flex;align-items:center;gap:7px}
+.d1-card p{font-size:11.5px;color:var(--tmuted);line-height:1.5}
+.d1-card.acc p{color:var(--accsoftfg);opacity:.9}
+.d1-card.acc h4{color:var(--accsoftfg)}
+
+.d1-foot{flex:none;border-top:1px solid var(--bord);background:var(--surface);padding:11px 22px;display:flex;align-items:center;gap:14px;box-shadow:0 -8px 24px -20px rgba(15,23,42,.6)}
+.d1-done{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:500;color:var(--text);border:1px solid var(--bstrong);border-radius:8px;padding:6px 12px}
+.d1-done .bx{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--bstrong)}
+.d1-next{margin-left:auto;display:flex;align-items:center;gap:12px}
+.d1-next .lbl2{text-align:right;font-size:10.5px;color:var(--tmuted);line-height:1.3}
+.d1-next .lbl2 b{display:block;font-size:12.5px;color:var(--tstrong);font-weight:600}
+
+/* track screen */
+.d1-hero{display:flex;gap:16px;align-items:flex-start;padding:26px 40px 0}
+.d1-badge{width:46px;height:46px;border-radius:13px;background:var(--accsoft);display:grid;place-items:center;flex:none}
+.d1-badge svg{width:24px;height:24px;stroke:var(--accsoftfg);fill:none;stroke-width:1.6}
+.d1-bar{height:6px;border-radius:99px;background:var(--smuted);overflow:hidden;flex:1}
+.d1-bar i{display:block;height:100%;background:var(--acc);border-radius:99px}
+.d1-out{display:grid;grid-template-columns:1fr 1fr;gap:8px 22px;margin-top:14px}
+.d1-out li{display:flex;gap:8px;font-size:12.5px;color:var(--text);line-height:1.45}
+.d1-out svg{width:13px;height:13px;stroke:var(--ok);fill:none;stroke-width:2.2;flex:none;margin-top:3px}
+.d1-lrow{display:flex;align-items:center;gap:13px;padding:11px 14px;border-radius:10px;border:1px solid transparent}
+.d1-lrow + .d1-lrow{border-top:1px solid var(--bsub)}
+.d1-lrow.hi{background:var(--surface);border-color:var(--accring);box-shadow:0 1px 2px rgba(15,23,42,.05)}
+.d1-lrow .n{font-size:11.5px;color:var(--tsubtle);width:16px;flex:none}
+.d1-lrow .t{display:block;font-size:13px;font-weight:500;color:var(--tstrong)}
+.d1-lrow .s{display:block;font-size:11.5px;color:var(--tmuted);margin-top:1px}
+</style>
+
+<section class="wrap dir" id="d1">
+  <div class="dir-head">
+    <div>
+      <span class="dir-num">ARAH 01</span>
+      <h2>Reader</h2>
+      <p class="lede">
+        Perlakukan lesson seperti <span class="it">course player</span>, bukan halaman dokumentasi.
+        Layar dipakai penuh dan dibagi tiga: kemana saya melangkah (rail kiri), apa yang saya baca
+        (kolom tengah), apa yang harus saya lakukan (rail kanan). Satu-satunya elemen yang selalu
+        terlihat adalah tombol lanjut.
+      </p>
+      <ul class="changes">
+        <li><b>Buang <code>max-w-5xl</code></b> di route Academy — lebar diatur oleh <code>ch</code> pada kolom teks, bukan oleh pembungkus halaman, sehingga tidak ada lagi pita kosong 390px.</li>
+        <li><b>Rail kiri jadi peta progres</b>: centang hijau untuk yang sudah selesai, cincin untuk yang sedang dibaca, ikon kunci pas untuk lesson yang punya latihan.</li>
+        <li><b>Rail kanan menampung semua aksi</b> — daftar isi halaman, kartu latihan sandbox, dan pengingat self-check. Badan artikel jadi bersih dari kotak.</li>
+        <li><b>Bar bawah yang menempel</b>: "tandai selesai" + "lanjut ke lesson berikutnya" dalam satu gerakan, tidak perlu scroll sampai dasar.</li>
+        <li><b>Halaman track berhenti mengulang</b>: rail memegang daftar lesson, badan halaman memegang konteks (progres, hasil belajar, tombol mulai).</li>
+      </ul>
+    </div>
+    <div class="meta-card">
+      <span class="pill hi">Paling aman dijalankan</span>
+      <div class="meta-row"><span class="k">Cocok untuk</span><span class="v">Pembaca dewasa yang mau menyelesaikan track sampai habis</span></div>
+      <div class="meta-row"><span class="k">Rujukan rasa</span><span class="v">Frontend Masters, Coursera, Stripe Docs</span></div>
+      <div class="meta-row"><span class="k">Beban kerja</span><span class="v">Sedang — 4 komponen disentuh, tidak ada konten baru</span></div>
+      <div class="meta-row"><span class="k">Risikonya</span><span class="v">Aman tapi familiar; tidak akan bikin orang cerita ke temannya</span></div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <span class="lbl">Layar A</span>
+    <span class="txt">Lesson — tiga kolom, progres selalu terlihat, "lanjut" tidak pernah lebih jauh dari satu klik</span>
+  </div>
+  <div class="shot">
+    <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="shot-url">testforge.emha.space/academy/qa-fundamentals/what-a-tester-actually-does</span></div>
+    <div class="shot-scroll">
+      <div class="mk" style="height:706px">
+        <aside class="sb">
+          <div class="sb-logo"><span class="sb-mark"><svg><use href="#i-check"/></svg></span>TestForge</div>
+          <div class="sb-search"><svg class="ico sm" style="stroke:#94a3b8"><use href="#i-target"/></svg>Search</div>
+          <div class="sb-i"><svg><use href="#i-dash"/></svg>Dashboard</div>
+          <div class="sb-i"><svg><use href="#i-task"/></svg>My Work</div>
+          <div class="sb-i"><svg><use href="#i-folder"/></svg>Projects</div>
+          <div class="sb-sub">tokopudidi</div>
+          <div class="sb-sub">postinia</div>
+          <div class="sb-i"><svg><use href="#i-users"/></svg>Team</div>
+          <div class="sb-i"><svg><use href="#i-key"/></svg>API Keys</div>
+          <div class="sb-i"><svg><use href="#i-spark"/></svg>AI Assist</div>
+          <div class="sb-i"><svg><use href="#i-log"/></svg>Audit Log</div>
+          <div class="sb-i on"><svg><use href="#i-target"/></svg>Academy<span class="sb-chip">BETA</span></div>
+          <div class="sb-sub">My progress</div>
+          <div class="sb-i"><svg><use href="#i-help"/></svg>Help</div>
+          <div class="sb-foot">Mansyur Hidayat</div>
+        </aside>
+
+        <div class="d1-main">
+          <div class="d1-prog"><i></i></div>
+          <div class="d1-top">
+            <div class="d1-crumb">
+              <svg class="ico sm"><use href="#i-tree"/></svg>
+              <span>Academy</span><svg class="ico sm"><use href="#i-chev"/></svg>
+              <b>QA Fundamentals</b>
+            </div>
+            <div class="right">
+              <span class="d1-count num">Lesson 1 of 13</span>
+              <span class="d1-lang"><svg class="ico sm"><use href="#i-globe"/></svg>Bahasa Indonesia</span>
+            </div>
+          </div>
+
+          <div class="d1-body">
+            <nav class="d1-rail">
+              <div class="d1-rail-head">
+                <span class="d1-back"><svg class="ico sm"><use href="#i-chevl"/></svg>All tracks</span>
+                <span class="d1-rail-title">
+                  <span class="d1-ring">
+                    <svg width="30" height="30"><circle cx="15" cy="15" r="12.5" fill="none" stroke="#e2e8f0" stroke-width="3"/><circle cx="15" cy="15" r="12.5" fill="none" stroke="#4f46e5" stroke-width="3" stroke-dasharray="78.5" stroke-dashoffset="72.3" stroke-linecap="round"/></svg>
+                    <span class="num">8%</span>
+                  </span>
+                  QA Fundamentals
+                </span>
+                <span class="d1-meta num">1 dari 13 · sisa ±2h 7m</span>
+              </div>
+              <div class="d1-list">
+                <div class="d1-l done"><span class="st"><svg><use href="#i-check"/></svg></span>What a tester actually does</div>
+                <div class="d1-l now"><span class="st"></span>SDLC and STLC<span class="mn num">10m</span></div>
+                <div class="d1-l"><span class="st"></span>Test levels<span class="mn num">9m</span></div>
+                <div class="d1-l"><span class="st"></span>Test types<span class="mn num">9m</span></div>
+                <div class="d1-l"><span class="st"></span>The seven testing principles<span class="mn num">7m</span></div>
+                <div class="d1-l"><span class="st"></span>Equivalence partitioning<span class="wr"><svg class="ico sm"><use href="#i-wrench"/></svg></span></div>
+                <div class="d1-l"><span class="st"></span>Boundary value analysis<span class="wr"><svg class="ico sm"><use href="#i-wrench"/></svg></span></div>
+                <div class="d1-l"><span class="st"></span>Decision tables<span class="mn num">11m</span></div>
+                <div class="d1-l"><span class="st"></span>State transition testing<span class="mn num">10m</span></div>
+                <div class="d1-l"><span class="st"></span>Writing test cases people can actually run<span class="wr"><svg class="ico sm"><use href="#i-wrench"/></svg></span></div>
+                <div class="d1-l"><span class="st"></span>Writing a bug report that gets fixed<span class="wr"><svg class="ico sm"><use href="#i-wrench"/></svg></span></div>
+                <div class="d1-l"><span class="st"></span>The defect lifecycle<span class="mn num">8m</span></div>
+                <div class="d1-l"><span class="st"></span>The tester in a sprint<span class="mn num">9m</span></div>
+              </div>
+            </nav>
+
+            <article class="d1-art">
+              <div class="measure">
+                <p class="d1-eyebrow num">Lesson 02 · 10 min</p>
+                <h1 class="d1-h1 disp">SDLC and STLC</h1>
+                <p class="d1-sum">How software gets built, where testing sits inside it, and why "shift left" is more than a slogan.</p>
+                <div class="d1-sep"></div>
+                <h2 class="d1-h2">Two lifecycles, one calendar</h2>
+                <p class="d1-p">Every team you join will have a rhythm — a way work moves from an idea to something a customer can use. That rhythm is the SDLC, and testing is not a stage that waits at the end of it. The STLC is the smaller loop that runs <em>inside</em> it, and the two are on the same calendar whether anyone drew it that way or not.</p>
+                <div class="d1-quote">
+                  <i>"Shift left" means the cheapest place to catch a defect is in the requirement, before a line of code exists.</i>
+                </div>
+                <div class="d1-tbl">
+                  <div class="r"><span>SDLC stage</span><span>What a tester is doing there</span></div>
+                  <div class="r"><span>Requirements</span><span>Asking the questions nobody asked yet — the cheapest bugs die here</span></div>
+                  <div class="r"><span>Design</span><span>Test planning, risk list, deciding what will never be automated</span></div>
+                  <div class="r"><span>Build</span><span>Writing cases against acceptance criteria while the code is written</span></div>
+                </div>
+              </div>
+            </article>
+
+            <aside class="d1-aside">
+              <div>
+                <span class="lbl">Di halaman ini</span>
+                <div class="d1-toc">
+                  <a href="#" class="on">Two lifecycles, one calendar</a>
+                  <a href="#">Where testing actually starts</a>
+                  <a href="#">The STLC in six moves</a>
+                  <a href="#">Entry and exit criteria</a>
+                  <a href="#">What to remember</a>
+                </div>
+              </div>
+              <div class="d1-card acc">
+                <h4><svg class="ico"><use href="#i-wrench"/></svg>Latihan tersedia</h4>
+                <p>Tulis satu test case di sandbox, langsung dinilai pemeriksa yang sama seperti di produk.</p>
+                <span class="btn" style="align-self:flex-start">Start this exercise</span>
+              </div>
+              <div class="d1-card">
+                <h4><svg class="ico"><use href="#i-task"/></svg>Self-check</h4>
+                <p>3 pertanyaan menunggu di akhir lesson.</p>
+              </div>
+            </aside>
+          </div>
+
+          <div class="d1-foot">
+            <span class="d1-done"><span class="bx"></span>Tandai lesson ini selesai</span>
+            <span class="chip">Otomatis tersimpan ke akun</span>
+            <div class="d1-next">
+              <span class="lbl2">Berikutnya<b>Test levels</b></span>
+              <span class="btn">Lanjut<svg class="ico"><use href="#i-chev"/></svg></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <span class="lbl">Layar B</span>
+    <span class="txt">Track — rail memegang daftarnya, badan halaman memegang alasan untuk mulai</span>
+  </div>
+  <div class="shot">
+    <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="shot-url">testforge.emha.space/academy/qa-fundamentals</span></div>
+    <div class="shot-scroll">
+      <div class="mk" style="height:584px">
+        <aside class="sb">
+          <div class="sb-logo"><span class="sb-mark"><svg><use href="#i-check"/></svg></span>TestForge</div>
+          <div class="sb-search"><svg class="ico sm" style="stroke:#94a3b8"><use href="#i-target"/></svg>Search</div>
+          <div class="sb-i"><svg><use href="#i-dash"/></svg>Dashboard</div>
+          <div class="sb-i"><svg><use href="#i-task"/></svg>My Work</div>
+          <div class="sb-i"><svg><use href="#i-folder"/></svg>Projects</div>
+          <div class="sb-i"><svg><use href="#i-users"/></svg>Team</div>
+          <div class="sb-i"><svg><use href="#i-key"/></svg>API Keys</div>
+          <div class="sb-i"><svg><use href="#i-spark"/></svg>AI Assist</div>
+          <div class="sb-i on"><svg><use href="#i-target"/></svg>Academy<span class="sb-chip">BETA</span></div>
+          <div class="sb-sub">My progress</div>
+          <div class="sb-i"><svg><use href="#i-help"/></svg>Help</div>
+          <div class="sb-foot">Mansyur Hidayat</div>
+        </aside>
+
+        <div class="d1-main">
+          <div class="d1-prog"><i></i></div>
+          <div class="d1-top">
+            <div class="d1-crumb"><svg class="ico sm"><use href="#i-tree"/></svg><span>Academy</span><svg class="ico sm"><use href="#i-chev"/></svg><b>QA Fundamentals</b></div>
+            <div class="right"><span class="d1-lang"><svg class="ico sm"><use href="#i-globe"/></svg>Bahasa Indonesia</span></div>
+          </div>
+
+          <div class="d1-body">
+            <nav class="d1-rail">
+              <div class="d1-rail-head">
+                <span class="d1-back"><svg class="ico sm"><use href="#i-chevl"/></svg>All tracks</span>
+                <span class="d1-rail-title">
+                  <span class="d1-ring">
+                    <svg width="30" height="30"><circle cx="15" cy="15" r="12.5" fill="none" stroke="#e2e8f0" stroke-width="3"/><circle cx="15" cy="15" r="12.5" fill="none" stroke="#4f46e5" stroke-width="3" stroke-dasharray="78.5" stroke-dashoffset="72.3" stroke-linecap="round"/></svg>
+                    <span class="num">8%</span>
+                  </span>
+                  QA Fundamentals
+                </span>
+              </div>
+              <div class="d1-list">
+                <div class="d1-l done"><span class="st"><svg><use href="#i-check"/></svg></span>What a tester actually does</div>
+                <div class="d1-l"><span class="st"></span>SDLC and STLC</div>
+                <div class="d1-l"><span class="st"></span>Test levels</div>
+                <div class="d1-l"><span class="st"></span>Test types</div>
+                <div class="d1-l"><span class="st"></span>The seven testing principles</div>
+                <div class="d1-l"><span class="st"></span>Equivalence partitioning</div>
+                <div class="d1-l"><span class="st"></span>Boundary value analysis</div>
+                <div class="d1-l"><span class="st"></span>Decision tables</div>
+              </div>
+            </nav>
+
+            <div class="d1-art" style="padding-left:36px;padding-right:36px">
+              <div class="d1-hero" style="padding:0">
+                <span class="d1-badge"><svg><use href="#i-task"/></svg></span>
+                <div style="min-width:0">
+                  <h1 class="d1-h1 disp" style="margin-top:0;font-size:26px">QA Fundamentals</h1>
+                  <p class="d1-sum" style="margin-top:6px">Everything you need to test a real feature and be trusted with the result.</p>
+                  <p class="num" style="margin-top:7px;font-size:11.5px;color:var(--tmuted)">Zero → job-ready · 13 lessons · 2h 15m</p>
+                </div>
+              </div>
+
+              <div style="margin-top:20px;display:flex;align-items:center;gap:12px">
+                <div class="d1-bar"><i style="width:8%"></i></div>
+                <span class="num" style="font-size:11.5px;color:var(--tmuted);white-space:nowrap">1 dari 13 selesai</span>
+                <span class="btn">Lanjut: SDLC and STLC<svg class="ico"><use href="#i-chev"/></svg></span>
+              </div>
+
+              <div style="margin-top:26px">
+                <h2 class="d1-h2">Setelah track ini kamu bisa</h2>
+                <ul class="d1-out">
+                  <li><svg><use href="#i-check"/></svg>Menjelaskan apa yang bisa dan tidak bisa dibuktikan pengujian</li>
+                  <li><svg><use href="#i-check"/></svg>Mengubah requirement jadi set tes yang bisa dipertahankan</li>
+                  <li><svg><use href="#i-check"/></svg>Menulis test case yang orang lain jalankan dengan hasil sama</li>
+                  <li><svg><use href="#i-check"/></svg>Melaporkan defect supaya diperbaiki, bukan ditutup</li>
+                </ul>
+              </div>
+
+              <div style="margin-top:24px">
+                <h2 class="d1-h2">Mulai dari sini</h2>
+                <div style="margin-top:6px">
+                  <div class="d1-lrow hi">
+                    <span class="n num">02</span>
+                    <span style="min-width:0"><span class="t">SDLC and STLC</span><span class="s">How software gets built, where testing sits inside it.</span></span>
+                    <span class="chip acc">Lanjutkan</span>
+                  </div>
+                  <div class="d1-lrow">
+                    <span class="n num">03</span>
+                    <span style="min-width:0"><span class="t">Test levels</span><span class="s">Unit, integration, system and acceptance testing.</span></span>
+                    <span class="num" style="font-size:11px;color:var(--tsubtle)">9m</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <aside class="d1-aside">
+              <div class="d1-card">
+                <h4><svg class="ico"><use href="#i-flag"/></svg>Sertifikat</h4>
+                <p>Selesaikan 13 lesson untuk membuka sertifikat track ini.</p>
+                <div class="d1-bar" style="margin-top:2px"><i style="width:8%"></i></div>
+              </div>
+              <div class="d1-card">
+                <h4><svg class="ico"><use href="#i-wrench"/></svg>4 latihan sandbox</h4>
+                <p>Lesson 6, 7, 10 dan 11 punya latihan yang dinilai otomatis.</p>
+              </div>
+              <div class="d1-card acc">
+                <h4><svg class="ico"><use href="#i-target"/></svg>Ujian simulasi</h4>
+                <p>Terbuka setelah track Foundation Level selesai.</p>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<style>
+/* ---------- Arah 2 · Jalur ---------- */
+.d2-main{flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) 292px;background:var(--canvas);overflow:hidden}
+.d2-col{padding:26px 30px;overflow:hidden;min-width:0}
+.d2-head{display:flex;align-items:flex-end;gap:12px}
+.d2-head h1{font-size:27px;letter-spacing:-.02em}
+.d2-head .chip{margin-bottom:5px}
+.d2-sub{margin-top:6px;font-size:13px;color:var(--tmuted)}
+
+.d2-path{margin-top:22px;display:flex;flex-direction:column}
+.d2-node{display:grid;grid-template-columns:56px minmax(0,1fr);align-items:stretch}
+.d2-spine{position:relative;display:flex;justify-content:center}
+.d2-spine::before{content:"";position:absolute;top:0;bottom:0;width:2px;background:var(--bord)}
+.d2-node:first-child .d2-spine::before{top:22px}
+.d2-node:last-child .d2-spine::before{bottom:calc(100% - 22px)}
+.d2-node.done .d2-spine::before,.d2-node.now .d2-spine::before{background:linear-gradient(var(--ok),var(--acc))}
+.d2-dot{position:relative;z-index:1;margin-top:10px;width:30px;height:30px;border-radius:99px;background:var(--surface);border:2px solid var(--bstrong);display:grid;place-items:center;font-size:11.5px;font-weight:700;color:var(--tmuted);flex:none;align-self:flex-start}
+.d2-node.done .d2-dot{background:var(--ok);border-color:var(--ok);color:#fff}
+.d2-node.done .d2-dot svg{width:14px;height:14px;stroke:#fff;stroke-width:3;fill:none}
+.d2-node.now .d2-dot{border-color:var(--acc);color:var(--acctext);box-shadow:0 0 0 5px var(--accsoft)}
+.d2-card{margin:0 0 12px;background:var(--surface);border:1px solid var(--bord);border-radius:13px;padding:14px 16px;min-width:0}
+.d2-node.now .d2-card{border-color:var(--accring);box-shadow:0 10px 30px -22px rgba(79,70,229,.9)}
+.d2-node.soon .d2-card{background:transparent;border-style:dashed}
+.d2-card .row{display:flex;align-items:center;gap:9px}
+.d2-card h3{font-size:14.5px}
+.d2-card .tag{font-size:10.5px;color:var(--tmuted);border:1px solid var(--bord);border-radius:99px;padding:1px 8px}
+.d2-card p{margin-top:4px;font-size:12.3px;color:var(--tmuted)}
+.d2-pills{display:flex;flex-wrap:wrap;gap:5px;margin-top:12px}
+.d2-pill{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:10.5px;font-weight:600;background:var(--smuted);color:var(--tsubtle)}
+.d2-pill.done{background:var(--oksoft);color:var(--okfg)}
+.d2-pill.done svg{width:11px;height:11px;stroke:currentColor;stroke-width:3;fill:none}
+.d2-pill.now{background:var(--acc);color:#fff;width:auto;padding:0 11px;gap:6px;display:inline-flex}
+.d2-pill.wr{background:var(--accsoft);color:var(--accsoftfg)}
+.d2-cta{margin-top:13px;display:flex;align-items:center;gap:10px}
+.d2-cta .hint{font-size:11.5px;color:var(--tmuted)}
+
+.d2-side{border-left:1px solid var(--bord);background:var(--surface);padding:24px 20px;display:flex;flex-direction:column;gap:20px;overflow:hidden}
+.d2-side .lbl{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tsubtle)}
+.d2-streak{display:flex;align-items:baseline;gap:8px;margin-top:8px}
+.d2-streak .big{font-family:"Space Grotesk",sans-serif;font-size:34px;font-weight:700;color:var(--tstrong);line-height:1}
+.d2-streak .u{font-size:12px;color:var(--tmuted)}
+.d2-week{display:flex;gap:5px;margin-top:12px;align-items:flex-end;height:44px}
+.d2-week span{flex:1;background:var(--smuted);border-radius:4px;display:block}
+.d2-week span.f{background:var(--acc)}
+.d2-week span.h{background:var(--accring);opacity:.55}
+.d2-days{display:flex;gap:5px;margin-top:5px}
+.d2-days span{flex:1;text-align:center;font-size:9.5px;color:var(--tsubtle)}
+.d2-mile{border:1px solid var(--bord);border-radius:12px;padding:13px;display:flex;flex-direction:column;gap:8px}
+.d2-mile h4{font-size:12.5px;display:flex;gap:7px;align-items:center}
+.d2-mile p{font-size:11.5px;color:var(--tmuted);line-height:1.5}
+.d2-slots{display:flex;gap:8px;margin-top:10px}
+.d2-slot{flex:1;aspect-ratio:1;border-radius:12px;border:1px dashed var(--bstrong);display:grid;place-items:center;color:var(--tsubtle)}
+.d2-slot.got{border:1px solid transparent;background:var(--accsoft);color:var(--accsoftfg)}
+.d2-slot svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.6}
+
+/* lesson with stepper */
+.d2-l-main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--canvas);overflow:hidden}
+.d2-step{background:var(--surface);border-bottom:1px solid var(--bord);padding:12px 34px 13px;flex:none}
+.d2-step .top{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--tmuted)}
+.d2-step .top b{color:var(--tstrong);font-weight:600}
+.d2-segs{display:flex;gap:4px;margin-top:9px}
+.d2-seg{height:6px;border-radius:99px;background:var(--smuted);flex:1}
+.d2-seg.done{background:var(--ok)}
+.d2-seg.now{background:var(--acc);flex:1.6}
+.d2-l-body{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 268px;min-height:0}
+.d2-l-art{padding:28px 40px;overflow:hidden}
+.d2-l-art .measure{max-width:70ch}
+.d2-l-aside{border-left:1px solid var(--bord);background:var(--surface);padding:22px 18px;display:flex;flex-direction:column;gap:16px;overflow:hidden}
+.d2-check{border-radius:13px;background:var(--accsoft);padding:14px;color:var(--accsoftfg)}
+.d2-check h4{color:var(--accsoftfg);font-size:12.5px;display:flex;gap:7px;align-items:center}
+.d2-check p{font-size:11.5px;margin-top:5px;opacity:.9;line-height:1.5}
+.d2-xp{display:flex;align-items:center;gap:9px;border:1px solid var(--bord);border-radius:12px;padding:11px 13px}
+.d2-xp .n{font-family:"Space Grotesk",sans-serif;font-size:19px;font-weight:700;color:var(--tstrong)}
+.d2-foot{flex:none;border-top:1px solid var(--bord);background:var(--surface);padding:12px 34px;display:flex;align-items:center;gap:12px}
+</style>
+
+<section class="wrap dir" id="d2">
+  <div class="dir-head">
+    <div>
+      <span class="dir-num">ARAH 02</span>
+      <h2>Jalur</h2>
+      <p class="lede">
+        Academy bukan pohon dokumen, tapi <span class="it">rute yang ditempuh</span>. Lima track jadi
+        lima perhentian pada satu tulang punggung vertikal; setiap lesson adalah simpul dengan status
+        yang terbaca sekilas. Yang dijual bukan daftar isi, melainkan momentum: sudah sejauh mana,
+        berapa lama lagi, apa hadiah berikutnya.
+      </p>
+      <ul class="changes">
+        <li><b>Halaman roadmap dan halaman progres dilebur</b> jadi satu — sekarang keduanya menampilkan angka yang sama dengan tata letak berbeda.</li>
+        <li><b>Status per lesson jadi bahasa visual</b>: hijau selesai, indigo sedang berjalan, garis putus-putus belum ditulis, dan label khusus untuk track yang baru ada versi Inggrisnya.</li>
+        <li><b>Panel momentum</b>: rentetan hari, lesson minggu ini, dan tonggak berikutnya (ujian simulasi, sertifikat) sebagai slot yang menunggu diisi.</li>
+        <li><b>Lesson tanpa rail kiri</b> — jalurnya dipadatkan jadi stepper 13 ruas di atas, jadi teks dapat ruang lebih lebar.</li>
+        <li><b>Sertifikat naik pangkat</b> dari catatan kaki di <code>/academy/me</code> menjadi lemari piala yang terlihat sejak hari pertama.</li>
+      </ul>
+    </div>
+    <div class="meta-card">
+      <span class="pill">Paling memotivasi</span>
+      <div class="meta-row"><span class="k">Cocok untuk</span><span class="v">Pemula yang berhenti di lesson ketiga kalau tidak ditarik</span></div>
+      <div class="meta-row"><span class="k">Rujukan rasa</span><span class="v">roadmap.sh, Duolingo, Boot.dev</span></div>
+      <div class="meta-row"><span class="k">Beban kerja</span><span class="v">Besar — butuh data rentetan/aktivitas yang belum direkam</span></div>
+      <div class="meta-row"><span class="k">Risikonya</span><span class="v">Gamifikasi bisa terasa kekanakan untuk pembaca profesional</span></div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <span class="lbl">Layar A</span>
+    <span class="txt">Roadmap sebagai jalur — lima perhentian, satu yang sedang berjalan, momentum di kanan</span>
+  </div>
+  <div class="shot">
+    <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="shot-url">testforge.emha.space/academy</span></div>
+    <div class="shot-scroll">
+      <div class="mk" style="height:700px">
+        <aside class="sb">
+          <div class="sb-logo"><span class="sb-mark"><svg><use href="#i-check"/></svg></span>TestForge</div>
+          <div class="sb-search"><svg class="ico sm" style="stroke:#94a3b8"><use href="#i-target"/></svg>Search</div>
+          <div class="sb-i"><svg><use href="#i-dash"/></svg>Dashboard</div>
+          <div class="sb-i"><svg><use href="#i-task"/></svg>My Work</div>
+          <div class="sb-i"><svg><use href="#i-folder"/></svg>Projects</div>
+          <div class="sb-i"><svg><use href="#i-users"/></svg>Team</div>
+          <div class="sb-i"><svg><use href="#i-key"/></svg>API Keys</div>
+          <div class="sb-i"><svg><use href="#i-spark"/></svg>AI Assist</div>
+          <div class="sb-i"><svg><use href="#i-log"/></svg>Audit Log</div>
+          <div class="sb-i on"><svg><use href="#i-target"/></svg>Academy<span class="sb-chip">BETA</span></div>
+          <div class="sb-i"><svg><use href="#i-help"/></svg>Help</div>
+          <div class="sb-foot">Mansyur Hidayat</div>
+        </aside>
+
+        <div class="d2-main">
+          <div class="d2-col">
+            <div class="d2-head">
+              <h1 class="disp">Jalurmu</h1>
+              <span class="chip acc">BETA</span>
+            </div>
+            <p class="d2-sub num">1 dari 51 lesson · 5 track · perkiraan 9 jam sampai siap ujian</p>
+
+            <div class="d2-path">
+              <div class="d2-node now">
+                <div class="d2-spine"><span class="d2-dot">1</span></div>
+                <div class="d2-card">
+                  <div class="row">
+                    <h3>QA Fundamentals</h3>
+                    <span class="tag">Zero → job-ready</span>
+                    <span class="chip acc" style="margin-left:auto">Sedang berjalan</span>
+                  </div>
+                  <p>Everything you need to test a real feature and be trusted with the result.</p>
+                  <div class="d2-pills">
+                    <span class="d2-pill done"><svg><use href="#i-check"/></svg></span>
+                    <span class="d2-pill now">2 · SDLC and STLC</span>
+                    <span class="d2-pill">3</span><span class="d2-pill">4</span><span class="d2-pill">5</span>
+                    <span class="d2-pill wr"><svg class="ico sm"><use href="#i-wrench"/></svg></span>
+                    <span class="d2-pill wr"><svg class="ico sm"><use href="#i-wrench"/></svg></span>
+                    <span class="d2-pill">8</span><span class="d2-pill">9</span>
+                    <span class="d2-pill wr"><svg class="ico sm"><use href="#i-wrench"/></svg></span>
+                    <span class="d2-pill wr"><svg class="ico sm"><use href="#i-wrench"/></svg></span>
+                    <span class="d2-pill">12</span><span class="d2-pill">13</span>
+                  </div>
+                  <div class="d2-cta">
+                    <span class="btn">Lanjutkan lesson 2<svg class="ico"><use href="#i-chev"/></svg></span>
+                    <span class="hint num">±2h 7m tersisa di perhentian ini</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="d2-node soon">
+                <div class="d2-spine"><span class="d2-dot">2</span></div>
+                <div class="d2-card">
+                  <div class="row">
+                    <h3>Manual QA Professional</h3>
+                    <span class="tag">12 lesson · 2h 40m</span>
+                    <span class="chip" style="margin-left:auto">Terkunci sampai 8 lesson</span>
+                  </div>
+                  <p>Dari menjalankan test case menjadi orang yang memutuskan apa yang diuji.</p>
+                </div>
+              </div>
+
+              <div class="d2-node soon">
+                <div class="d2-spine"><span class="d2-dot">3</span></div>
+                <div class="d2-card">
+                  <div class="row">
+                    <h3>QA Automation</h3>
+                    <span class="tag">12 lesson</span>
+                    <span class="chip warn" style="margin-left:auto">Baru ada versi Inggris</span>
+                  </div>
+                  <p>Playwright, selektor yang tidak rapuh, dan tes yang tidak bikin CI merah palsu.</p>
+                </div>
+              </div>
+
+              <div class="d2-node soon">
+                <div class="d2-spine"><span class="d2-dot">4</span></div>
+                <div class="d2-card">
+                  <div class="row">
+                    <h3>Beyond Functional</h3>
+                    <span class="tag">7 lesson</span>
+                  </div>
+                  <p>Performa, aksesibilitas, keamanan — pengujian yang tidak muncul di acceptance criteria.</p>
+                </div>
+              </div>
+
+              <div class="d2-node soon">
+                <div class="d2-spine"><span class="d2-dot"><svg class="ico"><use href="#i-flag"/></svg></span></div>
+                <div class="d2-card">
+                  <div class="row">
+                    <h3>Foundation Level Exam Prep</h3>
+                    <span class="tag">7 lesson + ujian simulasi</span>
+                  </div>
+                  <p>Perhentian terakhir: 40 soal, 60 menit, laporan per bab setelahnya.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="d2-side">
+            <div>
+              <span class="lbl">Rentetan</span>
+              <div class="d2-streak"><span class="big num">4</span><span class="u">hari berturut-turut</span></div>
+              <div class="d2-week">
+                <span class="f" style="height:40%"></span><span class="f" style="height:62%"></span>
+                <span class="f" style="height:28%"></span><span class="f" style="height:88%"></span>
+                <span class="h" style="height:20%"></span><span style="height:12%"></span><span style="height:12%"></span>
+              </div>
+              <div class="d2-days"><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span></div>
+            </div>
+
+            <div class="d2-mile">
+              <h4><svg class="ico"><use href="#i-target"/></svg>Tonggak berikutnya</h4>
+              <p>Selesaikan 7 lesson lagi di QA Fundamentals untuk membuka ujian simulasi Foundation Level.</p>
+              <div class="d1-bar"><i style="width:15%"></i></div>
+            </div>
+
+            <div>
+              <span class="lbl">Lemari sertifikat</span>
+              <div class="d2-slots">
+                <span class="d2-slot"><svg><use href="#i-flag"/></svg></span>
+                <span class="d2-slot"><svg><use href="#i-lock"/></svg></span>
+                <span class="d2-slot"><svg><use href="#i-lock"/></svg></span>
+                <span class="d2-slot"><svg><use href="#i-lock"/></svg></span>
+              </div>
+              <p style="margin-top:9px;font-size:11px;color:var(--tmuted);line-height:1.5">Satu per track, plus satu untuk lulus ujian simulasi penuh.</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <span class="lbl">Layar B</span>
+    <span class="txt">Lesson — rail diganti stepper 13 ruas, teks dapat 70ch penuh</span>
+  </div>
+  <div class="shot">
+    <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="shot-url">testforge.emha.space/academy/qa-fundamentals/sdlc-and-stlc</span></div>
+    <div class="shot-scroll">
+      <div class="mk" style="height:560px">
+        <aside class="sb">
+          <div class="sb-logo"><span class="sb-mark"><svg><use href="#i-check"/></svg></span>TestForge</div>
+          <div class="sb-search"><svg class="ico sm" style="stroke:#94a3b8"><use href="#i-target"/></svg>Search</div>
+          <div class="sb-i"><svg><use href="#i-dash"/></svg>Dashboard</div>
+          <div class="sb-i"><svg><use href="#i-task"/></svg>My Work</div>
+          <div class="sb-i"><svg><use href="#i-folder"/></svg>Projects</div>
+          <div class="sb-i"><svg><use href="#i-users"/></svg>Team</div>
+          <div class="sb-i"><svg><use href="#i-spark"/></svg>AI Assist</div>
+          <div class="sb-i on"><svg><use href="#i-target"/></svg>Academy<span class="sb-chip">BETA</span></div>
+          <div class="sb-i"><svg><use href="#i-help"/></svg>Help</div>
+          <div class="sb-foot">Mansyur Hidayat</div>
+        </aside>
+
+        <div class="d2-l-main">
+          <div class="d2-step">
+            <div class="top">
+              <svg class="ico sm"><use href="#i-chevl"/></svg>
+              <b>QA Fundamentals</b>
+              <span class="num">· perhentian 1 dari 5</span>
+              <span class="chip ok" style="margin-left:auto"><svg class="ico sm"><use href="#i-check"/></svg>1 selesai</span>
+              <span class="chip acc num">2 dari 13</span>
+            </div>
+            <div class="d2-segs">
+              <span class="d2-seg done"></span><span class="d2-seg now"></span><span class="d2-seg"></span>
+              <span class="d2-seg"></span><span class="d2-seg"></span><span class="d2-seg"></span>
+              <span class="d2-seg"></span><span class="d2-seg"></span><span class="d2-seg"></span>
+              <span class="d2-seg"></span><span class="d2-seg"></span><span class="d2-seg"></span><span class="d2-seg"></span>
+            </div>
+          </div>
+
+          <div class="d2-l-body">
+            <article class="d2-l-art">
+              <div class="measure">
+                <h1 class="disp" style="font-size:28px;letter-spacing:-.02em">SDLC and STLC</h1>
+                <p style="margin-top:8px;font-size:14px;color:var(--tmuted)">How software gets built, where testing sits inside it, and why "shift left" is more than a slogan.</p>
+                <p class="num" style="margin-top:8px;font-size:11.5px;color:var(--tsubtle)">10 menit baca · +1 lesson untuk rentetanmu</p>
+                <h2 style="margin-top:22px;font-size:16px">Two lifecycles, one calendar</h2>
+                <p style="margin-top:7px;font-size:13.5px;line-height:1.75">Every team you join will have a rhythm — a way work moves from an idea to something a customer can use. That rhythm is the SDLC, and testing is not a stage that waits at the end of it. The STLC is the smaller loop that runs inside it, and the two share one calendar whether anyone drew it that way or not.</p>
+                <p style="margin-top:10px;font-size:13.5px;line-height:1.75">The teams that are pleasant to work on are the ones where those two loops are visible to everybody, not just to the tester.</p>
+              </div>
+            </article>
+
+            <aside class="d2-l-aside">
+              <div class="d2-check">
+                <h4><svg class="ico"><use href="#i-task"/></svg>Checkpoint</h4>
+                <p>3 pertanyaan di akhir lesson. Jawab benar semua untuk menandai perhentian ini bersih.</p>
+              </div>
+              <div class="d2-xp">
+                <span class="n num">12</span>
+                <span style="font-size:11.5px;color:var(--tmuted);line-height:1.4">lesson lagi sampai sertifikat track pertama</span>
+              </div>
+              <div class="d2-xp">
+                <span class="n num">4</span>
+                <span style="font-size:11.5px;color:var(--tmuted);line-height:1.4">hari rentetan — baca satu lesson hari ini untuk menjaganya</span>
+              </div>
+            </aside>
+          </div>
+
+          <div class="d2-foot">
+            <span class="btn ghost"><svg class="ico"><use href="#i-chevl"/></svg>What a tester actually does</span>
+            <span class="btn" style="margin-left:auto">Selesai & lanjut ke Test levels<svg class="ico"><use href="#i-chev"/></svg></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<style>
+/* ---------- Arah 3 · Studio ---------- */
+.d3-main{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--canvas);overflow:hidden}
+.d3-top{flex:none;display:flex;align-items:center;gap:12px;padding:10px 20px;border-bottom:1px solid var(--bord);background:var(--surface)}
+.d3-top .t{font-size:13px;font-weight:600;color:var(--tstrong)}
+.d3-top .c{font-size:11.5px;color:var(--tmuted)}
+.d3-tabs{display:flex;gap:2px;background:var(--smuted);border-radius:9px;padding:2px}
+.d3-tab{font-size:11.5px;font-weight:500;color:var(--tmuted);padding:4px 11px;border-radius:7px;display:inline-flex;align-items:center;gap:6px}
+.d3-tab.on{background:var(--surface);color:var(--tstrong);box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.d3-split{flex:1;display:grid;grid-template-columns:minmax(0,1.05fr) 6px minmax(0,1fr);min-height:0}
+.d3-read{padding:24px 30px;overflow:hidden;min-width:0}
+.d3-read .measure{max-width:60ch}
+.d3-grip{background:var(--bsub);position:relative}
+.d3-grip::after{content:"";position:absolute;top:50%;left:1px;width:4px;height:34px;border-radius:99px;background:var(--bstrong);transform:translateY(-50%)}
+.d3-work{background:var(--surface);border-left:1px solid var(--bord);display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.d3-work-top{flex:none;padding:13px 18px;border-bottom:1px solid var(--bord);display:flex;flex-direction:column;gap:5px}
+.d3-brief{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--acctext);font-weight:600;display:flex;align-items:center;gap:7px}
+.d3-work-top h3{font-size:14px}
+.d3-work-top p{font-size:11.8px;color:var(--tmuted);line-height:1.5}
+.d3-form{flex:1;padding:15px 18px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+.d3-f{display:flex;flex-direction:column;gap:5px}
+.d3-f .k{font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--tsubtle)}
+.d3-in{border:1px solid var(--bord);border-radius:8px;padding:7px 10px;font-size:12.3px;color:var(--tstrong);background:var(--canvas)}
+.d3-in.ph{color:var(--tsubtle)}
+.d3-in.foc{border-color:var(--accring);box-shadow:0 0 0 3px var(--accsoft)}
+.d3-steps{display:flex;flex-direction:column;gap:6px}
+.d3-stp{display:flex;align-items:center;gap:8px}
+.d3-stp .n{width:17px;height:17px;border-radius:5px;background:var(--smuted);color:var(--tmuted);font-size:10px;display:grid;place-items:center;flex:none}
+.d3-stp .d3-in{flex:1}
+.d3-grade{flex:none;border-top:1px solid var(--bord);padding:13px 18px;display:flex;flex-direction:column;gap:9px;background:var(--canvas)}
+.d3-grade .hd{display:flex;align-items:center;gap:8px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--tsubtle);font-weight:600}
+.d3-g{display:flex;align-items:flex-start;gap:9px;font-size:12.2px;line-height:1.45}
+.d3-g .m{width:16px;height:16px;border-radius:99px;display:grid;place-items:center;flex:none;margin-top:1px}
+.d3-g.ok .m{background:var(--oksoft);color:var(--okfg)}
+.d3-g.no .m{background:var(--warnsoft);color:var(--warnfg)}
+.d3-g.wait .m{border:1.5px dashed var(--bstrong)}
+.d3-g.ok{color:var(--text)}
+.d3-g.no{color:var(--tstrong)}
+.d3-g.wait{color:var(--tsubtle)}
+.d3-g svg{width:10px;height:10px;stroke:currentColor;stroke-width:3;fill:none}
+.d3-act{display:flex;align-items:center;gap:10px;padding-top:3px}
+.d3-act .try{font-size:11px;color:var(--tmuted)}
+
+/* skill matrix */
+.d4-wrap{flex:1;min-width:0;padding:26px 34px;overflow:hidden;background:var(--canvas)}
+.d3-mx{margin-top:18px;border:1px solid var(--bord);border-radius:13px;overflow:hidden;background:var(--surface)}
+.d3-r{display:grid;grid-template-columns:minmax(0,1fr) 92px 92px 108px 74px;align-items:center}
+.d3-r + .d3-r{border-top:1px solid var(--bsub)}
+.d3-r.hd{background:var(--smuted);font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--tmuted)}
+.d3-r > *{padding:9px 14px}
+.d3-r .sk{font-size:12.8px;color:var(--tstrong);font-weight:500}
+.d3-r .sk small{display:block;font-weight:400;font-size:11px;color:var(--tmuted)}
+.d3-r .c{text-align:center}
+.d3-mark{width:19px;height:19px;border-radius:99px;display:inline-grid;place-items:center}
+.d3-mark.y{background:var(--oksoft);color:var(--okfg)}
+.d3-mark.n{border:1.5px dashed var(--bstrong)}
+.d3-mark.p{background:var(--warnsoft);color:var(--warnfg)}
+.d3-mark svg{width:11px;height:11px;stroke:currentColor;stroke-width:3;fill:none}
+.d3-score{font-size:12px;font-weight:600;color:var(--tstrong)}
+.d3-stat{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px}
+.d3-tile{border:1px solid var(--bord);border-radius:13px;background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:5px}
+.d3-tile .k{font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--tsubtle)}
+.d3-tile .v{font-family:"Space Grotesk",sans-serif;font-size:27px;font-weight:700;color:var(--tstrong);line-height:1.05}
+.d3-tile .s{font-size:11.5px;color:var(--tmuted)}
+.d3-spark{display:flex;align-items:flex-end;gap:3px;height:26px;margin-top:4px}
+.d3-spark span{flex:1;background:var(--accsoft);border-radius:2px}
+.d3-spark span.hi{background:var(--acc)}
+</style>
+
+<section class="wrap dir" id="d3">
+  <div class="dir-head">
+    <div>
+      <span class="dir-num">ARAH 03</span>
+      <h2>Studio</h2>
+      <p class="lede">
+        Satu-satunya hal yang tidak dimiliki Udemy atau blog QA mana pun adalah
+        <span class="it">alat uji yang sebenarnya, di halaman yang sama</span>. Jadi lesson dibelah dua:
+        teori di kiri, sandbox di kanan. Kemajuan tidak lagi diukur dari "sudah discroll",
+        melainkan dari latihan yang lolos pemeriksa.
+      </p>
+      <ul class="changes">
+        <li><b>Layar lesson jadi dua panel</b> yang bisa digeser — teori tidak pernah hilang saat menulis test case, dan latihan tidak pernah membuka tab baru.</li>
+        <li><b>Pemeriksa ditampilkan apa adanya</b>: daftar syarat yang dinilai, dengan status lulus/belum per baris. Latihan berhenti terasa seperti kotak hitam.</li>
+        <li><b>Progres diukur ulang</b> — bukan "13 lesson dibaca", tapi matriks keterampilan: dibaca, dilatih, lolos periksa.</li>
+        <li><b>Halaman progres jadi papan kesiapan ujian</b>, lengkap dengan bab terlemah dan rekomendasi latihan berikutnya.</li>
+        <li><b>Mode gelap jadi warga kelas satu</b>, karena panel kerja seperti ini paling sering dipakai berdampingan dengan editor.</li>
+      </ul>
+    </div>
+    <div class="meta-card">
+      <span class="pill">Paling khas TestForge</span>
+      <div class="meta-row"><span class="k">Cocok untuk</span><span class="v">Orang yang belajar sambil mengerjakan, dan tim yang menilai hasil</span></div>
+      <div class="meta-row"><span class="k">Rujukan rasa</span><span class="v">Exercism, Boot.dev, panel devtools</span></div>
+      <div class="meta-row"><span class="k">Beban kerja</span><span class="v">Besar — sandbox harus jadi komponen tertanam, bukan halaman</span></div>
+      <div class="meta-row"><span class="k">Risikonya</span><span class="v">Hanya 4 lesson yang punya latihan; sisanya panel kanan kosong</span></div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <span class="lbl">Layar A</span>
+    <span class="txt">Lesson terbelah — teori kiri, latihan dinilai di kanan (mode gelap)</span>
+  </div>
+  <div class="shot">
+    <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="shot-url">testforge.emha.space/academy/qa-fundamentals/equivalence-partitioning</span></div>
+    <div class="shot-scroll">
+      <div class="mk dk" style="height:672px">
+        <aside class="sb">
+          <div class="sb-logo"><span class="sb-mark"><svg><use href="#i-check"/></svg></span>TestForge</div>
+          <div class="sb-search"><svg class="ico sm" style="stroke:#94a3b8"><use href="#i-target"/></svg>Search</div>
+          <div class="sb-i"><svg><use href="#i-dash"/></svg>Dashboard</div>
+          <div class="sb-i"><svg><use href="#i-task"/></svg>My Work</div>
+          <div class="sb-i"><svg><use href="#i-folder"/></svg>Projects</div>
+          <div class="sb-i"><svg><use href="#i-users"/></svg>Team</div>
+          <div class="sb-i"><svg><use href="#i-spark"/></svg>AI Assist</div>
+          <div class="sb-i on"><svg><use href="#i-target"/></svg>Academy<span class="sb-chip">BETA</span></div>
+          <div class="sb-sub">My progress</div>
+          <div class="sb-i"><svg><use href="#i-help"/></svg>Help</div>
+          <div class="sb-foot">Mansyur Hidayat</div>
+        </aside>
+
+        <div class="d3-main">
+          <div class="d3-top">
+            <svg class="ico" style="stroke:var(--tmuted)"><use href="#i-chevl"/></svg>
+            <span class="t">Equivalence partitioning</span>
+            <span class="c num">lesson 6 dari 13 · latihan 3 dari 4</span>
+            <div class="d3-tabs" style="margin-left:auto">
+              <span class="d3-tab on"><svg class="ico sm"><use href="#i-grid"/></svg>Terbelah</span>
+              <span class="d3-tab">Teori saja</span>
+              <span class="d3-tab">Latihan saja</span>
+            </div>
+          </div>
+
+          <div class="d3-split">
+            <article class="d3-read">
+              <div class="measure">
+                <p class="num" style="font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--acctext);font-weight:600">Teori · 9 menit</p>
+                <h1 class="disp" style="font-size:25px;margin-top:7px;letter-spacing:-.02em">Equivalence partitioning</h1>
+                <p style="margin-top:8px;font-size:13.5px;color:var(--tmuted);line-height:1.5">Kenapa menguji 200 nilai tidak lebih baik daripada menguji empat — asalkan empatnya dipilih dengan benar.</p>
+                <h2 style="margin-top:20px;font-size:15.5px">Kelas yang setara</h2>
+                <p style="margin-top:7px;font-size:13.3px;line-height:1.75">A field that accepts an age from 18 to 65 does not have 48 behaviours. It has three: too young, accepted, too old. Every value inside one of those groups is handled by the same branch of the code, so testing five of them proves exactly as much as testing one.</p>
+                <p style="margin-top:9px;font-size:13.3px;line-height:1.75">The skill is not the arithmetic — it is noticing when two values that look similar are actually in different partitions, and when a partition nobody wrote down exists anyway (empty, negative, non-numeric, whitespace).</p>
+                <div style="margin-top:16px;border-left:2px solid var(--accring);padding-left:13px;font-size:13px;color:var(--tmuted);font-style:italic">Aturan praktis: satu nilai per partisi, ditambah setiap batas. Selebihnya adalah waktu yang bisa dipakai untuk hal lain.</div>
+                <h2 style="margin-top:20px;font-size:15.5px">Menemukan partisi yang tak tertulis</h2>
+                <p style="margin-top:7px;font-size:13.3px;line-height:1.75">Requirement jarang menyebut apa yang terjadi kalau kolomnya dikosongkan.</p>
+              </div>
+            </article>
+
+            <div class="d3-grip"></div>
+
+            <section class="d3-work">
+              <div class="d3-work-top">
+                <span class="d3-brief"><svg class="ico sm"><use href="#i-wrench"/></svg>Latihan · dinilai otomatis</span>
+                <h3>Tulis satu test case untuk kolom "Umur peserta" (18–65)</h3>
+                <p>Pakai partisi yang baru saja kamu baca. Pemeriksa yang menilai ini sama persis dengan yang dipakai di proyek TestForge.</p>
+              </div>
+
+              <div class="d3-form">
+                <div class="d3-f">
+                  <span class="k">Judul test case</span>
+                  <span class="d3-in">Umur di bawah batas minimum ditolak</span>
+                </div>
+                <div class="d3-f">
+                  <span class="k">Prakondisi</span>
+                  <span class="d3-in">Form pendaftaran terbuka, belum ada data terisi</span>
+                </div>
+                <div class="d3-f">
+                  <span class="k">Langkah</span>
+                  <div class="d3-steps">
+                    <span class="d3-stp"><span class="n num">1</span><span class="d3-in">Isi kolom Umur dengan 17</span></span>
+                    <span class="d3-stp"><span class="n num">2</span><span class="d3-in">Klik Simpan</span></span>
+                    <span class="d3-stp"><span class="n num">3</span><span class="d3-in foc ph">Tulis langkah berikutnya…</span></span>
+                  </div>
+                </div>
+                <div class="d3-f">
+                  <span class="k">Hasil yang diharapkan</span>
+                  <span class="d3-in ph">Apa yang harus dilihat penguji setelah langkah terakhir?</span>
+                </div>
+              </div>
+
+              <div class="d3-grade">
+                <span class="hd"><svg class="ico sm"><use href="#i-task"/></svg>Yang diperiksa</span>
+                <span class="d3-g ok"><span class="m"><svg><use href="#i-check"/></svg></span>Judul menyebut perilaku, bukan nomor tiket</span>
+                <span class="d3-g ok"><span class="m"><svg><use href="#i-check"/></svg></span>Nilai yang dipakai berada di partisi "terlalu muda"</span>
+                <span class="d3-g no"><span class="m"><svg><use href="#i-x"/></svg></span>Hasil yang diharapkan masih kosong — pemeriksa tidak bisa menilai lulus/gagal</span>
+                <span class="d3-g wait"><span class="m"></span>Setiap langkah bisa dijalankan orang lain tanpa bertanya</span>
+                <div class="d3-act">
+                  <span class="btn">Periksa jawaban</span>
+                  <span class="btn ghost">Simpan draf</span>
+                  <span class="try num">Percobaan ke-2 · tidak ada batas</span>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <span class="lbl">Layar B</span>
+    <span class="txt">Progres ditulis ulang sebagai matriks keterampilan — dibaca, dilatih, lolos periksa</span>
+  </div>
+  <div class="shot">
+    <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="shot-url">testforge.emha.space/academy/me</span></div>
+    <div class="shot-scroll">
+      <div class="mk" style="height:602px">
+        <aside class="sb">
+          <div class="sb-logo"><span class="sb-mark"><svg><use href="#i-check"/></svg></span>TestForge</div>
+          <div class="sb-search"><svg class="ico sm" style="stroke:#94a3b8"><use href="#i-target"/></svg>Search</div>
+          <div class="sb-i"><svg><use href="#i-dash"/></svg>Dashboard</div>
+          <div class="sb-i"><svg><use href="#i-task"/></svg>My Work</div>
+          <div class="sb-i"><svg><use href="#i-folder"/></svg>Projects</div>
+          <div class="sb-i"><svg><use href="#i-users"/></svg>Team</div>
+          <div class="sb-i"><svg><use href="#i-spark"/></svg>AI Assist</div>
+          <div class="sb-i"><svg><use href="#i-target"/></svg>Academy<span class="sb-chip">BETA</span></div>
+          <div class="sb-sub" style="color:#fff;background:#1e293b;border-radius:6px;margin:0 8px;padding-left:32px">My progress</div>
+          <div class="sb-i"><svg><use href="#i-help"/></svg>Help</div>
+          <div class="sb-foot">Mansyur Hidayat</div>
+        </aside>
+
+        <div class="d4-wrap">
+          <h1 class="disp" style="font-size:26px;letter-spacing:-.02em">Kesiapan kamu</h1>
+          <p style="margin-top:5px;font-size:12.5px;color:var(--tmuted)">Diukur dari latihan yang lolos pemeriksa, bukan dari halaman yang terbuka.</p>
+
+          <div class="d3-stat" style="margin-top:18px">
+            <div class="d3-tile">
+              <span class="k">Siap ujian</span>
+              <span class="v num">38%</span>
+              <span class="s">Lulus ambang di 2 dari 6 bab silabus</span>
+              <div class="d1-bar" style="margin-top:6px"><i style="width:38%"></i></div>
+            </div>
+            <div class="d3-tile">
+              <span class="k">Latihan lolos</span>
+              <span class="v num">3 / 11</span>
+              <span class="s">Rata-rata 2 percobaan per latihan</span>
+              <div class="d3-spark"><span class="hi" style="height:55%"></span><span class="hi" style="height:80%"></span><span style="height:30%"></span><span style="height:30%"></span><span style="height:30%"></span><span style="height:30%"></span><span style="height:30%"></span></div>
+            </div>
+            <div class="d3-tile">
+              <span class="k">Titik terlemah</span>
+              <span class="v" style="font-size:17px;line-height:1.25">Decision tables</span>
+              <span class="s">Dibaca, belum pernah dilatih — 4 soal ujian bergantung padanya</span>
+              <span class="btn ghost" style="align-self:flex-start;margin-top:4px">Buka latihannya</span>
+            </div>
+          </div>
+
+          <div class="d3-mx">
+            <div class="d3-r hd"><span>Keterampilan</span><span class="c">Dibaca</span><span class="c">Dilatih</span><span class="c">Lolos periksa</span><span class="c">Bobot ujian</span></div>
+            <div class="d3-r">
+              <span class="sk">Equivalence partitioning<small>QA Fundamentals · lesson 6</small></span>
+              <span class="c"><span class="d3-mark y"><svg><use href="#i-check"/></svg></span></span>
+              <span class="c"><span class="d3-mark y"><svg><use href="#i-check"/></svg></span></span>
+              <span class="c"><span class="d3-mark p"><svg><use href="#i-clock"/></svg></span></span>
+              <span class="c d3-score num">4 soal</span>
+            </div>
+            <div class="d3-r">
+              <span class="sk">Boundary value analysis<small>QA Fundamentals · lesson 7</small></span>
+              <span class="c"><span class="d3-mark y"><svg><use href="#i-check"/></svg></span></span>
+              <span class="c"><span class="d3-mark y"><svg><use href="#i-check"/></svg></span></span>
+              <span class="c"><span class="d3-mark y"><svg><use href="#i-check"/></svg></span></span>
+              <span class="c d3-score num">3 soal</span>
+            </div>
+            <div class="d3-r">
+              <span class="sk">Decision tables<small>QA Fundamentals · lesson 8</small></span>
+              <span class="c"><span class="d3-mark y"><svg><use href="#i-check"/></svg></span></span>
+              <span class="c"><span class="d3-mark n"></span></span>
+              <span class="c"><span class="d3-mark n"></span></span>
+              <span class="c d3-score num">4 soal</span>
+            </div>
+            <div class="d3-r">
+              <span class="sk">Menulis laporan defect<small>QA Fundamentals · lesson 11</small></span>
+              <span class="c"><span class="d3-mark n"></span></span>
+              <span class="c"><span class="d3-mark n"></span></span>
+              <span class="c"><span class="d3-mark n"></span></span>
+              <span class="c d3-score num">5 soal</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<style>
+/* ---------- Arah 4 · Editorial ---------- */
+.d4-main{flex:1;min-width:0;background:var(--surface);display:flex;flex-direction:column;overflow:hidden}
+.d4-bar{flex:none;display:flex;align-items:center;gap:12px;padding:11px 44px;font-size:11.5px;color:var(--tmuted);border-bottom:1px solid var(--bsub)}
+.d4-bar .lang{margin-left:auto;display:inline-flex;align-items:center;gap:6px}
+.d4-hero{padding:40px 44px 30px;border-bottom:1px solid var(--tstrong);position:relative;overflow:hidden}
+.d4-hero .ghost{position:absolute;right:26px;top:-16px;font-family:"Space Grotesk",sans-serif;font-size:150px;font-weight:700;color:var(--accsoft);line-height:1;letter-spacing:-.05em;user-select:none}
+.d4-kicker{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--acctext)}
+.d4-title{font-family:"Space Grotesk",sans-serif;font-size:52px;font-weight:700;letter-spacing:-.035em;line-height:1;margin-top:14px;color:var(--tstrong);position:relative}
+.d4-lede{margin-top:14px;max-width:46ch;font-size:15.5px;line-height:1.55;color:var(--text);position:relative}
+.d4-facts{display:flex;gap:30px;margin-top:24px;position:relative}
+.d4-fact{display:flex;flex-direction:column;gap:2px}
+.d4-fact .k{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--tsubtle)}
+.d4-fact .v{font-size:14px;color:var(--tstrong);font-weight:500}
+.d4-fact .v.acc{color:var(--acctext)}
+
+.d4-idx{padding:0 44px 30px;overflow:hidden}
+.d4-sec{display:flex;align-items:baseline;gap:14px;padding:22px 0 10px}
+.d4-sec h2{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--tsubtle);font-weight:500}
+.d4-sec .ln{flex:1;height:1px;background:var(--bord)}
+.d4-row{display:grid;grid-template-columns:38px minmax(0,1fr) 128px 58px;align-items:baseline;gap:14px;padding:13px 0;border-bottom:1px solid var(--bsub)}
+.d4-row:first-of-type{border-top:1px solid var(--bsub)}
+.d4-row .n{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--tsubtle)}
+.d4-row .ti{display:block;font-size:15.5px;color:var(--tstrong);letter-spacing:-.01em;font-weight:500}
+.d4-row .su{display:block;font-size:12.3px;color:var(--tmuted);margin-top:2px;line-height:1.5}
+.d4-row .st{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--tsubtle);text-align:right}
+.d4-row .st.done{color:var(--ok)}
+.d4-row .st.now{color:var(--acctext)}
+.d4-row .mn{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--tsubtle);text-align:right}
+.d4-row.on{background:linear-gradient(90deg,var(--accsoft),transparent 70%);box-shadow:-14px 0 0 0 var(--accsoft),14px 0 0 0 transparent}
+
+/* lesson */
+.d4-read{flex:1;display:grid;grid-template-columns:1fr minmax(0,620px) 216px 1fr;column-gap:34px;padding:34px 0 0;overflow:hidden;background:var(--surface)}
+.d4-read > .col{grid-column:2;grid-row:1;min-width:0}
+.d4-notes{grid-column:3;grid-row:1;display:flex;flex-direction:column;gap:118px;padding-top:232px}
+.d4-note{font-size:11.5px;line-height:1.55;color:var(--tmuted);border-top:1px solid var(--bord);padding-top:7px}
+.d4-note b{display:block;font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--tsubtle);margin-bottom:3px;font-weight:500}
+.d4-h1{font-family:"Space Grotesk",sans-serif;font-size:38px;font-weight:700;letter-spacing:-.03em;line-height:1.05;color:var(--tstrong)}
+.d4-dek{margin-top:12px;font-size:16px;line-height:1.55;color:var(--tmuted)}
+.d4-byline{margin-top:16px;padding-top:12px;border-top:1px solid var(--bord);display:flex;gap:16px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--tsubtle)}
+.d4-h2{display:flex;gap:12px;align-items:baseline;margin-top:26px;font-size:19px;letter-spacing:-.015em;color:var(--tstrong)}
+.d4-h2 .hn{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--acctext);flex:none}
+.d4-p{margin-top:11px;font-size:14.5px;line-height:1.78;color:var(--text)}
+.d4-drop::first-letter{font-family:"Space Grotesk",sans-serif;font-size:44px;font-weight:700;float:left;line-height:.86;padding:3px 9px 0 0;color:var(--tstrong)}
+.d4-pull{margin:20px 0 0;font-family:"Space Grotesk",sans-serif;font-size:20px;line-height:1.35;letter-spacing:-.02em;color:var(--tstrong);border-top:1px solid var(--tstrong);border-bottom:1px solid var(--bord);padding:14px 0}
+.d4-tbl{margin-top:18px;width:100%;font-size:13px}
+.d4-tbl .hr2{display:grid;grid-template-columns:132px 1fr;padding:7px 0;border-bottom:1px solid var(--tstrong);font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--tsubtle)}
+.d4-tbl .rr{display:grid;grid-template-columns:132px 1fr;padding:9px 0;border-bottom:1px solid var(--bsub)}
+.d4-tbl .rr span:first-child{color:var(--tmuted);font-family:"IBM Plex Mono",monospace;font-size:11.5px}
+.d4-tbl .rr span:last-child{color:var(--text)}
+.d4-next{margin-top:26px;border-top:1px solid var(--tstrong);padding-top:16px;display:flex;align-items:flex-end;gap:16px}
+.d4-next .k{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--tsubtle)}
+.d4-next .t{font-family:"Space Grotesk",sans-serif;font-size:23px;font-weight:700;letter-spacing:-.025em;color:var(--tstrong);margin-top:3px}
+.d4-prog{position:relative;height:2px;background:var(--bsub);flex:none}
+.d4-prog i{position:absolute;inset:0 auto 0 0;width:34%;background:var(--tstrong)}
+</style>
+
+<section class="wrap dir" id="d4">
+  <div class="dir-head">
+    <div>
+      <span class="dir-num">ARAH 04</span>
+      <h2>Editorial</h2>
+      <p class="lede">
+        Buang kotaknya. Yang tersisa hanya <span class="it">tipografi, garis rambut, dan ruang</span> —
+        halaman track dibuka seperti sampul bab, daftar lesson jadi indeks bercetak, dan lesson dibaca
+        seperti esai dengan catatan pinggir. Arah paling murah dijalankan, dan paling terasa mahal.
+      </p>
+      <ul class="changes">
+        <li><b>Tidak ada kartu sama sekali</b> — hierarki dibangun dari ukuran huruf, garis 1px, dan jarak. Kotak hanya dipakai untuk hal yang benar-benar bisa diklik.</li>
+        <li><b>Space Grotesk dipakai serius</b> di 52px untuk judul track dan 38px untuk judul lesson; angka lesson memakai IBM Plex Mono sebagai penanda indeks.</li>
+        <li><b>Catatan pinggir</b> menggantikan tautan silang di tengah paragraf — "lihat tujuh prinsip" pindah ke margin kanan, tidak lagi memotong kalimat.</li>
+        <li><b>Status ditulis, bukan digambar</b>: <code>SELESAI</code> / <code>SEDANG DIBACA</code> dalam mono kecil di ujung baris — cukup untuk tahu posisi, tanpa satu pun ikon.</li>
+        <li><b>Garis progres setipis 2px</b> di atas halaman lesson; satu-satunya elemen "aplikasi" yang tersisa saat membaca.</li>
+      </ul>
+    </div>
+    <div class="meta-card">
+      <span class="pill hi">Paling murah dijalankan</span>
+      <div class="meta-row"><span class="k">Cocok untuk</span><span class="v">Materi panjang yang dibaca serius, dan citra produk yang rapi</span></div>
+      <div class="meta-row"><span class="k">Rujukan rasa</span><span class="v">Stripe Press, Increment, Every.to</span></div>
+      <div class="meta-row"><span class="k">Beban kerja</span><span class="v">Kecil — hampir seluruhnya perubahan kelas CSS</span></div>
+      <div class="meta-row"><span class="k">Risikonya</span><span class="v">Terasa seperti bahan bacaan, bukan kursus yang menagih penyelesaian</span></div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <span class="lbl">Layar A</span>
+    <span class="txt">Track sebagai sampul bab — indeks bercetak, status ditulis dalam mono</span>
+  </div>
+  <div class="shot">
+    <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="shot-url">testforge.emha.space/academy/qa-fundamentals</span></div>
+    <div class="shot-scroll">
+      <div class="mk" style="height:660px">
+        <aside class="sb">
+          <div class="sb-logo"><span class="sb-mark"><svg><use href="#i-check"/></svg></span>TestForge</div>
+          <div class="sb-search"><svg class="ico sm" style="stroke:#94a3b8"><use href="#i-target"/></svg>Search</div>
+          <div class="sb-i"><svg><use href="#i-dash"/></svg>Dashboard</div>
+          <div class="sb-i"><svg><use href="#i-task"/></svg>My Work</div>
+          <div class="sb-i"><svg><use href="#i-folder"/></svg>Projects</div>
+          <div class="sb-i"><svg><use href="#i-users"/></svg>Team</div>
+          <div class="sb-i"><svg><use href="#i-spark"/></svg>AI Assist</div>
+          <div class="sb-i on"><svg><use href="#i-target"/></svg>Academy<span class="sb-chip">BETA</span></div>
+          <div class="sb-sub">My progress</div>
+          <div class="sb-i"><svg><use href="#i-help"/></svg>Help</div>
+          <div class="sb-foot">Mansyur Hidayat</div>
+        </aside>
+
+        <div class="d4-main">
+          <div class="d4-bar">
+            <span>Academy</span><svg class="ico sm"><use href="#i-chev"/></svg><span style="color:var(--tstrong)">QA Fundamentals</span>
+            <span class="lang"><svg class="ico sm"><use href="#i-globe"/></svg>Bahasa Indonesia</span>
+          </div>
+
+          <div class="d4-hero">
+            <span class="ghost num">01</span>
+            <p class="d4-kicker">Track satu dari lima · Zero → job-ready</p>
+            <h1 class="d4-title">QA<br>Fundamentals</h1>
+            <p class="d4-lede">Everything you need to test a real feature and be trusted with the result.</p>
+            <div class="d4-facts">
+              <span class="d4-fact"><span class="k">Lesson</span><span class="v num">13</span></span>
+              <span class="d4-fact"><span class="k">Waktu</span><span class="v num">2j 15m</span></span>
+              <span class="d4-fact"><span class="k">Latihan</span><span class="v num">4 dinilai</span></span>
+              <span class="d4-fact"><span class="k">Posisimu</span><span class="v acc num">1 selesai · lanjut di 02</span></span>
+            </div>
+          </div>
+
+          <div class="d4-idx">
+            <div class="d4-sec"><h2>Bagian satu — apa itu pengujian</h2><span class="ln"></span></div>
+            <div class="d4-row">
+              <span class="n">01</span>
+              <span><span class="ti">What a tester actually does</span><span class="su">The job as it really is: not clicking every button, but deciding which risks are worth the time you have.</span></span>
+              <span class="st done">Selesai</span>
+              <span class="mn">8 min</span>
+            </div>
+            <div class="d4-row on">
+              <span class="n">02</span>
+              <span><span class="ti">SDLC and STLC</span><span class="su">How software gets built, where testing sits inside it, and why "shift left" is more than a slogan.</span></span>
+              <span class="st now">Sedang dibaca</span>
+              <span class="mn">10 min</span>
+            </div>
+            <div class="d4-row">
+              <span class="n">03</span>
+              <span><span class="ti">Test levels</span><span class="su">Unit, integration, system and acceptance testing — what each one can catch, and what it structurally cannot.</span></span>
+              <span class="st">Belum</span>
+              <span class="mn">9 min</span>
+            </div>
+            <div class="d4-row">
+              <span class="n">04</span>
+              <span><span class="ti">Test types</span><span class="su">Functional, non-functional, white-box and change-related testing.</span></span>
+              <span class="st">Belum</span>
+              <span class="mn">9 min</span>
+            </div>
+            <div class="d4-sec"><h2>Bagian dua — teknik desain tes</h2><span class="ln"></span></div>
+            <div class="d4-row">
+              <span class="n">06</span>
+              <span><span class="ti">Equivalence partitioning</span><span class="su">Kenapa menguji 200 nilai tidak lebih baik daripada menguji empat.</span></span>
+              <span class="st">Latihan</span>
+              <span class="mn">9 min</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="caption">
+    <span class="lbl">Layar B</span>
+    <span class="txt">Lesson — ukuran baca 620px, catatan pinggir di margin, tabel tanpa kotak</span>
+  </div>
+  <div class="shot">
+    <div class="shot-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="shot-url">testforge.emha.space/academy/qa-fundamentals/what-a-tester-actually-does</span></div>
+    <div class="shot-scroll">
+      <div class="mk" style="height:700px">
+        <aside class="sb">
+          <div class="sb-logo"><span class="sb-mark"><svg><use href="#i-check"/></svg></span>TestForge</div>
+          <div class="sb-search"><svg class="ico sm" style="stroke:#94a3b8"><use href="#i-target"/></svg>Search</div>
+          <div class="sb-i"><svg><use href="#i-dash"/></svg>Dashboard</div>
+          <div class="sb-i"><svg><use href="#i-task"/></svg>My Work</div>
+          <div class="sb-i"><svg><use href="#i-folder"/></svg>Projects</div>
+          <div class="sb-i"><svg><use href="#i-users"/></svg>Team</div>
+          <div class="sb-i"><svg><use href="#i-spark"/></svg>AI Assist</div>
+          <div class="sb-i on"><svg><use href="#i-target"/></svg>Academy<span class="sb-chip">BETA</span></div>
+          <div class="sb-i"><svg><use href="#i-help"/></svg>Help</div>
+          <div class="sb-foot">Mansyur Hidayat</div>
+        </aside>
+
+        <div class="d4-main">
+          <div class="d4-prog"><i></i></div>
+          <div class="d4-bar">
+            <span>QA Fundamentals</span>
+            <span class="num" style="color:var(--tsubtle)">Lesson 01 / 13</span>
+            <span class="lang"><svg class="ico sm"><use href="#i-globe"/></svg>Bahasa Indonesia</span>
+          </div>
+
+          <div class="d4-read">
+            <div class="col">
+              <h1 class="d4-h1">What a tester actually does</h1>
+              <p class="d4-dek">The job as it really is: not clicking every button, but deciding which risks are worth the time you have.</p>
+              <div class="d4-byline"><span>8 menit</span><span>QA Fundamentals</span><span>Lesson 01</span></div>
+
+              <div class="d4-h2"><span class="hn">§1</span>The job in one sentence</div>
+              <p class="d4-p d4-drop">A tester's job is to give the team information about the quality of what they built, fast enough for that information to still be useful. Read that again, because almost every mistake beginners make comes from believing something else instead.</p>
+              <p class="d4-pull">"Tugas saya menemukan semua bug." Tidak bisa. Tidak ada yang bisa.</p>
+              <p class="d4-p">Menguji menunjukkan adanya cacat, tidak pernah ketiadaannya. Dan memutuskan apakah sesuatu layak rilis adalah keputusan tim — biasanya pemilik produk. Tugas kamu adalah memastikan keputusan itu diambil dengan fakta di depan mata.</p>
+
+              <div class="d4-h2"><span class="hn">§2</span>A realistic day</div>
+              <div class="d4-tbl">
+                <div class="hr2"><span>Waktu</span><span>Yang kamu kerjakan</span></div>
+                <div class="rr"><span>Stand-up</span><span>Sebutkan apa yang diuji, tandai apa pun yang menghambat</span></div>
+                <div class="rr"><span>~1 jam</span><span>Baca tiket fitur yang akan diuji hari ini, ajukan pertanyaan yang belum ditanyakan siapa pun</span></div>
+                <div class="rr"><span>~2 jam</span><span>Menguji: sebagian terskrip, sebagian eksploratif</span></div>
+              </div>
+
+              <div class="d4-next">
+                <div>
+                  <p class="k">Lesson berikutnya</p>
+                  <p class="t">SDLC and STLC</p>
+                </div>
+                <span class="btn" style="margin-left:auto">Tandai selesai<svg class="ico"><use href="#i-chev"/></svg></span>
+              </div>
+            </div>
+
+            <div class="d4-notes">
+              <div class="d4-note">
+                <b>Catatan pinggir</b>
+                Lihat <span style="color:var(--acctext)">tujuh prinsip pengujian</span> di lesson 05 — prinsip kedua persis membahas kalimat ini.
+              </div>
+              <div class="d4-note">
+                <b>Angka</b>
+                Perhatikan berapa banyak yang berupa membaca dan bertanya, bukan mengklik.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<style>
+.cmp-scroll{overflow-x:auto;margin-top:30px;border:1px solid var(--line);border-radius:14px;background:var(--panel);box-shadow:var(--shadow)}
+.cmp{min-width:760px;width:100%;border-collapse:collapse;font-size:.88rem}
+.cmp th,.cmp td{text-align:left;padding:13px 16px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.cmp thead th{
+  font-size:.68rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);
+  background:var(--panel-2);border-bottom:1px solid var(--line);white-space:nowrap;
+}
+.cmp tbody tr:last-child td{border-bottom:0}
+.cmp td:first-child,.cmp th:first-child{color:var(--ink);font-weight:600;width:210px}
+.cmp .sc{display:inline-flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums}
+.bars{display:inline-flex;gap:3px}
+.bars i{width:7px;height:7px;border-radius:99px;background:var(--line);display:block}
+.bars i.on{background:var(--accent)}
+.bars.warnc i.on{background:var(--flag)}
+.cmp .note{display:block;color:var(--muted);font-size:.8rem;margin-top:3px;line-height:1.45}
+
+.rec{margin-top:clamp(40px,6vw,76px);border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:clamp(22px,3.4vw,38px);box-shadow:var(--shadow)}
+.rec-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(230px,.7fr);gap:clamp(22px,4vw,48px)}
+@media (max-width:860px){.rec-grid{grid-template-columns:1fr}}
+.mix{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+.mix-i{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:start}
+.mix-n{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.08em;color:var(--accent);border:1px solid var(--line);border-radius:99px;padding:3px 9px;white-space:nowrap}
+.mix-t{font-size:.9rem;color:var(--ink-2);line-height:1.55}
+.mix-t b{color:var(--ink);font-weight:600}
+.must{list-style:none;padding:0;margin:14px 0 0;display:flex;flex-direction:column;gap:11px}
+.must li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;font-size:.86rem;color:var(--ink-2);line-height:1.5}
+.must .tick{color:var(--good);font-weight:700}
+.files{margin-top:14px;display:flex;flex-direction:column;gap:8px;font-size:.83rem}
+.files div{display:flex;gap:10px;align-items:baseline;color:var(--muted);line-height:1.45}
+.files code{white-space:nowrap}
+
+footer.end{padding:clamp(44px,7vw,90px) 0 clamp(60px,9vw,120px)}
+</style>
+
+<section class="wrap section" id="banding">
+  <hr class="hr">
+  <div class="prose" style="margin-top:clamp(34px,5vw,60px)">
+    <p class="eyebrow">Menimbang</p>
+    <h2 style="margin-top:12px">Empat arah, enam pertanyaan</h2>
+    <p style="margin-top:18px;color:var(--muted)">
+      Bulatan yang menyala menandakan seberapa kuat sebuah arah pada baris itu — kecuali baris
+      terakhir, di mana bulatan berwarna karat berarti biaya, jadi makin sedikit makin baik.
+    </p>
+  </div>
+
+  <div class="cmp-scroll">
+    <table class="cmp">
+      <thead>
+        <tr>
+          <th>Pertanyaan</th>
+          <th>01 · Reader</th>
+          <th>02 · Jalur</th>
+          <th>03 · Studio</th>
+          <th>04 · Editorial</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Memakai lebar layar</td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></span><span class="note">Tiga kolom, tidak ada pita kosong</span></td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></span><span class="note">Dua kolom, jalur + momentum</span></td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></span><span class="note">Dua panel penuh, bisa digeser</span></td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i class="on"></i><i></i><i></i></span></span><span class="note">Sengaja menyisakan margin</span></td>
+        </tr>
+        <tr>
+          <td>Menarik orang menyelesaikan track</td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></span><span class="note">Tombol lanjut selalu terlihat</span></td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></span><span class="note">Rentetan, tonggak, lemari sertifikat</span></td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></span><span class="note">Lulus periksa terasa seperti menang</span></td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i></i><i></i><i></i></span></span><span class="note">Tidak menagih apa pun</span></td>
+        </tr>
+        <tr>
+          <td>Menonjolkan sandbox</td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i class="on"></i><i></i><i></i></span></span><span class="note">Kartu di rail kanan</span></td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i class="on"></i><i></i><i></i></span></span><span class="note">Ikon kunci pas pada simpul</span></td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></span><span class="note">Latihan adalah setengah layar</span></td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i></i><i></i><i></i></span></span><span class="note">Satu baris di indeks</span></td>
+        </tr>
+        <tr>
+          <td>Terasa berbeda dari kursus lain</td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i class="on"></i><i></i><i></i></span></span><span class="note">Rapi, tapi sudah sering dilihat</span></td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></span><span class="note">Khas, walau bukan hal baru</span></td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></span><span class="note">Tidak bisa ditiru tanpa punya alatnya</span></td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></span><span class="note">Jarang untuk produk QA</span></td>
+        </tr>
+        <tr>
+          <td>Bertahan di layar sempit</td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></span><span class="note">Rail jadi laci, bar bawah tetap</span></td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></span><span class="note">Jalur vertikal memang untuk ponsel</span></td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i></i><i></i><i></i></span></span><span class="note">Terbelah dua tidak muat; harus jadi tab</span></td>
+          <td><span class="sc"><span class="bars"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></span><span class="note">Catatan pinggir turun jadi sisipan</span></td>
+        </tr>
+        <tr>
+          <td>Biaya membangun</td>
+          <td><span class="sc"><span class="bars warnc"><i class="on"></i><i class="on"></i><i></i><i></i></span></span><span class="note">4 komponen, tanpa data baru</span></td>
+          <td><span class="sc"><span class="bars warnc"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span></span><span class="note">Butuh tabel aktivitas harian + status kunci</span></td>
+          <td><span class="sc"><span class="bars warnc"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span></span><span class="note">Sandbox harus jadi komponen tertanam</span></td>
+          <td><span class="sc"><span class="bars warnc"><i class="on"></i><i></i><i></i><i></i></span></span><span class="note">Nyaris hanya CSS</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="rec">
+    <div class="rec-grid">
+      <div>
+        <p class="eyebrow">Kalau harus memilih</p>
+        <h3 style="margin-top:10px;font-size:1.3rem">Rangka Arah 1, tipografi Arah 4, panel Arah 3</h3>
+        <p style="margin-top:12px;color:var(--muted);font-size:.94rem">
+          Ketiganya tidak saling bertabrakan: yang satu mengatur susunan layar, yang satu mengatur
+          rasa huruf, yang satu mengisi satu blok di dalamnya. Arah 2 saya sisihkan bukan karena
+          jelek — melainkan karena rentetan dan status terkunci menuntut data yang belum direkam
+          Academy, dan gamifikasi paling terasa hambar kalau angkanya belum jujur.
+        </p>
+        <div class="mix">
+          <div class="mix-i"><span class="mix-n">RANGKA</span><span class="mix-t"><b>Tiga kolom dari Arah 1</b> — rail progres, kolom baca, rail aksi, plus bar lanjut yang menempel. Ini yang membereskan lima dari enam keluhan di atas sekaligus.</span></div>
+          <div class="mix-i"><span class="mix-n">HURUF</span><span class="mix-t"><b>Skala dan garis dari Arah 4</b> — judul Space Grotesk yang berani, nomor lesson dalam mono, tabel tanpa kotak. Kartu hanya untuk yang bisa diklik.</span></div>
+          <div class="mix-i"><span class="mix-n">PANEL</span><span class="mix-t"><b>Rail kanan Arah 1 diganti panel Arah 3</b> pada 4 lesson yang punya sandbox — daftar "yang diperiksa" ditampilkan terbuka, bukan disembunyikan di balik tombol.</span></div>
+        </div>
+      </div>
+
+      <div>
+        <p class="eyebrow">Apa pun pilihannya</p>
+        <p style="margin-top:10px;font-size:.9rem;color:var(--muted)">Tiga hal ini perbaikan bersih yang berdiri sendiri dan bisa dikerjakan lebih dulu:</p>
+        <ul class="must">
+          <li><span class="tick">1</span><span>Lepas <code>mx-auto max-w-5xl</code> dari tiga halaman Academy dan pindahkan batas lebar ke kolom teks.</span></li>
+          <li><span class="tick">2</span><span>Hapus daftar lesson ganda di halaman track — sisakan satu, di rail.</span></li>
+          <li><span class="tick">3</span><span>Alirkan status selesai ke <code>AcademyNav</code>; datanya sudah ada di <code>lessonProgress</code>.</span></li>
+        </ul>
+        <p class="eyebrow" style="margin-top:26px">Berkas yang tersentuh</p>
+        <div class="files">
+          <div><code>src/components/academy/LessonPage.tsx</code></div>
+          <div><code>src/components/academy/TrackPage.tsx</code></div>
+          <div><code>src/components/academy/RoadmapPage.tsx</code></div>
+          <div><code>src/components/AcademyNav.tsx</code></div>
+          <div><code>src/app/academy/me/page.tsx</code></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="end wrap">
+  <hr class="hr">
+  <p class="lede" style="margin-top:clamp(28px,4vw,48px);max-width:52ch">
+    Sebutkan satu nomor — atau campuran sendiri — dan saya lanjutkan jadi implementasi nyata di
+    branch terpisah, satu halaman dulu supaya bisa dilihat berdampingan dengan yang sekarang.
+  </p>
+  <p class="small mut" style="margin-top:20px">
+    Semua mockup di halaman ini HTML statis memakai token warna <code>globals.css</code> dan pasangan
+    huruf produk (Space Grotesk · IBM Plex Sans · IBM Plex Mono). Isi lesson yang tampil diambil dari
+    materi Academy yang sudah ada, bukan teks contoh.
+  </p>
+</footer>

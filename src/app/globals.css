@@ -300,3 +300,72 @@ svg.tficon.tf-onaccent .tf-ac {
 svg.tficon.tf-onaccent .tf-acf {
   fill: rgba(255, 255, 255, 0.28);
 }
+
+/* A-12: Academy lesson bodies. `.tf-markdown` above is tuned for short in-app
+   text — a comment, a description, a field note — at text-sm. A lesson is two
+   thousand words of instructional prose, so it layers its own scale on top.
+   Applied as a second class (`tf-markdown tf-lesson`) rather than a variant of
+   the base, so nothing else in the app moves.
+
+   The `white-space` reset is the important one. Lesson sources are hard-wrapped
+   at ~78 columns like the prose files they are, and `pre-wrap` was turning every
+   one of those authored newlines into a rendered line break — the body could
+   not reflow to the column it was given, at any width. Tables and code still
+   need `pre-wrap` semantics of their own and keep them. */
+.tf-lesson { font-size: 1rem; line-height: 1.75; }
+.tf-lesson p { margin: 1rem 0; white-space: normal; }
+.tf-lesson h2, .tf-lesson h3, .tf-lesson h4 {
+  font-family: var(--font-display), system-ui, sans-serif;
+  letter-spacing: -0.015em;
+  color: rgb(var(--tf-text-strong));
+}
+.tf-lesson h2 { font-size: 1.375rem; margin: 2.25rem 0 0.5rem; }
+.tf-lesson h3 { font-size: 1.0625rem; margin: 1.75rem 0 0.375rem; }
+.tf-lesson h4 { font-size: 0.9375rem; margin: 1.5rem 0 0.25rem; }
+.tf-lesson ul, .tf-lesson ol { margin: 1rem 0; padding-left: 1.15rem; }
+.tf-lesson li { margin: 0.375rem 0; }
+.tf-lesson code { font-size: 0.875rem; }
+.tf-lesson hr { margin: 2.25rem 0; }
+/* Pull quote, not an indented aside: a rule above and below, set in the
+   display face at reading size — the one place a lesson raises its voice. */
+.tf-lesson blockquote {
+  border-left: 0;
+  border-top: 1px solid rgb(var(--tf-text-strong));
+  border-bottom: 1px solid rgb(var(--tf-border));
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 1.1875rem;
+  line-height: 1.4;
+  letter-spacing: -0.015em;
+  color: rgb(var(--tf-text-strong));
+  padding: 0.9rem 0;
+  margin: 1.75rem 0;
+}
+.tf-lesson blockquote p { margin: 0; }
+/* Ruled, not boxed. A nine-column decision table inside a grid of borders is
+   a wall; the same table on hairlines reads as data. */
+.tf-lesson table { margin: 1.5rem 0; font-size: 0.9375rem; }
+/* Full width only where the table fits. Below `md` the lesson page turns each
+   table into its own scroll box with `w-max` (see LessonPage.tsx); a `width:
+   100%` here ties that utility on specificity and wins on source order, which
+   would quietly cancel the sizing half of that treatment. Scoping the rule to
+   the widths that don't scroll keeps both behaviours intact. */
+@media (min-width: 768px) {
+  .tf-lesson table { width: 100%; }
+}
+.tf-lesson th, .tf-lesson td {
+  border: 0;
+  border-bottom: 1px solid rgb(var(--tf-border-subtle));
+  padding: 0.55rem 1.25rem 0.55rem 0;
+  vertical-align: top;
+}
+.tf-lesson th {
+  background: transparent;
+  border-bottom: 1px solid rgb(var(--tf-text-strong));
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(var(--tf-text-muted));
+  white-space: nowrap;
+}

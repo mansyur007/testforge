@@ -2,6 +2,7 @@ import Link from "next/link";
 import { TFIcon } from "@/components/icons";
 import type { Lang } from "@/lib/i18n";
 import { academyChrome, academyPath, formatMinutesIn } from "@/lib/academy/chrome";
+import { LessonRail } from "@/components/academy/LessonRail";
 import type { Lesson, Track } from "@/content/academy";
 
 /** "45 min" / "1h 20m" — tracks run to several hours, so bare minutes stop
@@ -35,16 +36,20 @@ export function SandboxBadge({
 }
 
 /**
- * Lesson rail for a track, mirroring the help center's topic sidebar
- * (src/app/docs/help/[topic]/page.tsx). Server component — no state, no
- * progress; both arrive with A-05.
+ * Lesson rail for a track — the editorial treatment: a hairline index rather
+ * than a stack of filled pills, numbers set in mono, and each lesson's state
+ * spelled out underneath its title by `LessonRail`.
  *
- * A-08: `lessons` is now passed in rather than derived from `track`. On the
+ * It renders on the lesson page only. It used to render on the track page too,
+ * which listed the same thirteen lessons a second time in the body — one
+ * screen, two identical lists. The track page now owns the full index and this
+ * owns the compact one.
+ *
+ * A-08: `lessons` is passed in rather than derived from `track`. On the
  * Indonesian routes the rail must list only the lessons that *have* Indonesian
  * text — an untranslated lesson has no `/id` route (see
  * `src/content/academy/i18n.ts`), and a rail linking to a 404 is worse than a
- * shorter rail. The page already computes that list to render itself, so
- * passing it keeps one definition of "what this track shows in this language".
+ * shorter rail.
  */
 export function AcademyNav({
   track,
@@ -58,45 +63,37 @@ export function AcademyNav({
   lang?: Lang;
 }) {
   const t = academyChrome[lang];
+  const trackPath = academyPath(lang, `/${track.slug}`);
   return (
     <nav
-      className="hidden w-60 shrink-0 space-y-1 md:block"
+      className="hidden w-56 shrink-0 md:block"
       aria-label={`${track.title} ${t.lessons}`}
     >
-      <Link
-        href={academyPath(lang)}
-        className="mb-2 flex items-center gap-1.5 text-sm text-content-muted hover:text-accent-text"
-      >
-        <TFIcon name="nav-tree" className="h-4 w-4" /> {t.allTracks}
-      </Link>
-      <Link
-        href={academyPath(lang, `/${track.slug}`)}
-        className={`block rounded-lg px-3 py-1.5 text-sm font-semibold ${
-          currentSlug
-            ? "text-content hover:bg-surface-muted"
-            : "bg-accent-soft text-accent-soft-fg"
-        }`}
-      >
-        {track.title}
-      </Link>
-      <ol className="space-y-1 pt-1">
-        {lessons.map((l: Lesson, i: number) => (
-          <li key={l.slug}>
-            <Link
-              href={academyPath(lang, `/${track.slug}/${l.slug}`)}
-              aria-current={l.slug === currentSlug ? "page" : undefined}
-              className={`flex gap-2 rounded-lg px-3 py-1.5 text-sm ${
-                l.slug === currentSlug
-                  ? "bg-accent-soft font-medium text-accent-soft-fg"
-                  : "text-content hover:bg-surface-muted"
-              }`}
-            >
-              <span className="tabular-nums text-content-muted">{i + 1}.</span>
-              <span className="min-w-0">{l.title}</span>
-            </Link>
-          </li>
-        ))}
-      </ol>
+      <div className="md:sticky md:top-8">
+        <Link
+          href={academyPath(lang)}
+          className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-content-muted hover:text-accent-text"
+        >
+          <TFIcon name="chevron-left" className="h-3 w-3" />
+          {t.allTracks}
+        </Link>
+        <Link
+          href={trackPath}
+          className="mt-3 block font-display text-[15px] font-semibold leading-tight text-content-strong hover:text-accent-text"
+        >
+          {track.title}
+        </Link>
+        <LessonRail
+          lessons={lessons.map((l) => ({
+            slug: l.slug,
+            title: l.title,
+            minutes: l.minutes,
+          }))}
+          trackPath={trackPath}
+          currentSlug={currentSlug}
+          lang={lang}
+        />
+      </div>
     </nav>
   );
 }

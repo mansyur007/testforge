@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { AuthedAppShell } from "@/components/AuthedAppShell";
-import { TFIcon } from "@/components/icons";
 import { BetaChip } from "@/components/BetaChip";
 import { JsonLd } from "@/components/JsonLd";
 import { SandboxBadge } from "@/components/AcademyNav";
@@ -22,9 +21,13 @@ const GITHUB_REPO = process.env.NEXT_PUBLIC_GITHUB_REPO ?? "mansyur007/testforge
  * The Indonesian roadmap lists **every** track, not only the translated ones.
  * Hiding the rest would tell an Indonesian reader the Academy is one track big,
  * which is false and is the opposite of useful: a track that exists in English
- * gets a card saying so, with a link straight to the English version. That is a
+ * gets a row saying so, with a link straight to the English version. That is a
  * better answer than either a silent omission or an untranslated page pretending
  * otherwise, and it is honest about a roll-out that lands one track at a time.
+ *
+ * A-12: the roadmap is an index, so it is set as one — five ruled rows with the
+ * track's place in the margin, not five bordered cards of equal weight. Nothing
+ * about which tracks appear, or what each row says, changed with it.
  */
 export async function AcademyRoadmapPage({ lang }: { lang: Lang }) {
   const session = await getSession();
@@ -66,16 +69,18 @@ export async function AcademyRoadmapPage({ lang }: { lang: Lang }) {
     <>
       <AcademyLangMemory lang={lang} />
       <div className="flex items-start justify-between gap-3">
-        <h1 className="flex flex-wrap items-center gap-3 text-3xl font-bold text-content-strong sm:text-4xl">
+        <h1 className="flex flex-wrap items-center gap-3 font-display text-[38px] font-bold leading-none tracking-tight text-content-strong sm:text-5xl">
           {t.brand}
-          <BetaChip className="translate-y-1" />
+          <BetaChip className="translate-y-0.5" />
         </h1>
         {(lang === "id" || anyTranslated) && (
           <AcademyLanguageLink lang={lang} enPath="/academy" />
         )}
       </div>
-      <p className="mt-3 max-w-2xl text-lg text-content">{t.roadmap.intro}</p>
-      <p className="mt-2 text-sm text-content-muted">
+      <p className="mt-5 max-w-[52ch] text-lg leading-snug text-content">
+        {t.roadmap.intro}
+      </p>
+      <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.16em] text-content-subtle">
         {t.roadmap.availableNow(totalLessons)}
       </p>
 
@@ -84,10 +89,10 @@ export async function AcademyRoadmapPage({ lang }: { lang: Lang }) {
           written and that lessons may change under them. */}
       <div
         data-testid="academy-beta-banner"
-        className="mt-6 flex items-start gap-3 rounded-xl border border-hairline bg-surface-muted p-4"
+        className="mt-8 flex items-start gap-3 border-y border-hairline py-4"
       >
         <BetaChip className="mt-0.5" />
-        <p className="text-sm text-content">
+        <p className="text-sm leading-relaxed text-content">
           <strong className="text-content-strong">{t.roadmap.betaTitle}</strong>{" "}
           {t.roadmap.betaBody}{" "}
           <a
@@ -102,7 +107,7 @@ export async function AcademyRoadmapPage({ lang }: { lang: Lang }) {
         </p>
       </div>
 
-      <ol className="mt-10 space-y-4">
+      <ol className="mt-10 border-t border-hairline-strong">
         {TRACKS.map((source, i) => {
           const shown = visibleLessons(source, lang);
           const live = source.status === "published" && shown.length > 0;
@@ -112,80 +117,95 @@ export async function AcademyRoadmapPage({ lang }: { lang: Lang }) {
           const englishOnly = lang === "id" && source.status === "published" && !live;
           const lessonCount = live ? shown.length : source.lessons.length;
           const minutes = shown.reduce((n, l) => n + l.minutes, 0);
+          const handsOn = shown.filter((l) => l.sandbox).length;
 
           const inner = (
-            <div className="flex items-start gap-4">
-              <span
-                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
-                  live ? "bg-accent-soft" : "bg-surface-muted"
-                }`}
-              >
-                <TFIcon name={source.icon} className="h-6 w-6" />
+            <>
+              <span className="font-mono text-[11px] tabular-nums text-content-subtle">
+                {String(i + 1).padStart(2, "0")}
               </span>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h2 className="text-lg font-semibold text-content-strong">
-                    <span className="tabular-nums text-content-muted">
-                      {i + 1}.
-                    </span>{" "}
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <h2
+                    className={`font-display text-[19px] font-bold tracking-tight ${
+                      live
+                        ? "text-content-strong group-hover:text-accent-text"
+                        : "text-content-muted"
+                    }`}
+                  >
                     {track.title}
                   </h2>
-                  <span className="rounded-md bg-surface-muted px-1.5 py-0.5 text-[11px] font-medium text-content-muted">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-content-subtle">
                     {track.level}
                   </span>
-                  {!live && (
-                    <span className="rounded-md border border-hairline px-1.5 py-0.5 text-[11px] font-medium text-content-muted">
-                      {englishOnly ? t.roadmap.notTranslated : t.roadmap.inProgress}
-                    </span>
-                  )}
                 </div>
-                <p className="mt-1 text-sm text-content">{track.tagline}</p>
-                <p className="mt-2 text-xs text-content-muted">
-                  {lessonCount} {t.lessons}
-                  {live ? ` · ${formatMinutesIn(lang, minutes)}` : ""}
-                  {live || englishOnly ? "" : t.roadmap.planned}
+                <p className="mt-1.5 max-w-[58ch] text-sm leading-relaxed text-content-muted">
+                  {track.tagline}
                 </p>
               </div>
-            </div>
+              <div className="col-start-2 mt-2 flex items-baseline gap-x-3 font-mono text-[10px] uppercase tracking-[0.14em] text-content-subtle sm:col-start-3 sm:mt-0 sm:flex-col sm:items-end sm:gap-y-1 sm:text-right">
+                {!live && (
+                  <span>
+                    {englishOnly ? t.roadmap.notTranslated : t.roadmap.inProgress}
+                  </span>
+                )}
+                <span>
+                  {lessonCount} {t.lessons}
+                </span>
+                <span>
+                  {live ? formatMinutesIn(lang, minutes) : t.roadmap.planned}
+                </span>
+                {live && handsOn > 0 && (
+                  <span className="text-accent-text">
+                    {handsOn} {t.handsOn}
+                  </span>
+                )}
+              </div>
+            </>
           );
 
+          const rowClass =
+            "group grid grid-cols-[2rem_minmax(0,1fr)] items-baseline gap-x-4 py-5 sm:grid-cols-[2rem_minmax(0,1fr)_8rem]";
+
           return (
-            <li key={source.slug}>
+            <li key={source.slug} className="border-b border-hairline">
               {live ? (
                 <Link
                   href={`${base}/${source.slug}`}
                   data-testid={`academy-track-${source.slug}`}
-                  className="block rounded-xl border border-hairline bg-surface p-5 hover:border-accent-ring hover:shadow-sm"
+                  className={rowClass}
                 >
                   {inner}
                 </Link>
               ) : (
                 <div
                   data-testid={`academy-track-${source.slug}`}
-                  className="rounded-xl border border-dashed border-hairline bg-surface/60 p-5"
+                  className={rowClass}
                 >
                   {inner}
-                  {englishOnly ? (
-                    <Link
-                      href={`/academy/${source.slug}`}
-                      hrefLang="en"
-                      data-testid={`academy-track-en-${source.slug}`}
-                      className="mt-3 inline-block text-xs text-accent-text hover:underline"
-                    >
-                      {t.roadmap.readInEnglish} →
-                    </Link>
-                  ) : (
-                    <details className="mt-3">
-                      <summary className="cursor-pointer text-xs text-accent-text">
-                        {t.roadmap.whatsComing}
-                      </summary>
-                      <ul className="mt-2 space-y-1 text-xs text-content-muted">
-                        {track.lessons.map((l) => (
-                          <li key={l.slug}>• {l.title}</li>
-                        ))}
-                      </ul>
-                    </details>
-                  )}
+                  <div className="col-start-2 mt-3">
+                    {englishOnly ? (
+                      <Link
+                        href={`/academy/${source.slug}`}
+                        hrefLang="en"
+                        data-testid={`academy-track-en-${source.slug}`}
+                        className="font-mono text-[10px] uppercase tracking-[0.14em] text-accent-text hover:underline"
+                      >
+                        {t.roadmap.readInEnglish} →
+                      </Link>
+                    ) : (
+                      <details>
+                        <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-[0.14em] text-accent-text">
+                          {t.roadmap.whatsComing}
+                        </summary>
+                        <ul className="mt-2 space-y-1 text-xs text-content-muted">
+                          {track.lessons.map((l) => (
+                            <li key={l.slug}>· {l.title}</li>
+                          ))}
+                        </ul>
+                      </details>
+                    )}
+                  </div>
                 </div>
               )}
             </li>
@@ -193,11 +213,11 @@ export async function AcademyRoadmapPage({ lang }: { lang: Lang }) {
         })}
       </ol>
 
-      <section className="mt-12 rounded-xl border border-hairline bg-surface-muted p-5">
-        <h2 className="font-semibold text-content-strong">
+      <section className="mt-14 border-t border-hairline pt-6">
+        <h2 className="font-mono text-[10px] uppercase tracking-[0.14em] text-content-muted">
           {t.roadmap.howToTitle}
         </h2>
-        <ul className="mt-2 space-y-1.5 text-sm text-content">
+        <ul className="mt-4 max-w-[62ch] space-y-2.5 text-sm leading-relaxed text-content">
           <li>{t.roadmap.howTo1}</li>
           <li>
             {t.roadmap.howTo2Pre} <SandboxBadge lang={lang} />{" "}
@@ -218,7 +238,7 @@ export async function AcademyRoadmapPage({ lang }: { lang: Lang }) {
       <p
         data-testid="istqb-disclaimer"
         lang={lang}
-        className="mt-8 text-xs leading-relaxed text-content-muted"
+        className="mt-10 text-xs leading-relaxed text-content-subtle"
       >
         {lang === "id" ? ISTQB_DISCLAIMER_ID : ISTQB_DISCLAIMER}
       </p>
@@ -236,7 +256,7 @@ export async function AcademyRoadmapPage({ lang }: { lang: Lang }) {
     return (
       <AuthedAppShell session={session}>
         {jsonLd}
-        <div lang={lang} className="mx-auto max-w-5xl">
+        <div lang={lang} className="mx-auto max-w-3xl">
           {body}
         </div>
       </AuthedAppShell>
@@ -244,7 +264,7 @@ export async function AcademyRoadmapPage({ lang }: { lang: Lang }) {
   }
 
   return (
-    <main lang={lang} className="mx-auto max-w-5xl px-4 py-12">
+    <main lang={lang} className="mx-auto max-w-3xl px-4 py-12">
       {jsonLd}
       <AcademyPublicChrome lang={lang} />
       {body}

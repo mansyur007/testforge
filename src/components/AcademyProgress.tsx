@@ -28,7 +28,7 @@ import {
  * what picks up the DB's answer once it lands — no separate "loading from
  * DB" state to thread through every consumer.
  */
-function useProgressTick(): boolean {
+export function useProgressTick(): boolean {
   const [mounted, setMounted] = useState(false);
   const [, force] = useState(0);
   useEffect(() => {
