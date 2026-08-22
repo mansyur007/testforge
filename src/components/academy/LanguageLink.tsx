@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { TFIcon } from "@/components/icons";
 // `@/lib/lang`, not `@/lib/i18n` — see that module's header. This component
 // renders on every Academy page, so importing the landing dictionary here would
 // ship it to every Academy reader.
@@ -49,8 +50,13 @@ export function AcademyLanguageLink({
       hrefLang={to}
       data-testid="academy-language-link"
       onClick={() => setLangCookie(to)}
-      className="rounded-lg border border-hairline px-2.5 py-1.5 text-xs font-medium text-content-muted hover:bg-surface-muted"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-hairline px-2.5 py-1.5 text-xs font-medium text-content-muted hover:bg-surface-muted hover:text-content-strong"
     >
+      {/* The globe carries the meaning at a glance; the label is what says
+          *which* language, so both stay. `aria-hidden` is set inside TFIcon —
+          a screen reader gets "Bahasa Indonesia", not "globe, Bahasa
+          Indonesia". */}
+      <TFIcon name="globe" className="h-4 w-4" />
       {label}
     </Link>
   );

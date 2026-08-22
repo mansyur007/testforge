@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { TFIcon } from "@/components/icons";
 // `@/lib/lang`, not `@/lib/i18n`: this is a client component, and the latter
 // would pull the whole landing/auth dictionary into the bundle for a cookie
 // name. See the header of src/lib/lang.ts.
@@ -22,6 +23,12 @@ export function LanguageSwitcher({ current }: { current: Lang }) {
       role="group"
       aria-label="Language"
     >
+      {/* Marks the control as "language" without a word, which matters on a
+          switch whose own labels are two-letter codes. Decorative: TFIcon sets
+          `aria-hidden`, and the group already has an accessible name. */}
+      <span className="pl-2 pr-0.5 text-content-subtle">
+        <TFIcon name="globe" className="h-4 w-4" />
+      </span>
       {(["en", "id"] as const).map((lang) => (
         <button
           key={lang}
