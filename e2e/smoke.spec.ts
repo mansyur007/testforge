@@ -57,6 +57,36 @@ test(`TC-${TC}-3 Change password succeeds`, async ({ page }) => {
 test(`TC-${TC}-4 Dashboard renders in English`, async ({ page }) => {
   await login(page);
   await expect(page.getByRole("link", { name: "Projects" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Account" })).toBeVisible();
+  // "Account" was a top-level sidebar entry until the six /settings pages were
+  // collapsed behind one "Settings" item; the English-labels check moved with it.
+  await expect(page.getByRole("link", { name: "Settings" })).toBeVisible();
   await expect(page.getByText("Active Projects")).toBeVisible();
+});
+
+test(`TC-${TC}-138 One Settings entry reaches every settings page`, async ({
+  page,
+}) => {
+  await login(page);
+
+  // The six pages that used to be six sidebar entries are gone from the
+  // sidebar — this is the assertion that they were consolidated rather than
+  // just renamed, and it is what would catch someone re-adding one.
+  const sidebar = page.getByTestId("app-sidebar");
+  for (const gone of ["Team", "API Keys", "Audit Log", "Backup", "Account"]) {
+    await expect(sidebar.getByRole("link", { name: gone })).toHaveCount(0);
+  }
+
+  await sidebar.getByRole("link", { name: "Settings" }).click();
+  await page.waitForURL("**/settings/account");
+  await expect(page.getByRole("heading", { name: "Account" })).toBeVisible();
+  await expect(page.getByTestId("settings-tabs")).toBeVisible();
+
+  // …and the tab row is how they reach each other now.
+  await page.click('[data-testid="settings-tab-team"]');
+  await page.waitForURL("**/settings/team");
+  await expect(page.getByRole("heading", { name: "Team" })).toBeVisible();
+  await expect(page.getByTestId("settings-tab-team")).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
 });
