@@ -24,6 +24,7 @@ import { openSandboxTask } from "@/app/actions/academy";
 import { sanitizeQuestions } from "@/lib/academy/questions";
 import type { Lang } from "@/lib/i18n";
 import { academyChrome, academyPath } from "@/lib/academy/chrome";
+import { ACADEMY_SHELL } from "@/components/academy/shell";
 import { breadcrumbLd, ldGraph, techArticleLd } from "@/lib/seo";
 
 /**
@@ -103,7 +104,7 @@ export async function AcademyLessonPage({
   );
 
   const body = (
-    <div className="flex gap-10 lg:gap-14">
+    <div className="flex gap-10 lg:gap-12">
       <AcademyLangMemory lang={lang} />
       <AcademyNav
         track={track}
@@ -126,11 +127,11 @@ export async function AcademyLessonPage({
           {hasSibling && <AcademyLanguageLink lang={lang} enPath={enPath} />}
         </div>
 
-        <div className="max-w-[68ch]">
-          <h1 className="mt-9 font-display text-[32px] font-bold leading-[1.06] tracking-tight text-content-strong sm:text-[40px]">
+        <div className="max-w-[47rem]">
+          <h1 className="mt-9 font-display text-[34px] font-bold leading-[1.06] tracking-tight text-content-strong sm:text-[44px]">
             {lesson.title}
           </h1>
-          <p className="mt-4 text-lg leading-snug text-content-muted">
+          <p className="mt-4 text-[21px] leading-snug text-content-muted">
             {lesson.summary}
           </p>
           <p className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-1 border-t border-hairline pt-3 font-mono text-[10px] uppercase tracking-[0.14em] text-content-subtle">
@@ -151,7 +152,7 @@ export async function AcademyLessonPage({
               className="mt-8 flex gap-3 border-l-2 border-accent py-1 pl-4"
             >
               <TFIcon name="edit" className="mt-0.5 h-4 w-4 shrink-0" />
-              <div className="text-sm text-content">
+              <div className="text-[15px] leading-relaxed text-content">
                 <p>
                   <strong className="text-content-strong">
                     {t.lesson.exerciseTitle}
@@ -287,13 +288,15 @@ export async function AcademyLessonPage({
     return (
       <AuthedAppShell session={session}>
         {jsonLd}
-        <div lang={lang}>{body}</div>
+        <div lang={lang} className={ACADEMY_SHELL}>
+          {body}
+        </div>
       </AuthedAppShell>
     );
   }
 
   return (
-    <main lang={lang} className="mx-auto max-w-5xl px-4 py-12">
+    <main lang={lang} className={`${ACADEMY_SHELL} px-4 py-12`}>
       {jsonLd}
       <AcademyPublicChrome lang={lang} />
       {body}

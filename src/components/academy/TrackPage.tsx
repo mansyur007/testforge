@@ -14,6 +14,7 @@ import { TRACKS, getTrack, trackMinutes } from "@/content/academy";
 import { idLessonSlugs, localiseTrack, visibleLessons } from "@/content/academy/i18n";
 import type { Lang } from "@/lib/i18n";
 import { academyChrome, academyPath, formatMinutesIn } from "@/lib/academy/chrome";
+import { ACADEMY_SHELL } from "@/components/academy/shell";
 import { absoluteUrl, breadcrumbLd, courseLd, ldGraph } from "@/lib/seo";
 
 /**
@@ -142,7 +143,7 @@ export async function AcademyTrackPage({
         <h1 className="relative mt-4 max-w-[16ch] font-display text-[34px] font-bold leading-[1.03] tracking-tight text-content-strong sm:text-5xl">
           {track.title}
         </h1>
-        <p className="relative mt-4 max-w-[46ch] text-lg leading-snug text-content">
+        <p className="relative mt-4 max-w-[46ch] text-[21px] leading-snug text-content">
           {track.tagline}
         </p>
         <dl className="relative mt-8 flex flex-wrap gap-x-12 gap-y-4">
@@ -151,7 +152,7 @@ export async function AcademyTrackPage({
               <dt className="font-mono text-[9.5px] uppercase tracking-[0.16em] text-content-subtle">
                 {f.k}
               </dt>
-              <dd className="mt-1 font-medium tabular-nums text-content-strong">
+              <dd className="mt-1 text-[17px] font-medium tabular-nums text-content-strong">
                 {f.v}
               </dd>
             </div>
@@ -176,7 +177,7 @@ export async function AcademyTrackPage({
         </h2>
         <ul className="mt-4 grid gap-x-12 gap-y-3 sm:grid-cols-2">
           {track.outcomes.map((o) => (
-            <li key={o} className="flex gap-2.5 text-sm leading-relaxed text-content">
+            <li key={o} className="flex gap-2.5 text-[15px] leading-relaxed text-content">
               <TFIcon name="valid" className="mt-0.5 h-4 w-4 shrink-0" />
               <span>{o}</span>
             </li>
@@ -186,7 +187,7 @@ export async function AcademyTrackPage({
 
       <section className="mt-12">
         <div className="flex items-baseline justify-between gap-4">
-          <h2 className="font-display text-xl font-bold tracking-tight text-content-strong">
+          <h2 className="font-display text-2xl font-bold tracking-tight text-content-strong">
             {t.track.contents}
           </h2>
           <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-content-subtle">
@@ -231,7 +232,7 @@ export async function AcademyTrackPage({
     return (
       <AuthedAppShell session={session}>
         {jsonLd}
-        <div lang={lang} className="mx-auto max-w-3xl">
+        <div lang={lang} className={ACADEMY_SHELL}>
           {body}
         </div>
       </AuthedAppShell>
@@ -239,7 +240,7 @@ export async function AcademyTrackPage({
   }
 
   return (
-    <main lang={lang} className="mx-auto max-w-3xl px-4 py-12">
+    <main lang={lang} className={`${ACADEMY_SHELL} px-4 py-12`}>
       {jsonLd}
       <AcademyPublicChrome lang={lang} />
       {body}

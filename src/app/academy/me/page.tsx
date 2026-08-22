@@ -7,6 +7,7 @@ import { AcademyMeSync } from "@/components/AcademyMeSync";
 import { requireSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { publishedLessons, publishedTracks } from "@/content/academy";
+import { ACADEMY_SHELL } from "@/components/academy/shell";
 import { NOINDEX } from "@/lib/seo";
 import { getMyCertificates, getMyExamAttempts } from "@/app/actions/academy";
 import { CertificateList } from "@/components/academy/CertificateList";
@@ -50,7 +51,7 @@ export default async function AcademyMePage() {
 
   return (
     <AuthedAppShell session={session}>
-      <div className="mx-auto max-w-3xl">
+      <div className={ACADEMY_SHELL}>
       <AcademyMeSync />
 
       <h1 className="flex flex-wrap items-center gap-3 font-display text-[34px] font-bold leading-none tracking-tight text-content-strong sm:text-[40px]">

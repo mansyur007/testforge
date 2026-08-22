@@ -11,6 +11,7 @@ import { TRACKS, ISTQB_DISCLAIMER, ISTQB_DISCLAIMER_ID } from "@/content/academy
 import { idLessonSlugs, localiseTrack, visibleLessons } from "@/content/academy/i18n";
 import type { Lang } from "@/lib/i18n";
 import { academyChrome, academyPath, formatMinutesIn } from "@/lib/academy/chrome";
+import { ACADEMY_SHELL } from "@/components/academy/shell";
 import { absoluteUrl, breadcrumbLd, ldGraph } from "@/lib/seo";
 
 const GITHUB_REPO = process.env.NEXT_PUBLIC_GITHUB_REPO ?? "mansyur007/testforge";
@@ -77,7 +78,7 @@ export async function AcademyRoadmapPage({ lang }: { lang: Lang }) {
           <AcademyLanguageLink lang={lang} enPath="/academy" />
         )}
       </div>
-      <p className="mt-5 max-w-[52ch] text-lg leading-snug text-content">
+      <p className="mt-5 max-w-[54ch] text-[21px] leading-snug text-content">
         {t.roadmap.intro}
       </p>
       <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.16em] text-content-subtle">
@@ -92,7 +93,7 @@ export async function AcademyRoadmapPage({ lang }: { lang: Lang }) {
         className="mt-8 flex items-start gap-3 border-y border-hairline py-4"
       >
         <BetaChip className="mt-0.5" />
-        <p className="text-sm leading-relaxed text-content">
+        <p className="text-[15px] leading-relaxed text-content">
           <strong className="text-content-strong">{t.roadmap.betaTitle}</strong>{" "}
           {t.roadmap.betaBody}{" "}
           <a
@@ -121,13 +122,13 @@ export async function AcademyRoadmapPage({ lang }: { lang: Lang }) {
 
           const inner = (
             <>
-              <span className="font-mono text-[11px] tabular-nums text-content-subtle">
+              <span className="font-mono text-[12px] tabular-nums text-content-subtle">
                 {String(i + 1).padStart(2, "0")}
               </span>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                   <h2
-                    className={`font-display text-[19px] font-bold tracking-tight ${
+                    className={`font-display text-[22px] font-bold tracking-tight ${
                       live
                         ? "text-content-strong group-hover:text-accent-text"
                         : "text-content-muted"
@@ -139,7 +140,7 @@ export async function AcademyRoadmapPage({ lang }: { lang: Lang }) {
                     {track.level}
                   </span>
                 </div>
-                <p className="mt-1.5 max-w-[58ch] text-sm leading-relaxed text-content-muted">
+                <p className="mt-1.5 max-w-[62ch] text-[15px] leading-relaxed text-content-muted">
                   {track.tagline}
                 </p>
               </div>
@@ -217,7 +218,7 @@ export async function AcademyRoadmapPage({ lang }: { lang: Lang }) {
         <h2 className="font-mono text-[10px] uppercase tracking-[0.14em] text-content-muted">
           {t.roadmap.howToTitle}
         </h2>
-        <ul className="mt-4 max-w-[62ch] space-y-2.5 text-sm leading-relaxed text-content">
+        <ul className="mt-4 max-w-[64ch] space-y-2.5 text-[15px] leading-relaxed text-content">
           <li>{t.roadmap.howTo1}</li>
           <li>
             {t.roadmap.howTo2Pre} <SandboxBadge lang={lang} />{" "}
@@ -256,7 +257,7 @@ export async function AcademyRoadmapPage({ lang }: { lang: Lang }) {
     return (
       <AuthedAppShell session={session}>
         {jsonLd}
-        <div lang={lang} className="mx-auto max-w-3xl">
+        <div lang={lang} className={ACADEMY_SHELL}>
           {body}
         </div>
       </AuthedAppShell>
@@ -264,7 +265,7 @@ export async function AcademyRoadmapPage({ lang }: { lang: Lang }) {
   }
 
   return (
-    <main lang={lang} className="mx-auto max-w-3xl px-4 py-12">
+    <main lang={lang} className={`${ACADEMY_SHELL} px-4 py-12`}>
       {jsonLd}
       <AcademyPublicChrome lang={lang} />
       {body}
