@@ -54,14 +54,14 @@ export function TrackIndex({
               data-testid={`academy-lesson-${l.slug}`}
               className="group grid grid-cols-[2rem_minmax(0,1fr)] items-baseline gap-x-4 py-4 sm:grid-cols-[2rem_minmax(0,1fr)_7rem]"
             >
-              <span className="font-mono text-[11px] tabular-nums text-content-subtle">
+              <span className="font-mono text-[12px] tabular-nums text-content-subtle">
                 {String(i + 1).padStart(2, "0")}
               </span>
               <span className="min-w-0">
-                <span className="block font-display text-[17px] font-semibold leading-snug text-content-strong group-hover:text-accent-text">
+                <span className="block font-display text-[19px] font-semibold leading-snug text-content-strong group-hover:text-accent-text">
                   {l.title}
                 </span>
-                <span className="mt-1 block text-sm leading-relaxed text-content-muted">
+                <span className="mt-1 block text-[15px] leading-relaxed text-content-muted">
                   {l.summary}
                 </span>
               </span>

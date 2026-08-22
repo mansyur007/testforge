@@ -41,6 +41,10 @@ const ICONS: Record<string, string> = {
   import: `<path d="M5 15 v2.5 a1.5 1.5 0 0 0 1.5 1.5 h11 a1.5 1.5 0 0 0 1.5 -1.5 V15"/><path class="tf-ac" d="M12 4 V14 M8.4 10.4 L12 14 l3.6 -3.6"/>`,
   // F-35: printer outline — top sheet, body, ejected page.
   print: `<path d="M7.5 8.5 V4.5 a1 1 0 0 1 1 -1 h7 a1 1 0 0 1 1 1 v4"/><path d="M6 8.5 h12 a2 2 0 0 1 2 2 v4.5 a1 1 0 0 1 -1 1 h-2.5 M6 8.5 a2 2 0 0 0 -2 2 v4.5 a1 1 0 0 0 1 1 h2.5"/><path class="tf-acf" d="M7.5 14.5 h9 v4 a1 1 0 0 1 -1 1 h-7 a1 1 0 0 1 -1 -1 z"/><circle class="tf-ac" cx="16.5" cy="11.2" r="0.7"/>`,
+  // Bahasa: bola dunia — lingkaran, khatulistiwa, dua garis lintang, satu
+  // meridian beraksen. Dipakai kontrol ganti bahasa (LanguageSwitcher dan
+  // AcademyLanguageLink), yang sebelumnya hanya teks.
+  globe: `<circle cx="12" cy="12" r="8"/><path d="M4 12 h16"/><path d="M5.1 7.9 h13.8 M5.1 16.1 h13.8"/><path class="tf-ac" d="M12 4 a11 11 0 0 1 0 16 a11 11 0 0 1 0 -16"/>`,
   // F-36: hamburger menu — three bars, top one accented.
   menu: `<path class="tf-ac" d="M4.5 7 h15"/><path d="M4.5 12 h15 M4.5 17 h15"/>`,
   // F-29: AI assist — a large four-point sparkle plus a small one.

@@ -72,7 +72,7 @@ export function LessonRail({
               </span>
               <span className="min-w-0 flex-1">
                 <span
-                  className={`block text-sm leading-snug ${
+                  className={`block text-[15px] leading-snug ${
                     isCurrent
                       ? "font-medium text-content-strong"
                       : isDone

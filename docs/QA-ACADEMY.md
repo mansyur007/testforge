@@ -3320,6 +3320,41 @@ It is worth revisiting when the checker coverage from A-11 grows, not before.
 **Every `data-testid` on these pages is unchanged**, which is what keeps `e2e/academy.spec.ts`
 honest across a rewrite of the markup it walks.
 
+> **A-12 follow-up, 2026-08-22 (same day).** Owner testing found two things the
+> first pass got wrong, both about where the text sits rather than what it says.
+>
+> **The lesson page had no frame.** Dropping `max-w-5xl` (problem 2 above) went
+> one step too far and left the wrapper at `w-full`, so the article box ran to
+> the right edge of the viewport while the prose inside it stopped at 68ch. The
+> breadcrumb and the language toggle ended up at opposite ends of an invisible
+> box twice the width of the text — at 1900px the toggle sat ~400px right of the
+> last word — and the column read as stranded in the middle of the page. Worse,
+> the roadmap centred a 768px column while the lesson page did not, so the block
+> moved sideways on every navigation. `ACADEMY_SHELL`
+> (`src/components/academy/shell.ts`) is now the one frame all four Academy
+> surfaces use: 65rem, which is exactly a 224px rail + a 48px gutter + 47rem of
+> prose. Measured at 1900px, roadmap, track and lesson now share both edges.
+>
+> **It lives under `src/components/`, not `src/lib/`, and that is load-bearing.**
+> Tailwind's `content` globs cover `src/pages`, `src/components` and `src/app`.
+> The constant started in `src/lib/academy/chrome.ts` next to the rest of the
+> Academy's shared chrome, and the utility was simply never generated: the class
+> name rendered into the HTML and the page laid out as though no max-width had
+> been set. Nothing errors, nothing warns.
+>
+> **The type scale went up.** Lesson bodies 16px → 18px/1.72 in a 47rem column
+> (653px → 736px of text), lesson `h1` 32–40px → 34–44px, body `h2`/`h3` 22/17px
+> → 26/20px, lesson tables 15px → 17px, pull quotes 19px → 23px. Around them:
+> roadmap intro and track tagline 18px → 21px, index titles 17/19px → 19/22px,
+> and summaries, outcomes and the rail 14px → 15px. Academy chrome that is not
+> reading matter — the mono labels, the beta banner — stayed where it was.
+>
+> **The language control got the globe icon** it had been missing, added to the
+> icon system as `globe` and used by both switches: the Academy's own
+> `AcademyLanguageLink` and the `LanguageSwitcher` on the auth and landing pages,
+> whose only labels are the two-letter codes. Decorative, `aria-hidden`.
+
+
 ### Testing (applies to all)
 
 Playwright specs in `e2e/academy.spec.ts`, continuing the `TC-E2E-*` sequence (last used 127,
