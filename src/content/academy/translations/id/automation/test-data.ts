@@ -79,27 +79,37 @@ base class. Inilah sifat yang menjadikannya alat yang tepat khusus untuk data:
 
 ~~~ts
 // fixtures.ts
-export const test = base.extend<{ project: { id: string; name: string } }>({
-  project: async ({ request }, use, testInfo) => {
-    const name = \`proj-\${testInfo.workerIndex}-\${Date.now()}\`;
-    const res = await request.post("/api/v1/projects", { data: { name } });
-    const project = await res.json();
+const PROJECT = process.env.TF_PROJECT!;   // slug proyek sandbox Anda
 
-    await use(project);          // pengujiannya berjalan di sini
+export const test = base.extend<{ testCase: { id: string; displayId: string } }>({
+  testCase: async ({ request }, use, testInfo) => {
+    const title = \`case-\${testInfo.workerIndex}-\${Date.now()}\`;
+    const res = await request.post(\`/api/v1/projects/\${PROJECT}/cases\`, {
+      data: { title },
+    });
+    const created = await res.json();
 
-    await request.delete(\`/api/v1/projects/\${project.id}\`);   // selalu berjalan
+    await use(created);          // pengujiannya berjalan di sini
+
+    await request.delete(\`/api/v1/projects/\${PROJECT}/cases/\${created.id}\`);   // selalu berjalan
   },
 });
 ~~~
 
 ~~~ts
-test("adds a case to a project", async ({ page, project }) => {
-  await page.goto(\`/projects/\${project.id}\`);
+test("editing a case does not disturb anyone else's", async ({ page, testCase }) => {
+  await page.goto(\`/projects/\${PROJECT}/cases/\${testCase.id}\`);
   // ...
 });
 ~~~
 
-Pengujiannya meminta sebuah proyek dengan menyebutkannya di tanda tangannya,
+Perhatikan bentuk path-nya: route tulis milik TestForge **dilingkupi proyek**,
+jadi setiap satu di antaranya membawa slug — \`/api/v1/projects/<slug>/cases\`,
+bukan \`/api/v1/cases\`. Proyeknya sendiri dibuat lewat UI dan tidak ada endpoint
+untuk membuatnya, dan justru itulah alasan fixture ini membuat *test case*-nya
+dan memperlakukan proyek sandbox sebagai latar yang tetap.
+
+Pengujiannya meminta sebuah test case dengan menyebutkannya di tanda tangannya,
 mendapat yang segar, dan pembersihannya dijamin. Bandingkan dengan \`afterEach\`,
 yang dilewati ketika pengujiannya kehabisan waktu di sebagian runner dan yang
 duduk jauh dari persiapan yang dibatalkannya — dua hal yang membuat data
@@ -125,18 +135,18 @@ menjadi per pengujian.**
 
 ## Siapkan lewat API, bukan lewat UI
 
-Membuat sebuah proyek lewat antarmuka memakan delapan aksi, menjalankan kode yang
-bukan menjadi pokok pengujiannya, dan gagal karena alasan yang tak berhubungan
-dengan apa yang sedang Anda uji.
+Membuat sebuah test case lewat antarmuka memakan delapan aksi, menjalankan kode
+yang bukan menjadi pokok pengujiannya, dan gagal karena alasan yang tak
+berhubungan dengan apa yang sedang Anda uji.
 
 ~~~ts
 // lambat, rapuh, dan menguji hal yang keliru
-await page.getByRole("link", { name: "New project" }).click();
-await page.getByLabel("Name").fill(name);
+await page.getByRole("link", { name: "New case" }).click();
+await page.getByLabel("Title").fill(title);
 await page.getByRole("button", { name: "Create" }).click();
 
 // cepat, dan kegagalan di sini memang berarti environment yang rusak
-await request.post("/api/v1/projects", { data: { name } });
+await request.post(\`/api/v1/projects/\${PROJECT}/cases\`, { data: { title } });
 ~~~
 
 **Uji lewat UI apa yang dikerjakan UI; siapkan segala yang lain di bawahnya.**
@@ -189,7 +199,7 @@ Ia akan gagal. Sebuah worker dibunuh, CI dibatalkan, endpoint delete
 mengembalikan 500. Rencanakan untuk itu alih-alih menganggapnya tidak ada:
 
 - **Buat suite-nya toleran terhadap residu.** Pengujian yang mengasersikan "ada 3
-  proyek" rusak oleh sisa-sisa; yang mengasersikan "proyek *saya* muncul di
+  case" rusak oleh sisa-sisa; yang mengasersikan "case *saya* muncul di
   daftar" tidak. Lebih baik asersi yang dibatasi pada data yang dibuat
   pengujiannya sendiri.
 - **Punyai sebuah penyapu.** Job terjadwal yang menghapus catatan uji yang lebih
@@ -205,6 +215,12 @@ penutupnya bergantung padanya: run yang Anda unggah lewat \`/api/v1/junit\`
 mendarat di sebuah proyek, dan riwayat case-nya hanya bermakna kalau run-nya bisa
 dibandingkan. Dua run terhadap sisa data yang berbeda adalah dua eksperimen yang
 berbeda.
+
+Satu detail jujur tentang pembersihan di atas: \`DELETE\` pada sebuah case adalah
+penghapusan **lunak**. Case-nya menghilang dari daftar dan dari asersi Anda, lalu
+sebuah job pembersih menyingkirkan barisnya belakangan. Itu bentuk yang lazim di
+produk sungguhan, dan layak diketahui sebelum Anda menulis pengujian yang
+mengharapkan catatannya lenyap dari basis data begitu request-nya kembali.
 
 Ada satu diagnosis yang layak dibawa ke pelajaran tentang pengujian labil. Case
 yang gagal hanya ketika suite lengkapnya berjalan, dan lulus sendirian setiap
@@ -271,11 +287,11 @@ selama ini disandari pelajaran ini untuk persiapan.
       choices: [
         {
           id: "a",
-          text: "Buat proyeknya lewat panggilan API di dalam sebuah fixture alih-alih mengeklik menembus formulir pembuatannya",
+          text: "Buat test case-nya lewat panggilan API di dalam sebuah fixture alih-alih mengeklik menembus formulir pembuatannya",
         },
         {
           id: "b",
-          text: "Asersikan \"proyek saya muncul di daftar\" alih-alih \"ada tepat 3 proyek\"",
+          text: "Asersikan \"case saya muncul di daftar\" alih-alih \"ada tepat 3 case\"",
         },
         {
           id: "c",
