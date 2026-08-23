@@ -124,11 +124,23 @@ export function LessonDoneToggle({
     >
       <span
         aria-hidden
-        className={`grid h-4 w-4 place-items-center rounded border text-[10px] ${
+        className={`grid h-4 w-4 shrink-0 place-items-center rounded border ${
           done ? "border-current" : "border-hairline-strong"
         }`}
       >
-        {done ? "✓" : ""}
+        {done && (
+          <svg
+            viewBox="0 0 16 16"
+            className="h-2.5 w-2.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M3 8.5L6.5 12L13 4.5" />
+          </svg>
+        )}
       </span>
       {done ? t.progress.done : t.progress.markDone}
     </button>
