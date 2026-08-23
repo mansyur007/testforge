@@ -361,7 +361,11 @@ same ID files; do the mechanical fixes first so the terminology sweep diffs stay
 4. Verify with `node scripts/academy-i18n-check.mjs` and by opening the four affected `/id`
    lessons in the preview.
 
-**WP-2 · Correct the T3 endpoint inaccuracy (F-HIGH-1).** ~1–2 hours.
+**WP-2 · Correct the T3 endpoint inaccuracy (F-HIGH-1).** ~1–2 hours. **Done 2026-08-23** —
+the preferred option: real project-scoped paths in both lessons, both languages. Switching to
+real paths also forced three response-shape claims to be corrected (the 201 body, the error
+envelope, and a 422 that the lesson called a 404), since a snippet that names a real endpoint
+inherits that endpoint's real behaviour.
 1. In `tracks/automation/test-data.ts` (EN + ID): change the fixture example to a real shape —
    `POST /api/v1/projects/{slug}/cases` with a delete of the created case — or explicitly label
    the snippet as "your application under test" and use a neutral path (`/api/orders`).

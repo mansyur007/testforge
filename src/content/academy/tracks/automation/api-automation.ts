@@ -31,16 +31,24 @@ No new dependency, no second framework:
 ~~~ts
 import { test, expect } from "@playwright/test";
 
+const PROJECT = process.env.TF_PROJECT!;   // your sandbox project's slug
+
 test("rejects a case with a blank title", async ({ request }) => {
-  const res = await request.post("/api/v1/cases", {
-    data: { title: "", suiteId: "s_123" },
+  const res = await request.post(\`/api/v1/projects/\${PROJECT}/cases\`, {
+    data: { title: "" },
   });
 
   expect(res.status()).toBe(422);
-  const body = await res.json();
-  expect(body.error).toContain("title");
+  const { error } = await res.json();
+  expect(error.code).toBe("validation_error");
+  expect(error.details.map((d) => d.field)).toContain("title");
 });
 ~~~
+
+Every write route on this API is **project-scoped** — the slug is part of the
+path, and there is no \`/api/v1/cases\` collection above it. Reading
+\`/api/v1/openapi\` once, before writing any of these tests, is cheaper than
+discovering the shape one 404 at a time.
 
 The \`request\` fixture is an HTTP client with the config's \`baseURL\` and its own
 cookie jar. Two things follow from that: it does not open a browser, so these
@@ -76,7 +84,7 @@ test("a viewer cannot delete a suite", async ({ playwright }) => {
     extraHTTPHeaders: { Authorization: \`Bearer \${process.env.TF_VIEWER_KEY}\` },
   });
 
-  const res = await viewer.delete("/api/v1/suites/s_123");
+  const res = await viewer.delete(\`/api/v1/projects/\${PROJECT}/suites/\${suiteId}\`);
   expect(res.status()).toBe(403);
 
   await viewer.dispose();
@@ -94,25 +102,36 @@ checking authorization by URL first; this is its automated form.
 More than the status code, and less than everything:
 
 ~~~ts
-const res = await request.post("/api/v1/cases", { data: { title: "TC-12", suiteId } });
+const path = \`/api/v1/projects/\${PROJECT}/cases\`;
+const res = await request.post(path, { data: { title: "TC-12", suiteId } });
 
 expect(res.status()).toBe(201);                       // 1. status
 expect(res.headers()["content-type"]).toContain("application/json");
 
-const body = await res.json();
-expect(body).toMatchObject({ title: "TC-12", suiteId });   // 2. the fields you care about
-expect(body.id).toMatch(/^c_/);                            // 3. shape, not exact value
-expect(new Date(body.createdAt).getTime()).toBeGreaterThan(0);
+const { id, displayId } = await res.json();           // create answers with ids only
+expect(displayId).toMatch(/^TC-[A-Z0-9-]+-\\d{3}$/);   // 2. shape, not exact value
+
+const created = await (await request.get(\`\${path}/\${id}\`)).json();
+expect(created).toMatchObject({ title: "TC-12", suiteId, priority: "MEDIUM" });
+expect(new Date(created.createdAt).getTime()).toBeGreaterThan(0);
 ~~~
 
-\`toMatchObject\` is the workhorse: it checks the fields you name and ignores the
-rest, so a new field added to the response does not break forty tests. Asserting
-deep equality against a whole payload is the API equivalent of a CSS selector
-chain — it fails on changes that are not defects.
+Two habits in that snippet. **\`toMatchObject\` is the workhorse**: it checks the
+fields you name and ignores the rest, so a new field added to the response does
+not break forty tests. Asserting deep equality against a whole payload is the API
+equivalent of a CSS selector chain — it fails on changes that are not defects.
+Note that \`priority\` is not something the test sent: asserting the server's
+*default* is how you find out when someone changes it.
 
-Assert **shape** for anything the server generates. \`body.id\` being a string that
-starts with \`c_\` is a real contract; \`body.id === "c_7f3a"\` is today's database
-sequence.
+And **assert shape for anything the server generates.** \`displayId\` matching
+\`TC-<SLUG>-<nnn>\` is a real contract, one the JUnit capstone depends on;
+\`displayId === "TC-DEMO-012"\` is today's counter. The opaque \`id\` is worth
+asserting nothing about beyond being a non-empty string.
+
+It is also worth noticing what this endpoint does *not* return. A create that
+answers with identifiers rather than the whole record is common, and it means
+verification is a second request — which is no bad thing, because reading the
+resource back is a stronger check than trusting the response to the write.
 
 ## Status codes worth being precise about
 
@@ -133,6 +152,19 @@ The second is subtler than it looks: returning 403 for a record that exists but
 belongs to someone else tells an attacker it exists. Whichever your application
 chooses, it should choose consistently, and a test is how that stays true.
 
+TestForge is a worked example of that choice, and you can prove it in one
+request. Post a case to a project you are not a member of and you get **404, not
+403** — the API declines to confirm that the project exists at all:
+
+~~~ts
+test("a project you are not in is indistinguishable from one that does not exist", async ({ request }) => {
+  const res = await request.post("/api/v1/projects/someone-elses-project/cases", {
+    data: { title: "probe" },
+  });
+  expect(res.status()).toBe(404);
+});
+~~~
+
 ## Testing the error paths is the point
 
 The happy path is usually already covered by a UI test. The value of this layer is
@@ -140,19 +172,28 @@ everything the UI cannot easily reach:
 
 ~~~ts
 const cases = [
-  { data: {}, status: 422, why: "no fields at all" },
-  { data: { title: "" }, status: 422, why: "blank title" },
-  { data: { title: "x".repeat(5000) }, status: 422, why: "title over the limit" },
-  { data: { title: "TC-1", suiteId: "does-not-exist" }, status: 404, why: "unknown suite" },
+  { data: {}, field: "title", why: "no fields at all" },
+  { data: { title: "" }, field: "title", why: "blank title" },
+  { data: { title: "TC-1", priority: "URGENT" }, field: "priority", why: "a priority off the list" },
+  { data: { title: "TC-1", suiteId: "does-not-exist" }, field: "suiteId", why: "a suite from another project" },
 ];
 
 for (const c of cases) {
   test(\`rejects \${c.why}\`, async ({ request }) => {
-    const res = await request.post("/api/v1/cases", { data: c.data });
-    expect(res.status()).toBe(c.status);
+    const res = await request.post(\`/api/v1/projects/\${PROJECT}/cases\`, { data: c.data });
+    expect(res.status()).toBe(422);
+    const { error } = await res.json();
+    expect(error.details.map((d) => d.field)).toContain(c.field);
   });
 }
 ~~~
+
+Note what the table asserts. All four are 422, so a test that only checked the
+status would pass on a server that rejected every one of them for the wrong
+reason — naming the offending **field** is what makes the row a real test. The
+fourth row is the interesting one: a suite id that belongs to a different project
+is a validation failure, not a 404, because admitting "that suite exists, just
+not here" would be the same leak the previous section closed.
 
 Generating tests from a table is legitimate here in a way it is not in the UI:
 each case is one fast request, the failure message names which row failed, and
@@ -163,14 +204,16 @@ case and one failing row does not hide the four after it.
 ## The hybrid test is where this pays off most
 
 ~~~ts
-test("TC-SHOP-31 a case created by API appears in the suite view", async ({ page, request }) => {
-  const res = await request.post("/api/v1/cases", {
-    data: { title: \`login \${Date.now()}\`, suiteId },
+test("TC-SHOP-31 a case created by API appears in the case list", async ({ page, request }) => {
+  const title = \`login \${Date.now()}\`;
+  const res = await request.post(\`/api/v1/projects/\${PROJECT}/cases\`, {
+    data: { title, suiteId },
   });
   const created = await res.json();
 
-  await page.goto(\`/suites/\${suiteId}\`);
-  await expect(page.getByRole("row", { name: created.title })).toBeVisible();
+  await page.goto(\`/projects/\${PROJECT}/cases\`);
+  await expect(page.getByRole("row", { name: title })).toBeVisible();
+  await expect(page.getByText(created.displayId)).toBeVisible();
 });
 ~~~
 
@@ -202,14 +245,25 @@ takes above.
 
 The capstone uses this lesson's tooling for real: \`/api/v1/junit\` is an endpoint,
 your upload is a POST with a multipart body, and the run it creates is something
-you can then read back and assert on. Practising against \`/api/v1/projects\` and
-\`/api/v1/cases\` in your sandbox project now is exactly the muscle the capstone
-needs.
+you can then read back and assert on. Practising against
+\`/api/v1/projects/<slug>/cases\` in your sandbox project now is exactly the muscle
+the capstone needs — the same project-scoped shape T2's API testing lesson had
+you sending by hand.
+
+~~~
+GET    /api/v1/openapi                                 every route, machine-readable
+GET    /api/v1/projects/<slug>/cases                   list
+POST   /api/v1/projects/<slug>/cases                   create → { id, displayId }
+DELETE /api/v1/projects/<slug>/cases/<caseId>          soft delete
+POST   /api/v1/projects/<slug>/suites                  create → { id, name, parentId }
+Header: Authorization: Bearer <API_KEY>
+~~~
 
 Worth trying once for the shape of it: create a case through the API, upload a
-JUnit result whose test name carries that case's id, and read the run back to
-confirm the match landed. That is the whole product loop in three requests, and
-it is the thing the last two lessons of this track assemble properly.
+JUnit result whose test name carries that case's \`displayId\`, and read the run
+back to confirm the match landed. That is the whole product loop in three
+requests, and it is the thing the last two lessons of this track assemble
+properly.
 
 **Next:** running the suite in CI with GitHub Actions — workflows, artifacts, and
 keeping the pipeline under ten minutes so people actually wait for it.
@@ -217,7 +271,7 @@ keeping the pipeline under ten minutes so people actually wait for it.
   selfCheck: [
     {
       id: "q1",
-      stem: "Why is checking that a viewer gets 403 from DELETE /api/v1/suites/s_123 more valuable than checking that the delete button is hidden in the UI?",
+      stem: "Why is checking that a viewer gets 403 from DELETE /api/v1/projects/<slug>/suites/<suiteId> more valuable than checking that the delete button is hidden in the UI?",
       choices: [
         {
           id: "a",

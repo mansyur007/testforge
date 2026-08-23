@@ -4665,6 +4665,29 @@ trees is scanned for odd-length backslash runs that the template literal will ea
 cannot come back — verified by re-introducing one escape and watching `prebuild` fail on it. The
 audit's Appendix A tally now reads `0` for both trees. See `docs/AUDIT-ACADEMY.md` §4.2–4.3, §5 WP-1.
 
+**Audit WP-2, 2026-08-23 — the automation track stops teaching endpoints that do not exist.** The
+audit's only F-HIGH: `automation/test-data` and `automation/api-automation` built their examples on
+`/api/v1/projects`, `/api/v1/cases` and `/api/v1/suites/s_123`, none of which are routes on this
+product — every write route is project-scoped (`/api/v1/projects/<slug>/…`). `api-automation` made
+it worse by attributing the scheme to TestForge ("it is what TestForge itself expects") two lines
+above a path that 404s, and its closing section sent the reader to practise on both fictional
+collections. Both lessons now use the real shapes in both languages, with a `PROJECT` slug constant
+carried through every snippet and an explicit note that projects are made in the UI and have no
+create endpoint — which is *why* the fixture creates a case rather than a project.
+
+Naming real endpoints means inheriting their real behaviour, so three response claims had to be
+corrected alongside the paths: the create returns `{ id, displayId }` rather than the whole record
+(so the lesson now reads the case back with a second `GET`, and asserts the `TC-<SLUG>-<nnn>`
+contract the JUnit capstone actually depends on instead of a fictional `c_` id prefix); errors come
+back as `{ error: { code, details:[{field}] } }`, so `expect(body.error).toContain("title")` was
+asserting against an object; and an unknown `suiteId` is a **422**, not the 404 the error-path table
+claimed. Two things the audit did not ask for but the real API made available: the error table now
+asserts the offending *field* rather than only the status — all four rows are 422, so the status
+alone was not a test — and a new snippet proves TestForge's 403-vs-404 choice by posting to a
+project the caller is not a member of and getting 404, the leak-nothing answer the lesson had until
+now only described in the abstract. `security-for-testers` keeps its `app.example.com/api/v1/suites`
+example: that one is explicitly a different application. See `docs/AUDIT-ACADEMY.md` §4.5, §5 WP-2.
+
 ---
 
 *End of document. When a feature ships: tick its checkbox here, flip the cell in

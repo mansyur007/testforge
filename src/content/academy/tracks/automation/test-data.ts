@@ -76,27 +76,37 @@ property that makes them the right tool for data specifically: **the code after
 
 ~~~ts
 // fixtures.ts
-export const test = base.extend<{ project: { id: string; name: string } }>({
-  project: async ({ request }, use, testInfo) => {
-    const name = \`proj-\${testInfo.workerIndex}-\${Date.now()}\`;
-    const res = await request.post("/api/v1/projects", { data: { name } });
-    const project = await res.json();
+const PROJECT = process.env.TF_PROJECT!;   // your sandbox project's slug
 
-    await use(project);          // the test runs here
+export const test = base.extend<{ testCase: { id: string; displayId: string } }>({
+  testCase: async ({ request }, use, testInfo) => {
+    const title = \`case-\${testInfo.workerIndex}-\${Date.now()}\`;
+    const res = await request.post(\`/api/v1/projects/\${PROJECT}/cases\`, {
+      data: { title },
+    });
+    const created = await res.json();
 
-    await request.delete(\`/api/v1/projects/\${project.id}\`);   // always runs
+    await use(created);          // the test runs here
+
+    await request.delete(\`/api/v1/projects/\${PROJECT}/cases/\${created.id}\`);   // always runs
   },
 });
 ~~~
 
 ~~~ts
-test("adds a case to a project", async ({ page, project }) => {
-  await page.goto(\`/projects/\${project.id}\`);
+test("editing a case does not disturb anyone else's", async ({ page, testCase }) => {
+  await page.goto(\`/projects/\${PROJECT}/cases/\${testCase.id}\`);
   // ...
 });
 ~~~
 
-The test asks for a project by naming it in its signature, gets a fresh one, and
+Note the shape of the path: TestForge's write routes are **project-scoped**, so
+every one of them carries the slug — \`/api/v1/projects/<slug>/cases\`, not
+\`/api/v1/cases\`. Projects themselves are made in the UI and there is no endpoint
+to create one, which is exactly why the fixture creates the *case* and treats the
+sandbox project as fixed scenery.
+
+The test asks for a case by naming it in its signature, gets a fresh one, and
 the cleanup is guaranteed. Compare with \`afterEach\`, which is skipped when the
 test times out in some runners and which sits far away from the setup it undoes —
 two things that make orphaned data accumulate quietly for months.
@@ -120,17 +130,17 @@ stops being shared data and goes back to per-test.**
 
 ## Set up through the API, not the UI
 
-Creating a project through the interface takes eight actions, exercises code the
+Creating a case through the interface takes eight actions, exercises code the
 test is not about, and fails for reasons unrelated to what you are testing.
 
 ~~~ts
 // slow, brittle, and tests the wrong thing
-await page.getByRole("link", { name: "New project" }).click();
-await page.getByLabel("Name").fill(name);
+await page.getByRole("link", { name: "New case" }).click();
+await page.getByLabel("Title").fill(title);
 await page.getByRole("button", { name: "Create" }).click();
 
 // fast, and a failure here is genuinely a broken environment
-await request.post("/api/v1/projects", { data: { name } });
+await request.post(\`/api/v1/projects/\${PROJECT}/cases\`, { data: { title } });
 ~~~
 
 **Test through the UI what the UI does; arrange everything else underneath.** The
@@ -180,7 +190,7 @@ It will. A worker is killed, CI is cancelled, a delete endpoint 500s. Plan for i
 rather than assuming it away:
 
 - **Make the suite tolerant of residue.** A test that asserts "there are 3
-  projects" breaks on leftovers; one that asserts "*my* project appears in the
+  cases" breaks on leftovers; one that asserts "*my* case appears in the
   list" does not. Prefer assertions scoped to the data the test created.
 - **Have a sweeper.** A scheduled job deleting test records older than a day
   costs an hour to write and removes a permanent class of mystery failure.
@@ -193,6 +203,12 @@ Your sandbox project is the right place to practise all of this, and the capston
 depends on it: the run you upload through \`/api/v1/junit\` lands in a project, and
 the case history is only meaningful if runs are comparable. Two runs against
 different leftover data are two different experiments.
+
+One honest detail about the cleanup above: \`DELETE\` on a case is a **soft**
+delete. The case disappears from the lists and from your assertions, and a purge
+job removes the row later. That is the common shape in real products, and it is
+worth knowing before you write a test that expects the record to be gone from
+the database the instant the request returns.
 
 There is a diagnostic worth carrying into the flaky-tests lesson. A case that
 fails only when the full suite runs, and passes alone every time, is almost never
@@ -262,12 +278,12 @@ for setup.
       choices: [
         {
           id: "a",
-          text: "Create the project via an API call in a fixture rather than clicking through the creation form",
+          text: "Create the case via an API call in a fixture rather than clicking through the creation form",
           correct: true,
         },
         {
           id: "b",
-          text: "Assert \"my project appears in the list\" rather than \"there are exactly 3 projects\"",
+          text: "Assert \"my case appears in the list\" rather than \"there are exactly 3 cases\"",
           correct: true,
         },
         {
