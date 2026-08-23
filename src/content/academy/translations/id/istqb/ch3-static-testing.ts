@@ -68,7 +68,7 @@ cacatnya langsung dari halamannya.
 
 ## 3.2 Umpan balik dan proses review
 
-**Kenapa umpan balik pemangku kepentingan yang dini dan sering.** Ia menyingkap
+**Kenapa umpan balik stakeholder yang dini dan sering.** Ia menyingkap
 risiko lebih awal, mencegah kesalahpahaman tentang kebutuhannya, dan membuat
 timnya membangun apa yang benar-benar dibutuhkan pelanggannya alih-alih menemukan
 jurangnya saat acceptance. Alternatifnya adalah pengerjaan ulang yang mahal, dan

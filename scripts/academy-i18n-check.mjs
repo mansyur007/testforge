@@ -66,6 +66,17 @@
 //    Indonesian files — including the automation capstone — and none in
 //    English. Asserted over both trees so neither can regress.
 //
+// 9. **One canonical Indonesian term per concept.** Fifty-one lessons written
+//    over several PRs will translate the same word two ways, and neither way
+//    is wrong — "laporan bug" and "laporan cacat" are both good Indonesian for
+//    *bug report*, which is why nine files each had ended up with one of them
+//    and the `writing-test-cases` lesson pointed at "laporan cacat …" while the
+//    next lesson's own title said "laporan **bug**". A reviewer reads one
+//    lesson and sees nothing; the split only exists across the tree. The
+//    decisions live in `docs/ACADEMY-ID-GLOSSARY.md`; this asserts the retired
+//    spellings stay retired, so the next slice inherits them instead of
+//    re-deciding.
+//
 // Reads the TypeScript as text, the way `academy-checks-selftest.mjs` reads
 // `sandbox.ts` and `academy-trademark-check.mjs` reads the track files: these
 // are data modules with a fixed shape, and parsing them beats maintaining a
@@ -275,6 +286,21 @@ for (const track of idTrackDirs) {
       kamu === 0,
       `${kamu} use(s) of "kamu" — Academy content is written with "Anda"`,
     );
+    // The `-mu` clitic is the same register slip wearing a suffix, and it
+    // survived the `kamu` rule for a year: `tempatkan dirimu` sat in
+    // contract-testing until the 2026-08-23 audit sweep. Listed rather than
+    // matched as `\w+mu\b`, because Indonesian is full of innocent words
+    // ending in -mu (`ilmu`, `jamu`, `kemu…`) and a regex that guesses is a
+    // regex someone will disable.
+    const clitic = [
+      ...prose.matchAll(/\b(dirimu|milikmu|bagimu|padamu|kepadamu|denganmu|untukmu|[Kk]au)\b/g),
+    ].map((m) => m[1]);
+    assert(
+      `${name}: keeps the register in its pronouns too`,
+      clitic.length === 0,
+      `${clitic.join(", ")} — the "-mu"/"kau" forms are the "kamu" register, ` +
+        'write "diri Anda", "milik Anda", "kepada Anda"',
+    );
 
     // (3)
     const stripped = stripComments(l.src);
@@ -304,6 +330,35 @@ for (const [label, root] of [["en", EN_TRACKS], ["id", ID_TRACKS]]) {
       hits.length === 0,
       `${hits.length} lone escape(s) — write \\\\ for a backslash the reader ` +
         `should see:\n      ${hits.slice(0, 5).join("\n      ")}`,
+    );
+  }
+}
+
+// (9). Terminology, over the whole Indonesian tree — the track `index.ts`
+// files included, because that is where `fundamentals` advertised an outcome
+// about writing a "laporan cacat" while the lesson it linked to was titled
+// "laporan bug". Retired spellings only, not a dictionary: every entry was
+// actually in the tree, competing with the term beside it, and every one of
+// them is perfectly good Indonesian — which is why fifty-one lessons of review
+// never caught the split. Decisions and rationale: docs/ACADEMY-ID-GLOSSARY.md.
+const RETIRED_TERMS = [
+  [/laporan cacat/gi, '"laporan bug" — or English "defect report" in the ISTQB track'],
+  [/catatan cacat/gi, '"laporan bug"'],
+  [/pemangku kepentingan/gi, '"stakeholder"'],
+  [/daftar periksa/gi, '"checklist"'],
+  [/pemeriksaan penyehat/gi, '"sanity check"'],
+  [/\bkait\b/gi, '"hook"'],
+];
+for (const file of everyTsFile(ID_TRACKS)) {
+  const prose = stripComments(readFileSync(file, "utf8"));
+  const short = file.replace(/\\/g, "/").split("/").slice(-2).join("/");
+  for (const [re, want] of RETIRED_TERMS) {
+    const hits = [...prose.matchAll(re)];
+    assert(
+      `id/${short}: uses the glossary's term`,
+      hits.length === 0,
+      `${hits.length}× "${hits[0]?.[0] ?? re.source}" — the canonical form is ` +
+        `${want} (docs/ACADEMY-ID-GLOSSARY.md)`,
     );
   }
 }

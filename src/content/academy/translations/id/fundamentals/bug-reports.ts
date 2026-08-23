@@ -131,7 +131,7 @@ log-nya.
 ## 🛠 Giliran Anda, di TestForge
 
 Latihan sandbox memberi Anda satu cacat ShopMini yang sudah ditanam untuk Anda
-temukan dan ajukan sebagai catatan cacat yang benar — judul, lingkungan, langkah,
+temukan dan ajukan sebagai laporan bug yang benar — judul, lingkungan, langkah,
 sebenarnya vs diharapkan, severity — dan checker-nya menilai strukturnya, bukan
 pilihan kata Anda: langkah yang minimal, hasil sebenarnya yang bisa diamati,
 hasil yang diharapkan yang terikat pada sebuah kebutuhan, dan severity yang bisa

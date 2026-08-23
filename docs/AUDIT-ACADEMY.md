@@ -377,6 +377,15 @@ inherits that endpoint's real behaviour.
    none, but the diff should confirm).
 
 **WP-3 · Terminology: one decision, one glossary, one sweep (F-MED-1, F-LOW-1/2/3).** ~2 hours.
+**Done 2026-08-23** — the proposed set, with the owner keeping the formal register (F-LOW-2:
+*berkas/basis data/unggah/unduh* stay). Glossary at `docs/ACADEMY-ID-GLOSSARY.md`; the retired
+spellings are build-enforced by assertion (9) of `academy-i18n-check.mjs`. The sweep turned out
+smaller than §4.2's counts suggest: the *assertion*, *coverage*, *branch* and *boundary value*
+pairs were already correct under the rule, since every English hit was inside a named term
+(*web-first assertion*, *statement coverage*, git *branch*). 25 substitutions in 14 files — 8 to
+*laporan bug*, 7 to English *defect report* in the ISTQB track, 6 to *stakeholder*, 4 singletons. The
+sweep also surfaced one register slip no rule covered — *tempatkan **dirimu*** in
+`beyond/contract-testing`, the `-mu` clitic form of the `kamu` the check has always banned.
 1. Decide the canonical set (proposed): **laporan bug**; **assertion → asersi** everywhere
    (already dominant); **coverage → cakupan** in prose but keep *coverage* inside syllabus
    terms ("statement coverage"); **branch** (git) stays English, *cabang/bercabang* allowed

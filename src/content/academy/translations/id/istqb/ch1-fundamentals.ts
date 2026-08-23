@@ -172,7 +172,7 @@ berjalan paralel:
 | **Test analysis** | Test condition | **Apa** yang diuji — analisis test basis-nya |
 | **Test design** | Test case, coverage item | **Bagaimana** mengujinya |
 | **Test implementation** | Test procedure, data, suite, environment | Semua yang dibutuhkan supaya bisa dijalankan |
-| **Test execution** | Log, laporan cacat | Jalankan, bandingkan aktual dengan harapan, laporkan |
+| **Test execution** | Log, defect report | Jalankan, bandingkan aktual dengan harapan, laporkan |
 | **Test completion** | Laporan penutup, testware yang diarsipkan | Menutup, menyerahkan, mencatat pelajaran |
 
 **Analysis versus design adalah jebakan di bagian ini.** Analysis
@@ -182,7 +182,7 @@ aturan diskonnya perlu diuji, itu analysis; menurunkan nilai batasnya adalah
 design.
 
 **Konteks membentuk prosesnya.** Aktivitas mana yang Anda lakukan, bagaimana, dan
-sedalam apa bergantung pada para pemangku kepentingan dan harapan mereka,
+sedalam apa bergantung pada para stakeholder dan harapan mereka,
 keahlian timnya, domain bisnisnya, faktor teknis, kendala proyek (anggaran,
 waktu), organisasinya, dan lifecycle yang dipakai. Ini prinsip 6 sebagai
 pernyataan proses.
@@ -195,7 +195,7 @@ design, test procedure dan test data berasal dari implementation.**
 **Ketertelusuran** antara test basis, test condition, test case, dan hasilnya
 adalah yang memungkinkan Anda mengevaluasi cakupan, menilai dampak sebuah
 perubahan, mengaudit prosesnya, melaporkan status dalam istilah yang dipahami
-pemangku kepentingan, dan memperagakan bahwa tujuannya tercapai. Kalau sebuah
+stakeholder, dan memperagakan bahwa tujuannya tercapai. Kalau sebuah
 kebutuhan berubah, ketertelusuran memberi tahu Anda pengujian mana yang kini
 diragukan — dan itu manfaatnya yang paling sering diujikan.
 
@@ -209,7 +209,7 @@ memuat kata "tester".
 
 **Keahlian umum seorang tester** yang layak dikenali: pengetahuan pengujian,
 ketuntasan, keingintahuan dan ketelitian, komunikasi yang baik (dengan developer
-dan dengan pemangku kepentingan), berpikir analitis dan kritis, pengetahuan
+dan dengan stakeholder), berpikir analitis dan kritis, pengetahuan
 domain, dan pengetahuan teknis. Komunikasi ada di daftar itu dengan sengaja —
 cacat yang tidak ditindaklanjuti siapa pun berarti tidak ditemukan secara
 berguna.

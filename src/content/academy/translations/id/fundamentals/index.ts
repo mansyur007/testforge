@@ -26,7 +26,7 @@ export const fundamentalsId: TrackTranslation = {
     "Menjelaskan apa yang bisa dan tidak bisa dibuktikan pengujian — tanpa terdengar defensif",
     "Mengubah sebuah kebutuhan menjadi kumpulan pengujian yang bisa dipertanggungjawabkan dengan empat teknik perancangan",
     "Menulis test case yang bisa dijalankan orang lain dan menghasilkan kesimpulan yang sama",
-    "Membuat laporan cacat yang berujung diperbaiki, bukan ditutup sebagai “tidak bisa direproduksi”",
+    "Membuat laporan bug yang berujung diperbaiki, bukan ditutup sebagai “tidak bisa direproduksi”",
     "Membedakan severity dari priority, dan tahu siapa yang memutuskan masing-masing",
   ],
   lessons: [

@@ -4688,6 +4688,34 @@ project the caller is not a member of and getting 404, the leak-nothing answer t
 now only described in the abstract. `security-for-testers` keeps its `app.example.com/api/v1/suites`
 example: that one is explicitly a different application. See `docs/AUDIT-ACADEMY.md` §4.5, §5 WP-2.
 
+**Audit WP-3, 2026-08-23 — one canonical Indonesian term per concept, written down and enforced.**
+Fifty-one lessons translated over several PRs had, predictably, translated the same concept more than
+one way. *Bug report* had three forms — "laporan bug" in 8 files including the `bug-reports` lesson's
+own title, "laporan cacat" in 9 including the `fundamentals` track's advertised outcomes, and one
+"catatan cacat" — with `writing-test-cases` ending by pointing at a "laporan cacat" whose lesson was
+titled "laporan **bug**". None of the losing spellings was wrong Indonesian, which is precisely why
+review never caught it: a reviewer reads one lesson, and the split only exists across the tree.
+
+The decisions now live in **[`docs/ACADEMY-ID-GLOSSARY.md`](ACADEMY-ID-GLOSSARY.md)**: *laporan bug*
+everywhere, except the ISTQB track where the syllabus term **defect report** stays English alongside
+*Defect management* and *coverage item*; *stakeholder*, *hook*, *checklist*, *sanity check* stay
+English; *asersi* and *cakupan* stay Indonesian except inside named terms (*web-first assertion*,
+*statement coverage*); git *branch* English, *cabang* for control flow. The owner's call on the
+formal register (2026-08-23) is to **keep** *berkas / basis data / unggah / unduh* — consistent
+across all 51 lessons already, a matter of voice rather than correctness, and revisited only as a
+deliberate change rather than one lesson at a time. 25 substitutions in 14 files; the *assertion*,
+*coverage*, *branch* and *boundary value* pairs the audit flagged turned out to already satisfy the
+rule, since every English use sat inside a named term.
+
+Assertion **(9)** of `academy-i18n-check.mjs` now holds the retired spellings retired across the
+whole Indonesian tree, track `index.ts` files included — that is where `fundamentals` advertised an
+outcome in the losing spelling. The sweep also turned up a register slip no rule covered:
+*tempatkan **dirimu*** in `beyond/contract-testing`, the `-mu` clitic form of the `kamu` the check
+has banned since A-08. The clitic family (*dirimu*, *milikmu*, *bagimu*, *padamu*, *kepadamu*,
+*denganmu*, *untukmu*, *kau*) is now asserted next to it, enumerated rather than pattern-matched
+because Indonesian is full of innocent words ending in `-mu`. Both new rules were verified by
+re-introducing a defect and watching `prebuild` fail. See `docs/AUDIT-ACADEMY.md` §4.2, §5 WP-3.
+
 ---
 
 *End of document. When a feature ships: tick its checkbox here, flip the cell in

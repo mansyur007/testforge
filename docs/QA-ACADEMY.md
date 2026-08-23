@@ -1903,7 +1903,15 @@ lessons introduced.
 >   read by working adults preparing for a certification or an interview. Both halves are build
 >   assertions, because `Anda` is a proper pronoun that is capitalised mid-sentence and English `you`
 >   is not: the first draft of the first lesson had 15 lowercase `anda` in it, and it rendered
->   perfectly.
+>   perfectly. *Extended 2026-08-23 (audit WP-3)*: the `-mu` clitic family — `dirimu`, `milikmu`,
+>   `padamu`, `kau` and the rest — is the same register wearing a suffix, and it outlived the
+>   original `kamu` rule by a year. Now asserted alongside it.
+> - **Terminology is decided once, in [`docs/ACADEMY-ID-GLOSSARY.md`](ACADEMY-ID-GLOSSARY.md)**
+>   (audit WP-3, 2026-08-23). Fifty-one lessons written across several PRs had translated *bug
+>   report* three different ways, none of them wrong Indonesian — which is why nobody caught it:
+>   a reviewer reads one lesson, and the split only exists across the tree. The glossary records
+>   the canonical form per concept and the reason; `academy-i18n-check.mjs` holds the retired
+>   spellings retired. Add a term to it only once the tree has actually spelled it two ways.
 > - **`lang` is marked on the page subtree, not `<html>`.** The root layout cannot see the pathname
 >   without middleware, and this app has none; introducing one for an attribute would put code in
 >   front of every request in the product. `lang` on a subtree is what HTML5 defines for exactly this.

@@ -133,7 +133,7 @@ Checker-nya mencari sebuah case di suite Checkout dengan setidaknya tiga langkah
 hasil yang diharapkan yang tidak kosong, dan nilai batas di datanya — standar
 yang sama yang akan diterapkan seorang peninjau.
 
-**Selanjutnya:** hal lain yang akan Anda tulis setiap hari — laporan cacat yang
+**Selanjutnya:** hal lain yang akan Anda tulis setiap hari — laporan bug yang
 berujung diperbaiki alih-alih ditutup sebagai "tidak bisa direproduksi".
 `,
   selfCheck: [
