@@ -1,6 +1,6 @@
 import type { IconName } from "@/components/icons";
 
-// The workspace settings registry: the six pages under /settings/**, in the
+// The workspace settings registry: the pages under /settings/**, in the
 // order they appear in the settings tab row.
 //
 // Before this file the sidebar carried all six as top-level entries, which
@@ -21,6 +21,9 @@ export type AppSettingsItem = {
 
 export const APP_SETTINGS_NAV: AppSettingsItem[] = [
   { href: "/settings/account", label: "Account", icon: "nav-account" },
+  // F-46: next to Account because it is the other page every role can act on,
+  // and because it used to be a section *of* Account.
+  { href: "/settings/appearance", label: "Appearance", icon: "palette" },
   { href: "/settings/team", label: "Team", icon: "nav-team" },
   { href: "/settings/api-keys", label: "API Keys", icon: "nav-keys" },
   { href: "/settings/ai", label: "AI assist", icon: "ai" },

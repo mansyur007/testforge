@@ -13,7 +13,7 @@ import { FOCUS_RING } from "@/components/focus";
  * Deliberately the same underline treatment as `ProjectTabs` — a reader who
  * has learned "a row of underlined labels moves me between sections of this
  * thing" gets the same control here rather than a second idiom. It scrolls
- * horizontally below `sm` instead of wrapping, because six wrapped tabs push
+ * horizontally below `sm` instead of wrapping, because wrapped tabs push
  * the page heading off a phone screen.
  */
 export function SettingsTabs() {

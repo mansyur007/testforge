@@ -2,7 +2,6 @@ import { db } from "@/lib/db";
 import { requireSession, hasUsablePassword } from "@/lib/auth";
 import { ChangePasswordForm } from "@/components/ChangePasswordForm";
 import { TwoFactorSettings } from "@/components/TwoFactorSettings";
-import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 
 export const dynamic = "force-dynamic";
 
@@ -36,16 +35,6 @@ export default async function AccountPage() {
           Your account information and login security.
         </p>
       </div>
-
-      <section className="space-y-4 rounded-xl border border-hairline bg-surface p-6">
-        <div>
-          <h2 className="text-lg font-semibold">Appearance</h2>
-          <p className="text-sm text-content-muted">
-            Choose how TestForge looks. System follows your device setting.
-          </p>
-        </div>
-        <ThemeSwitcher size="md" />
-      </section>
 
       <section className="space-y-4 rounded-xl border border-hairline bg-surface p-6">
         <h2 className="text-lg font-semibold">Profile</h2>

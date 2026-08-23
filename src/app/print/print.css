@@ -23,6 +23,17 @@
   --tf-border-strong: 203 213 225;
   --tf-accent: 79 70 229;
   --tf-accent-text: 79 70 229;
+  /* F-46: the rest of the accent ramp, for the same reason. A custom accent
+     is written inline on <html>, which no descendant selector can outrank —
+     but these re-declarations sit *on* .tf-print-doc, so the print subtree
+     resolves them here and paper stays the brand colour whatever the screen
+     is wearing. */
+  --tf-accent-hover: 67 56 202;
+  --tf-accent-fg: 255 255 255;
+  --tf-accent-soft: 238 242 255;
+  --tf-accent-soft-fg: 67 56 202;
+  --tf-accent-ring: 99 102 241;
+  --tf-sidebar: 15 23 42;
 }
 
 /* Page geometry */
