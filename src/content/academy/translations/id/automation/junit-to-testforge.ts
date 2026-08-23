@@ -50,10 +50,10 @@ penyimpanan rahasia CI Anda sebagai \`TF_API_KEY\`, jangan pernah di repositori.
 ## 3. Unggah
 
 ~~~bash
-curl -X POST \
-  "$TF_BASE_URL/api/v1/junit?project=$TF_PROJECT&name=CI%20run&source=playwright" \
-  -H "Authorization: Bearer $TF_API_KEY" \
-  -H "Content-Type: application/xml" \
+curl -X POST \\
+  "$TF_BASE_URL/api/v1/junit?project=$TF_PROJECT&name=CI%20run&source=playwright" \\
+  -H "Authorization: Bearer $TF_API_KEY" \\
+  -H "Content-Type: application/xml" \\
   --data-binary @results/junit.xml
 ~~~
 
@@ -139,10 +139,10 @@ test(tc(12, "a valid login lands on the dashboard"), async ({ page }) => {
       - name: Publish results to TestForge
         if: \${{ !cancelled() }}
         run: |
-          curl -sS -X POST \
-            "$TF_BASE_URL/api/v1/junit?project=$TF_PROJECT&name=$GITHUB_REF_NAME%20%23$GITHUB_RUN_NUMBER&source=playwright&origin=CI%20%C2%B7%20GitHub%20Actions" \
-            -H "Authorization: Bearer $TF_API_KEY" \
-            -H "Content-Type: application/xml" \
+          curl -sS -X POST \\
+            "$TF_BASE_URL/api/v1/junit?project=$TF_PROJECT&name=$GITHUB_REF_NAME%20%23$GITHUB_RUN_NUMBER&source=playwright&origin=CI%20%C2%B7%20GitHub%20Actions" \\
+            -H "Authorization: Bearer $TF_API_KEY" \\
+            -H "Content-Type: application/xml" \\
             --data-binary @results/junit.xml
         env:
           TF_BASE_URL: \${{ secrets.TF_BASE_URL }}

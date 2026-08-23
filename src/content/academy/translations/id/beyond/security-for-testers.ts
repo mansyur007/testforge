@@ -61,7 +61,7 @@ itu cacat yang serius. Id yang berurutan membuat pencacahannya sepele.
 konkret: tombol yang disembunyikan bukan pemeriksaan hak akses.
 
 ~~~bash
-curl -X DELETE https://app.example.com/api/v1/suites/s_123 \
+curl -X DELETE https://app.example.com/api/v1/suites/s_123 \\
   -H "Authorization: Bearer $VIEWER_TOKEN"
 ~~~
 

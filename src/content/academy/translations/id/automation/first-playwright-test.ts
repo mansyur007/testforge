@@ -89,7 +89,7 @@ test("a valid login lands on the dashboard", async ({ page }) => {
   await page.getByLabel("Password").fill("correct-horse");
   await page.getByRole("button", { name: "Sign in" }).click();
 
-  await expect(page).toHaveURL(/\/dashboard/);
+  await expect(page).toHaveURL(/\\/dashboard/);
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
 });
 ~~~
