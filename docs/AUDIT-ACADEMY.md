@@ -435,7 +435,7 @@ option a) — out of proportion to the gap; and any change to the exam bank (not
 | Learning flow, 5 tracks | Order sound; all 50 "Next:" pointers match index order; track handoffs correct |
 | TestForge claims | All verified true except F-HIGH-1 (two T3 lessons) |
 | Sandbox tie-in | 13/13 sandbox lessons have coach tasks; 11 checkers + 2 documented self-assessed |
-| Exam bank | Structure machine-asserted; all sampled answer keys correct; no copyright-proximity concerns |
+| Exam bank | Structure machine-asserted; all sampled answer keys correct at audit time, **all 255 re-derived in §7.2** (one wrong key found and fixed); no copyright-proximity concerns |
 | Certificates | §7.4 fully satisfied; issuance rules and privacy behaviour as specified |
 | Trademark / disclaimers | Enforced by build; EN + ID disclaimers present and non-identical |
 
@@ -494,6 +494,44 @@ rephrased clause, one extra "60%". **Zero numeric meaning shifts in the tree.**
 `what-to-automate`, `ch3-static-testing`) sits closer to "humane" than to "human", but it is the
 tree's consistent rendering in all four places, and consistency is the glossary's own governing
 principle. Revisit it as a voice decision or not at all.
+
+### 7.2 Every exam answer key re-derived — done 2026-08-24
+
+**Coverage.** All **255 questions** in `src/content/academy/questions/**` read and re-derived by
+hand: stem, every choice, the key, and the explanation, against the CTFL v4.0 learning objective
+each one carries. §4.6's residual — "~240 of 255 answer keys were not individually re-derived" — is
+closed. Method note: the questions were rendered into a compact form first (id, K-level,
+`syllabusRef`, stem, choices with the key marked, explanation), and the renderer was checked
+against the source files by count — 255 questions, 1056 choices, 307 `correct` flags, no missing
+stems — so a silently dropped question or key could not pass as a clean read.
+
+**Result: 254 of 255 keys are correct.** Every computational question re-computes to its key —
+the BVA variants, the partition and decision-table counts (including the 2ⁿ and the collapsed
+tables), 0-switch and 1-switch coverage, statement and branch percentages, the three-point
+estimate, the risk-level products, defect detection percentage. The sampled verdict in §4.6 holds
+across the whole bank.
+
+**The one wrong key: `ch1-q11`.** The stem describes writing *"verify that an expired discount code
+is rejected at checkout"* **before** choosing values or steps — that is a test condition, so the
+activity is **test analysis**. The question keyed **test design**, and did not offer test analysis
+at all; its explanation compounded the error by placing "turning it into a concrete case with input
+values, steps, and expected results" in *test implementation*, which is test design's job. The
+bank contradicted itself here — `ch1-q23` asks the analysis-versus-design distinction directly and
+keys it correctly — and it contradicted its own chapter lesson, which uses this very example
+("deciding *that* the discount rule needs testing is analysis"). Fixed: the choices are now
+design / **analysis** / implementation / execution, and the explanation walks the four activities
+in order.
+
+**One wrong explanation behind a correct key: `ch2-q11`.** The key (an OS upgrade on the production
+servers is a maintenance-testing trigger) is right; the explanation filed it under **migration**,
+where the syllabus and the track's own lesson table put changes to the operational environment
+under **modification**. Rewritten, and `ch2-q30`'s looser phrasing of the same list tightened with
+it.
+
+**What this does not retire.** The bank cannot be machine-checked for correctness — `bank-check`
+asserts structure, not truth — so the risk returns with every question added after this date. The
+§4.6 recommendation stands for new material: read the new questions against their objective before
+they ship, and prefer adding them in small batches for that reason.
 
 ---
 
