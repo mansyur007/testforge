@@ -4632,6 +4632,24 @@ because reading the session forces dynamic rendering and `dynamicParams = false`
 with `force-dynamic`. The 404 for a seventh chapter is unchanged — it always came from the page's
 own `notFound()`. **TC-E2E-139**, **TC-E2E-140**. See `docs/QA-ACADEMY.md` § A-09d.
 
+**Academy content audit, 2026-08-23 — the first end-to-end review of the material itself.** Every
+work order up to here built or reshaped the Academy's *machinery*; this is the first pass over what
+it actually teaches. All 51 English lessons were read in full, the 37 Indonesian lessons of T1–T3
+side-by-side with their originals (T4–T5 sampled), the exam bank sampled for answer-key correctness,
+and every "Where TestForge fits" claim checked against the shipped product. The finding worth acting
+on is that **two T3 lessons teach TestForge API endpoints that do not exist** — `test-data` and
+`api-automation` use `/api/v1/projects`, `/api/v1/cases` and `/api/v1/suites/s_123`, where the real
+API is project-scoped (`/api/v1/projects/<slug>/cases`), and `api-automation` attributes the scheme
+to the product in the same breath ("it is what TestForge itself expects"), so a learner following
+the closing exercise gets 404s. Alongside it: **19 lost backslash escapes** in the Indonesian tree
+(a `\x`-for-`\\x` authoring slip that corrupts rendered regexes and merges the capstone's multi-line
+`curl` into one line), three meaning-shift translation slips, and one three-way terminology split
+for "bug report". Everything structural came back clean — all five check scripts green, the
+`/api/v1/junit` contract in the capstone verified line-by-line against the route, the certificate
+pipeline compliant with §7.4, and no wrong answer keys in the sampled bank. The audit, its method,
+and a four-package remediation plan live in **[`docs/AUDIT-ACADEMY.md`](AUDIT-ACADEMY.md)**; the
+fixes themselves are deliberately *not* part of this entry, which records the review only.
+
 ---
 
 *End of document. When a feature ships: tick its checkbox here, flip the cell in
