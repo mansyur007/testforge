@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { TFIcon } from "@/components/icons";
 import { FOCUS_RING } from "@/components/focus";
-import { THEME_COOKIE, THEMES, type Theme } from "@/lib/theme";
+import { THEMES, type Theme } from "@/lib/theme";
+import { applyAppearance, readAppearance } from "@/lib/theme-apply";
 
 const ICON: Record<Theme, string> = { light: "sun", system: "monitor", dark: "moon" };
 const LABEL: Record<Theme, string> = { light: "Light", system: "System", dark: "Dark" };
@@ -23,7 +24,7 @@ export function ThemeSwitcher({
   const [pref, setPref] = useState<Theme>("system");
 
   useEffect(() => {
-    setPref((document.documentElement.dataset.themePref as Theme) ?? "system");
+    setPref(readAppearance().theme);
   }, []);
 
   // Follow the OS while the preference is "system" — without this, a user whose
@@ -37,18 +38,11 @@ export function ThemeSwitcher({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pref]);
 
+  // F-46: applying a mode is no longer just a class toggle — under the custom
+  // palette the accent ramp has to be re-derived for the mode being entered —
+  // so both switchers go through the one applier in lib/theme-apply.ts.
   const apply = (next: Theme) => {
-    const dark =
-      next === "dark" ||
-      (next === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    const el = document.documentElement;
-    el.classList.toggle("dark", dark);
-    el.dataset.themePref = next;
-    document
-      .querySelector('meta[name="theme-color"]')
-      ?.setAttribute("content", dark ? "#020617" : "#0f172a");
-    document.cookie = `${THEME_COOKIE}=${next};path=/;max-age=31536000;samesite=lax`;
-    setPref(next);
+    setPref(applyAppearance({ theme: next }).theme);
   };
 
   const boxPx = size === "md" ? 44 : 36;

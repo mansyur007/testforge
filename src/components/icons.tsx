@@ -80,6 +80,9 @@ const ICONS: Record<string, string> = {
   sun: `<circle class="tf-acf" cx="12" cy="12" r="4"/><path class="tf-ac" d="M12 3.5 V5.5 M12 18.5 V20.5 M3.5 12 H5.5 M18.5 12 H20.5 M5.9 5.9 L7.3 7.3 M16.7 16.7 L18.1 18.1 M5.9 18.1 L7.3 16.7 M16.7 7.3 L18.1 5.9"/>`,
   moon: `<path class="tf-acf" d="M20 13.5 A8.5 8.5 0 1 1 10.5 4 A6.7 6.7 0 0 0 20 13.5 Z"/>`,
   monitor: `<rect x="3.5" y="5" width="17" height="12" rx="1.8"/><path class="tf-ac" d="M9 20 h6 M12 17 v3"/>`,
+  // F-46: colour palette — the artist blob with three wells. Distinct from
+  // "sun"/"moon" (which are the light/dark axis) because this is the other one.
+  palette: `<path d="M12 4 C7 4 3.6 7.6 3.6 12 c0 4.4 3.8 8 8.4 8 a1.9 1.9 0 0 0 1.5 -3 a1.7 1.7 0 0 1 1.3 -2.8 h1.8 a4.8 4.8 0 0 0 4.8 -4.8 C21.4 6.4 17.2 4 12 4 z"/><circle class="tf-acf" cx="8.2" cy="9.6" r="1.25"/><circle class="tf-acf" cx="12.4" cy="7.7" r="1.25"/><circle class="tf-ac" cx="7.3" cy="14" r="1.25"/>`,
 };
 
 export type IconName = keyof typeof ICONS;

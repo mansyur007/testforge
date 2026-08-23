@@ -111,6 +111,253 @@
   --tf-info-border: 30 58 138;
 }
 
+/* F-46: colour palettes — the second theme axis, orthogonal to light/dark.
+   Each palette is the same token block again, so nothing in the app has to
+   know that palettes exist. Two rules per palette, and the selectors are
+   load-bearing:
+
+   `[data-palette="x"]:not(.dark)` (0,3,0) beats `:root` (0,1,0), and the
+   `:not(.dark)` is what stops a light palette from leaking into dark mode —
+   both the class and the attribute sit on <html>, so a plain
+   `[data-palette="x"]` would win over `.dark` purely by source order.
+   `.dark[data-palette="x"]` (0,2,0) beats `.dark` (0,1,0) the same way.
+
+   `violet` is absent on purpose: it IS the :root/.dark block above. `custom`
+   is absent too — it derives its accent ramp at runtime and writes it inline
+   on <html> (see accentTokens in src/lib/theme.ts).
+
+   Palettes move the accent ramp, the sidebar and the neutral *tint*; they
+   never touch danger/warning/success/info, which carry meaning rather than
+   brand and have to stay recognisable in all seven. Every accent value is
+   dark enough to keep white text legible, because ~100 call sites pair
+   `bg-accent` with `text-white`. */
+
+[data-palette="ocean"]:not(.dark) {
+  --tf-canvas: 245 250 253;
+  --tf-surface-muted: 233 243 250;
+  --tf-border-subtle: 233 243 250;
+  --tf-border: 213 231 243;
+  --tf-border-strong: 186 214 232;
+  --tf-accent: 3 105 161;
+  --tf-accent-hover: 7 89 133;
+  --tf-accent-fg: 255 255 255;
+  --tf-accent-text: 3 105 161;
+  --tf-accent-soft: 224 242 254;
+  --tf-accent-soft-fg: 7 89 133;
+  --tf-accent-ring: 14 165 233;
+  --tf-sidebar: 8 47 73;
+  --tf-sidebar-fg: 186 214 232;
+  --tf-sidebar-hover: 12 74 110;
+  --tf-sidebar-border: 12 74 110;
+}
+
+.dark[data-palette="ocean"] {
+  --tf-canvas: 3 16 26;
+  --tf-surface: 8 32 48;
+  --tf-surface-muted: 13 45 65;
+  --tf-surface-raised: 13 45 65;
+  --tf-text-strong: 236 246 252;
+  --tf-text: 197 219 233;
+  --tf-text-muted: 145 172 190;
+  --tf-text-subtle: 116 143 161;
+  --tf-border-subtle: 13 45 65;
+  --tf-border: 22 62 86;
+  --tf-border-strong: 40 86 112;
+  --tf-accent: 2 132 199;
+  --tf-accent-hover: 3 105 161;
+  --tf-accent-fg: 255 255 255;
+  --tf-accent-text: 125 211 252;
+  --tf-accent-soft: 8 47 73;
+  --tf-accent-soft-fg: 186 230 253;
+  --tf-accent-ring: 56 189 248;
+  --tf-sidebar: 3 16 26;
+  --tf-sidebar-fg: 197 219 233;
+  --tf-sidebar-hover: 8 32 48;
+  --tf-sidebar-border: 13 45 65;
+}
+
+[data-palette="emerald"]:not(.dark) {
+  --tf-canvas: 246 251 248;
+  --tf-surface-muted: 235 246 240;
+  --tf-border-subtle: 235 246 240;
+  --tf-border: 214 235 224;
+  --tf-border-strong: 187 219 202;
+  --tf-accent: 4 120 87;
+  --tf-accent-hover: 6 95 70;
+  --tf-accent-fg: 255 255 255;
+  --tf-accent-text: 4 120 87;
+  --tf-accent-soft: 209 250 229;
+  --tf-accent-soft-fg: 6 78 59;
+  --tf-accent-ring: 16 185 129;
+  --tf-sidebar: 6 41 33;
+  --tf-sidebar-fg: 186 216 202;
+  --tf-sidebar-hover: 6 61 48;
+  --tf-sidebar-border: 6 61 48;
+}
+
+.dark[data-palette="emerald"] {
+  --tf-canvas: 2 15 12;
+  --tf-surface: 6 32 26;
+  --tf-surface-muted: 10 46 37;
+  --tf-surface-raised: 10 46 37;
+  --tf-text-strong: 236 250 244;
+  --tf-text: 197 227 214;
+  --tf-text-muted: 143 176 163;
+  --tf-text-subtle: 113 146 133;
+  --tf-border-subtle: 10 46 37;
+  --tf-border: 19 64 52;
+  --tf-border-strong: 34 88 72;
+  --tf-accent: 5 150 105;
+  --tf-accent-hover: 4 120 87;
+  --tf-accent-fg: 255 255 255;
+  --tf-accent-text: 110 231 183;
+  --tf-accent-soft: 6 60 46;
+  --tf-accent-soft-fg: 167 243 208;
+  --tf-accent-ring: 52 211 153;
+  --tf-sidebar: 2 15 12;
+  --tf-sidebar-fg: 197 227 214;
+  --tf-sidebar-hover: 6 32 26;
+  --tf-sidebar-border: 10 46 37;
+}
+
+[data-palette="sunset"]:not(.dark) {
+  --tf-canvas: 253 250 246;
+  --tf-surface-muted: 250 242 234;
+  --tf-border-subtle: 250 242 234;
+  --tf-border: 241 227 213;
+  --tf-border-strong: 226 205 184;
+  --tf-accent: 194 65 12;
+  --tf-accent-hover: 154 52 18;
+  --tf-accent-fg: 255 255 255;
+  --tf-accent-text: 194 65 12;
+  --tf-accent-soft: 255 237 213;
+  --tf-accent-soft-fg: 124 45 18;
+  --tf-accent-ring: 249 115 22;
+  --tf-sidebar: 41 27 20;
+  --tf-sidebar-fg: 225 209 196;
+  --tf-sidebar-hover: 61 42 31;
+  --tf-sidebar-border: 61 42 31;
+}
+
+.dark[data-palette="sunset"] {
+  --tf-canvas: 20 13 9;
+  --tf-surface: 36 25 18;
+  --tf-surface-muted: 51 36 26;
+  --tf-surface-raised: 51 36 26;
+  --tf-text-strong: 250 245 240;
+  --tf-text: 226 213 202;
+  --tf-text-muted: 176 160 147;
+  --tf-text-subtle: 143 128 116;
+  --tf-border-subtle: 51 36 26;
+  --tf-border: 71 52 39;
+  --tf-border-strong: 97 73 56;
+  --tf-accent: 234 88 12;
+  --tf-accent-hover: 194 65 12;
+  --tf-accent-fg: 255 255 255;
+  --tf-accent-text: 253 186 116;
+  --tf-accent-soft: 67 38 18;
+  --tf-accent-soft-fg: 254 215 170;
+  --tf-accent-ring: 251 146 60;
+  --tf-sidebar: 20 13 9;
+  --tf-sidebar-fg: 226 213 202;
+  --tf-sidebar-hover: 36 25 18;
+  --tf-sidebar-border: 51 36 26;
+}
+
+[data-palette="rose"]:not(.dark) {
+  --tf-canvas: 253 248 250;
+  --tf-surface-muted: 250 238 243;
+  --tf-border-subtle: 250 238 243;
+  --tf-border: 243 220 229;
+  --tf-border-strong: 231 197 211;
+  --tf-accent: 190 18 60;
+  --tf-accent-hover: 159 18 57;
+  --tf-accent-fg: 255 255 255;
+  --tf-accent-text: 190 18 60;
+  --tf-accent-soft: 255 228 235;
+  --tf-accent-soft-fg: 136 19 55;
+  --tf-accent-ring: 244 63 94;
+  --tf-sidebar: 43 15 27;
+  --tf-sidebar-fg: 228 202 213;
+  --tf-sidebar-hover: 63 23 41;
+  --tf-sidebar-border: 63 23 41;
+}
+
+.dark[data-palette="rose"] {
+  --tf-canvas: 21 9 14;
+  --tf-surface: 38 18 27;
+  --tf-surface-muted: 54 26 38;
+  --tf-surface-raised: 54 26 38;
+  --tf-text-strong: 252 243 247;
+  --tf-text: 231 212 221;
+  --tf-text-muted: 180 157 168;
+  --tf-text-subtle: 146 124 136;
+  --tf-border-subtle: 54 26 38;
+  --tf-border: 74 38 54;
+  --tf-border-strong: 100 55 74;
+  --tf-accent: 225 29 72;
+  --tf-accent-hover: 190 18 60;
+  --tf-accent-fg: 255 255 255;
+  --tf-accent-text: 253 164 175;
+  --tf-accent-soft: 70 22 41;
+  --tf-accent-soft-fg: 254 205 211;
+  --tf-accent-ring: 251 113 133;
+  --tf-sidebar: 21 9 14;
+  --tf-sidebar-fg: 231 212 221;
+  --tf-sidebar-hover: 38 18 27;
+  --tf-sidebar-border: 54 26 38;
+}
+
+/* Graphite is the one palette that also moves the text tokens: slate text is
+   faintly blue, which is exactly the thing this palette is meant not to have. */
+[data-palette="graphite"]:not(.dark) {
+  --tf-canvas: 250 250 250;
+  --tf-surface-muted: 244 244 245;
+  --tf-text-strong: 24 24 27;
+  --tf-text: 63 63 70;
+  --tf-text-muted: 113 113 122;
+  --tf-text-subtle: 161 161 170;
+  --tf-border-subtle: 244 244 245;
+  --tf-border: 228 228 231;
+  --tf-border-strong: 212 212 216;
+  --tf-accent: 39 39 42;
+  --tf-accent-hover: 24 24 27;
+  --tf-accent-fg: 255 255 255;
+  --tf-accent-text: 39 39 42;
+  --tf-accent-soft: 244 244 245;
+  --tf-accent-soft-fg: 24 24 27;
+  --tf-accent-ring: 113 113 122;
+  --tf-sidebar: 24 24 27;
+  --tf-sidebar-fg: 212 212 216;
+  --tf-sidebar-hover: 39 39 42;
+  --tf-sidebar-border: 39 39 42;
+}
+
+.dark[data-palette="graphite"] {
+  --tf-canvas: 9 9 11;
+  --tf-surface: 24 24 27;
+  --tf-surface-muted: 39 39 42;
+  --tf-surface-raised: 39 39 42;
+  --tf-text-strong: 250 250 250;
+  --tf-text: 212 212 216;
+  --tf-text-muted: 161 161 170;
+  --tf-text-subtle: 130 130 140;
+  --tf-border-subtle: 39 39 42;
+  --tf-border: 63 63 70;
+  --tf-border-strong: 82 82 91;
+  --tf-accent: 82 82 91;
+  --tf-accent-hover: 63 63 70;
+  --tf-accent-fg: 255 255 255;
+  --tf-accent-text: 228 228 231;
+  --tf-accent-soft: 39 39 42;
+  --tf-accent-soft-fg: 228 228 231;
+  --tf-accent-ring: 161 161 170;
+  --tf-sidebar: 9 9 11;
+  --tf-sidebar-fg: 212 212 216;
+  --tf-sidebar-hover: 24 24 27;
+  --tf-sidebar-border: 39 39 42;
+}
+
 /* Smooth scroll untuk anchor link navbar landing page. Discope ke halaman itu
    sendiri (wrapper `.tf-landing` di page.tsx) — bukan `html` global. Redoc di
    /docs/api mengasumsikan scroll instan/sinkron saat navigasi sidebar; dengan

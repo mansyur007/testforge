@@ -207,9 +207,15 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   AI action is opt-in per click and the features stay hidden until a key is
   configured (F-29)
 - **Light / dark theme** — switch the whole app between Light, Dark, or
-  System (follows your device) from the sidebar footer, Settings → Account,
+  System (follows your device) from the sidebar footer, Settings → Appearance,
   or the landing page header; the choice sticks via a cookie, applies before
   first paint (no flash), and works logged-out too (F-39)
+- **Colour palettes** — recolour the whole product from Settings →
+  Appearance: six built-in palettes (Violet, Ocean, Emerald, Sunset, Rose,
+  Graphite) plus a custom accent of your own, each with its own light and dark
+  version, so hue and brightness stay independent choices. Applied from the
+  same cookie-and-boot-script path as the theme, and a custom colour is
+  darkened automatically until white button text stays readable (F-46)
 - **Instance console** — a read-only `/superadmin` page listing every
   registered user across all organizations (name, email, role, org, projects,
   verification and 2FA status, signup date) with search and CSV export. It is

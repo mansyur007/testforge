@@ -4196,6 +4196,89 @@ toolbar genuinely shorter on a phone means hiding rarely-used actions (Export/Pr
 a disclosure, which is the same "invent an interaction" call deferred in F-43/F-44 and belongs
 with the `SuiteFolderGrid` work noted above.
 
+#### F-46 — Colour palettes (Settings → Appearance) `[x]`
+
+> **Status: DONE** (2026-08-22, branch `feat/theme-palettes`). Asked for as "ganti atau custom
+> tema app" — a settings page offering colour combinations beyond the white/violet/black the
+> product shipped with.
+
+F-39 tokenised every colour in the app and then used that layer for exactly one thing: light
+vs dark. F-46 adds the **second axis** — which hue — and it costs no component work, because a
+palette is simply the same `--tf-*` block written again. Seven palettes ship: **Violet** (the
+original), **Ocean**, **Emerald**, **Sunset**, **Rose**, **Graphite**, and **Custom**, each with
+its own light *and* dark version, so "how bright" and "which colour" stay independent choices
+rather than collapsing into a list of fourteen themes.
+
+**Storage** mirrors F-39 exactly: two more cookies, `tf_palette` (a palette id) and `tf_accent`
+(a bare 6-digit hex), `path=/`, `max-age=31536000`. No `User` column and no migration — the
+landing, `/login` and public-share pages have no user row to read, and a DB round trip would
+make the pre-paint boot script impossible. The same script now also writes
+`data-palette` / `data-accent` on `<html>` and picks the address-bar `theme-color` from the
+palette rather than from two hard-coded slate hexes.
+
+**Where the CSS lives, and why the selectors are shaped that way.** Each palette is two blocks
+in `src/app/globals.css`:
+
+```
+[data-palette="ocean"]:not(.dark)   /* (0,3,0) — beats :root (0,1,0)  */
+.dark[data-palette="ocean"]         /* (0,2,0) — beats .dark (0,1,0)  */
+```
+
+The `:not(.dark)` is load-bearing, not decoration. Both the class and the attribute sit on
+`<html>`, so a plain `[data-palette="ocean"]` (0,1,0) would tie with `.dark` on specificity and
+win on source order — every dark palette would silently render its light values. **TC-THEME-12**
+is the guard on exactly that. `violet` has no block at all (it *is* `:root`/`.dark`), and
+`custom` has none either, because its ramp is computed.
+
+**The custom accent is derived, not stored.** `accentTokens(hex, dark)` in `src/lib/theme.ts`
+turns one hex into the whole seven-token accent ramp for the mode being entered — hover, soft
+background, soft foreground, ring, and the light-tinted `accent-text` dark mode needs. Two
+constraints fixed the maths rather than taste: roughly **100 call sites pair `bg-accent` with
+`text-white`** (`text-accent-fg` is used nowhere), so a pale pick cannot be applied literally —
+the derivation darkens in 2% steps until white text clears **4.5:1 in light, 3.5:1 in dark**
+(picking `#ffe066` yields `163 130 0`, not yellow); and the output must be space-separated RGB
+channels, because every token resolves through `rgb(var(--tf-x) / <alpha-value>)`. The derived
+ramp is written **inline on `<html>`**, which no stylesheet block can outrank, and removed
+key-by-key when leaving Custom rather than by clearing the style attribute.
+
+**One source of truth for that maths.** It has to run identically in two places — before first
+paint, and on every later click — and a hand-written second copy in the boot-script string would
+drift silently, since a wrong accent is not an error, just a wrong colour. So the boot script is
+now *built* from its own functions:
+
+```ts
+export const THEME_BOOT_SCRIPT = `(${themeBoot.toString()})(${accentTokens.toString()}, {...});`;
+```
+
+Both functions are self-contained (no free variables): a minifier may rename their internals but
+cannot leave a dangling reference, so the stringified copy stays valid. Checked against a real
+production build rather than reasoned about — the inline script in `.next`-prerendered HTML
+parses, with SWC having mangled the locals down to single letters.
+
+**Everything else that had to move.** `ThemeSwitcher` no longer applies the theme itself: under
+a custom accent, changing the *mode* has to re-derive the *accent*, so both controls now go
+through one applier, `src/lib/theme-apply.ts`. Appearance left `/settings/account` for its own
+tab — five lines about light/dark were fine on a page about passwords and 2FA, seven palette
+cards and a colour picker were not — making `/settings/appearance` the seventh entry in
+`APP_SETTINGS_NAV`. `print.css` re-declares the rest of the accent ramp on `.tf-print-doc`, so
+paper stays brand-violet under any palette (TC-THEME-7 still passes with a Sunset dark cookie
+set). Palettes deliberately **never touch** `danger` / `warning` / `success` / `info`: those
+carry meaning rather than brand, and a red that shifts per palette is a bug report waiting to
+happen.
+
+**Guard.** `scripts/check-palettes.mjs` (wired into `npm run check:theme`, next to
+`check-theme-tokens.mjs`) fails if a palette exists in the TypeScript registry but not in the
+CSS or vice versa, or if a palette block sets `--tf-accent` while forgetting part of the ramp.
+The failure it exists to prevent is not loud: the card renders, the click registers, and
+nothing on screen changes.
+
+**Testing.** `e2e/theme.spec.ts` **TC-THEME-10 … 14** — a palette cookie applied before first
+paint while logged out; live switching plus reload plus client-side navigation; the dark-variant
+leak guard above; a pale custom accent staying legible under white text in *both* modes; and a
+custom accent surviving a reload, derived by the boot script. The seven cards are one
+`role="radiogroup"`, each card carrying an explicit `aria-label` — its label sits in a nested
+`<span>`, which a `role="radio"` does not take an accessible name from.
+
 #### A-01 … A-10 — TestForge QA Academy (in progress)
 
 > **Full work-order detail lives in [`docs/QA-ACADEMY.md`](QA-ACADEMY.md)** — Academy is a

@@ -1,6 +1,6 @@
 import { SettingsTabs } from "@/components/SettingsTabs";
 
-// One nav for the six settings pages, which until now were only reachable as
+// One nav for the settings pages, which until now were only reachable as
 // six separate sidebar entries. Collapsing them to a single "Settings" item
 // means the pages need a way to reach each other, and this layout is it.
 //
