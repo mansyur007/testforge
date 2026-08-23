@@ -122,7 +122,7 @@ banyak menghemat perdebatan Anda.
       choices: [
         { id: "a", text: "Suite smoke berisi beberapa pemeriksaan kritis yang cepat" },
         { id: "b", text: "Lebih banyak kasus regression, supaya masalah ditemukan lebih awal" },
-        { id: "c", text: "Pengujian performa atas halaman-halaman terlambat" },
+        { id: "c", text: "Pengujian performa atas halaman-halaman paling lambat" },
         { id: "d", text: "Tidak ada — suite-nya memang harus berjalan penuh setiap kali" },
       ],
       explanation:

@@ -71,9 +71,9 @@ yang lama, bulat-bulat.
 
 ## 7. Ketiadaan kesalahan adalah kekeliruan berpikir
 
-Anda bisa membangun perangkat lunak nyaris tanpa cacat yang tidak diinginkan
-siapa pun, atau yang tidak menyelesaikan masalah penggunanya. Kesesuaian dengan
-tujuan mengalahkan jumlah cacat.
+Anda bisa membangun perangkat lunak yang nyaris tanpa cacat namun tidak
+diinginkan siapa pun, atau yang tidak menyelesaikan masalah penggunanya.
+Kesesuaian dengan tujuan mengalahkan jumlah cacat.
 
 *Anda akan memerlukannya ketika:* daftar bug sudah kosong dan fiturnya masih
 saja keliru.

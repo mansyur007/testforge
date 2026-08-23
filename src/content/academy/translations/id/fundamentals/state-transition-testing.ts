@@ -30,7 +30,7 @@ Empat bahan:
 
 Digambar sebagai tabel, untuk pesanan ShopMini:
 
-| Dari \ Event | bayar | kirim | batal | refund |
+| Dari \\ Event | bayar | kirim | batal | refund |
 |---|---|---|---|---|
 | **Pending** | → Dibayar | – | → Dibatalkan | – |
 | **Dibayar** | – | → Dikirim | → Dibatalkan | → Direfund |

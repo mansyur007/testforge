@@ -4650,6 +4650,21 @@ pipeline compliant with §7.4, and no wrong answer keys in the sampled bank. The
 and a four-package remediation plan live in **[`docs/AUDIT-ACADEMY.md`](AUDIT-ACADEMY.md)**; the
 fixes themselves are deliberately *not* part of this entry, which records the review only.
 
+**Audit WP-1, 2026-08-23 — the mechanical Indonesian defects, fixed and made unrepeatable.** The
+first of the audit's four work packages. All **19 lost backslash escapes** are doubled — the two
+`toHaveURL` regexes in `assertions-and-waiting` (plus the quiz choice that quotes one) and
+`first-playwright-test`, the `testMatch` in `framework-design`, the `Dari \ Event` header of
+`state-transition-testing`, and the four trailing-backslash blocks whose line continuations were
+silently merging multi-line shell commands into one, among them **both `curl` uploads in the
+automation capstone**, the most-copied code in the Indonesian Academy. With them, the three
+meaning-shift slips: *terlambat* → *paling lambat* ("late" → "slowest"), *keenamnya* → *ketiganya*
+(the bug-finding partitions are P4–P6, not all six), and the seven-principles §7 rephrase that had
+the defects, rather than the software, going unwanted. The part that matters more than the 19 fixes
+is assertion **(8)** now in `scripts/academy-i18n-check.mjs`: every `.ts` file in *both* content
+trees is scanned for odd-length backslash runs that the template literal will eat, so the class
+cannot come back — verified by re-introducing one escape and watching `prebuild` fail on it. The
+audit's Appendix A tally now reads `0` for both trees. See `docs/AUDIT-ACADEMY.md` §4.2–4.3, §5 WP-1.
+
 ---
 
 *End of document. When a feature ships: tick its checkbox here, flip the cell in

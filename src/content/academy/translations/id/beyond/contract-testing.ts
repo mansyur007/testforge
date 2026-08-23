@@ -161,8 +161,8 @@ kirim?* Pact menyebutnya \`can-i-deploy\`, dan ia mengubah broker-nya menjadi
 gerbang deployment alih-alih laporan yang tidak dibaca siapa pun.
 
 ~~~bash
-pact-broker can-i-deploy \
-  --pacticipant orders-api --version "$GIT_SHA" \
+pact-broker can-i-deploy \\
+  --pacticipant orders-api --version "$GIT_SHA" \\
   --to-environment production
 ~~~
 

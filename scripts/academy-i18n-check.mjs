@@ -53,6 +53,19 @@
 //    the *path* decides the language. Nothing else catches it — both links
 //    render perfectly, and their labels are correctly translated.
 //
+// 8. **No lone backslash escape inside a lesson body.** Lesson bodies are
+//    template literals, so a backslash the *author* wants on the page has to be
+//    written twice; `\x` is eaten by the string parser and never reaches the
+//    reader. Translating is exactly where this goes wrong, because the escapes
+//    already exist in the English source and a translator retyping a line
+//    around them halves them by hand. Both sub-classes ship a page: mid-line,
+//    `/\\/projects/` becomes the regex `//projects/`, which is not the one the
+//    prose is discussing and is the one a learner copies; at end of line, the
+//    backslash is a JS line continuation, so a five-line `curl` renders as one
+//    merged line. The 2026-08-23 content audit found 19 of these across 7
+//    Indonesian files — including the automation capstone — and none in
+//    English. Asserted over both trees so neither can regress.
+//
 // Reads the TypeScript as text, the way `academy-checks-selftest.mjs` reads
 // `sandbox.ts` and `academy-trademark-check.mjs` reads the track files: these
 // are data modules with a fixed shape, and parsing them beats maintaining a
@@ -115,6 +128,43 @@ function lessonFiles(dir) {
       const src = readFileSync(join(dir, f), "utf8");
       return { file: join(dir, f), src, slug: slugOf(src) };
     });
+}
+
+/** Every `.ts` under `dir`, at any depth. */
+function everyTsFile(dir, out = []) {
+  if (!existsSync(dir)) return out;
+  for (const name of readdirSync(dir)) {
+    const p = join(dir, name);
+    if (statSync(p).isDirectory()) everyTsFile(p, out);
+    else if (p.endsWith(".ts")) out.push(p);
+  }
+  return out;
+}
+
+/** Backslashes that will not survive the template literal they sit in, as
+ *  `"file:line — the line"` strings. A backslash run of *odd* length has one
+ *  backslash left over after the parser has paired them off, and that one is
+ *  consumed together with whatever follows it. Runs followed by `` ` ``, `$`,
+ *  `n`, `r`, `t`, `u` or a quote are the escapes the source genuinely means;
+ *  everything else — `\/`, `\.`, `\ `, and end-of-line — is a lost one. */
+function lostEscapes(src) {
+  const hits = [];
+  src.replace(/\r\n/g, "\n").split("\n").forEach((line, i) => {
+    if (/^\s*\/\//.test(line)) return;
+    for (let j = 0; j < line.length; j++) {
+      if (line[j] !== "\\") continue;
+      let k = j;
+      while (k < line.length && line[k] === "\\") k++;
+      const odd = (k - j) % 2 === 1;
+      const rest = line.slice(k);
+      if (odd && (rest.trim() === "" || !"`$nrtu\"'".includes(line[k]))) {
+        hits.push(`${i + 1}: ${line.trim()}`);
+        break; // one report per line is enough to find it
+      }
+      j = k - 1;
+    }
+  });
+  return hits;
 }
 
 // ---------------------------------------------------------------------------
@@ -236,6 +286,24 @@ for (const track of idTrackDirs) {
       englishLinks.length === 0,
       `${englishLinks.length} link(s) to ${englishLinks.slice(0, 3).join(", ")}` +
         " — use /id/academy/…",
+    );
+  }
+}
+
+// (8). Whole-tree, both languages, index files included: the defect is an
+// authoring slip rather than a translation-specific one, and English being
+// clean today is not a reason to let it stop being clean. Reported per file
+// with the offending lines, because the fix is always "double that backslash"
+// and the only thing the author needs is which one.
+for (const [label, root] of [["en", EN_TRACKS], ["id", ID_TRACKS]]) {
+  for (const file of everyTsFile(root)) {
+    const hits = lostEscapes(readFileSync(file, "utf8"));
+    assert(
+      `${label}/${file.replace(/\\/g, "/").split("/").slice(-2).join("/")}: ` +
+        "backslashes survive the template literal",
+      hits.length === 0,
+      `${hits.length} lone escape(s) — write \\\\ for a backslash the reader ` +
+        `should see:\n      ${hits.slice(0, 5).join("\n      ")}`,
     );
   }
 }

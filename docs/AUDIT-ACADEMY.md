@@ -347,7 +347,9 @@ Three low-stakes observations:
 Sized so each is one small PR. None blocks the others except WP-1 before WP-3 (both touch the
 same ID files; do the mechanical fixes first so the terminology sweep diffs stay readable).
 
-**WP-1 · Fix the mechanical translation defects (F-MED-2/3/4, F-LOW-4).** ~1 hour.
+**WP-1 · Fix the mechanical translation defects (F-MED-2/3/4, F-LOW-4).** ~1 hour. **Done
+2026-08-23** — all four steps; the recurrence guard is assertion (8) of
+`scripts/academy-i18n-check.mjs`, and the Appendix A tally now reads 0 for both trees.
 1. Double every backslash listed in §4.3 — 19 escapes on 17 lines in 7 files. For sub-class B,
    replace each trailing `\` with `\\`; for sub-class A, replace `\/`→`\\/`, `\.`→`\\.`,
    `\ `→`\\ `. Re-run the Appendix A tally afterwards; it must report 0 for both trees.

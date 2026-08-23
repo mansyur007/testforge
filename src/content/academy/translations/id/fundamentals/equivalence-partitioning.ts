@@ -45,7 +45,7 @@ Partisinya:
 | P6 | kosong | invalid | \`""\` |
 
 Enam pengujian, bukan tak terhingga — dan perhatikan bahwa P4–P6 adalah yang
-biasanya tidak terpikirkan oleh developer, dan justru karena itulah keenamnya
+biasanya tidak terpikirkan oleh developer, dan justru karena itulah ketiganya
 menemukan bug.
 
 ## Partisi juga ada pada output

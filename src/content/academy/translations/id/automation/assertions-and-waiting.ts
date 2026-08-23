@@ -65,7 +65,7 @@ locator, ia **menjajaki berulang sampai kondisinya benar atau waktunya habis**:
 await expect(page.getByRole("alert")).toHaveText("Project created");
 await expect(page.getByRole("row")).toHaveCount(4);
 await expect(page.getByRole("button", { name: "Save" })).toBeEnabled();
-await expect(page).toHaveURL(/\/projects\/[a-z0-9]+$/);
+await expect(page).toHaveURL(/\\/projects\\/[a-z0-9]+$/);
 await expect(page.getByTestId("status-pill")).toHaveAttribute("data-state", "passed");
 ~~~
 
@@ -174,7 +174,7 @@ await created;
 
 // navigasi yang dipicu sebuah aksi
 await page.getByRole("link", { name: "Projects" }).click();
-await expect(page).toHaveURL(/\/projects/);
+await expect(page).toHaveURL(/\\/projects/);
 
 // sebuah kondisi di dalam halamannya
 await page.waitForFunction(() => document.querySelectorAll("[data-row]").length > 0);
@@ -285,7 +285,7 @@ aplikasi kedua yang harus dirawat.
         },
         {
           id: "d",
-          text: "await expect(page).toHaveURL(/\/projects/)",
+          text: "await expect(page).toHaveURL(/\\/projects/)",
         },
       ],
       explanation:
