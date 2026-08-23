@@ -2,10 +2,14 @@ import type { LessonTranslation } from "../../../types";
 
 // The chapter-quiz and practice-exam routes are English-only (`/academy/istqb/
 // practice-exam/**`), and A-08 built no `/id` equivalent of the exam simulator.
-// A markdown link to the English path is what `academy-i18n-check` forbids, and
-// a link to a `/id` path that does not exist is a 404 — so the pointer is
-// rendered as the path in a code span with a note that the simulator is in
-// English. Same treatment in every chapter lesson of this track.
+// These lessons originally rendered the pointer as an unclickable code span,
+// because rule (3) of `academy-i18n-check` forbids linking `/academy/...` from
+// an Indonesian file and a `/id` link would 404. DECISION-1 of the 2026-08-23
+// audit settled it the other way: the readers being told to go and drill were
+// the only ones who could not click through, so the check now carries an
+// explicit exception (10) for this one destination — conditional on the
+// sentence still saying the simulator is in English. Same treatment in every
+// chapter lesson of this track; do not link any other English route from here.
 export const ch1FundamentalsId: LessonTranslation = {
   slug: "ch1-fundamentals",
   title: "Bab 1 — Dasar-dasar pengujian",
@@ -251,8 +255,10 @@ Semua di atas, dimampatkan ke apa yang sebenarnya sering salah:
 ## Latih dengan drill
 
 Membaca sebuah bab bukan pengulangan belajar. Kerjakan kuis bab 1 — delapan
-pertanyaan, tanpa batas waktu, setiap jawabannya dijelaskan. Simulator ujiannya
-berbahasa Inggris; jalurnya \`/academy/istqb/practice-exam/chapter/1\`.
+pertanyaan, tanpa batas waktu, setiap jawabannya dijelaskan:
+
+**[Kuis bab 1 →](/academy/istqb/practice-exam/chapter/1)** — simulator ujiannya
+berbahasa Inggris.
 
 Nilai di bawah 6 dari 8 dan langkah yang berguna bukanlah membaca ulang halaman
 ini, melainkan membaca penjelasan pada yang Anda lewatkan lalu kembali besok.

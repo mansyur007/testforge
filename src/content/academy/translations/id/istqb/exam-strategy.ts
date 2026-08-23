@@ -164,8 +164,8 @@ terjawab pada saat itu tetap tak terjawab.
 5. **Jalani paket kedua.** Benih yang berbeda menarik kumpulan yang berbeda, jadi
    nilainya berarti sesuatu.
 
-Simulator ujiannya berbahasa Inggris; jalur paket latihan lengkapnya
-\`/academy/istqb/practice-exam\`.
+**[Kerjakan paket latihan lengkapnya →](/academy/istqb/practice-exam)** —
+simulator ujiannya berbahasa Inggris.
 
 ## Malam sebelumnya, dan pagi harinya
 

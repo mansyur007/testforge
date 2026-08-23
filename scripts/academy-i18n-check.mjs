@@ -77,6 +77,17 @@
 //    spellings stay retired, so the next slice inherits them instead of
 //    re-deciding.
 //
+// 10. **One destination is exempt from (3), on conditions.** The exam simulator
+//    is English-only and A-08 built no `/id` routes for it, so rule (3) left
+//    seven ISTQB lessons rendering their "go and drill this" pointer as an
+//    unclickable code span — the readers who most needed the link were the only
+//    ones who could not click it. DECISION-1 of the 2026-08-23 audit settled
+//    this: link the English route, keep the caveat. The exception is narrow on
+//    purpose — the `practice-exam` sub-tree only, the ID istqb track only, and
+//    only from a lesson that still tells the reader the simulator is in
+//    English. That last condition is the point: an unconditional carve-out is
+//    just rule (3) with a hole in it, and the next author will widen it.
+//
 // Reads the TypeScript as text, the way `academy-checks-selftest.mjs` reads
 // `sandbox.ts` and `academy-trademark-check.mjs` reads the track files: these
 // are data modules with a fixed shape, and parsing them beats maintaining a
@@ -86,6 +97,9 @@ import { join } from "node:path";
 
 const EN_TRACKS = "src/content/academy/tracks";
 const ID_TRACKS = "src/content/academy/translations/id";
+
+/** The single English destination an Indonesian lesson may link to — see (10). */
+const EXAM_ROUTE = /^\/academy\/istqb\/practice-exam(\/|$)/;
 
 let failed = 0;
 function assert(name, ok, detail) {
@@ -302,17 +316,45 @@ for (const track of idTrackDirs) {
         'write "diri Anda", "milik Anda", "kepada Anda"',
     );
 
-    // (3)
+    // (3), with the one carve-out of (10).
     const stripped = stripComments(l.src);
-    const englishLinks = [...stripped.matchAll(/\]\((\/academy\/[^)]*)\)/g)].map(
-      (m) => m[1],
-    );
+    const allEnglishLinks = [
+      ...stripped.matchAll(/\]\((\/academy\/[^)]*)\)/g),
+    ].map((m) => m[1]);
+    const exempt = allEnglishLinks.filter((h) => EXAM_ROUTE.test(h));
+    const englishLinks = allEnglishLinks.filter((h) => !EXAM_ROUTE.test(h));
     assert(
       `${name}: body links stay inside Indonesian`,
       englishLinks.length === 0,
       `${englishLinks.length} link(s) to ${englishLinks.slice(0, 3).join(", ")}` +
         " — use /id/academy/…",
     );
+
+    // (10) — the exam-simulator exception, and the condition attached to it.
+    // The simulator has no `/id` routes (A-08 built none, and DECISION-1 of the
+    // 2026-08-23 audit settled that building them is out of proportion to the
+    // gap). Before that decision these pointers were unclickable code spans, at
+    // the exact moment seven lessons tell the reader to go and drill — a real
+    // gap for the only readers who cannot reach the thing being recommended.
+    // The exception is deliberately narrow in both directions: only the
+    // `practice-exam` sub-tree, only from the ID istqb track, and only when the
+    // sentence carrying it still warns that what is on the other side is in
+    // English. Without that last condition the carve-out quietly becomes
+    // "linking to English is fine here", which is the rule it is an exception to.
+    if (exempt.length > 0) {
+      assert(
+        `${name}: only the exam simulator is exempt from the language rule`,
+        track === "istqb",
+        `${exempt.length} link(s) to the exam simulator from the ${track} track` +
+          " — the exception exists for the ISTQB chapter lessons only",
+      );
+      assert(
+        `${name}: says the exam simulator is in English`,
+        /berbahasa Inggris/.test(stripped),
+        "a link out of the reader's language needs the note that goes with it," +
+          ' the "simulator ujiannya berbahasa Inggris" caveat',
+      );
+    }
   }
 }
 

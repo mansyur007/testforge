@@ -281,9 +281,10 @@ kerancuan — dan itu bermata dua.
 
 ## Latih dengan drill
 
-Delapan pertanyaan, tanpa batas waktu, setiap jawabannya dijelaskan. Simulator
-ujiannya berbahasa Inggris; jalurnya
-\`/academy/istqb/practice-exam/chapter/4\`.
+Delapan pertanyaan, tanpa batas waktu, setiap jawabannya dijelaskan:
+
+**[Kuis bab 4 →](/academy/istqb/practice-exam/chapter/4)** — simulator ujiannya
+berbahasa Inggris.
 
 Hitung waktu Anda sendiri: kalau sebuah pertanyaan K3 memakan lebih dari dua
 menit di sini, ia akan memakan dua pertanyaan lain di kertas ujian yang

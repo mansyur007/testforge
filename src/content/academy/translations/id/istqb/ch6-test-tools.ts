@@ -98,8 +98,10 @@ sebuah lingkaran umpan balik, bukan tumpukan skrip.
 
 ## Latih dengan drill
 
-Delapan pertanyaan, tanpa batas waktu. Simulator ujiannya berbahasa Inggris;
-jalurnya \`/academy/istqb/practice-exam/chapter/6\`.
+Delapan pertanyaan, tanpa batas waktu:
+
+**[Kuis bab 6 →](/academy/istqb/practice-exam/chapter/6)** — simulator ujiannya
+berbahasa Inggris.
 
 Dengan hanya dua tujuan pembelajaran di belakangnya, apa pun yang kurang dari
 nilai penuh di sini layak dibayar dengan bacaan kedua atas dua tabel di atas —

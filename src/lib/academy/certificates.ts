@@ -37,7 +37,29 @@ export type CertificateKind = (typeof CERTIFICATE_KINDS)[number];
  */
 const CERTIFIABLE_EXAM_SLUGS = ["ctfl-v4-full"];
 
-const SECRET = process.env.AUTH_SECRET ?? "testforge-dev-secret";
+/**
+ * The serial's whole security property is that `AUTH_SECRET` is secret: the
+ * other three inputs (kind, refSlug, and the derivation itself) are public
+ * source, and userIds are not secrets either. Falling back to the shared dev
+ * default in production would therefore make every serial on the instance
+ * derivable by anyone who can read this repository — so production refuses.
+ *
+ * Resolved per call rather than at module load on purpose. `next build`
+ * imports this module, and a build box legitimately has no `AUTH_SECRET`;
+ * throwing at import time would turn a runtime misconfiguration into a broken
+ * build. Nothing derives a serial at build time, so the check lands exactly
+ * where the secret is actually about to be used. (Audit OBS-2.)
+ */
+function secret(): string {
+  const s = process.env.AUTH_SECRET;
+  if (s) return s;
+  if (process.env.NODE_ENV === "production")
+    throw new Error(
+      "AUTH_SECRET is not set. Certificate serials derive from it, and the " +
+        "dev fallback is public — refusing to issue or resolve a certificate."
+    );
+  return "testforge-dev-secret";
+}
 
 const deriveSerialFn = deriveSerialCore as (input: {
   secret: string;
@@ -53,7 +75,7 @@ export function deriveSerial(input: {
   kind: CertificateKind;
   refSlug: string;
 }): string {
-  return deriveSerialFn({ secret: SECRET, ...input });
+  return deriveSerialFn({ secret: secret(), ...input });
 }
 
 export const normalizeSerial = normalizeSerialCore as (raw: string) => string;

@@ -4716,6 +4716,37 @@ has banned since A-08. The clitic family (*dirimu*, *milikmu*, *bagimu*, *padamu
 because Indonesian is full of innocent words ending in `-mu`. Both new rules were verified by
 re-introducing a defect and watching `prebuild` fail. See `docs/AUDIT-ACADEMY.md` §4.2, §5 WP-3.
 
+**Audit WP-4, 2026-08-23 — the decisions, and three hardenings. The audit is closed.** The last of
+the four packages, and the one that needed the owner rather than a diff.
+
+**DECISION-1, the Indonesian exam links** — settled as option (b). Seven ISTQB lessons ended with
+"go and drill this" and then rendered the pointer as an *unclickable code span*, because the exam
+simulator is English-only and rule (3) of `academy-i18n-check` forbids linking `/academy/…` from an
+Indonesian file. The readers being told to practise were the only ones who could not click through.
+The check now carries an explicit exception **(10)**: the `practice-exam` sub-tree only, from the ID
+ISTQB track only, and only from a lesson that still says *simulator ujiannya berbahasa Inggris* —
+because an unconditional carve-out is just rule (3) with a hole in it, and the next author widens
+it. All three constraints were negative-tested. Option (a), `/id` exam routes, stays unbuilt: out of
+proportion to the gap, as the audit said.
+
+**OBS-1** — `docs/QA-ACADEMY.md` §4 gets an "as shipped" note. It had gone on describing ~70 lessons
+including *use-case testing* in T1; the Academy is 51 lessons (13 · 12 · 12 · 7 · 7) and that one
+topic is deliberately absent, because CTFL v4.0's Release Notes moved use case testing to Advanced
+Test Analyst and A-10e deleted three bank questions over exactly that. **OBS-2** — `certificates.ts`
+now refuses the shared dev secret in production instead of silently deriving every serial on the
+instance from public source plus a userId. Checked per call rather than at module load: `next build`
+imports the module and a build box legitimately has no `AUTH_SECRET`, so an import-time throw would
+turn a runtime misconfiguration into a broken build. **OBS-3** — taken rather than skipped. The
+share card now reads `Practice record · Serial …` on every certificate, not only on the no-serial
+fallback: §7.4's honesty requirement was satisfied by the *page*, but the card is what a LinkedIn or
+Slack reader sees and most never click through, and a card naming a holder and a score with no
+qualifier does the claiming on its own.
+
+With this, **all four work packages of the 2026-08-23 content audit are complete** and
+`docs/AUDIT-ACADEMY.md` is marked closed. Four of its findings are now build assertions rather than
+review promises — lost escapes (8), terminology (9), the exam-link exception (10), and the `-mu`
+register forms — which is the part that outlasts the fixes. See `docs/AUDIT-ACADEMY.md` §4.7, §5 WP-4.
+
 ---
 
 *End of document. When a feature ships: tick its checkbox here, flip the cell in

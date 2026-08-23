@@ -154,7 +154,16 @@ export default async function Image({ params }: { params: { serial: string } }) 
         </div>
 
         {/* Footer — the serial is what makes the card checkable, so it belongs
-            on the image and not only on the page. */}
+            on the image and not only on the page.
+
+            "Practice record" rides with it on every card, not only the
+            no-serial fallback (audit OBS-3). §7.4's honesty requirement is
+            satisfied by the page, but the card is what a LinkedIn or Slack
+            reader sees, and most of them never click through: a card that
+            names a holder and a score with no qualifier is doing the claiming
+            on its own. The full disclaimer stays on the page — two words here
+            are enough to stop the image overstating, and short enough not to
+            wrap at 1200px next to a 26-character serial. */}
         <div
           style={{
             display: "flex",
@@ -170,7 +179,9 @@ export default async function Image({ params }: { params: { serial: string } }) 
             testforge.emha.space
           </div>
           <div style={{ display: "flex" }}>
-            {serial ? `Serial ${serial}` : "Practice record — not a professional certification"}
+            {serial
+              ? `Practice record · Serial ${serial}`
+              : "Practice record — not a professional certification"}
           </div>
         </div>
       </div>
