@@ -239,9 +239,10 @@ mengenali satu.
 
 ## Latih dengan drill
 
-Delapan pertanyaan, tanpa batas waktu, setiap jawabannya dijelaskan. Simulator
-ujiannya berbahasa Inggris; jalurnya
-\`/academy/istqb/practice-exam/chapter/5\`.
+Delapan pertanyaan, tanpa batas waktu, setiap jawabannya dijelaskan:
+
+**[Kuis bab 5 →](/academy/istqb/practice-exam/chapter/5)** — simulator ujiannya
+berbahasa Inggris.
 
 Karena bab ini luas alih-alih dalam, pertanyaan yang terlewat di sini biasanya
 berarti sebuah topik yang sama sekali belum Anda baca alih-alih yang salah Anda

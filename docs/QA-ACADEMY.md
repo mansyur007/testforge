@@ -340,6 +340,18 @@ Plus, on existing models:
 Five tracks, ~70 lessons. Each lesson: 5–15 minutes, an "in practice" section, a 3–5 question
 self-check, and — where marked 🛠 — a sandbox task.
 
+> **As shipped (2026-08-23, audit OBS-1).** The sketch below is the plan; the Academy that shipped
+> is **51 published lessons** across the same five tracks — 13 · 12 · 12 · 7 · 7 — all of them
+> translated to Indonesian. The one named topic that is *not* in it is **use-case testing** in T1,
+> and its absence is deliberate rather than an omission: the v4.0 Release Notes removed use case
+> testing from Foundation Level (it lives in Advanced Test Analyst now), and v4.0 is the syllabus
+> T5 and the 255-question bank are built against — A-10e deleted three bank questions over exactly
+> this, and it would be odd to keep teaching in T1 what the bank was corrected for asking.
+> Everything else in the sketch shipped. The ~70 figure was an estimate made before any lesson was
+> written rather than a target that was missed — the published lessons run longer than the plan
+> assumed. Treat the list below as the *shape* of the curriculum, and
+> `src/content/academy/tracks/**` as its contents.
+
 **T1 — QA Fundamentals** *(zero → able to apply)*
 SDLC & STLC · what a tester actually does day to day · test levels (unit/integration/system/UAT) ·
 test types (functional, non-functional, regression, smoke) · the 7 testing principles · test design

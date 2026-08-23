@@ -170,9 +170,10 @@ ketika spesifikasinya sudah usang atau tidak ada.
 
 ## Latih dengan drill
 
-Delapan pertanyaan, tanpa batas waktu, setiap jawabannya dijelaskan. Simulator
-ujiannya berbahasa Inggris; jalurnya
-\`/academy/istqb/practice-exam/chapter/2\`.
+Delapan pertanyaan, tanpa batas waktu, setiap jawabannya dijelaskan:
+
+**[Kuis bab 2 →](/academy/istqb/practice-exam/chapter/2)** — simulator ujiannya
+berbahasa Inggris.
 
 Kalau Anda melewatkan satu, periksa apakah kekeliruannya berupa sebuah fakta atau
 sebuah *kata* — di bab ini nyaris selalu katanya.

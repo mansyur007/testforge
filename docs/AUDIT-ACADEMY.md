@@ -15,6 +15,13 @@
 > slips**, and **one terminology inconsistency** ("laporan bug" vs "laporan cacat" vs "catatan
 > cacat"). Everything else in this document is either a decision to make or an observation.
 > Remediation is planned as four small work packages in §5.
+>
+> **Status: closed, 2026-08-23.** All four work packages shipped the same day the audit was
+> written — see the per-package notes in §5. Every finding is either fixed or, where it was a
+> decision, settled by the owner and recorded. Four of them are now build-asserted rather than
+> trusted to review: lost escapes (8), terminology (9), the exam-link exception and its caveat
+> (10), and the `-mu` register forms. The findings below are kept in the past tense they were
+> written in; treat this document as the record of what was found, and §5 as what was done.
 
 ---
 
@@ -399,6 +406,8 @@ sweep also surfaced one register slip no rule covered — *tempatkan **dirimu***
    worklist.
 
 **WP-4 · Decisions and small hardenings (DECISION-1, OBS-1/2/3).** ~1 hour once decided.
+**Done 2026-08-23** — all four. DECISION-1 settled as option (b) by the owner; OBS-3 taken rather
+than skipped. With this, all four work packages are complete and the audit is closed.
 1. Settle DECISION-1 (Indonesian exam links) — recommended option (b): allow
    `/academy/istqb/practice-exam` links from ID istqb files via an explicit allowlist in
    `academy-i18n-check.mjs`, and convert the 7 code spans back into links, keeping the

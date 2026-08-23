@@ -148,9 +148,10 @@ faktor kegagalan.
 
 ## Latih dengan drill
 
-Delapan pertanyaan, tanpa batas waktu, setiap jawabannya dijelaskan. Simulator
-ujiannya berbahasa Inggris; jalurnya
-\`/academy/istqb/practice-exam/chapter/3\`.
+Delapan pertanyaan, tanpa batas waktu, setiap jawabannya dijelaskan:
+
+**[Kuis bab 3 →](/academy/istqb/practice-exam/chapter/3)** — simulator ujiannya
+berbahasa Inggris.
 
 Bab ini lebih menghadiahi bacaan kedua daripada bab mana pun — daftarnya pendek,
 dan pertanyaannya diambil nyaris langsung darinya.
