@@ -644,6 +644,14 @@ export function ExamRunner({
   }
 
   // ------------------------------------------------------------- result ---
+  //
+  // **Reaching this phase means the submitter was anonymous.** `submitExamAction`
+  // writes an `ExamAttempt` and hands back `attemptId` whenever a session
+  // exists, and `doSubmit` navigates to the durable
+  // `/academy/istqb/practice-exam/[attemptId]` view rather than falling through
+  // to here. So this screen is the *anonymous* result view, and the sign-up CTA
+  // at the bottom needs no session prop to be correct. Written down because it
+  // does not look that way locally — #230 spent a while re-deriving it.
   if (phase === "result" && result && !("error" in result)) {
     return (
       <section data-testid="exam-result" className="space-y-6">

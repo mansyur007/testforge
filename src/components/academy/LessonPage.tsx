@@ -180,12 +180,23 @@ export async function AcademyLessonPage({
                       {t.lesson.openSandbox}
                     </Link>
                   )}
-                  <Link
-                    href="/signup"
-                    className="text-xs text-content-muted underline"
-                  >
-                    {t.lesson.orSignUp}
-                  </Link>
+                  {/* Only ever an offer to the signed-out. `openSandboxTask`
+                      calls `requireSession()`, so this is the polite version of
+                      the redirect an anonymous reader hits by pressing the
+                      button beside it — and nonsense to someone who already has
+                      an account, which is what it was until #230. Nothing else
+                      in the callout is gated: the exercise is the same for
+                      both, and `RoadmapPage` gates its own signup line exactly
+                      this way. */}
+                  {!session && (
+                    <Link
+                      href="/signup"
+                      data-testid="lesson-signup-link"
+                      className="text-xs text-content-muted underline"
+                    >
+                      {t.lesson.orSignUp}
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

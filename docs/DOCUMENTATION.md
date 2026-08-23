@@ -4597,6 +4597,27 @@ breakdown (8 K1 / 24 K2 / 8 K3) is recorded but deliberately not wired into the 
 change which questions a stored `seed` re-derives, which is what makes a past attempt reproducible
 and a certificate checkable. See `docs/QA-ACADEMY.md` §5.1.
 
+**A-09c, 2026-08-23 (issue #230) — the session reaches the page body, not just its frame.** A-09
+and A-09b made every Academy route read `getSession()`, and used it for exactly one thing: choosing
+between `AuthedAppShell` and the public chrome. Neither said out loud that the CTAs planted inside
+the page *body* are a second, independent decision — and on the hands-on exercise callout that
+decision was never made, so a reader who was already signed in was still offered "or create a free
+account first" pointing at `/signup`. In `LessonPage.tsx` the `session` read at the top of the file
+was used once, hundreds of lines below, to pick the shell; the callout was guarded only by
+`{lesson.sandbox && …}` and its link sat outside the `sandboxTask ? … : …` ternary, so it rendered
+for every reader of a hands-on lesson in both languages. The link earns its place for a guest —
+`openSandboxTask` calls `requireSession()`, so it is the polite version of the redirect that
+"Start this exercise" would hit — and `RoadmapPage` already gates its equivalent line with
+`{!session && …}`, which is what makes this an oversight rather than a decision. The fix is that
+same guard, and nothing else in the callout changes: the exercise is identical for both audiences.
+Two near-misses were checked and left alone, written down so the next audit stops where this one
+did — `ExamRunner`'s "Save this attempt — sign up" is unreachable while signed in (a session makes
+`submitExamAction` return an `attemptId`, and the runner navigates to the durable attempt view
+instead of rendering the inline result, so reaching that screen *implies* an anonymous submitter —
+an invariant that now carries a comment rather than a prop), and the ISTQB exam sub-tree keeps its
+own standalone chrome on purpose, since `.../practice-exam/[attemptId]` is session-only and wears
+the same bare frame. **TC-E2E-138**. See `docs/QA-ACADEMY.md` § A-09c.
+
 ---
 
 *End of document. When a feature ships: tick its checkbox here, flip the cell in
