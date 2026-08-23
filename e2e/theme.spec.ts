@@ -123,6 +123,13 @@ function token(page: import("@playwright/test").Page, name: string) {
   );
 }
 
+/** The mode switcher inside the page, not the one in the sidebar footer:
+ *  /settings/appearance is the one route that renders both, so a bare
+ *  getByTestId("theme-dark") is a strict-mode violation there. */
+function mode(page: import("@playwright/test").Page, id: "light" | "system" | "dark") {
+  return page.getByRole("main").getByTestId(`theme-${id}`);
+}
+
 test("TC-THEME-10 a palette cookie is applied before first paint, logged out", async ({
   context,
   page,
@@ -161,14 +168,14 @@ test("TC-THEME-12 each palette has its own dark variant, and light never leaks i
   await login(page);
   await page.goto("/settings/appearance");
   await page.getByTestId("palette-ocean").click();
-  await page.getByTestId("theme-dark").click();
+  await mode(page, "dark").click();
 
   // The `:not(.dark)` guard in globals.css: without it the light block would
   // win over `.dark` on source order alone, both sitting on <html>.
   expect(await token(page, "--tf-canvas")).toBe(OCEAN_DARK_CANVAS);
   expect(await token(page, "--tf-accent")).not.toBe(OCEAN_LIGHT_ACCENT);
 
-  await page.getByTestId("theme-light").click();
+  await mode(page, "light").click();
   expect(await token(page, "--tf-accent")).toBe(OCEAN_LIGHT_ACCENT);
   await page.getByTestId("palette-reset").click();
 });
@@ -197,14 +204,14 @@ test("TC-THEME-13 a custom accent is derived for both modes and keeps white text
   };
 
   expect(await contrast()).toBeGreaterThanOrEqual(4.5); // light mode threshold
-  await page.getByTestId("theme-dark").click();
+  await mode(page, "dark").click();
   expect(await contrast()).toBeGreaterThanOrEqual(3.5); // dark mode threshold
 
   // The ramp is written inline on <html> — that is what outranks every block.
   const inline = await page.getAttribute("html", "style");
   expect(inline).toContain("--tf-accent-soft");
 
-  await page.getByTestId("theme-light").click();
+  await mode(page, "light").click();
   await page.getByTestId("palette-reset").click();
   expect(await page.getAttribute("html", "style")).toBe("");
 });
