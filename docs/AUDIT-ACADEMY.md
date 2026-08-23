@@ -23,8 +23,9 @@
 > (10), and the `-mu` register forms. The findings below are kept in the past tense they were
 > written in; treat this document as the record of what was found, and §5 as what was done.
 >
-> **The two residual risks the audit accepted rather than retired are being worked off in §7**,
-> which is appended after closure and does not revise anything above it.
+> **The two residual risks the audit accepted rather than retired were worked off on 2026-08-24
+> and are recorded in §7**, which is appended after closure and does not revise anything above it.
+> With those two passes done, nothing in this document is still outstanding.
 
 ---
 
@@ -446,8 +447,13 @@ option a) — out of proportion to the gap; and any change to the exam bank (not
 The audit closed with every finding fixed or decided, but it named **two residual risks** rather
 than retiring them: the Indonesian T4–T5 lessons had been sampled rather than pair-read (§2, Pass 1),
 and roughly 240 of the 255 exam answer keys had never been individually re-derived (§4.6). Each
-subsection below is the record of one pass at one of them. They are follow-ups, not a re-audit:
-nothing in §1–§6 is revised, and anything a pass changes is stated here.
+subsection below is the record of one pass at one of them, and **both passes are done**. They are
+follow-ups, not a re-audit: nothing in §1–§6 is revised, and anything a pass changes is stated here.
+
+Between them the two passes found ten defects in material the audit had already blessed — nine
+small translation slips and one wrong exam answer key — which is roughly what a sampled read
+should be expected to leave behind, and the reason the audit named the two risks instead of
+declaring them closed.
 
 ### 7.1 The Indonesian T4–T5 full pair read — done 2026-08-24
 
