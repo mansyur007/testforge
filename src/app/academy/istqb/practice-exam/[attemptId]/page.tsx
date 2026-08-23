@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Logo } from "@/components/icons";
+import { getSession } from "@/lib/auth";
+import { AcademyFrame } from "@/components/academy/Frame";
+import { AcademyCrumbs } from "@/components/academy/Crumbs";
+import { academyChrome } from "@/lib/academy/chrome";
 import { ISTQB_DISCLAIMER } from "@/content/academy";
 import { getExamAttempt } from "@/app/actions/academy";
 
@@ -12,6 +15,12 @@ import { getExamAttempt } from "@/app/actions/academy";
 // instead of navigating anywhere, which is the interpretation this session
 // took of the route table's "session or signed ticket" auth — see the A-06
 // entry in docs/QA-ACADEMY.md for why.
+//
+// A-09d: the session `getExamAttempt` already required, read again here so the
+// page can wear the app shell the rest of the Academy wears. The reader of this
+// page always has one — `getExamAttempt` calls `requireSession()` before it
+// returns anything — so the guest branch of `AcademyFrame` is unreachable
+// rather than a second design to keep working.
 
 export default async function ExamAttemptPage({
   params,
@@ -19,22 +28,26 @@ export default async function ExamAttemptPage({
   params: { attemptId: string };
 }) {
   const attempt = await getExamAttempt(params.attemptId);
+  const session = await getSession();
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-12">
-      <div className="mb-8 flex items-center justify-between">
-        <Logo size="sm" />
-        <Link href="/academy/me" className="text-sm text-accent-text hover:underline">
-          My progress
-        </Link>
-      </div>
+    <AcademyFrame session={session}>
+      <AcademyCrumbs
+        trail={[
+          { name: academyChrome.en.brand, href: "/academy" },
+          { name: "Practice exam", href: "/academy/istqb/practice-exam" },
+          { name: "Result" },
+        ]}
+      />
 
       {"error" in attempt ? (
         notFound()
       ) : (
         <>
-          <h1 className="text-2xl font-bold text-content-strong sm:text-3xl">
-            {attempt.templateSlug === "ctfl-v4-full" ? "Practice exam result" : "Chapter quiz result"}
+          <h1 className="mt-9 font-display text-[34px] font-bold leading-none tracking-tight text-content-strong sm:text-[40px]">
+            {attempt.templateSlug === "ctfl-v4-full"
+              ? "Practice exam result"
+              : "Chapter quiz result"}
           </h1>
 
           <div
@@ -161,6 +174,6 @@ export default async function ExamAttemptPage({
           </p>
         </>
       )}
-    </main>
+    </AcademyFrame>
   );
 }

@@ -1,22 +1,25 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { Logo } from "@/components/icons";
+import { getSession } from "@/lib/auth";
 import { BetaChip } from "@/components/BetaChip";
+import { AcademyFrame } from "@/components/academy/Frame";
+import { AcademyCrumbs } from "@/components/academy/Crumbs";
 import { ExamRunner } from "@/components/academy/ExamRunner";
 import { ISTQB_DISCLAIMER } from "@/content/academy";
 import { CHAPTER_QUIZZES } from "@/content/academy/exams";
+import { academyChrome } from "@/lib/academy/chrome";
 import { canonical, INDEXABLE } from "@/lib/seo";
 
 // A-06: the six untimed chapter quizzes, reusing the exam engine with a
-// single-chapter blueprint (docs/QA-ACADEMY.md §5.2). `dynamicParams = false`
-// gives the same "no route at all for anything not listed" guarantee A-01
-// established for draft lessons — there is no seventh chapter.
-
-export function generateStaticParams() {
-  return CHAPTER_QUIZZES.map((q) => ({ chapter: String(q.chapters[0].chapter) }));
-}
-export const dynamicParams = false;
+// single-chapter blueprint (docs/QA-ACADEMY.md §5.2).
+//
+// A-09d: `generateStaticParams` / `dynamicParams = false` are gone, for the
+// reason A-09b gives for the track and lesson pages — reading the session
+// forces dynamic rendering, and the two cannot coexist. Neither was what
+// produced the 404 for a seventh chapter: `findQuiz()` already returns
+// undefined and this page already calls `notFound()`. The guarantee is
+// unchanged, now evaluated per request rather than against a build-time list.
+export const dynamic = "force-dynamic";
 
 function findQuiz(chapterParam: string) {
   const chapter = Number(chapterParam);
@@ -34,27 +37,27 @@ export function generateMetadata({ params }: { params: { chapter: string } }): M
   };
 }
 
-export default function ChapterQuizPage({ params }: { params: { chapter: string } }) {
+export default async function ChapterQuizPage({ params }: { params: { chapter: string } }) {
   const quiz = findQuiz(params.chapter);
   if (!quiz) notFound();
 
-  return (
-    <main className="mx-auto max-w-3xl px-4 py-12">
-      <div className="mb-8 flex items-center justify-between">
-        <Logo size="sm" />
-        <Link
-          href="/academy/istqb/practice-exam"
-          className="text-sm text-accent-text hover:underline"
-        >
-          Back to the practice exam
-        </Link>
-      </div>
+  const session = await getSession();
 
-      <h1 className="flex flex-wrap items-center gap-3 text-2xl font-bold text-content-strong sm:text-3xl">
+  return (
+    <AcademyFrame session={session}>
+      <AcademyCrumbs
+        trail={[
+          { name: academyChrome.en.brand, href: "/academy" },
+          { name: "Practice exam", href: "/academy/istqb/practice-exam" },
+          { name: `Chapter ${quiz.chapters[0].chapter}` },
+        ]}
+      />
+
+      <h1 className="mt-9 flex flex-wrap items-center gap-3 font-display text-[34px] font-bold leading-none tracking-tight text-content-strong sm:text-[40px]">
         {quiz.title}
         <BetaChip className="translate-y-0.5" />
       </h1>
-      <p className="mt-2 text-sm text-content">
+      <p className="mt-4 text-[15px] text-content">
         Untimed. Aligned to the CTFL v4.0 syllabus — not an ISTQB product.
       </p>
 
@@ -73,6 +76,6 @@ export default function ChapterQuizPage({ params }: { params: { chapter: string 
       <p className="mt-10 text-xs leading-relaxed text-content-muted">
         {ISTQB_DISCLAIMER}
       </p>
-    </main>
+    </AcademyFrame>
   );
 }

@@ -2228,3 +2228,65 @@ test(`TC-${TC}-138 The hands-on callout offers a signup link to signed-out reade
   await expect(callout).toBeVisible();
   await expect(offer).toHaveCount(0);
 });
+
+test(`TC-${TC}-139 A signed-in reader keeps the app shell across the whole exam sub-tree`, async ({
+  page,
+}) => {
+  // A-09d: the gap A-09c found and left open. Every other Academy route chose
+  // its frame from the session; these three chose neither and rendered their
+  // own. Asserted on all three because they are three separate page files —
+  // the sub-tree was internally consistent before this and must stay so after.
+  await login(page);
+
+  for (const path of [
+    "/academy/istqb/practice-exam",
+    "/academy/istqb/practice-exam/chapter/1",
+  ]) {
+    await page.goto(path);
+    await expect(page.getByTestId("app-sidebar")).toBeVisible();
+    await expect(page.getByTestId("nav-academy")).toBeVisible();
+    // The exam itself is untouched by the frame it sits in.
+    await expect(page.getByTestId("exam-start")).toBeVisible();
+  }
+
+  // The result page is session-only, so it has no guest half to check. Reached
+  // by taking the quiz rather than by fabricating a row: an attempt id is only
+  // ever handed out by `submitExamAction`.
+  await page.click('[data-testid="exam-begin"]');
+  await answerAllQuestions(page, 8);
+  await page.click('[data-testid="exam-review-submit"]');
+  await page.click('[data-testid="exam-confirm-submit-btn"]');
+  await page.waitForURL(/\/academy\/istqb\/practice-exam\/[a-z0-9]+$/);
+  await expect(page.getByTestId("app-sidebar")).toBeVisible();
+  await expect(page.getByTestId("exam-attempt-headline")).toBeVisible();
+});
+
+test(`TC-${TC}-140 A guest on the exam sub-tree gets the public chrome, and the exam still renders`, async ({
+  page,
+}) => {
+  // The other half of TC-139, and the one that matters for SEO: both pages are
+  // INDEXABLE, and losing the prerender to the session read must not cost a
+  // crawler the blueprint it comes for.
+  for (const path of [
+    "/academy/istqb/practice-exam",
+    "/academy/istqb/practice-exam/chapter/1",
+  ]) {
+    await page.goto(path);
+    await expect(page.getByTestId("app-sidebar")).toHaveCount(0);
+    await expect(page.getByRole("link", { name: "Log in" })).toBeVisible();
+    await expect(page.getByTestId("exam-start")).toBeVisible();
+    // The way back out, now that the standalone "Back to …" header is gone.
+    // Located by href inside the breadcrumb rather than by accessible name:
+    // the row is `text-transform: uppercase`, and Chromium folds that into the
+    // computed name, so "QA Academy" would not match what the AX tree carries.
+    await expect(
+      page.locator('nav[aria-label="Breadcrumb"] a[href="/academy"]'),
+    ).toBeVisible();
+  }
+
+  // The 404 for a seventh chapter used to come from `dynamicParams = false`,
+  // which cannot coexist with the session read (A-09b). It now comes from the
+  // page's own `notFound()`, which is what the guarantee always rested on.
+  const missing = await page.goto("/academy/istqb/practice-exam/chapter/7");
+  expect(missing?.status()).toBe(404);
+});

@@ -2236,11 +2236,68 @@ one did:
   is internally consistent and reads as a distraction-free exam room rather than a gap. Pulling it
   into the shell would also cost the chapter quizzes their prerender (`dynamicParams = false` cannot
   coexist with `force-dynamic` — A-09b) for no bug. Open as a product question, not a defect.
+  **Closed as a defect by the owner on 2026-08-23 — see A-09d.**
 
 **Verified:** **TC-E2E-138** — the callout's `/signup` link present for a guest in both languages,
 absent for a signed-in reader in both, with "Start this exercise" still there. The link check is
 scoped to the callout rather than the page: the signed-out header carries its own Sign up button, so
 a page-wide assertion would pass for the wrong reason in one half and fail in the other.
+
+### A-09d — The exam sub-tree joins the rest of the Academy `[x]`
+
+> **Status: DONE** (2026-08-23, branch `fix/academy-exam-frame`). The owner asked why
+> `/academy/istqb/practice-exam` "looks different from everything else". It did, in five separate
+> ways, and A-09c had recorded four of them as a deliberate exception (above) rather than a defect.
+> That call is now reversed: the exam room is a page of the Academy, and a reader crossing into it
+> from the roadmap should not feel they have left the site.
+
+**What was different**, all of it inherited from A-06 and untouched by A-09b and A-12:
+
+| | The rest of the Academy | The three exam routes (before) |
+|---|---|---|
+| Column | `ACADEMY_SHELL` — 65rem | `max-w-3xl` — 48rem |
+| Signed-in frame | `AuthedAppShell` (sidebar, command palette, coach) | none — the bare page, for everyone |
+| Signed-out frame | `AcademyPublicChrome` (Log in / Sign up) | a hand-rolled `Logo` + "Back to …" header |
+| Where you are | ruled mono breadcrumb | nothing; the back link had to say it |
+| Type scale | A-12's — h1 34/40px display, body 15px | A-06's — h1 24/30px, body 14px |
+
+**What shipped:**
+
+- **`AcademyFrame`** (`src/components/academy/Frame.tsx`) — the session→frame choice A-09/A-09b
+  established, as a component instead of a tail copied into three page files. All six Academy
+  surfaces now end with it, so "every Academy page picks its frame from the session" is one file to
+  read rather than six to compare. This is the actual fix: the sub-tree drifted because there was
+  nothing to drift *from*.
+- **`AcademyCrumbs`** (`src/components/academy/Crumbs.tsx`) — the ruled breadcrumb the track and
+  lesson pages open with. It replaces the back link rather than deleting it: inside the shell a
+  standalone `Logo` is a second logo, but the way out of the exam still has to exist, and a
+  breadcrumb is the same navigation in the vocabulary the rest of the Academy already uses.
+- The three pages keep every word of their content, their `data-testid`s, and the exam engine
+  untouched. What changed is the frame around them and the type scale inside them.
+
+**Cost paid knowingly, and it is A-09b's exactly.** The chapter quizzes lose their prerender:
+reading the session forces dynamic rendering, `dynamicParams = false` cannot coexist with
+`force-dynamic`, and both are gone with `generateStaticParams`. Six pages that used to build as
+static HTML are now rendered per request. The 404 for a seventh chapter is unaffected — it never
+came from `dynamicParams`, it comes from `findQuiz()` returning undefined and the page calling
+`notFound()`, which now happens per request instead of against a build-time list. `/academy/istqb/
+practice-exam` was already dynamic in everything but the Next sense; it now says so with an
+explicit `export const dynamic = "force-dynamic"`.
+
+**The exam-room argument, answered rather than dismissed.** A-09c's defence of the bare chrome was
+that a distraction-free page is right for a timed exam. That is a good argument about the *taking*
+of an exam and a bad one about the page you land on from search, or the result page you read
+afterwards — and it was being applied to all three. If focus during the 60 minutes turns out to
+matter, the place to solve it is `ExamRunner`'s `phase === "taking"`, which already owns the screen,
+not the route's frame.
+
+**Verified:** **TC-E2E-139** (signed-in: the sidebar on the full paper, on a chapter quiz, and on
+the attempt page reached by actually taking a quiz) and **TC-E2E-140** (guest: public chrome, the
+blueprint still rendered on both indexable routes, and chapter 7 still a 404). Full regression:
+`e2e/academy.spec.ts` 45/49 — the four reds are `main`'s and not this branch's: **TC-E2E-117** is
+the local-only `@vercel/og` font failure, and **TC-E2E-100/101/131** fail identically on a clean
+checkout (confirmed by stashing this branch and re-running them). `tsc --noEmit` and
+`next lint` clean.
 
 ### A-10 — Exam integrity: answer-key balance, single-use tickets, resumable attempts `[x]`
 
