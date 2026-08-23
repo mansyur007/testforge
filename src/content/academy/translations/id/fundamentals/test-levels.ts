@@ -70,7 +70,7 @@ Bentuk yang umum:
 - **Operational acceptance** — bisakah kita mencadangkannya, memulihkannya,
   memantaunya, men-deploy-nya pukul 2 pagi? (Dicintai tim ops, dilupakan semua
   orang lain.)
-- **Acceptance kontraktual / regulatif** — daftar periksa yang bisa berujung
+- **Acceptance kontraktual / regulatif** — checklist yang bisa berujung
   tuntutan hukum.
 - **Alpha / beta** — alpha di tempat pengembang, beta di dunia nyata.
 

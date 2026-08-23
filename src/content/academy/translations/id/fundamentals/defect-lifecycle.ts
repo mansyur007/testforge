@@ -146,7 +146,7 @@ lakukan.
         { id: "d", text: "Angkanya tidak bisa dibandingkan antarproyek" },
       ],
       explanation:
-        "Pengujian yang paling berharga sering kali tidak menghasilkan laporan cacat sama sekali — sebuah pertanyaan saat refinement yang menghentikan cacat itu dibangun. Hitungan menghadiahi kuantitas di atas pencegahan, jadi metriknya diam-diam mendorong orang menjauh dari pekerjaan yang paling berarti.",
+        "Pengujian yang paling berharga sering kali tidak menghasilkan laporan bug sama sekali — sebuah pertanyaan saat refinement yang menghentikan cacat itu dibangun. Hitungan menghadiahi kuantitas di atas pencegahan, jadi metriknya diam-diam mendorong orang menjauh dari pekerjaan yang paling berarti.",
     },
   ],
 };

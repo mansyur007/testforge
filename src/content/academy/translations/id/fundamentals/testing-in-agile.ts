@@ -107,7 +107,7 @@ alih-alih alasan — dan itu versi profesional dari prinsip 2.
 ## Di mana track ini berakhir
 
 Sekarang Anda punya kosakatanya dan empat teknik perancangan intinya, dan Anda
-bisa menulis test case serta laporan cacat yang tahan ditinjau. Itu
+bisa menulis test case serta laporan bug yang tahan ditinjau. Itu
 sungguh-sungguh standar untuk sebuah posisi QA junior.
 
 Berikutnya adalah mengerjakannya dalam kondisi nyata: perencanaan, pengujian

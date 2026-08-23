@@ -172,7 +172,7 @@ Soal data yang dibangkitkan, satu aturan menghemat berjam-jam: **pengujian yang
 gagal harus bisa direproduksi.** Catat nilai yang dipakai, atau beri benih
 pembangkitnya per pengujian sehingga pengujian yang sama menghasilkan data yang
 sama saat dijalankan ulang. "Ia gagal sekali dengan nama yang sudah tidak saya
-punya" bukan laporan cacat yang bisa ditindaklanjuti siapa pun.
+punya" bukan laporan bug yang bisa ditindaklanjuti siapa pun.
 
 ## Jangan pernah mengarahkan sebuah suite ke produksi
 
@@ -303,7 +303,7 @@ selama ini disandari pelajaran ini untuk persiapan.
         },
       ],
       explanation:
-        "Menyiapkan lewat API lebih cepat dan menjaga pengujiannya gagal hanya karena alasan yang menjadi pokoknya — kliklah menembus formulirnya hanya di pengujian yang pokoknya adalah alur pembuatan itu. Membatasi asersi pada data Anda sendiri membuat suite-nya toleran terhadap sisa-sisa yang cepat atau lambat gagal disingkirkan pembersihannya, sementara hitungan global rusak oleh residu apa pun. Dan keterulangan adalah yang memisahkan laporan cacat dari anekdot: pembangkit tanpa benih yang gagal sekali dengan nilai yang sudah tidak Anda punya tidak memberi siapa pun apa pun untuk ditindaklanjuti. Akun bersama itulah jebakannya — ia bekerja sampai satu pengujian mengubah sebuah pengaturan atau kata sandi, dan lalu ia menghasilkan persis kegagalan lulus-sendirian-gagal-bersama yang membuka pelajaran ini.",
+        "Menyiapkan lewat API lebih cepat dan menjaga pengujiannya gagal hanya karena alasan yang menjadi pokoknya — kliklah menembus formulirnya hanya di pengujian yang pokoknya adalah alur pembuatan itu. Membatasi asersi pada data Anda sendiri membuat suite-nya toleran terhadap sisa-sisa yang cepat atau lambat gagal disingkirkan pembersihannya, sementara hitungan global rusak oleh residu apa pun. Dan keterulangan adalah yang memisahkan laporan bug dari anekdot: pembangkit tanpa benih yang gagal sekali dengan nilai yang sudah tidak Anda punya tidak memberi siapa pun apa pun untuk ditindaklanjuti. Akun bersama itulah jebakannya — ia bekerja sampai satu pengujian mengubah sebuah pengaturan atau kata sandi, dan lalu ia menghasilkan persis kegagalan lulus-sendirian-gagal-bersama yang membuka pelajaran ini.",
     },
   ],
 };

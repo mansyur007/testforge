@@ -1,0 +1,83 @@
+# TestForge QA Academy — Indonesian glossary
+
+> **Decided:** 2026-08-23 (owner) · **Scope:** `src/content/academy/translations/id/**` — all 51
+> lesson translations, the five track `index.ts` files, and any slice added after this date.
+> **Enforced by:** assertion (9) of `scripts/academy-i18n-check.mjs`, which runs in `prebuild`.
+>
+> This document exists so the next translation slice stops re-deciding what the last one decided.
+> Written after the 2026-08-23 content audit (`docs/AUDIT-ACADEMY.md` §4.2) found the same concept
+> translated three different ways across the tree — **not** because any of the losing spellings was
+> bad Indonesian. They were all fine. That is exactly the problem: a reviewer reads one lesson and
+> sees nothing wrong, and the split only exists when you read fifty-one.
+
+---
+
+## 1. The standing rule
+
+**Common English QA and developer terms stay in English.** Indonesian practitioners say *test case*,
+*locator*, *pipeline*, *pull request*, *environment*, *smoke test*. Translating those into calques
+makes the material read like a textbook nobody works from, and — worse for a course — leaves the
+reader unable to recognise the word when they meet it in a tool, a job ad, or the ISTQB exam.
+
+Everything below is either an application of that rule or a deliberate exception to it.
+
+## 2. Decisions
+
+### 2.1 One canonical form (the retired spellings are build-enforced)
+
+| Concept | Use | Retired | Why |
+|---|---|---|---|
+| bug report | **laporan bug** | ~~laporan cacat~~, ~~catatan cacat~~ | Matches the kept-English rule and everyday Indonesian QA speech. The `bug-reports` lesson was already titled this way while the lesson pointing *at* it said "laporan cacat". |
+| bug report, ISTQB track | **defect report** (English) | ~~laporan cacat~~ | Syllabus term. The exam says *defect report*, and the ISTQB track already keeps *Defect management*, *Test execution*, *coverage item* in English. Repeat mentions may use *laporan bug*. |
+| stakeholder | **stakeholder** | ~~pemangku kepentingan~~ | The English term was already dominant outside the ISTQB track (10 vs 6); *pemangku kepentingan* is government-register Indonesian. |
+| hook | **hook** | ~~kait~~ | One stray calque in `contract-testing`'s provider states, against five English uses elsewhere. |
+| checklist | **checklist** | ~~daftar periksa~~ | One stray in `test-levels`, against ten English uses. |
+| sanity check | **sanity check** | ~~pemeriksaan penyehat~~ | An awkward coinage — *penyehat* means "one who makes healthy". Nobody says this. |
+
+### 2.2 English, with an Indonesian gloss allowed after first use
+
+Introduce in English so the reader can recognise the term elsewhere; use the Indonesian afterwards
+if the sentence reads better for it.
+
+| Concept | First use | Afterwards |
+|---|---|---|
+| boundary value | **boundary value** | *nilai batas* |
+| decision table | **decision table** | *tabel keputusan* — the existing `(tabel keputusan)` gloss in `decision-tables` is the pattern to copy |
+
+### 2.3 Indonesian, with named English terms kept intact
+
+| Concept | Use | But keep English in |
+|---|---|---|
+| assertion | **asersi** | the named Playwright APIs — *web-first assertion*, *soft assertion* |
+| coverage | **cakupan** | named metrics — *statement/branch/path/unit coverage*, ISTQB's *coverage item*. Inside a passage built on those metrics, stay English throughout rather than alternating |
+| branch | *cabang* / *bercabang* for control flow | **branch** for git |
+
+### 2.4 Formal register — kept as is
+
+`berkas` (file), `basis data` (database), `unggah` / `unduh` (upload / download).
+
+These sit at the formal end of Indonesian tech writing, where practitioner speech is mostly
+*file* / *database* / *upload*. The owner's decision (2026-08-23) is to **keep them**: they are
+already consistent across all 51 lessons, the audit rates the choice a matter of style rather than a
+defect, and switching would be a ~110-occurrence sweep that shifts the Academy's whole voice for no
+correctness gain. Revisit only as a deliberate voice change, never one lesson at a time.
+
+## 3. Register (decided 2026-08-18, restated here)
+
+- **Anda**, always capitalised — it is a proper pronoun, not a lowercase `you`.
+- Never **kamu**, and never its clitic family: *dirimu*, *milikmu*, *bagimu*, *padamu*, *kepadamu*,
+  *denganmu*, *untukmu*, *kau*. Write *diri Anda*, *milik Anda*, *kepada Anda*. The `-mu` forms
+  outlived the original `kamu` rule by a year — `contract-testing` carried *tempatkan dirimu* until
+  the 2026-08-23 sweep — so they are now asserted separately.
+- **Code samples stay in English.** Identifiers, test names, string literals, config keys. Learners
+  will meet English tooling; a translated `test("...")` teaches them the wrong thing to type.
+  Comments *inside* code blocks are translated.
+- **Links stay inside Indonesian**: `/id/academy/…`, never `/academy/…`. Slugs themselves stay
+  English, so the URL of a translated lesson differs from the English one only in its `/id` prefix.
+
+## 4. Adding to this glossary
+
+A term earns a row here when it has actually been translated two ways in the tree — not when someone
+anticipates that it might be. Add the row, add the retired spelling to `RETIRED_TERMS` in
+`scripts/academy-i18n-check.mjs`, and sweep the tree in the same PR, so the rule and the content
+never disagree. A rule with exceptions still in the tree is a rule the next author will ignore.

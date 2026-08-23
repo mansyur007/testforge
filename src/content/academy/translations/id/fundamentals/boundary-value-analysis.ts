@@ -43,7 +43,7 @@ Kuantitas ShopMini, rentang valid **1 … 99**:
 | | **100** | ditolak |
 
 Empat pengujian. Tambahkan satu nilai di tengah partisi (misalnya 42) kalau Anda
-ingin pemeriksaan penyehat, dan jadilah lima.
+ingin sanity check, dan jadilah lima.
 
 ## BVA 3 nilai
 

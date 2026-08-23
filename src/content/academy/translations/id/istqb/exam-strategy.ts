@@ -55,7 +55,7 @@ yang butuh kerja sungguhan.
 **Di mana pertanyaan yang lambat tinggal** bisa diketahui di depan, dan tabel di
 atas memberi harganya dengan tepat. Setiap tujuan pembelajaran K3 di silabusnya
 duduk di **bab 4** (empat teknik black-box dan ATDD) dan **bab 5** (estimasi,
-pemrioritasan, laporan cacat) — dan struktur yang diterbitkan sepakat: kedelapan
+pemrioritasan, defect report) — dan struktur yang diterbitkan sepakat: kedelapan
 pertanyaan K3-nya ada di kedua bab itu, lima dan tiga, dan setiap bab lainnya
 bebas K3. Kedua bab itu juga 20 dari 40 pertanyaannya, jadi **separuh kertasnya
 adalah dua bab yang memuat seluruh perhitungannya**, dan separuh lainnya hampir

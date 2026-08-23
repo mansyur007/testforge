@@ -113,8 +113,8 @@ menjadi percabangan konsumennya.
 
 ## Provider state adalah paruh yang lain
 
-\`state: "an order 42 exists"\` adalah kait bernama yang diimplementasikan
-penyedianya: sebelum memutar ulang interaksi itu, tempatkan dirimu pada keadaan
+\`state: "an order 42 exists"\` adalah hook bernama yang diimplementasikan
+penyedianya: sebelum memutar ulang interaksi itu, tempatkan diri Anda pada keadaan
 ini. Ia sambungan yang memungkinkan penyedianya mengendalikan datanya sendiri,
 dan itulah yang mencegah kontraknya terkopel pada sebuah fixture.
 

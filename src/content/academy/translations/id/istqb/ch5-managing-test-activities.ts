@@ -20,10 +20,10 @@ pengenalan lebih penting daripada kedalaman di sini.
 | 5.2 Manajemen risiko | 4 | K1, K2 | Tingkat risiko, risiko proyek vs produk, bagaimana risiko membentuk pengujian |
 | 5.3 Pemantauan, kendali, penutupan | 3 | K1, K2 | Metrik, kedua laporannya, mengomunikasikan status |
 | 5.4 Configuration management | 1 | K2 | Bagaimana ia menopang pengujian |
-| 5.5 Defect management | 1 | **K3** | Menulis sebuah laporan cacat |
+| 5.5 Defect management | 1 | **K3** | Menulis sebuah defect report |
 
 **Tiga tujuan pembelajaran K3**, dan semuanya tersebar alih-alih menggerombol:
-estimasi dan pemrioritasan di §5.1, laporan cacat di §5.5. Ketiganya adalah
+estimasi dan pemrioritasan di §5.1, defect report di §5.5. Ketiganya adalah
 tempat sebuah pertanyaan bisa menyerahkan materi kepada Anda lalu menuntut sebuah
 jawaban.
 
@@ -86,7 +86,7 @@ Tiga dasar, dan sebuah kendala yang mengalahkan semuanya:
 |---|---|
 | **Berbasis risiko** | Case yang mencakup area berisiko tertinggi |
 | **Berbasis cakupan** | Case yang paling cepat menambah paling banyak cakupan |
-| **Berbasis kebutuhan** | Case untuk kebutuhan yang diperingkatkan tertinggi pemangku kepentingan |
+| **Berbasis kebutuhan** | Case untuk kebutuhan yang diperingkatkan tertinggi stakeholder |
 
 **Kendalanya adalah kebergantungan.** Kalau case B baru masuk akal setelah case A
 berjalan — ia membutuhkan catatan yang dibuat A — maka A berjalan lebih dulu apa
@@ -167,7 +167,7 @@ menginginkan kategorinya.
 
 **Mengomunikasikan status** adalah tujuan pembelajarannya sendiri, dan intinya
 adalah medium dan tingkat kerincian mengikuti **audiensnya**: sebuah dashboard
-untuk sebuah tim, ringkasan tertulis untuk pemangku kepentingan yang tidak akan
+untuk sebuah tim, ringkasan tertulis untuk stakeholder yang tidak akan
 membaca daftar cacat, pembaruan lisan di stand-up. Pelajaran [pelaporan kepada
 stakeholder](/id/academy/manual-pro/reporting-to-stakeholders) di T2 adalah
 bentuk panjangnya.
@@ -182,12 +182,12 @@ berada.**
 Alasannya, dinyatakan sebagaimana disukai ujiannya: **tanpa itu, sebuah hasil
 pengujian tidak bisa direproduksi**, karena Anda tidak bisa menyatakan dengan
 pasti versi perangkat lunak mana yang diuji dengan versi pengujian yang mana. Itu
-juga sebabnya laporan cacat menyebut versinya dan environment-nya.
+juga sebabnya defect report menyebut versinya dan environment-nya.
 
 ## 5.5 Defect management (K3)
 
 Tujuan pembelajaran K3 ketiga babnya: diberi sebuah skenario, hasilkan sebuah
-laporan cacat.
+defect report.
 
 **Apa yang harus dibawa sebuah laporan:** sebuah pengenal unik; judul dan
 ringkasan pendek; tanggal, penulis, dan perannya; objek uji dan **environment
@@ -209,7 +209,7 @@ Tiga poin lagi yang muncul:
 - **Cacat bisa dilaporkan dari pengujian statis juga** — sebuah review menemukan
   cacat di sebuah kebutuhan, dan ia dilaporkan dengan cara yang sama. Tidak ada
   yang harus dieksekusi.
-- **Tujuan sebuah laporan cacat** adalah memberi developer apa yang mereka
+- **Tujuan sebuah defect report** adalah memberi developer apa yang mereka
   butuhkan untuk memperbaikinya, menyediakan sarana melacak kualitas produk, dan
   memasok gagasan untuk **perbaikan proses** — yang ketiga adalah yang dilupakan
   para kandidat.

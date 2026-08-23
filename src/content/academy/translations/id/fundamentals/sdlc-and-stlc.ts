@@ -57,7 +57,7 @@ tim Anda — sekali per rilis di waterfall, sekali per story di Agile.
 4. **Penyiapan environment.** Tempat untuk menjalankan, dengan data yang
    menyerupai kenyataan. Sering kali justru inilah yang membuat Anda tertunda.
 5. **Eksekusi pengujian.** Jalankan; catat hasilnya; ajukan cacat; uji ulang
-   perbaikannya. *Keluaran: hasil, laporan cacat.*
+   perbaikannya. *Keluaran: hasil, laporan bug.*
 6. **Penutupan pengujian.** Apa yang kita pelajari? Apa yang lolos ke produksi
    dan kenapa? *Keluaran: ringkasan dan, jujur saja, test case yang lebih baik
    lain kali.*
