@@ -137,11 +137,11 @@ opsional **guard** dan **aksi**.
 
 | State | Event | State berikutnya |
 |---|---|---|
-| Keluar | kredensial valid | Masuk |
-| Keluar | kredensial tidak valid (ke-1, ke-2) | Keluar |
-| Keluar | kredensial tidak valid (ke-3) | Terkunci |
-| Masuk | keluar | Keluar |
-| Terkunci | reset kata sandi | Keluar |
+| Sudah keluar | kredensial valid | Sudah masuk |
+| Sudah keluar | kredensial tidak valid (ke-1, ke-2) | Sudah keluar |
+| Sudah keluar | kredensial tidak valid (ke-3) | Terkunci |
+| Sudah masuk | keluar | Sudah keluar |
+| Terkunci | reset kata sandi | Sudah keluar |
 
 Tiga kriteria cakupan, dengan kekuatan yang meningkat:
 
@@ -150,7 +150,7 @@ Tiga kriteria cakupan, dengan kekuatan yang meningkat:
   dijalankan setidaknya sekali. Ini arti biasa dari "cakupan 100%" di sini.
 - **Semua transisi**, yang sah *dan* yang tidak sah: setiap pasangan state-event
   di **tabel** state-nya, termasuk sel yang tidak digambar diagramnya — apa yang
-  terjadi kalau Anda mengirim "reset kata sandi" selagi masuk?
+  terjadi kalau Anda mengirim "reset kata sandi" selagi sudah masuk?
 
 **Diagram state hanya menunjukkan transisi yang sah; tabel state menunjukkan
 setiap pasangan state–event, termasuk yang mustahil.** Perbedaan itu persis yang

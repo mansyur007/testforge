@@ -63,7 +63,7 @@ mengirim fitur.
 
 ## Deploy dan rilis adalah dua peristiwa berbeda
 
-Memisahkan keduanya adalah kemenangan ketereujian terbesar yang tersedia di
+Memisahkan keduanya adalah kemenangan keterujian terbesar yang tersedia di
 produksi, dan itulah yang membuat semua yang di bawah ini aman.
 
 **Feature flag** mengirim kodenya dalam keadaan gelap lalu menyalakannya untuk

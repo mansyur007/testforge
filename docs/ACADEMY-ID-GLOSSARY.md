@@ -33,6 +33,7 @@ Everything below is either an application of that rule or a deliberate exception
 | hook | **hook** | ~~kait~~ | One stray calque in `contract-testing`'s provider states, against five English uses elsewhere. |
 | checklist | **checklist** | ~~daftar periksa~~ | One stray in `test-levels`, against ten English uses. |
 | sanity check | **sanity check** | ~~pemeriksaan penyehat~~ | An awkward coinage — *penyehat* means "one who makes healthy". Nobody says this. |
+| environment (the test environment) | **environment** | ~~lingkungan~~ | Already the tree's dominant form (79 uses). `bug-reports` used both *inside one file* — "environment (staging/prod)" in its prose, "Lingkungan:" as the field label of the worked report — and it is a field name the reader will meet in TestForge and in every tracker. **Exception:** ISTQB ch1's *kondisi lingkungan* (radiation, interference, pollution) is the physical world, not a test environment; the check's regex excludes that phrase. |
 
 ### 2.2 English, with an Indonesian gloss allowed after first use
 

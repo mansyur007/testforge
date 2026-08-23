@@ -28,8 +28,8 @@ adalah perbaikannya:
 **Laporkan p95 dan p99, dan jangan pernah melaporkan rata-rata sendirian.** Pada
 skala besar, p99 bukan kasus tepi: halaman yang membuat 50 request akan menyentuh
 p99-nya sendiri di hampir setiap pemuatan, dan pengguna yang mendarat di sana
-tidak proporsional adalah mereka yang punya data paling banyak, dan itu biasanya
-berarti pelanggan terbaik Anda.
+secara tidak proporsional adalah mereka yang punya data paling banyak, dan itu
+biasanya berarti pelanggan terbaik Anda.
 
 ## Empat jenis pengujian, empat pertanyaan berbeda
 
@@ -159,7 +159,7 @@ basis data, jumlah koneksi. Tanpa itu Anda tahu *bahwa* ia melambat dan bukan
 
 ## Di mana tester tersandung
 
-- **Menguji hal yang keliru.** Endpoint login jarang menjadi lehernya. Uji
+- **Menguji hal yang keliru.** Endpoint login jarang menjadi leher botolnya. Uji
   perjalanan yang penting secara komersial dan endpoint yang menyentuh paling
   banyak data.
 - **Kumpulan data yang mungil.** Query yang seketika pada 500 baris dan

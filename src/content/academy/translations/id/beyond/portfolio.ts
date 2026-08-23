@@ -75,7 +75,7 @@ diperiksa seorang peninjau, dalam sekitar empat menit:
 - **CI yang berjalan saat push**, dengan hasil yang terlihat. Inilah beda antara
   "pernah menulis pengujian" dan "menjalankan pengujian".
 
-Tambahkan dua atau tiga **laporan bug yang sangat baik** — judul, lingkungan,
+Tambahkan dua atau tiga **laporan bug yang sangat baik** — judul, environment,
 langkah, diharapkan versus sebenarnya, bukti, dampak — ditulis sesuai standar T1.
 Laporan bug yang bagus adalah peragaan kepedulian yang paling murah.
 
@@ -186,7 +186,7 @@ menjawabnya dengan bukti yang baru saja Anda terbitkan.
         },
         {
           id: "d",
-          text: "Dua atau tiga laporan bug dengan lingkungan, langkah, diharapkan versus sebenarnya, dan bukti",
+          text: "Dua atau tiga laporan bug dengan environment, langkah, diharapkan versus sebenarnya, dan bukti",
         },
       ],
       explanation:

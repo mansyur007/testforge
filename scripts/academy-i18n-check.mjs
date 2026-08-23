@@ -390,6 +390,14 @@ const RETIRED_TERMS = [
   [/daftar periksa/gi, '"checklist"'],
   [/pemeriksaan penyehat/gi, '"sanity check"'],
   [/\bkait\b/gi, '"hook"'],
+  // The one entry that needs a carve-out: ISTQB chapter 1 says a failure can
+  // come from *environmental conditions* — radiation, interference, pollution —
+  // which is the physical world, not a test environment, and "kondisi
+  // lingkungan" is the right Indonesian for it. Every other `lingkungan` in the
+  // tree was the test environment, spelled two ways inside one file
+  // (`bug-reports` had `environment` in its prose and `lingkungan` in its
+  // exercise). Found by the 2026-08-24 T4–T5 pair read.
+  [/(?<!kondisi )\blingkungan\b/gi, '"environment"'],
 ];
 for (const file of everyTsFile(ID_TRACKS)) {
   const prose = stripComments(readFileSync(file, "utf8"));

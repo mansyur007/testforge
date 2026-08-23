@@ -22,6 +22,9 @@
 > trusted to review: lost escapes (8), terminology (9), the exam-link exception and its caveat
 > (10), and the `-mu` register forms. The findings below are kept in the past tense they were
 > written in; treat this document as the record of what was found, and §5 as what was done.
+>
+> **The two residual risks the audit accepted rather than retired are being worked off in §7**,
+> which is appended after closure and does not revise anything above it.
 
 ---
 
@@ -427,7 +430,7 @@ option a) — out of proportion to the gap; and any change to the exam bank (not
 | Area | Result |
 |---|---|
 | EN lessons, 51/51 read in full | No correctness defects; cross-references accurate |
-| ID lessons (T1–T3 37/37 full pair read; T4–T5 sampled; all 51 machine-scanned) | Faithful, idiomatic, register consistent; defects limited to the §4.2–4.3 lists |
+| ID lessons (T1–T3 37/37 full pair read; T4–T5 sampled at audit time, **51/51 full pair read as of §7.1**; all 51 machine-scanned) | Faithful, idiomatic, register consistent; defects limited to the §4.2–4.3 lists and the smaller §7.1 list |
 | Internal links EN↔ID | 0 unlocalised links either direction; all targets are real slugs |
 | Learning flow, 5 tracks | Order sound; all 50 "Next:" pointers match index order; track handoffs correct |
 | TestForge claims | All verified true except F-HIGH-1 (two T3 lessons) |
@@ -435,6 +438,62 @@ option a) — out of proportion to the gap; and any change to the exam bank (not
 | Exam bank | Structure machine-asserted; all sampled answer keys correct; no copyright-proximity concerns |
 | Certificates | §7.4 fully satisfied; issuance rules and privacy behaviour as specified |
 | Trademark / disclaimers | Enforced by build; EN + ID disclaimers present and non-identical |
+
+---
+
+## 7. Follow-up passes, after closure
+
+The audit closed with every finding fixed or decided, but it named **two residual risks** rather
+than retiring them: the Indonesian T4–T5 lessons had been sampled rather than pair-read (§2, Pass 1),
+and roughly 240 of the 255 exam answer keys had never been individually re-derived (§4.6). Each
+subsection below is the record of one pass at one of them. They are follow-ups, not a re-audit:
+nothing in §1–§6 is revised, and anything a pass changes is stated here.
+
+### 7.1 The Indonesian T4–T5 full pair read — done 2026-08-24
+
+**Coverage.** All 14 T4–T5 lesson pairs read in full, side by side, English against Indonesian —
+`beyond` 7/7 and `istqb` 7/7 — plus both track `index.ts` pairs. With §2's T1–T3 read, the
+Indonesian tree is now **51/51 pair-read**, and the follow-up §2 asked for is closed.
+
+**Verdict: the estimate in §2 was pessimistic.** It expected "one or two more" §4.2-class
+meaning-shift slips in T4–T5. None of that severity was found: no lesson misstates a technical
+claim, no worked example computes differently from its English original, every internal link is
+localised, and the exam-critical ISTQB arithmetic (three-point estimate, the 8/6/4/11/9/2 blueprint
+table, statement-versus-branch, the BVA variants) is correct in every chapter. What the read did
+find is nine smaller defects, two of which shift a reading and seven of which are consistency or
+legibility:
+
+| # | File | Read as | Now reads |
+|---|---|---|---|
+| 1 | `id/istqb/ch6-test-tools.ts` | "usaha perawatan **rutin** diremehkan" — parses as *routine maintenance* effort | "usaha perawatan**nya** rutin diremehkan" (EN: maintenance effort is *routinely* underestimated) |
+| 2 | `id/istqb/exam-strategy.ts` | K3 questions demand "**penurunan nilai**" — reads as *a drop in marks* | "menuntut Anda **menurunkan nilai**, menghitung aturan…" (EN: deriving values) |
+| 3 | `id/beyond/testing-in-production.ts` | "kemenangan **ketereujian**" — a typo | "**keterujian**", the form `ch3-static-testing` already uses |
+| 4 | `id/beyond/performance-testing.ts` | "Endpoint login jarang menjadi **lehernya**" | "**leher botolnya**" — the form ch1 uses twice for *bottleneck* |
+| 5 | same | "pengguna yang mendarat di sana **tidak proporsional adalah** mereka…" | "**secara tidak proporsional** adalah mereka…" |
+| 6 | `id/istqb/ch4-test-analysis-design.ts` | the state table's states were *Keluar* / *Masuk*, colliding with its own event *keluar* in the same table | *Sudah keluar* / *Sudah masuk* — the states are now distinguishable from the event in the K3 chapter's worked example |
+| 7 | `id/beyond/portfolio.ts` (×2) | "**lingkungan**" for a bug report's environment field | "**environment**" — see the glossary row below |
+| 8 | `id/fundamentals/bug-reports.ts` (×4) | the same split *inside one file*: "environment (staging/prod)" in the prose, "**Lingkungan:**" as the worked report's field label | "**Environment**" throughout |
+| 9 | `id/istqb/exam-strategy.ts` | "**ketiga puluh dua** sisanya rata-rata 75 detik" — reads as an ordinal | "**tiga puluh dua** sisanya…" |
+
+**One glossary decision came out of it.** Finding 8 is exactly what `docs/ACADEMY-ID-GLOSSARY.md`
+§4 says earns a row — a term translated two ways in the tree, here two ways in one file — so
+*environment* is now a row, the retired *lingkungan* is assertion (9) of `academy-i18n-check.mjs`,
+and the sweep shipped in the same PR. The regex carries the tree's one legitimate exception:
+ISTQB ch1's **kondisi lingkungan** (radiation, interference, pollution) is the physical world, not
+a test environment, and stays Indonesian.
+
+**A second mechanical scan was run and found nothing** — worth recording so it is not repeated
+blind. Every meaning-shift the original audit found had changed a *count* (`keenamnya` for three
+partitions), so a scan compared the multiset of numeric tokens in each English lesson against its
+Indonesian counterpart across all 51 pairs (Appendix B). After excluding comments and the
+`minutes:` field, four files differ, and all four are the translator spelling a number out or
+repeating one: *4pm* → "pukul empat sore", *6pm* → "pukul enam sore", one extra "404" in a
+rephrased clause, one extra "60%". **Zero numeric meaning shifts in the tree.**
+
+**Not changed, recorded instead:** *manusiawi* for English *human* (`ai-in-qa` ×2,
+`what-to-automate`, `ch3-static-testing`) sits closer to "humane" than to "human", but it is the
+tree's consistent rendering in all four places, and consistency is the glossary's own governing
+principle. Revisit it as a voice decision or not at all.
 
 ---
 
@@ -471,3 +530,36 @@ ID: 19 lost escapes (8 mid-line, 11 trailing) on 17 lines in 7 files
 ```
 
 which is exactly the set enumerated in §4.3. After WP-1 both lines must read `0`.
+
+---
+
+## Appendix B — the numeric-token scan (§7.1)
+
+Every meaning-shift slip §4.2 found had changed a number, so a count comparison is a cheap way to
+re-check all 51 pairs mechanically. It is a **review aid, not a build assertion**: the hits it
+produces need a human, because Indonesian legitimately spells small numbers out.
+
+```js
+// walk src/content/academy/tracks/<track>/*.ts and the id/ file of the same
+// name; strip /* */ comments and the `minutes:` line (the translation has no
+// such field, and a stray `*` filter would also eat markdown **bold** lines —
+// that mistake produced 14 false-positive files before it was caught), then:
+const nums = (src) => {
+  const out = new Map();
+  for (const m of clean(src).matchAll(/\d+(?:[.,]\d+)?/g)) {
+    const k = m[0].replace(",", ".");        // 1,2 detik === 1.2 seconds
+    out.set(k, (out.get(k) ?? 0) + 1);
+  }
+  return out;
+};
+// report every token whose EN count differs from its ID count, with the lines
+```
+
+At the time of §7.1 the scan reports four files, all benign:
+
+```
+manual-pro/reporting-to-stakeholders.ts   6:  EN 1 / ID 0   ("6pm" → "pukul enam sore")
+automation/api-automation.ts            404:  EN 7 / ID 8   ("one 404 at a time" → "satu 404 demi satu 404")
+beyond/ai-in-qa.ts                        4:  EN 2 / ID 1   ("4pm" → "pukul empat sore")
+istqb/exam-strategy.ts                   60:  EN 3 / ID 4   ("60%" repeated in a split sentence)
+```
