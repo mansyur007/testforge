@@ -2197,6 +2197,51 @@ regression: `e2e/academy.spec.ts` + `e2e/help-center.spec.ts` 39/39, `tsc --noEm
 clean, and `next build`'s route table confirms all three routes moved from `●` (SSG) to `ƒ`
 (Dynamic).
 
+### A-09c — The session reaches the page body, not just its frame `[x]`
+
+> **Status: DONE** (2026-08-23, issue #230, branch `fix/academy-signup-cta-230`). A user reported a
+> button on the Academy pointing at `https://testforge.emha.space/signup` while they were already
+> signed in.
+
+**What A-09 and A-09b actually established** was that every Academy route reads `getSession()` and
+uses it to choose a *frame*: `AuthedAppShell` for a session, the public chrome (which is where the
+Log in / Sign up pair legitimately lives) for a guest. What neither work order said out loud is that
+the CTAs planted inside the page **body** are a second, independent decision — and one of them was
+never made.
+
+**The one that was missed** is the hands-on exercise callout on a lesson page. In `LessonPage.tsx`
+the `session` that the file reads at the top was used exactly once, hundreds of lines later, to
+pick the shell; the callout itself is guarded only by `{lesson.sandbox && …}`, and its `/signup`
+link sat *outside* the `sandboxTask ? … : …` ternary, so it rendered for every reader of a hands-on
+lesson, in both languages, signed in or not. The link is not junk — `openSandboxTask` calls
+`requireSession()`, so it is the polite version of the redirect an anonymous reader would hit by
+pressing "Start this exercise" next to it. It is simply the wrong sentence to show someone who
+already has an account. `RoadmapPage` gates its equivalent line with `{!session && …}`, which is
+what makes this an oversight rather than a decision. The fix is that same guard; nothing else in the
+callout is gated, because the exercise itself is identical for both audiences.
+
+**Two things that look like the same bug and are not**, recorded so the next audit stops where this
+one did:
+
+- `ExamRunner`'s "Save this attempt — sign up" is a client component with no session prop, which
+  reads like the identical mistake. It is unreachable while signed in: `submitExamAction` writes an
+  `ExamAttempt` and returns `attemptId` whenever a session exists, and the runner then navigates to
+  `/academy/istqb/practice-exam/[attemptId]` rather than falling through to the inline result. So
+  **reaching `phase === "result"` in-page implies the submitter was anonymous** — an invariant worth
+  a comment, which it now has, rather than a prop that would only pretend to add safety.
+- **The ISTQB exam sub-tree keeps its own standalone chrome** (`Logo` + a back link) and reads no
+  session at all, so a signed-in reader gets no sidebar on `/academy/istqb/practice-exam` or its
+  chapter quizzes — the one place A-09b's rule does not reach. Left alone deliberately:
+  `.../practice-exam/[attemptId]` is session-*only* and wears the same bare chrome, so the sub-tree
+  is internally consistent and reads as a distraction-free exam room rather than a gap. Pulling it
+  into the shell would also cost the chapter quizzes their prerender (`dynamicParams = false` cannot
+  coexist with `force-dynamic` — A-09b) for no bug. Open as a product question, not a defect.
+
+**Verified:** **TC-E2E-138** — the callout's `/signup` link present for a guest in both languages,
+absent for a signed-in reader in both, with "Start this exercise" still there. The link check is
+scoped to the callout rather than the page: the signed-out header carries its own Sign up button, so
+a page-wide assertion would pass for the wrong reason in one half and fail in the other.
+
 ### A-10 — Exam integrity: answer-key balance, single-use tickets, resumable attempts `[x]`
 
 > **Opened 2026-08-12** from an audit of what A-06 actually shipped, run against the real bank and

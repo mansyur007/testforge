@@ -2193,3 +2193,38 @@ test(`TC-${TC}-137 A reader's language survives crossing between the Academy and
   await page.goto("/login");
   await expect(page.locator("main")).toContainText("Don't have an account?");
 });
+
+test(`TC-${TC}-138 The hands-on callout offers a signup link to signed-out readers only`, async ({
+  page,
+}) => {
+  // #230: every Academy page reads the session, but only to choose its frame —
+  // `AuthedAppShell` or the public chrome. The CTAs inside the body are a
+  // separate decision, and this one was never gated, so a reader who was
+  // already signed in was still told to "create a free account first" and sent
+  // to /signup. `RoadmapPage` gates its equivalent line; this one did not.
+  const callout = page.getByTestId("academy-sandbox-callout");
+  // Scoped to the callout on purpose: the signed-out header legitimately
+  // carries its own Sign up button, so a page-wide href check would pass for
+  // the wrong reason in one half of this test and fail in the other.
+  const offer = callout.locator('a[href="/signup"]');
+
+  // Signed out, both languages: the offer is the polite version of the
+  // `requireSession()` redirect that "Start this exercise" would hit.
+  await page.goto("/academy/fundamentals/boundary-value-analysis");
+  await expect(callout).toBeVisible();
+  await expect(offer).toHaveCount(1);
+
+  await page.goto("/id/academy/fundamentals/boundary-value-analysis");
+  await expect(callout.getByTestId("lesson-signup-link")).toBeVisible();
+
+  // Signed in: the exercise itself is unchanged — only the offer goes.
+  await login(page);
+  await page.goto("/academy/fundamentals/boundary-value-analysis");
+  await expect(callout).toBeVisible();
+  await expect(page.getByTestId("lesson-start-exercise")).toBeVisible();
+  await expect(offer).toHaveCount(0);
+
+  await page.goto("/id/academy/fundamentals/boundary-value-analysis");
+  await expect(callout).toBeVisible();
+  await expect(offer).toHaveCount(0);
+});
