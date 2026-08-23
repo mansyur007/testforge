@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSession } from "@/lib/auth";
-import { AuthedAppShell } from "@/components/AuthedAppShell";
 import { TFIcon } from "@/components/icons";
 import { JsonLd } from "@/components/JsonLd";
-import { AcademyPublicChrome } from "@/components/academy/PublicChrome";
+import { AcademyFrame } from "@/components/academy/Frame";
 import { AcademyLanguageLink } from "@/components/academy/LanguageLink";
 import { AcademyLangMemory } from "@/components/academy/LangMemory";
 import { TrackIndex } from "@/components/academy/TrackIndex";
@@ -14,7 +13,6 @@ import { TRACKS, getTrack, trackMinutes } from "@/content/academy";
 import { idLessonSlugs, localiseTrack, visibleLessons } from "@/content/academy/i18n";
 import type { Lang } from "@/lib/i18n";
 import { academyChrome, academyPath, formatMinutesIn } from "@/lib/academy/chrome";
-import { ACADEMY_SHELL } from "@/components/academy/shell";
 import { absoluteUrl, breadcrumbLd, courseLd, ldGraph } from "@/lib/seo";
 
 /**
@@ -221,29 +219,13 @@ export async function AcademyTrackPage({
     </>
   );
 
-  // A-08: the language is marked here rather than on `<html lang>`. The root
-  // layout owns that tag and cannot see the pathname without introducing
-  // middleware, which this app has none of and which runs on every request in
-  // the whole product — too much blast radius for an attribute. `lang` on a
-  // subtree is exactly what HTML5 defines for a document whose content is in a
-  // different language from its default, and screen readers and Google both
-  // honour it. The document default stays `en`; this page says what it is.
-  if (session) {
-    return (
-      <AuthedAppShell session={session}>
-        {jsonLd}
-        <div lang={lang} className={ACADEMY_SHELL}>
-          {body}
-        </div>
-      </AuthedAppShell>
-    );
-  }
-
+  // A-09d: the frame — app shell or public chrome, the 65rem column either way,
+  // and the `lang` attribute A-08 puts on the wrapper rather than on `<html>` —
+  // is `AcademyFrame`'s, which is where all three are explained.
   return (
-    <main lang={lang} className={`${ACADEMY_SHELL} px-4 py-12`}>
+    <AcademyFrame session={session} lang={lang}>
       {jsonLd}
-      <AcademyPublicChrome lang={lang} />
       {body}
-    </main>
+    </AcademyFrame>
   );
 }

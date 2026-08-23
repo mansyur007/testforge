@@ -4618,6 +4618,20 @@ an invariant that now carries a comment rather than a prop), and the ISTQB exam 
 own standalone chrome on purpose, since `.../practice-exam/[attemptId]` is session-only and wears
 the same bare frame. **TC-E2E-138**. See `docs/QA-ACADEMY.md` § A-09c.
 
+**A-09d, 2026-08-23 — the exam sub-tree joins the rest of the Academy.** The second of A-09c's two
+near-misses turned out to be the defect the first one wasn't. `/academy/istqb/practice-exam`, its
+six chapter quizzes and the attempt page were the last three pages still wearing A-06's own chrome:
+a 48rem column against everyone else's 65rem, a hand-rolled `Logo` + "Back to …" header instead of
+the public chrome, no `AuthedAppShell` at all (so a signed-in reader lost the sidebar mid-Academy),
+no breadcrumb, and A-06's type scale rather than A-12's. The root cause is that the session→frame
+rule was a *tail copied into three page files* rather than a component — there was nothing for the
+fourth surface to drift from. `AcademyFrame` is now that component and all six surfaces end with
+it; `AcademyCrumbs` replaces the back link with the ruled breadcrumb the track and lesson pages
+already use. The cost is A-09b's, knowingly repeated: the chapter quizzes lose their prerender,
+because reading the session forces dynamic rendering and `dynamicParams = false` cannot coexist
+with `force-dynamic`. The 404 for a seventh chapter is unchanged — it always came from the page's
+own `notFound()`. **TC-E2E-139**, **TC-E2E-140**. See `docs/QA-ACADEMY.md` § A-09d.
+
 ---
 
 *End of document. When a feature ships: tick its checkbox here, flip the cell in

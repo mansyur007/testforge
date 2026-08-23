@@ -1,11 +1,14 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Logo } from "@/components/icons";
+import { getSession } from "@/lib/auth";
 import { BetaChip } from "@/components/BetaChip";
 import { JsonLd } from "@/components/JsonLd";
+import { AcademyFrame } from "@/components/academy/Frame";
+import { AcademyCrumbs } from "@/components/academy/Crumbs";
 import { ExamRunner } from "@/components/academy/ExamRunner";
 import { ISTQB_DISCLAIMER } from "@/content/academy";
 import { CTFL_V4_FULL, CHAPTER_QUIZZES } from "@/content/academy/exams";
+import { academyChrome } from "@/lib/academy/chrome";
 import { breadcrumbLd, canonical, INDEXABLE, ldGraph } from "@/lib/seo";
 
 // A-06: the full ISTQB Foundation practice exam. Public, dynamic (the server
@@ -13,6 +16,11 @@ import { breadcrumbLd, canonical, INDEXABLE, ldGraph } from "@/lib/seo";
 // route map. Chapter quizzes are linked from here rather than getting their
 // own top-level nav entry — they're a drill before this, not a separate
 // destination.
+//
+// A-09d: and it wears the Academy's frame, like every other Academy page. It
+// reads the session for that, which is what makes the route dynamic in the
+// Next sense too — stated rather than left to the cookie read to imply.
+export const dynamic = "force-dynamic";
 
 const DESCRIPTION =
   "A free, timed 40-question Foundation Level practice exam aligned to the CTFL v4.0 syllabus, with a per-chapter score breakdown. No account needed to take it.";
@@ -31,9 +39,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function PracticeExamPage() {
+export default async function PracticeExamPage() {
+  const session = await getSession();
+
   return (
-    <main className="mx-auto max-w-3xl px-4 py-12">
+    <AcademyFrame session={session}>
       <JsonLd
         data={ldGraph(
           breadcrumbLd([
@@ -44,23 +54,23 @@ export default function PracticeExamPage() {
         )}
       />
 
-      <div className="mb-8 flex items-center justify-between">
-        <Logo size="sm" />
-        <Link href="/academy" className="text-sm text-accent-text hover:underline">
-          Back to Academy
-        </Link>
-      </div>
+      <AcademyCrumbs
+        trail={[
+          { name: academyChrome.en.brand, href: "/academy" },
+          { name: "Practice exam" },
+        ]}
+      />
 
-      <h1 className="flex flex-wrap items-center gap-3 text-2xl font-bold text-content-strong sm:text-3xl">
+      <h1 className="mt-9 flex flex-wrap items-center gap-3 font-display text-[34px] font-bold leading-none tracking-tight text-content-strong sm:text-[40px]">
         Foundation Level Practice Exam
         <BetaChip className="translate-y-0.5" />
       </h1>
-      <p className="mt-2 text-sm text-content">
+      <p className="mt-4 text-[15px] text-content">
         Aligned to the CTFL v4.0 syllabus. Not an ISTQB product — see the
         disclaimer below.
       </p>
 
-      <p className="mt-6 text-sm text-content-muted">
+      <p className="mt-6 text-[15px] text-content-muted">
         Want to drill one chapter first?{" "}
         {CHAPTER_QUIZZES.map((q, i) => (
           <span key={q.slug}>
@@ -92,6 +102,6 @@ export default function PracticeExamPage() {
       <p className="mt-10 text-xs leading-relaxed text-content-muted">
         {ISTQB_DISCLAIMER}
       </p>
-    </main>
+    </AcademyFrame>
   );
 }
