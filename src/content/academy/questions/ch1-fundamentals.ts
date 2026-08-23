@@ -187,13 +187,13 @@ export const CH1_FUNDAMENTALS: ExamQuestion[] = [
     syllabusRef: "FL-1.4.1",
     stem: "A tester writes 'verify that an expired discount code is rejected at checkout' before deciding on the specific input values or steps to use. Which test-process activity does writing that item belong to?",
     choices: [
-      { id: "a", text: "Test design", correct: true },
-      { id: "b", text: "Test implementation" },
-      { id: "c", text: "Test execution" },
-      { id: "d", text: "Test completion" },
+      { id: "a", text: "Test design" },
+      { id: "b", text: "Test analysis", correct: true },
+      { id: "c", text: "Test implementation" },
+      { id: "d", text: "Test execution" },
     ],
     explanation:
-      "Deriving a testable item ('what should be true') from the test basis is test analysis/design; turning it into a concrete case with input values, steps, and expected results is test implementation, which comes after.",
+      "Writing down what should be true, with no values or steps attached, is a test condition — and identifying test conditions from the test basis is test analysis, the activity that answers 'what to test'. Test design answers 'how': it elaborates that condition into concrete test cases with input values and expected results. Test implementation then assembles what those cases need in order to run — procedures, test data, suites, environment — and execution runs them.",
   },
   {
     id: "ch1-q12",

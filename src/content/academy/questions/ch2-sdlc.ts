@@ -194,7 +194,7 @@ export const CH2_SDLC: ExamQuestion[] = [
       { id: "d", text: "Estimating story points in sprint planning" },
     ],
     explanation:
-      "Maintenance testing is triggered by modification (a planned enhancement or fix), migration (e.g. between environments or platforms — including an OS upgrade), or retirement of a system, not by upfront requirements or planning activities.",
+      "Maintenance testing is triggered by modification, migration or retirement, not by upfront requirements or planning activities. An operating-system upgrade is a modification: alongside enhancements, corrective changes and patches, the syllabus counts changes to the operational environment there. Migration is moving the software to another platform, which brings data conversion and operational testing of the new environment with it.",
   },
   {
     id: "ch2-q12",
@@ -505,7 +505,7 @@ export const CH2_SDLC: ExamQuestion[] = [
       { id: "d", text: "Yes, but only if the archive will later be read back" },
     ],
     explanation:
-      "Retirement is one of the triggers the syllabus names, alongside modification, migration and upgrades of the operating environment. Archiving is precisely where it matters: data that has to be readable years later, and a restore procedure nobody has ever exercised, are worth testing while the people who understand the system are still available.",
+      "Retirement is one of the three triggers the syllabus names, alongside modification — which covers enhancements, fixes, patches and upgrades of the operational environment — and migration. Archiving is precisely where it matters: data that has to be readable years later, and a restore procedure nobody has ever exercised, are worth testing while the people who understand the system are still available.",
   },
   {
     id: "ch2-q31",
