@@ -63,8 +63,8 @@ seluruhnya pengenalan.
 
 Gabungkan kedua fakta itu dan aritmetikanya menutup: delapan pertanyaan K3 pada
 dua sampai tiga menit kira-kira dua puluh menit, dan itu menyisakan empat puluh
-untuk tiga puluh dua sisanya. **Itulah seluruh rencana lajunya** — ketiga puluh
-dua sisanya rata-rata 75 detik, dan dua puluh empat pertanyaan K2-nya yang
+untuk tiga puluh dua sisanya. **Itulah seluruh rencana lajunya** — tiga puluh dua
+sisanya rata-rata 75 detik, dan dua puluh empat pertanyaan K2-nya yang
 sebenarnya memakannya, karena delapan pertanyaan K1 berbiaya sekitar empat menit
 untuk keseluruhannya.
 
@@ -234,7 +234,7 @@ Semoga berhasil. Lalu pergilah dan uji sesuatu yang nyata.
         },
       ],
       explanation:
-        "Sembilan puluh detik hanyalah rata-ratanya. Pertanyaan mengingat dijawab dalam dua puluh detik atau tidak sama sekali — memelototinya lebih lama tidak menghasilkan faktanya — sementara pertanyaan K3 menuntut penurunan nilai, penghitungan aturan, atau perhitungan sebuah estimasi, dan terburu-buru mengerjakannya adalah cara nilai yang sebenarnya bisa diraih justru hilang. Setiap tujuan pembelajaran K3 di silabusnya duduk di bab 4 dan 5, jadi Anda bisa memperkirakan kira-kira di mana pertanyaan yang lambat akan berada. Kertasnya sungguh berbatas waktu dan terkirim otomatis, pertanyaannya bisa dijawab dengan urutan apa pun memakai navigatornya, dan tingkat kesulitannya tidak diurutkan.",
+        "Sembilan puluh detik hanyalah rata-ratanya. Pertanyaan mengingat dijawab dalam dua puluh detik atau tidak sama sekali — memelototinya lebih lama tidak menghasilkan faktanya — sementara pertanyaan K3 menuntut Anda menurunkan nilai, menghitung aturan, atau menghitung sebuah estimasi, dan terburu-buru mengerjakannya adalah cara nilai yang sebenarnya bisa diraih justru hilang. Setiap tujuan pembelajaran K3 di silabusnya duduk di bab 4 dan 5, jadi Anda bisa memperkirakan kira-kira di mana pertanyaan yang lambat akan berada. Kertasnya sungguh berbatas waktu dan terkirim otomatis, pertanyaannya bisa dijawab dengan urutan apa pun memakai navigatornya, dan tingkat kesulitannya tidak diurutkan.",
     },
     {
       id: "q3",

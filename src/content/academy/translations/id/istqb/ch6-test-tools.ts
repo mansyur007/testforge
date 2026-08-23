@@ -67,7 +67,7 @@ lalu menawarkan sisi yang lain sebagai pengecoh.
 | | Alat yang dipilih bisa tidak cocok dengan platformnya, atau tidak kompatibel |
 
 **Dua risiko yang layak dihafal**, karena keduanya paling sering diujikan dan
-paling benar: **usaha perawatan rutin diremehkan**, dan **sebuah alat bisa
+paling benar: **usaha perawatannya rutin diremehkan**, dan **sebuah alat bisa
 menggantikan berpikir alih-alih menopangnya** — sebuah suite otomatis bertambah
 besar, terus lulus, lalu diam-diam berhenti dirancang.
 

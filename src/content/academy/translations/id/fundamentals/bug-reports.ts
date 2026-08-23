@@ -25,7 +25,7 @@ pada pembacanya.
 - ❌ *Keranjang rusak*
 - ❌ *Bug di checkout* — semuanya bug di checkout
 
-**Lingkungan.** Build/versi, browser + versinya, OS, perangkat, akun dan
+**Environment.** Build/versi, browser + versinya, OS, perangkat, akun dan
 perannya, environment (staging/prod), dan waktu kejadiannya (supaya log-nya bisa
 ditemukan).
 
@@ -100,7 +100,7 @@ melokalisasi bug-nya untuk developer.
 > **Judul:** Checkout mengembalikan 500 ketika keranjang berisi item yang stoknya
 > habis (staging, build 1.4.2)
 >
-> **Lingkungan:** staging, build 1.4.2, Chrome 126 / Windows 11, akun
+> **Environment:** staging, build 1.4.2, Chrome 126 / Windows 11, akun
 > \`buyer@shopmini.test\` (peran: customer), 2026-08-10 14:32 WIB
 >
 > **Prakondisi:** Keranjang berisi 1 × SKU-1042 "Kaos Polos". Stok SKU-1042
@@ -131,7 +131,7 @@ log-nya.
 ## 🛠 Giliran Anda, di TestForge
 
 Latihan sandbox memberi Anda satu cacat ShopMini yang sudah ditanam untuk Anda
-temukan dan ajukan sebagai laporan bug yang benar — judul, lingkungan, langkah,
+temukan dan ajukan sebagai laporan bug yang benar — judul, environment, langkah,
 sebenarnya vs diharapkan, severity — dan checker-nya menilai strukturnya, bukan
 pilihan kata Anda: langkah yang minimal, hasil sebenarnya yang bisa diamati,
 hasil yang diharapkan yang terikat pada sebuah kebutuhan, dan severity yang bisa
@@ -162,7 +162,7 @@ Anda pertanggungjawabkan.
         { id: "d", text: "Segera mengajukannya supaya tidak ada detail yang terlupa" },
       ],
       explanation:
-        "Reproduksi dari sesi bersih menyingkirkan kemungkinan state lokal yang basi, mengurangi langkah melokalisasi penyebabnya, dan lingkungan adalah yang memungkinkan orang lain berdiri di tempat Anda berdiri. Mengajukan dulu lalu menyelidiki belakangan justru yang menghasilkan laporan-laporan yang dipantulkan kembali.",
+        "Reproduksi dari sesi bersih menyingkirkan kemungkinan state lokal yang basi, mengurangi langkah melokalisasi penyebabnya, dan environment-nya adalah yang memungkinkan orang lain berdiri di tempat Anda berdiri. Mengajukan dulu lalu menyelidiki belakangan justru yang menghasilkan laporan-laporan yang dipantulkan kembali.",
     },
     {
       id: "q3",
