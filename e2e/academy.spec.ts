@@ -1532,11 +1532,30 @@ test(`TC-${TC}-141 The roadmap shows a sample certificate, marked as a sample an
   // on offer because that difference is exactly what a reader is weighing up.
   await expect(modal.getByTestId("certificate-score")).toHaveCount(0);
 
+  // The serial reads as a specimen in its hand-written groups and is a real
+  // Crockford tail in its last one — drawn per opening, so the specimen cannot
+  // be quoted back as *the* certificate id. Both halves are asserted: a regex
+  // that only pinned the prefix would pass a hard-coded `K000` forever.
+  const trackSerial = await modal.getByTestId("certificate-serial").innerText();
+  expect(trackSerial).toMatch(/^TF-5AMP-1E00-TRAC-[0-9A-HJKMNP-TV-Z]{4}$/);
+
   await page.getByTestId("academy-sample-certificate-tab-exam").click();
   await expect(modal.getByTestId("certificate-score")).toContainText("85%");
   // §7.4: the ISTQB paragraph belongs to the exam kind and only to it, on the
   // specimen exactly as on the real thing.
   await expect(modal.getByTestId("certificate-disclaimer")).toContainText("ISTQB");
+
+  // Light only. A credential travels as a link and as a screenshot, so the two
+  // people comparing one serial must not be looking at two different documents
+  // — `.tf-certificate` re-declares the light tokens on the card's own subtree,
+  // and the page's `dark` class has to stop at its edge. Asserted by forcing
+  // the class the theme switcher sets and reading the paint back.
+  await page.evaluate(() => document.documentElement.classList.add("dark"));
+  await expect(modal.getByTestId("certificate-card")).toHaveCSS(
+    "background-color",
+    "rgb(255, 255, 255)",
+  );
+  await page.evaluate(() => document.documentElement.classList.remove("dark"));
 
   await page.keyboard.press("Escape");
   await expect(modal).toHaveCount(0);

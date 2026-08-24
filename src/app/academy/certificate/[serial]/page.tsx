@@ -80,7 +80,11 @@ export default async function CertificatePage({
         </Link>
       </div>
 
-      <CertificateCard cert={cert} headingLevel="h1" />
+      <CertificateCard
+        cert={cert}
+        headingLevel="h1"
+        verifyUrl={absoluteUrl(`/academy/certificate/${cert.serial}`)}
+      />
 
       {/* The §7.4 disclaimer travels with the card in `CertificateCard`, for
           the reason given there: it is part of what the certificate says, not

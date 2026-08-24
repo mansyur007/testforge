@@ -4761,11 +4761,21 @@ surfaces now render *the same component*: a preview that has drifted from the re
 worse than no preview, because it makes a promise the product then breaks, and one component is the
 only version of that guarantee a reviewer cannot forget to check. The specimen is marked as one on
 three axes — a `SAMPLE` / `CONTOH` ribbon on the card itself so a screenshot carries it, a
-placeholder holder name, and serials hand-written inside Crockford's alphabet to read as
-`TF-5AMP-1E00-…` — and it writes nothing, which **TC-E2E-141** asserts with a row count either side.
+placeholder holder name, and a serial hand-written inside Crockford's alphabet to read as
+`TF-5AMP-1E00-…` with a randomly drawn last group, so no fixed string can be quoted back as *the*
+certificate id — and it writes nothing, which **TC-E2E-141** asserts with a row count either side.
 The card stays English on `/id/academy` on purpose: the surrounding copy is translated, but the
 specimen is the document an Indonesian learner will actually receive, and the Indonesian note says
 so rather than letting a translated mock-up imply otherwise.
+
+The card also got the design a credential needs rather than the one a form has: the TestForge mark
+and wordmark as a masthead, an engraved inner frame with corner brackets, a seal built from the same
+mark, and the verify URL printed under the serial — the trust model in one line, since a screenshot
+of this has nothing to check offline and the only thing that makes it verifiable is that the URL
+resolves here. It renders light and TestForge-indigo whatever the reader's theme and accent are,
+via a `.tf-certificate` token block that borrows `.tf-print-doc`'s technique (F-39, §7.6): a
+credential travels as a link *and* as a screenshot, and two people comparing one serial must not be
+looking at two different documents.
 
 ---
 
