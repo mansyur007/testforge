@@ -8,6 +8,7 @@ import {
 } from "@/components/academy/CertificateCard";
 import type { PublicCertificate } from "@/lib/academy/types";
 import type { Lang } from "@/lib/i18n";
+import { absoluteUrl } from "@/lib/seo";
 
 // The roadmap's "what do I get at the end" answer, shown rather than described.
 //
@@ -22,15 +23,38 @@ import type { Lang } from "@/lib/i18n";
 // difference a reader deciding what to aim for wants to see.
 
 /**
- * Serials on a real certificate are 80 bits of HMAC over Crockford's base32
- * (see `certificates-core.mjs`). These two are hand-written inside that same
- * alphabet so they *look* like the real shape while reading as English —
- * `5AMP1E`, `TRACK`, `EXAM`. Deliberately not `TF-0000-0000-0000-0000`, which
- * the e2e suite uses as its known-bad serial.
+ * Crockford's base32 — the alphabet `certificates-core.mjs` derives real
+ * serials over. Copied rather than imported: that module opens with
+ * `import crypto from "crypto"`, and this one runs in the browser.
  */
-const SAMPLES: Record<"TRACK" | "EXAM", Omit<PublicCertificate, "holderName">> = {
+const SERIAL_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+
+/** The last group of a sample serial. Four symbols of `Math.random()` — which
+ *  would be indefensible for a real serial and is exactly right for a fake one:
+ *  the specimen should not look like a fixed asset somebody could quote back as
+ *  *the* certificate id. The three groups before it stay hand-written. */
+function randomTail(): string {
+  let out = "";
+  for (let i = 0; i < 4; i++) {
+    out += SERIAL_ALPHABET[Math.floor(Math.random() * SERIAL_ALPHABET.length)];
+  }
+  return out;
+}
+
+/**
+ * Serials on a real certificate are 80 bits of HMAC over Crockford's base32
+ * (see `certificates-core.mjs`). These two prefixes are hand-written inside
+ * that same alphabet so they *look* like the real shape while reading as
+ * English — `5AMP1E`, `TRAC`, `EXAM` — and the tail is drawn per opening.
+ * Deliberately not `TF-0000-0000-0000-0000`, which the e2e suite uses as its
+ * known-bad serial.
+ */
+const SAMPLES: Record<
+  "TRACK" | "EXAM",
+  Omit<PublicCertificate, "holderName" | "serial"> & { serialPrefix: string }
+> = {
   TRACK: {
-    serial: "TF-5AMP-1E00-TRAC-K000",
+    serialPrefix: "TF-5AMP-1E00-TRAC-",
     kind: "TRACK",
     refSlug: "fundamentals",
     heading: "Track Completion",
@@ -42,7 +66,7 @@ const SAMPLES: Record<"TRACK" | "EXAM", Omit<PublicCertificate, "holderName">> =
     issuedAt: "2026-03-14T00:00:00.000Z",
   },
   EXAM: {
-    serial: "TF-5AMP-1E00-EXAM-0000",
+    serialPrefix: "TF-5AMP-1E00-EXAM-",
     kind: "EXAM",
     refSlug: "ctfl-v4-full",
     heading: "Practice Exam Pass",
@@ -93,8 +117,18 @@ export function SampleCertificate({
   const t = copy[lang];
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<"TRACK" | "EXAM">("TRACK");
+  // Drawn when the dialog is opened, one tail per kind. Doing it here rather
+  // than at module scope is what keeps `Math.random()` out of the render path:
+  // the dialog does not exist in the server-rendered markup, so there is no
+  // server value for a client value to disagree with.
+  const [tails, setTails] = useState({ TRACK: "", EXAM: "" });
   const openerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+
+  function openDialog() {
+    setTails({ TRACK: randomTail(), EXAM: randomTail() });
+    setOpen(true);
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -115,7 +149,12 @@ export function SampleCertificate({
     };
   }, [open]);
 
-  const cert: PublicCertificate = { ...SAMPLES[kind], holderName: t.holder };
+  const { serialPrefix, ...sample } = SAMPLES[kind];
+  const cert: PublicCertificate = {
+    ...sample,
+    holderName: t.holder,
+    serial: `${serialPrefix}${tails[kind]}`,
+  };
 
   return (
     <section
@@ -131,7 +170,7 @@ export function SampleCertificate({
       <button
         ref={openerRef}
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={openDialog}
         data-testid="academy-sample-certificate-open"
         className={`mt-4 inline-flex items-center gap-2 rounded-lg border border-hairline-strong px-4 py-2 text-sm font-medium text-content hover:bg-surface-muted ${FOCUS_RING}`}
       >
@@ -189,7 +228,15 @@ export function SampleCertificate({
               </button>
             </div>
 
-            <CertificateCard cert={cert} watermark={t.watermark} />
+            {/* The specimen carries a real verify line too — a made-up serial
+                on this instance's real host, which is what the reader will get.
+                `absoluteUrl` reads `NEXT_PUBLIC_BASE_URL`, so it is inlined at
+                build time and safe on the client. */}
+            <CertificateCard
+              cert={cert}
+              watermark={t.watermark}
+              verifyUrl={absoluteUrl(`/academy/certificate/${cert.serial}`)}
+            />
             <CertificateDisclaimer
               kind={cert.kind}
               istqbDisclaimer={istqbDisclaimer}

@@ -1113,23 +1113,43 @@ component (the handoff `TrademarkNotice` already documents).
 
 **Marked as a specimen on three axes, because one is a screenshot away from being lost.** A
 `SAMPLE` / `CONTOH` ribbon rendered *on* the card, so it survives a crop; a placeholder holder name
-rather than an invented person; and serials hand-written inside Crockford's alphabet to read as
-`TF-5AMP-1E00-TRAC-K000` — real in shape, unmistakable in content, and deliberately not
-`TF-0000-0000-0000-0000`, which TC-E2E-119 already uses as its known-bad serial. The dates are fixed
-constants rather than `new Date()`: a specimen dated today quietly claims to be a fresh issue, and a
-server-rendered "today" is a hydration mismatch waiting for the clock to cross midnight mid-render.
+rather than an invented person; and a serial whose first three groups are hand-written inside
+Crockford's alphabet to read as `TF-5AMP-1E00-TRAC-…` — real in shape, unmistakable in content, and
+deliberately not `TF-0000-0000-0000-0000`, which TC-E2E-119 already uses as its known-bad serial.
+The last group is four symbols of `Math.random()`, drawn when the dialog opens: indefensible for a
+real serial and exactly right for a fake one, because a fixed tail is a string somebody eventually
+quotes back as *the* certificate id. It is drawn on open rather than at module scope precisely
+because the dialog is absent from the server-rendered markup, so there is no server value for a
+client value to disagree with. The dates stay fixed constants for the mirror-image reason: a
+specimen dated `new Date()` quietly claims to be a fresh issue, and a server-rendered "today" is a
+hydration mismatch waiting for the clock to cross midnight mid-render.
 
 **The card stays English on `/id/academy`.** Everything around it is translated — section, button,
 tabs, note — but the specimen is the document an Indonesian learner will actually receive, and the
 Indonesian note says so in as many words. Translating the mock-up would have been the friendlier
 lie.
 
+**It is a document, so it is light, and it is the issuer's brand.** `.tf-certificate` in
+`globals.css` re-declares the light tokens on the card's own subtree — the technique `.tf-print-doc`
+already uses for paper (F-39, §7.6 "paper is always white") — and pins the accent ramp with it, for
+the reason F-46 gives there: a custom accent is written inline on `<html>` and no descendant
+selector can outrank it, but these sit *on* the card. So the certificate is TestForge indigo on an
+instance themed emerald, and identical in dark mode. Both halves are deliberate: a credential
+travels as a link **and** as a screenshot, and two readers comparing one serial must not be looking
+at two different documents. Nothing in the component hardcodes a colour — it all still resolves from
+the token layer, which is simply a local one here, so `check-theme-tokens` stays green on it.
+
 **Verification.** **TC-E2E-141**: the dialog is absent until asked for, carries the sample mark and
 the placeholder name, switches between the two kinds (no score on a track, 85% and the ISTQB
 paragraph on the exam), closes on Escape, repeats in Indonesian with `Contoh` and a `lang="id"`
 note — and the `Certificate` row count is unchanged either side, which is the assertion that matters:
-looking at a specimen must never issue one. TC-E2E-118/119 were re-run against the extracted
-component to confirm the real page renders unchanged, and TC-E2E-91 covers the new section at 375px.
+looking at a specimen must never issue one. Two assertions were proved against a mutated build
+rather than reasoned about: the serial regex pins the readable prefix *and* a four-symbol Crockford
+tail, so a hard-coded `K000` cannot pass it, and the light-only rule is checked by adding the `dark`
+class the theme switcher sets and reading the card's painted background back — flipping
+`--tf-certificate`'s `--tf-surface` to the dark value fails it with `rgb(15, 23, 42)`. TC-E2E-118/119
+were re-run against the extracted component to confirm the real page renders unchanged, and
+TC-E2E-91 covers the new section at 375px.
 
 ### A-08 — Content build-out & localised routes `[x]`
 

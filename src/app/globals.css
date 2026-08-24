@@ -616,3 +616,84 @@ svg.tficon.tf-onaccent .tf-acf {
   color: rgb(var(--tf-text-muted));
   white-space: nowrap;
 }
+
+/* ---------------------------------------------------------------------------
+   A-07b: the certificate is a document, not a screen.
+
+   Same reasoning as `.tf-print-doc` in src/app/print/print.css (F-39, §7.6
+   "paper is always white"), and the same technique: re-declare the light token
+   values on the certificate's own subtree so it renders identically whatever
+   the reader's theme is. A credential is shared as a link and a screenshot, and
+   two people comparing the same serial should not be looking at two different
+   documents.
+
+   The accent ramp is pinned here for the reason F-46 gives for print: a custom
+   accent is written inline on <html> and no descendant selector can outrank it,
+   but these sit *on* the card, so the certificate stays TestForge indigo on an
+   instance themed emerald. That is deliberate — the brand on a credential is
+   the issuer's, not the holder's palette preference.
+   --------------------------------------------------------------------------- */
+.tf-certificate {
+  color-scheme: light;
+  --tf-surface: 255 255 255;
+  --tf-surface-muted: 241 245 249;
+  --tf-surface-raised: 255 255 255;
+  --tf-text-strong: 15 23 42;
+  --tf-text: 51 65 85;
+  --tf-text-muted: 100 116 139;
+  --tf-text-subtle: 148 163 184;
+  --tf-border-subtle: 241 245 249;
+  --tf-border: 226 232 240;
+  --tf-border-strong: 203 213 225;
+  --tf-accent: 79 70 229;
+  --tf-accent-hover: 67 56 202;
+  --tf-accent-fg: 255 255 255;
+  --tf-accent-text: 79 70 229;
+  --tf-accent-soft: 238 242 255;
+  --tf-accent-soft-fg: 67 56 202;
+  --tf-accent-ring: 99 102 241;
+
+  /* The ground: white paper with the faintest accent wash pulled in from the
+     top and bottom edges. Two radial gradients rather than a pattern — a
+     guilloche at this size reads as noise on a phone and as a moiré in a
+     screenshot, and the wash survives both. */
+  background-color: rgb(var(--tf-surface));
+  background-image:
+    radial-gradient(70% 45% at 50% 0%, rgb(var(--tf-accent) / 0.07), transparent 72%),
+    radial-gradient(60% 40% at 50% 100%, rgb(var(--tf-accent) / 0.05), transparent 70%);
+}
+
+/* The engraved frame, drawn rather than bordered so it can sit *inside* the
+   card's own edge — one hairline in the accent, inset far enough to read as a
+   second rule instead of a doubled border. */
+.tf-certificate-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0.7rem;
+  border: 1px solid rgb(var(--tf-accent) / 0.22);
+  border-radius: 0.85rem;
+  pointer-events: none;
+}
+
+/* Corner brackets, set *inside* the frame rather than on it: eight hairlines
+   meeting in four right angles, the detail that makes a plain rule look ruled
+   on purpose. Inset clear of the frame's own curve — a straight bracket laid
+   over a rounded corner reads as a mistake — and drawn as one element's eight
+   background layers, which is cheaper than eight positioned spans and cannot
+   fall out of alignment with each other. */
+.tf-certificate-corners::after {
+  content: "";
+  position: absolute;
+  inset: 1.2rem;
+  pointer-events: none;
+  background:
+    linear-gradient(rgb(var(--tf-accent) / 0.5) 0 0) left 0 top 0 / 1px 0.8rem,
+    linear-gradient(rgb(var(--tf-accent) / 0.5) 0 0) left 0 top 0 / 0.8rem 1px,
+    linear-gradient(rgb(var(--tf-accent) / 0.5) 0 0) right 0 top 0 / 1px 0.8rem,
+    linear-gradient(rgb(var(--tf-accent) / 0.5) 0 0) right 0 top 0 / 0.8rem 1px,
+    linear-gradient(rgb(var(--tf-accent) / 0.5) 0 0) left 0 bottom 0 / 1px 0.8rem,
+    linear-gradient(rgb(var(--tf-accent) / 0.5) 0 0) left 0 bottom 0 / 0.8rem 1px,
+    linear-gradient(rgb(var(--tf-accent) / 0.5) 0 0) right 0 bottom 0 / 1px 0.8rem,
+    linear-gradient(rgb(var(--tf-accent) / 0.5) 0 0) right 0 bottom 0 / 0.8rem 1px;
+  background-repeat: no-repeat;
+}
