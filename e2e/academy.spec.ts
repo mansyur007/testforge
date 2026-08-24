@@ -1506,6 +1506,57 @@ test(`TC-${TC}-120 A signed-in stranger cannot switch off somebody else's certif
 });
 
 // ---------------------------------------------------------------------------
+// The sample certificate on the roadmap. It is a marketing surface, but it is
+// also the one place the product shows a credential to somebody who does not
+// hold one — so the two things worth pinning are that it renders the *real*
+// card (it shares `CertificateCard` with `/academy/certificate/<serial>`, and a
+// preview that has drifted is worse than none) and that it can never be taken
+// for an issued one: the SAMPLE mark, the placeholder name, and no row written.
+// ---------------------------------------------------------------------------
+
+test(`TC-${TC}-141 The roadmap shows a sample certificate, marked as a sample and issuing nothing`, async ({
+  page,
+}) => {
+  const before = await db.certificate.count();
+
+  await page.goto("/academy");
+  await expect(page.getByTestId("academy-sample-certificate-modal")).toHaveCount(0);
+  await page.getByTestId("academy-sample-certificate-open").click();
+
+  const modal = page.getByTestId("academy-sample-certificate-modal");
+  await expect(modal).toBeVisible();
+  await expect(modal.getByTestId("certificate-sample-mark")).toHaveText("Sample");
+  await expect(modal.getByTestId("certificate-holder")).toHaveText("Your Name Here");
+  await expect(modal.getByTestId("certificate-subject")).toHaveText("QA Fundamentals track");
+  // A track certificate carries no score and an exam pass does. Both kinds are
+  // on offer because that difference is exactly what a reader is weighing up.
+  await expect(modal.getByTestId("certificate-score")).toHaveCount(0);
+
+  await page.getByTestId("academy-sample-certificate-tab-exam").click();
+  await expect(modal.getByTestId("certificate-score")).toContainText("85%");
+  // §7.4: the ISTQB paragraph belongs to the exam kind and only to it, on the
+  // specimen exactly as on the real thing.
+  await expect(modal.getByTestId("certificate-disclaimer")).toContainText("ISTQB");
+
+  await page.keyboard.press("Escape");
+  await expect(modal).toHaveCount(0);
+
+  // The Indonesian roadmap offers the same specimen with translated chrome —
+  // and an untranslated card, because that is the document it stands for.
+  await page.goto("/id/academy");
+  await page.getByTestId("academy-sample-certificate-open").click();
+  const idModal = page.getByTestId("academy-sample-certificate-modal");
+  await expect(idModal.getByTestId("certificate-sample-mark")).toHaveText("Contoh");
+  await expect(idModal.getByTestId("certificate-holder")).toHaveText("Nama Anda");
+  await expect(
+    idModal.getByTestId("academy-sample-certificate-note"),
+  ).toHaveAttribute("lang", "id");
+
+  // Nothing about looking at a specimen issues one.
+  expect(await db.certificate.count()).toBe(before);
+});
+
+// ---------------------------------------------------------------------------
 // The slug-validation hole recorded in docs/QA-ACADEMY.md § A-10's open items:
 // `claimAcademyProgress` resolved every slug through the published registry
 // before inserting, but `markLessonDoneAction` took both slugs on trust, so a

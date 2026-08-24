@@ -1093,6 +1093,44 @@ have); administrative revocation with a reason and a "this credential was withdr
 which is a different feature wearing the same column's name; and a LinkedIn "add to profile" deep
 link, which wants a real issuing-organisation id and would overstate what this is.
 
+#### A-07b — the sample certificate on the roadmap `[x]`
+
+> **Status: DONE** (2026-08-24). A *See a sample certificate* button under a **What you get at the
+> end** section on `/academy` and `/id/academy`, opening a dialog with a specimen of either kind.
+
+A-07 shipped the artifact and left the funnel with no way to see it: the only route to a certificate
+was to earn one, so the reader deciding whether a track is worth two hours could not see what the
+two hours produce. The fix is small; the constraint on it is not.
+
+**One component, two surfaces.** The card markup left the page and became
+`components/academy/CertificateCard.tsx`, which `/academy/certificate/[serial]` and the sample both
+render. A specimen that has drifted from the real certificate is worse than no specimen — it makes a
+promise the product then breaks — and sharing the component is the only form of that guarantee a
+reviewer cannot forget to check. `CertificateDisclaimer` came out with it, because §7.4's paragraph
+is part of what the certificate *says*, not part of what a page says about it; it takes the ISTQB
+text as a prop, since `@/content/academy` is `server-only` and the sample's wrapper is a client
+component (the handoff `TrademarkNotice` already documents).
+
+**Marked as a specimen on three axes, because one is a screenshot away from being lost.** A
+`SAMPLE` / `CONTOH` ribbon rendered *on* the card, so it survives a crop; a placeholder holder name
+rather than an invented person; and serials hand-written inside Crockford's alphabet to read as
+`TF-5AMP-1E00-TRAC-K000` — real in shape, unmistakable in content, and deliberately not
+`TF-0000-0000-0000-0000`, which TC-E2E-119 already uses as its known-bad serial. The dates are fixed
+constants rather than `new Date()`: a specimen dated today quietly claims to be a fresh issue, and a
+server-rendered "today" is a hydration mismatch waiting for the clock to cross midnight mid-render.
+
+**The card stays English on `/id/academy`.** Everything around it is translated — section, button,
+tabs, note — but the specimen is the document an Indonesian learner will actually receive, and the
+Indonesian note says so in as many words. Translating the mock-up would have been the friendlier
+lie.
+
+**Verification.** **TC-E2E-141**: the dialog is absent until asked for, carries the sample mark and
+the placeholder name, switches between the two kinds (no score on a track, 85% and the ISTQB
+paragraph on the exam), closes on Escape, repeats in Indonesian with `Contoh` and a `lang="id"`
+note — and the `Certificate` row count is unchanged either side, which is the assertion that matters:
+looking at a specimen must never issue one. TC-E2E-118/119 were re-run against the extracted
+component to confirm the real page renders unchanged, and TC-E2E-91 covers the new section at 375px.
+
 ### A-08 — Content build-out & localised routes `[x]`
 
 T2/T3/T4 to `published`; the remaining sandbox checkers; the T3 CI capstone;

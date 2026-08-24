@@ -6,6 +6,7 @@ import { SandboxBadge } from "@/components/AcademyNav";
 import { AcademyFrame } from "@/components/academy/Frame";
 import { AcademyLanguageLink } from "@/components/academy/LanguageLink";
 import { AcademyLangMemory } from "@/components/academy/LangMemory";
+import { SampleCertificate } from "@/components/academy/SampleCertificate";
 import { TRACKS, ISTQB_DISCLAIMER, ISTQB_DISCLAIMER_ID } from "@/content/academy";
 import { idLessonSlugs, localiseTrack, visibleLessons } from "@/content/academy/i18n";
 import type { Lang } from "@/lib/i18n";
@@ -211,6 +212,16 @@ export async function AcademyRoadmapPage({ lang }: { lang: Lang }) {
           );
         })}
       </ol>
+
+      {/* The payoff, shown rather than described — and placed straight after
+          the track list, where a reader has just finished weighing up the
+          commitment and is asking what it is worth. The disclaimer is passed
+          down because `@/content/academy` is `server-only` and the sample is a
+          client component; see `TrademarkNotice` for the same handoff. */}
+      <SampleCertificate
+        lang={lang}
+        istqbDisclaimer={lang === "id" ? ISTQB_DISCLAIMER_ID : ISTQB_DISCLAIMER}
+      />
 
       <section className="mt-14 border-t border-hairline pt-6">
         <h2 className="font-mono text-[10px] uppercase tracking-[0.14em] text-content-muted">
