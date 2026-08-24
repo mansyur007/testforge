@@ -4747,6 +4747,26 @@ With this, **all four work packages of the 2026-08-23 content audit are complete
 review promises — lost escapes (8), terminology (9), the exam-link exception (10), and the `-mu`
 register forms — which is the part that outlasts the fixes. See `docs/AUDIT-ACADEMY.md` §4.7, §5 WP-4.
 
+**A-07b, 2026-08-24 — the roadmap shows the certificate instead of describing it.** Certificates
+have existed since A-07, but the only way to see one was to earn one: `/academy` never mentioned
+them, and the closest thing to a preview was the "Want one?" line at the foot of somebody else's
+credential. A reader deciding whether to spend two hours on a track could not see what the two hours
+produced. The roadmap now carries a **What you get at the end** section with a *See a sample
+certificate* button, opening a dialog with a specimen of either kind — track completion, which has
+no score, and a practice-exam pass, which does — plus the §7.4 disclaimer that travels with it.
+
+The part worth recording is not the button but what it is made of. The card markup moved out of
+`/academy/certificate/[serial]/page.tsx` into `components/academy/CertificateCard.tsx`, and both
+surfaces now render *the same component*: a preview that has drifted from the real certificate is
+worse than no preview, because it makes a promise the product then breaks, and one component is the
+only version of that guarantee a reviewer cannot forget to check. The specimen is marked as one on
+three axes — a `SAMPLE` / `CONTOH` ribbon on the card itself so a screenshot carries it, a
+placeholder holder name, and serials hand-written inside Crockford's alphabet to read as
+`TF-5AMP-1E00-…` — and it writes nothing, which **TC-E2E-141** asserts with a row count either side.
+The card stays English on `/id/academy` on purpose: the surrounding copy is translated, but the
+specimen is the document an Indonesian learner will actually receive, and the Indonesian note says
+so rather than letting a translated mock-up imply otherwise.
+
 ---
 
 *End of document. When a feature ships: tick its checkbox here, flip the cell in

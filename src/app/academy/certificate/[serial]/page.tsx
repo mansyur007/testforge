@@ -2,6 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Logo } from "@/components/icons";
+import {
+  CertificateCard,
+  CertificateDisclaimer,
+} from "@/components/academy/CertificateCard";
 import { ISTQB_DISCLAIMER } from "@/content/academy";
 import { getPublicCertificate } from "@/lib/academy/certificates";
 import { NOINDEX, absoluteUrl } from "@/lib/seo";
@@ -55,14 +59,6 @@ export async function generateMetadata({
   };
 }
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
-
 export default async function CertificatePage({
   params,
 }: {
@@ -84,81 +80,12 @@ export default async function CertificatePage({
         </Link>
       </div>
 
-      <article
-        data-testid="certificate-card"
-        className="rounded-2xl border border-hairline bg-surface p-8 text-center shadow-sm sm:p-12"
-      >
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-content-muted">
-          TestForge QA Academy
-        </p>
-        <h1 className="mt-2 text-2xl font-bold text-content-strong sm:text-3xl">
-          {cert.heading}
-        </h1>
+      <CertificateCard cert={cert} headingLevel="h1" />
 
-        <p className="mt-8 text-sm text-content-muted">This certifies that</p>
-        <p
-          data-testid="certificate-holder"
-          className="mt-1 text-2xl font-semibold text-content-strong sm:text-3xl"
-        >
-          {cert.holderName}
-        </p>
-        <p className="mt-4 text-sm text-content-muted">
-          {cert.kind === "EXAM" ? "passed the" : "completed the"}
-        </p>
-        <p data-testid="certificate-subject" className="mt-1 text-lg text-content">
-          {cert.subject}
-        </p>
-
-        {cert.scorePct !== null && (
-          <p
-            data-testid="certificate-score"
-            className="mt-6 inline-flex rounded-full bg-accent-soft px-4 py-1.5 text-sm font-semibold text-accent-text"
-          >
-            Best passing score {cert.scorePct}%
-          </p>
-        )}
-
-        <dl className="mt-8 flex flex-col items-center gap-3 border-t border-hairline pt-6 text-sm sm:flex-row sm:justify-center sm:gap-10">
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-content-muted">
-              First earned
-            </dt>
-            <dd className="mt-0.5 text-content-strong">{formatDate(cert.issuedAt)}</dd>
-          </div>
-          <div>
-            <dt className="text-xs uppercase tracking-wide text-content-muted">Serial</dt>
-            <dd
-              data-testid="certificate-serial"
-              className="mt-0.5 font-mono text-content-strong"
-            >
-              {cert.serial}
-            </dd>
-          </div>
-        </dl>
-      </article>
-
-      {/* §7.4: a certificate has to say what it is, on the certificate — not in
-          a footnote a reader can miss. Two separate claims are being disclaimed
-          here: that this is a professional qualification (it is not, for either
-          kind), and that it has anything to do with the ISTQB (it does not,
-          even for the exam). */}
-      <section
-        data-testid="certificate-disclaimer"
-        className="mt-6 rounded-xl border border-hairline bg-surface-muted p-5 text-sm text-content-muted"
-      >
-        <p className="font-medium text-content">
-          This is a record of practice on TestForge, not a professional
-          certification.
-        </p>
-        <p className="mt-2">
-          It confers no ISTQB® credential and no accredited qualification of any
-          kind. Its only claim is that the holder did the work named above on
-          this instance of TestForge, on the date shown.
-        </p>
-        {cert.kind === "EXAM" && (
-          <p className="mt-3 text-xs leading-relaxed">{ISTQB_DISCLAIMER}</p>
-        )}
-      </section>
+      {/* The §7.4 disclaimer travels with the card in `CertificateCard`, for
+          the reason given there: it is part of what the certificate says, not
+          part of what this page says about it. */}
+      <CertificateDisclaimer kind={cert.kind} istqbDisclaimer={ISTQB_DISCLAIMER} />
 
       <p className="mt-8 text-center text-sm text-content-muted">
         Want one?{" "}
