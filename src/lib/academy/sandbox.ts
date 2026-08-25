@@ -22,6 +22,16 @@ export const SANDBOX_KIND = "ACADEMY_SANDBOX";
 export const NOT_SANDBOX = { kind: { not: SANDBOX_KIND } } as const;
 
 /**
+ * The same exclusion one level out, for counting a user's *memberships* rather
+ * than listing projects: `_count: { select: { memberships: MEMBERSHIP_NOT_SANDBOX } }`.
+ *
+ * A count of memberships is a count of projects by another name, so it owes the
+ * reader the same answer the listings give — otherwise opening one hands-on
+ * lesson makes an account read as having a project it does not have.
+ */
+export const MEMBERSHIP_NOT_SANDBOX = { where: { project: NOT_SANDBOX } } as const;
+
+/**
  * Slug is derived from the user id rather than random so a learner who deletes
  * their sandbox and starts a hands-on lesson again lands on the same URL — any
  * link a lesson printed for them keeps working. The collision loop exists

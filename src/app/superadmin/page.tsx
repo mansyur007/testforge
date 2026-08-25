@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { NOINDEX } from "@/lib/seo";
 import { Logo } from "@/components/icons";
+import { MEMBERSHIP_NOT_SANDBOX, SANDBOX_KIND } from "@/lib/academy/sandbox";
 import { requireSuperadmin } from "@/lib/superadmin";
 import { superadminLogout } from "@/app/actions/superadmin";
 
@@ -24,10 +25,10 @@ const SORTS = {
   user: { dir: "asc", orderBy: (d: Dir) => ({ name: d }) },
   org: { dir: "asc", orderBy: (d: Dir) => ({ organization: { name: d } }) },
   role: { dir: "asc", orderBy: (d: Dir) => ({ role: d }) },
-  projects: {
-    dir: "desc",
-    orderBy: (d: Dir) => ({ memberships: { _count: d } }),
-  },
+  // Prisma can order by a relation count but not by a *filtered* one, and this
+  // column has to exclude Academy sandboxes to agree with the number it sorts
+  // — so it takes the same raw-SQL route as "Last action" below.
+  projects: { dir: "desc", orderBy: null },
   status: { dir: "asc", orderBy: (d: Dir) => ({ emailVerifiedAt: d }) },
   created: { dir: "desc", orderBy: (d: Dir) => ({ createdAt: d }) },
   // "Last action" lives in AuditLog, not User — see the raw ordering below.
@@ -166,17 +167,25 @@ export default async function SuperadminUsersPage({
     totpEnabledAt: true,
     createdAt: true,
     organization: { select: { name: true, slug: true } },
-    _count: { select: { memberships: true } },
+    // A-04: the Academy sandbox is the learner's scratch space, not their work.
+    // Every "my projects" listing already filters it out; this count did not,
+    // so an account that had opened one hands-on lesson and nothing else read
+    // as having a project in the one column an operator uses to tell active
+    // accounts from dormant ones.
+    _count: { select: { memberships: MEMBERSHIP_NOT_SANDBOX } },
   };
+
+  const nameOrEmailFilter = () =>
+    q
+      ? Prisma.sql`WHERE u."name" LIKE ${likeParam(q)} ESCAPE '\\' OR u."email" LIKE ${likeParam(q)} ESCAPE '\\'`
+      : Prisma.empty;
 
   // Sorting by "Last action" orders on an aggregate of another table, which
   // Prisma's orderBy cannot express — so that one column picks the page's ids
   // in SQL first and hydrates them afterwards. Accounts that never wrote
   // anything sort last in both directions: "never" is not "oldest".
   const idsByLastAction = async () => {
-    const filter = q
-      ? Prisma.sql`WHERE u."name" LIKE ${likeParam(q)} ESCAPE '\\' OR u."email" LIKE ${likeParam(q)} ESCAPE '\\'`
-      : Prisma.empty;
+    const filter = nameOrEmailFilter();
     // `dir` is narrowed to the two literals above, so Prisma.raw sees no input.
     const rows = await db.$queryRaw<{ id: string }[]>`
       SELECT u."id" AS id
@@ -194,6 +203,26 @@ export default async function SuperadminUsersPage({
     return rows.map((r) => r.id);
   };
 
+  // Same escape hatch, for the same reason one step further along: the count
+  // this sorts on is filtered, and Prisma's `orderBy` has no filtered form — so
+  // ordering through it would rank rows by a number the table does not show.
+  const idsByProjects = async () => {
+    const filter = nameOrEmailFilter();
+    const rows = await db.$queryRaw<{ id: string }[]>`
+      SELECT u."id" AS id
+      FROM "User" u
+      ${filter}
+      ORDER BY (
+        SELECT COUNT(*)
+        FROM "ProjectMember" m
+        JOIN "Project" p ON p."id" = m."projectId"
+        WHERE m."userId" = u."id" AND p."kind" <> ${SANDBOX_KIND}
+      ) ${Prisma.raw(dir.toUpperCase())}, u."id"
+      LIMIT ${PAGE_SIZE} OFFSET ${skip}
+    `;
+    return rows.map((r) => r.id);
+  };
+
   const findPage = async () => {
     const byColumn = SORTS[sort].orderBy;
     if (byColumn) {
@@ -205,7 +234,7 @@ export default async function SuperadminUsersPage({
         take: PAGE_SIZE,
       });
     }
-    const ids = await idsByLastAction();
+    const ids = sort === "projects" ? await idsByProjects() : await idsByLastAction();
     if (ids.length === 0) return [];
     const rows = await db.user.findMany({ where: { id: { in: ids } }, select });
     // `in` promises no ordering — restore the one the raw query chose.

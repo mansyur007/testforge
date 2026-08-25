@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Papa from "papaparse";
 import { db } from "@/lib/db";
+import { MEMBERSHIP_NOT_SANDBOX } from "@/lib/academy/sandbox";
 import { getSuperadminSession, superadminEnabled } from "@/lib/superadmin";
 
 // F-41: CSV of every registered user. Lives under /superadmin (not /api) on
@@ -24,7 +25,9 @@ export async function GET() {
       totpEnabledAt: true,
       createdAt: true,
       organization: { select: { name: true, slug: true } },
-      _count: { select: { memberships: true } },
+      // Same exclusion as the console table — the CSV is the same numbers in a
+      // file, and the two disagreeing would be worse than either being wrong.
+      _count: { select: { memberships: MEMBERSHIP_NOT_SANDBOX } },
     },
     orderBy: { createdAt: "desc" },
   });
