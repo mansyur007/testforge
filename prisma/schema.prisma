@@ -1001,6 +1001,16 @@ model Certificate {
   refSlug   String // track slug or exam template slug
   serial    String    @unique // HMAC-derived, unguessable, public URL segment
   scorePct  Int? // EXAM only: best passing score, null for TRACK
+  // A-07c: the name printed on the certificate, frozen at issue rather than
+  // resolved live from `User.name`. A credential that follows the account name
+  // rewrites every copy already shared: a screenshot taken last month and the
+  // page it links to would name two different people for one serial, and that
+  // page resolving is the only thing that makes the serial checkable at all.
+  // The holder may correct it — an OAuth display name is often a handle, not a
+  // name — and the serial does not move when they do. Null means "issued before
+  // this column existed"; those rows still resolve live from the account until
+  // the backfill in prisma/seed.mjs reaches them.
+  holderName String?
   issuedAt  DateTime  @default(now())
   revokedAt DateTime?
 

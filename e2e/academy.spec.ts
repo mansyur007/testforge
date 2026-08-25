@@ -1378,6 +1378,9 @@ test(`TC-${TC}-118 The lesson that completes a track earns its certificate, and 
   expect(cert.kind).toBe("TRACK");
   expect(cert.refSlug).toBe("fundamentals");
   expect(cert.scorePct).toBeNull(); // a track is done or not; there is no score
+  // The name is copied off the account here, at issue, and never re-read after
+  // — TC-*-142 is what proves the second half of that.
+  expect(cert.holderName).toBe("Academy Track Test");
   expect(await db.lessonProgress.count({ where: { userId: user.id } })).toBe(lessons.length);
 
   await page.goto("/academy/me");
@@ -1500,6 +1503,160 @@ test(`TC-${TC}-120 A signed-in stranger cannot switch off somebody else's certif
   expect(victimRow.revokedAt).toBeNull();
   const attackerRow = await db.certificate.findUniqueOrThrow({ where: { serial: attackerSerial } });
   expect(attackerRow.revokedAt).not.toBeNull(); // their own toggle did work
+
+  await db.user.delete({ where: { email: victimEmail } });
+  await db.user.delete({ where: { email: attackerEmail } });
+});
+
+// ---------------------------------------------------------------------------
+// The name printed on a certificate. It is frozen at issue rather than read
+// live from the account, because a credential that follows `User.name` rewrites
+// every copy already shared: a screenshot and the page it links to would name
+// two different people for one serial, and that page resolving is the only
+// thing that makes the serial checkable. The holder can still correct it — the
+// name was always self-asserted, it just could not be edited before.
+// ---------------------------------------------------------------------------
+
+test(`TC-${TC}-142 A certificate keeps the name it was issued with, and its holder can correct it`, async ({
+  page,
+  browser,
+}) => {
+  const email = `academy-cert-name-${Date.now()}@testforge.local`;
+  await makeUser(email, "qa-handle-99", "AcademyName123");
+  const user = await db.user.findUniqueOrThrow({ where: { email } });
+
+  // Deliberately a row with **no** `holderName`: this is the shape every
+  // certificate issued before the column existed still has, and the fallback to
+  // the account name is what stops those pages rendering a blank where the
+  // holder should be. TC-*-118 is what proves a newly issued row arrives with
+  // the name already frozen on it.
+  const serial = fixtureSerial();
+  await db.certificate.create({
+    data: { userId: user.id, kind: "TRACK", refSlug: "fundamentals", serial },
+  });
+
+  await readAsStranger(browser, async (stranger) => {
+    await stranger.goto(`/academy/certificate/${serial}`);
+    await expect(stranger.getByTestId("certificate-holder")).toHaveText("qa-handle-99");
+  });
+
+  await login(page, email, "AcademyName123");
+  await page.goto("/academy/me");
+  await expect(page.getByTestId(`me-certificate-holder-${serial}`)).toHaveText("qa-handle-99");
+
+  // An empty name is refused, and refusing it changes nothing — checked before
+  // the successful save so a passing rename cannot be what makes the row right.
+  await page.click(`[data-testid="me-certificate-rename-${serial}"]`);
+  await page.fill(`[data-testid="me-certificate-name-input-${serial}"]`, "   ");
+  await page.click(`[data-testid="me-certificate-name-save-${serial}"]`);
+  await expect(page.getByTestId(`me-certificate-error-${serial}`)).toContainText(
+    "Enter the name",
+  );
+  expect((await db.certificate.findUniqueOrThrow({ where: { serial } })).holderName).toBeNull();
+
+  await page.fill(`[data-testid="me-certificate-name-input-${serial}"]`, "  Sri  Wahyuni  ");
+  await page.click(`[data-testid="me-certificate-name-save-${serial}"]`);
+  await expect(page.getByTestId(`me-certificate-holder-${serial}`)).toHaveText("Sri Wahyuni");
+
+  // Stored collapsed, not as typed: the card centres one line, and the run of
+  // spaces someone pastes in from a CV would print as a gap in their own name.
+  const renamed = await db.certificate.findUniqueOrThrow({ where: { serial } });
+  expect(renamed.holderName).toBe("Sri Wahyuni");
+
+  // The serial does not move. It derives from {userId, kind, refSlug} and none
+  // of those changed — which is the whole reason the rename is safe to offer:
+  // re-deriving would turn every already-shared copy into a 404.
+  expect(renamed.serial).toBe(serial);
+  await readAsStranger(browser, async (stranger) => {
+    const res = await stranger.goto(`/academy/certificate/${serial}`);
+    expect(res?.status()).toBe(200);
+    await expect(stranger.getByTestId("certificate-holder")).toHaveText("Sri Wahyuni");
+    await expect(stranger.getByTestId("certificate-serial")).toHaveText(serial);
+  });
+
+  // The property this column exists for. Renaming the *account* — which is what
+  // signing in through a provider with a different display name does — must not
+  // touch a credential that has already been handed out.
+  await db.user.update({ where: { id: user.id }, data: { name: "Someone Else Entirely" } });
+  await readAsStranger(browser, async (stranger) => {
+    await stranger.goto(`/academy/certificate/${serial}`);
+    await expect(stranger.getByTestId("certificate-holder")).toHaveText("Sri Wahyuni");
+  });
+
+  // And the rename is on the record rather than having happened invisibly.
+  const audit = await db.auditLog.findFirst({
+    where: { userId: user.id, action: "academy.certificate_rename" },
+  });
+  expect(audit?.entityId).toBe(serial);
+  expect(audit?.detail).toBe("Sri Wahyuni");
+
+  await db.user.delete({ where: { email } });
+});
+
+test(`TC-${TC}-143 A signed-in stranger cannot put a name on somebody else's certificate`, async ({
+  page,
+}) => {
+  // Same replay shape as TC-*-120, and here for a sharper reason: hiding
+  // someone else's certificate vandalises it, but renaming one would let an
+  // attacker put *their own* name on a credential somebody else earned.
+  const stamp = Date.now();
+  const victimEmail = `academy-name-victim-${stamp}@testforge.local`;
+  const attackerEmail = `academy-name-attacker-${stamp}@testforge.local`;
+  await makeUser(victimEmail, "Name Victim", "AcademyVictim123");
+  await makeUser(attackerEmail, "Name Attacker", "AcademyAttacker123");
+  const victim = await db.user.findUniqueOrThrow({ where: { email: victimEmail } });
+  const attacker = await db.user.findUniqueOrThrow({ where: { email: attackerEmail } });
+
+  const victimSerial = fixtureSerial();
+  const attackerSerial = fixtureSerial();
+  await db.certificate.create({
+    data: {
+      userId: victim.id,
+      kind: "TRACK",
+      refSlug: "fundamentals",
+      serial: victimSerial,
+      holderName: "Name Victim",
+    },
+  });
+  await db.certificate.create({
+    data: {
+      userId: attacker.id,
+      kind: "TRACK",
+      refSlug: "fundamentals",
+      serial: attackerSerial,
+      holderName: "Name Attacker",
+    },
+  });
+
+  await login(page, attackerEmail, "AcademyAttacker123");
+
+  let renameReq: { url: string; headers: Record<string, string>; body: string } | null = null;
+  page.on("request", (req) => {
+    if (req.method() !== "POST") return;
+    const headers = req.headers();
+    if (!headers["next-action"]) return;
+    const body = req.postData();
+    if (body?.includes(attackerSerial)) renameReq = { url: req.url(), headers, body };
+  });
+
+  await page.goto("/academy/me");
+  await page.click(`[data-testid="me-certificate-rename-${attackerSerial}"]`);
+  await page.fill(`[data-testid="me-certificate-name-input-${attackerSerial}"]`, "Attacker Renamed");
+  await page.click(`[data-testid="me-certificate-name-save-${attackerSerial}"]`);
+  await expect(page.getByTestId(`me-certificate-holder-${attackerSerial}`)).toHaveText(
+    "Attacker Renamed",
+  );
+  expect(renameReq).not.toBeNull();
+
+  const req = renameReq!;
+  const replay = await page.request.post(req.url, {
+    headers: req.headers,
+    data: req.body.replaceAll(attackerSerial, victimSerial),
+  });
+  expect(replay.ok()).toBe(true); // the action answers; it just doesn't do anything
+
+  const victimRow = await db.certificate.findUniqueOrThrow({ where: { serial: victimSerial } });
+  expect(victimRow.holderName).toBe("Name Victim");
 
   await db.user.delete({ where: { email: victimEmail } });
   await db.user.delete({ where: { email: attackerEmail } });

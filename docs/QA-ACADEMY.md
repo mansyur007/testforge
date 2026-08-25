@@ -319,6 +319,7 @@ model Certificate {
   refSlug   String   // track slug or exam template slug
   serial    String   @unique // HMAC-derived, unguessable, public URL segment
   scorePct  Int?
+  holderName String? // A-07c: frozen at issue; null = issued before the column
   issuedAt  DateTime @default(now())
   revokedAt DateTime?
 
@@ -1150,6 +1151,71 @@ class the theme switcher sets and reading the card's painted background back —
 `--tf-certificate`'s `--tf-surface` to the dark value fails it with `rgb(15, 23, 42)`. TC-E2E-118/119
 were re-run against the extracted component to confirm the real page renders unchanged, and
 TC-E2E-91 covers the new section at 375px.
+
+#### A-07c — the name on the certificate, frozen and correctable `[x]`
+
+> **Status: DONE** (2026-08-25). Closes the second of §9's three open questions — *name on the
+> certificate: account name, or user-editable at issue time?* The answer turned out to be neither
+> of the two on offer.
+
+**The question understated the problem.** `holderName` was not stored at all: `getPublicCertificate`
+read `User.name` live on every render, and `User.name` is itself not editable — the Account page
+displays it, and its value came from whatever the OAuth provider had. So the name on a TestForge
+credential was simultaneously **unfixable by its holder** and **silently mutable by the provider**,
+which are the two worst halves of both options in the question.
+
+The second half is the serious one. A-07b had just finished arguing that a certificate travels as a
+link *and* as a screenshot, and that two people comparing one serial must not be looking at two
+different documents. A live-resolved name breaks exactly that: change your display name on GitHub
+and every certificate you have ever shared is retroactively re-issued to somebody else's name, while
+the screenshots in circulation keep the old one. Nothing warns anyone, and the verify URL — the only
+thing that makes the serial checkable — is what serves the contradiction.
+
+**Frozen at issue, correctable by the holder.** `Certificate.holderName` is copied from the account
+once, in `issueCertificate`, and never re-read; a later re-earn at a higher score updates `scorePct`
+and nothing else. `/academy/me` grows a *Change name* control per certificate, because freezing alone
+would have preserved `qa-handle-99` on a credential forever. There is no approval step and no
+identity proof, and that is not a gap: this name was **always** self-asserted — it arrived from an
+OAuth profile nobody verified. What is new is that the holder can fix it and that every change
+writes an `academy.certificate_rename` audit row, so a rename is a fact on the record rather than
+something that happened invisibly.
+
+**The serial does not move on a rename**, and that is the property the whole feature rests on. It
+derives from `{userId, kind, refSlug}`, none of which a rename touches — so an already-shared link
+keeps resolving. Re-deriving would have turned every copy in circulation into a 404 the holder never
+intended, which is the same reasoning A-07 used to keep the switch in `revokedAt` rather than in the
+serial.
+
+**Legacy rows, and where the backfill lives.** The column is nullable, and a null still resolves
+live from the account, so an instance that has not run the backfill renders a name rather than a
+blank line. The backfill itself is in `prisma/seed.mjs`, above the seeded-already early return: the
+deploy path is `prisma db push && node prisma/seed.mjs` on container start, and that early return is
+the only reason a live instance would otherwise never reach it. It is idempotent by construction —
+it matches on `holderName: null`, so a row that has a name, including one the holder chose, is never
+matched again. Verified by running it three times against a hand-made legacy row: `null` → the
+account name, then a holder-chosen name left untouched on both later runs.
+
+**Validation is deliberately permissive about characters and strict about shape.** Names carry
+accents, hyphens, apostrophes, non-Latin scripts and titles, and a validator that "cleans" those is
+one that tells people their own name is malformed. `normalizeHolderName` collapses control
+characters and runs of whitespace, trims, rejects empty, and caps at 70 — a ceiling that stops a
+paragraph being typed into a card that centres one line, not a claim about what fits.
+
+**Verification.** **TC-E2E-142** walks the whole shape on one row: the legacy fallback renders the
+account name, a blank submission is refused *and leaves the row null* (asserted before the
+successful save, so a working rename cannot be what makes the row right), `  Sri  Wahyuni  ` stores
+collapsed, the serial is unchanged and the public page still resolves — and then the account is
+renamed in the database and the certificate does **not** follow, which is the property the column
+exists for. **TC-E2E-143** replays the rename action with someone else's serial swapped in, the same
+technique TC-E2E-120 uses against the visibility toggle, and here for a sharper reason: hiding
+someone else's certificate vandalises it, but renaming one would let an attacker put their own name
+on a credential somebody else earned. **TC-E2E-118** gains one line — the freeze happens on the real
+issue path, not only in a fixture.
+
+Both new tests were **proved to fail**: dropping the freeze back to `cert.user.name` fails TC-E2E-142
+with `Expected "Sri Wahyuni" / Received "qa-handle-99"`, and removing `userId` from the `updateMany`
+filter fails TC-E2E-143 with the victim's row reading `Attacker Renamed` — the attack itself,
+demonstrated rather than argued.
 
 ### A-08 — Content build-out & localised routes `[x]`
 
@@ -3568,7 +3634,10 @@ in the template slug (`ctfl-v4-full`) precisely so two versions can coexist.
 1. Should the sandbox count against any per-user project limits, and do self-hosters get Academy
    on by default or behind `ACADEMY_ENABLED`? (Recommendation: on by default; it costs nothing
    until someone opens it.)
-2. Certificates: name on the certificate — account name, or user-editable at issue time?
+2. ~~Certificates: name on the certificate — account name, or user-editable at issue time?~~
+   **Answered 2026-08-25 — neither, and the question understated the problem: the name was not
+   stored at all, so it followed the OAuth account retroactively onto certificates already shared.
+   Frozen at issue *and* correctable by the holder. See A-07c.**
 3. Team view — should org admins see their members' Academy progress? It is a real B2B hook
    ("upskill your QA team") but also a surveillance surface; opt-in per user if built at all.
 
