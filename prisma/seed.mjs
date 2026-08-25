@@ -5,7 +5,32 @@ import bcrypt from "bcryptjs";
 
 const db = new PrismaClient();
 
+/**
+ * A-07: freeze the holder name on certificates issued before the column
+ * existed. Runs before the seeded-already early return on purpose — a live
+ * instance is always past that point, and this is the only step in the deploy
+ * path (`prisma db push && node prisma/seed.mjs`) that can reach those rows.
+ * Idempotent: once a row has a name it is never matched again, and the loop is
+ * a no-op on every start after the first.
+ */
+async function backfillCertificateHolders() {
+  const stale = await db.certificate.findMany({
+    where: { holderName: null },
+    select: { id: true, user: { select: { name: true } } },
+  });
+  for (const c of stale) {
+    await db.certificate.update({
+      where: { id: c.id },
+      data: { holderName: c.user.name },
+    });
+  }
+  if (stale.length)
+    console.log(`Backfill: ${stale.length} nama pemegang sertifikat dibekukan.`);
+}
+
 async function main() {
+  await backfillCertificateHolders();
+
   const existing = await db.user.findUnique({
     where: { email: "admin@testforge.local" },
   });

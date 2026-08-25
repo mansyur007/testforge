@@ -102,6 +102,11 @@ export type IssuedCertificate = {
  *
  * A revoked certificate is left exactly as it is — see `setCertificateHidden`
  * for why re-earning must not quietly republish a link its holder took down.
+ *
+ * `holderName` is copied from the account **once**, here, and never refreshed
+ * on a later re-earn: a second pass at a higher score updates the score and
+ * nothing else, so the name on a shared credential cannot move under a reader
+ * who already has the link.
  */
 async function issueCertificate(input: {
   userId: string;
@@ -124,9 +129,21 @@ async function issueCertificate(input: {
     return existing as IssuedCertificate;
   }
 
+  const account = await db.user.findUnique({
+    where: { id: userId },
+    select: { name: true },
+  });
+
   try {
     return (await db.certificate.create({
-      data: { userId, kind, refSlug, serial: deriveSerial({ userId, kind, refSlug }), scorePct },
+      data: {
+        userId,
+        kind,
+        refSlug,
+        serial: deriveSerial({ userId, kind, refSlug }),
+        scorePct,
+        holderName: account?.name ?? null,
+      },
     })) as IssuedCertificate;
   } catch {
     // Two tabs finishing the same track at once, or an exam auto-submit racing
@@ -232,6 +249,7 @@ export async function getPublicCertificate(
       scorePct: true,
       issuedAt: true,
       revokedAt: true,
+      holderName: true,
       user: { select: { name: true } },
     },
   });
@@ -244,7 +262,10 @@ export async function getPublicCertificate(
     refSlug: cert.refSlug,
     heading,
     subject,
-    holderName: cert.user.name,
+    // Frozen at issue; the account name is the fallback for rows that predate
+    // the column, so an un-backfilled instance still renders a name rather
+    // than a blank line where the holder should be.
+    holderName: cert.holderName ?? cert.user.name,
     scorePct: cert.scorePct,
     issuedAt: cert.issuedAt.toISOString(),
   };
@@ -268,10 +289,12 @@ export async function findCertificateSerial(
 }
 
 /** Every certificate the viewer holds, revoked ones included — /academy/me is
- *  where they go to put one back. */
+ *  where they go to put one back, and where they can correct the name on one.
+ *  `accountName` is only the fallback for rows issued before `holderName`
+ *  existed; a row that has its own name ignores it. */
 export async function listMyCertificates(
   userId: string,
-  holderName: string,
+  accountName: string,
 ): Promise<MyCertificate[]> {
   const rows = await db.certificate.findMany({
     where: { userId },
@@ -285,7 +308,7 @@ export async function listMyCertificates(
       refSlug: c.refSlug,
       heading,
       subject,
-      holderName,
+      holderName: c.holderName ?? accountName,
       scorePct: c.scorePct,
       issuedAt: c.issuedAt.toISOString(),
       hidden: c.revokedAt !== null,
@@ -315,6 +338,55 @@ export async function setCertificateHidden(
   const { count } = await db.certificate.updateMany({
     where: { userId, serial },
     data: { revokedAt: hidden ? new Date() : null },
+  });
+  return count > 0;
+}
+
+/** A ceiling, not a fit: the card's name line wraps, so this is here to stop a
+ *  paragraph being typed into it, and sits well clear of the longest names
+ *  people actually have. */
+export const HOLDER_NAME_MAX = 70;
+
+/**
+ * Normalise a submitted holder name, or say why it cannot be used.
+ *
+ * Deliberately permissive about *which* characters: names carry accents, hyphens,
+ * apostrophes, non-Latin scripts and titles, and a validator that "cleans" those
+ * is a validator that tells people their own name is malformed. What it does
+ * reject is the shape a name cannot have — empty, over-long, or carrying line
+ * breaks and control characters, which are layout attacks on the card rather
+ * than anything a person is called.
+ */
+export function normalizeHolderName(raw: string): { name: string } | { error: string } {
+  // Control characters collapse to a space before the whitespace pass, so a
+  // pasted newline shortens a name rather than splitting the line it prints on.
+  // eslint-disable-next-line no-control-regex
+  const name = raw.replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim();
+  if (!name) return { error: "Enter the name that should appear on the certificate." };
+  if (name.length > HOLDER_NAME_MAX)
+    return { error: `That name is longer than ${HOLDER_NAME_MAX} characters.` };
+  return { name };
+}
+
+/**
+ * Correct the name printed on one of the caller's own certificates. Same tenant
+ * guard as `setCertificateHidden` — `userId` in the `updateMany` filter, so a
+ * serial belonging to someone else matches nothing.
+ *
+ * The serial does **not** move. It derives from `{userId, kind, refSlug}` and
+ * none of those change here, which is the point: a reader who already holds the
+ * link keeps a working link, and re-deriving would instead turn every shared
+ * copy into a 404 the holder never intended.
+ */
+export async function setCertificateHolderName(
+  userId: string,
+  rawSerial: string,
+  name: string,
+): Promise<boolean> {
+  const serial = normalizeSerial(rawSerial);
+  const { count } = await db.certificate.updateMany({
+    where: { userId, serial },
+    data: { holderName: name },
   });
   return count > 0;
 }

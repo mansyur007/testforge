@@ -30,7 +30,9 @@ import {
   issueExamCertificate,
   issueTrackCertificateIfComplete,
   listMyCertificates,
+  normalizeHolderName,
   setCertificateHidden,
+  setCertificateHolderName,
 } from "@/lib/academy/certificates";
 import type { MyCertificate } from "@/lib/academy/types";
 
@@ -644,6 +646,48 @@ export async function setCertificateVisibilityAction(
   });
   revalidatePath("/academy/me");
   return { ok: true };
+}
+
+/**
+ * Correct the name printed on one of the caller's own certificates.
+ *
+ * There is no approval step and no proof of identity, because there never was
+ * one: the name on a TestForge certificate has always been self-asserted — it
+ * arrived from whatever the OAuth provider had. What this adds is the ability
+ * to fix it, and an audit row for every change, so a rename is a fact on the
+ * record rather than something that happened invisibly.
+ *
+ * The public page is revalidated as well as `/academy/me`: the certificate is
+ * a cached route, and a holder who corrects a misspelling and then opens their
+ * own link should not be shown the old one.
+ */
+export async function renameCertificateHolderAction(
+  serial: string,
+  rawName: string,
+): Promise<{ ok: true; name: string } | { ok: false; error: string }> {
+  const session = await getSession();
+  if (!session) return { ok: false, error: "Sign in to manage certificates." };
+
+  const parsed = normalizeHolderName(rawName);
+  if ("error" in parsed) return { ok: false, error: parsed.error };
+
+  const changed = await setCertificateHolderName(
+    session.userId,
+    serial,
+    parsed.name,
+  );
+  if (!changed) return { ok: false, error: "Certificate not found." };
+
+  await logAudit({
+    userId: session.userId,
+    action: "academy.certificate_rename",
+    entityType: "certificate",
+    entityId: serial,
+    detail: parsed.name,
+  });
+  revalidatePath("/academy/me");
+  revalidatePath(`/academy/certificate/${serial}`);
+  return { ok: true, name: parsed.name };
 }
 
 /**
