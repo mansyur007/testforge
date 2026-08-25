@@ -3629,17 +3629,53 @@ the grader.
 tags make the bank re-mappable, but it is real maintenance. `exams.ts` keeps the syllabus version
 in the template slug (`ctfl-v4-full`) precisely so two versions can coexist.
 
-**Open questions for the owner:**
+**Open questions for the owner — all three answered, 2026-08-25.** They were written when the
+Academy was a plan; two of them turned out to be asking about things the code had already settled,
+and the third was answered by declining to build it. Kept in place with their answers rather than
+deleted, because a question someone raised deserves a visible verdict.
 
-1. Should the sandbox count against any per-user project limits, and do self-hosters get Academy
-   on by default or behind `ACADEMY_ENABLED`? (Recommendation: on by default; it costs nothing
-   until someone opens it.)
+1. ~~Should the sandbox count against any per-user project limits, and do self-hosters get Academy
+   on by default or behind `ACADEMY_ENABLED`?~~ **Both halves: no.**
+
+   The quota half asks about something that does not exist — there is no per-user or per-org project
+   limit anywhere in TestForge, and no plan field on `Organization` for one to hang off. What the
+   question was really reaching for is already an invariant: `Project.kind` plus `NOT_SANDBOX`, which
+   the dashboard, `/projects`, global search and the app shell all spread into their `where`. If a
+   quota is ever introduced it inherits that filter, because "the sandbox is not the learner's work"
+   is the rule those listings already enforce. (One place had missed it — the F-41 console counted
+   sandbox memberships in its `Projects` column, fixed the same day.)
+
+   The flag half is declined outright rather than deferred. Academy costs nothing until someone
+   opens it: the content is static, and the first DB row is written lazily on the first hands-on
+   lesson. A flag, by contrast, is a permanent branch through routing, navigation, the sitemap, the
+   i18n chrome and the SEO surface — each with its own e2e matrix. It gets built when somebody asks
+   for it, and the cheap version of that ask ("hide the nav entry") is not the same thing as gating
+   the routes.
+
 2. ~~Certificates: name on the certificate — account name, or user-editable at issue time?~~
    **Answered 2026-08-25 — neither, and the question understated the problem: the name was not
    stored at all, so it followed the OAuth account retroactively onto certificates already shared.
    Frozen at issue *and* correctable by the holder. See A-07c.**
-3. Team view — should org admins see their members' Academy progress? It is a real B2B hook
-   ("upskill your QA team") but also a surveillance surface; opt-in per user if built at all.
+
+3. ~~Team view — should org admins see their members' Academy progress?~~ **Not built, and this is a
+   decision rather than a deferral.**
+
+   The B2B need the question names is already met, by the half of it that does not require watching
+   anyone: certificates exist, and `/academy/me` lets their holder switch each link on or off. A team
+   member who wants to show they finished a track sends a link, and the showing is *theirs to do*.
+
+   What a manager's dashboard would add on top of that is exactly the surveillance half — progress
+   per lesson, when someone last opened the Academy, and, decisively, `ExamAttempt` keeps the
+   attempts that **failed**. Once a manager can see those, the practice exam stops being a place to
+   find out what you do not know yet; people stop sitting it, or start gaming it, and the bank whose
+   integrity A-10 spent five sub-work-orders defending is measuring something else. The cost is not
+   the code — `Organization`, `organizationId` and the `ADMIN` role are all already there, which is
+   precisely why this needed deciding rather than leaving to whoever picks it up.
+
+   **If it is ever wanted**, the shape to build is an org page showing only the certificates members
+   have chosen to publish: opt-in, credential-only, no per-lesson detail, no failed attempts, no
+   activity timestamps. That carries the whole "upskill your QA team" pitch without opening the
+   surface this note is about.
 
 **Deliberately excluded, and why:** video lessons (hosting, production cost, and they age badly
 against a text corpus that is diffable in PRs); an in-app content CMS (see §2.1 — git *is* the CMS,
