@@ -3955,6 +3955,22 @@ the export. The credential for the suite is set in `playwright.config.ts` → `w
 files, but the values live only in the VPS `/opt/testforge/.env` — which `deploy.yml` excludes from
 its rsync, so they survive every deploy and never enter git.
 
+**The project count excludes Academy sandboxes, 2026-08-25.** A-04 gives the sandbox its own
+`Project.kind` so that every surface listing "my projects" — dashboard, `/projects`, global search,
+the app shell — can filter it out. This column was the one place that never did, so an account that
+had opened a single hands-on lesson and done nothing else read as having one project, in the column
+an operator uses to tell active accounts from dormant ones. The CSV had the same number and now
+shares the same filter, since the two disagreeing would be worse than either being wrong.
+
+The sort had to move with it: Prisma can order by a relation count but not by a *filtered* one, so
+the `Projects` header now takes the raw-SQL route `Last action` already uses (`idsByProjects`,
+sharing its `WHERE` builder). Fixing the count alone would have left the column ranking rows by a
+number it does not display. **TC-E2E-144** covers both halves — a sandbox membership does not move
+the number in the table or in the CSV, a real project does, and a decoy account holding only
+sandboxes sorts *below* one holding a single real project. Proved to fail on each half separately:
+unfiltering the count reports `1` where the table should read `0`, and restoring the Prisma
+`orderBy` puts the decoy at the top of the page while it displays `0`.
+
 ---
 
 #### F-42 — Public overview insight panels `[x]`
