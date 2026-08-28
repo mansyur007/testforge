@@ -86,7 +86,7 @@ build ter-deploy
 Anda tidak akan menjalankan setiap tipe. Pilih berdasarkan risiko:
 
 - Ada uang yang berpindah → security + reliability lebih dulu.
-- Formulir pendaftaran publik → compatibility + accessibility, karena pengguna
+- Form pendaftaran publik → compatibility + accessibility, karena pengguna
   Anda tidak memakai laptop Anda.
 - Perkakas admin internal yang dipakai enam orang → fungsional saja adalah
   keputusan yang bisa dipertanggungjawabkan. Katakan itu terang-terangan, di

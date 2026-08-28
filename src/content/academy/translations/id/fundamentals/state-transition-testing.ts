@@ -10,7 +10,7 @@ export const stateTransitionTestingId: LessonTranslation = {
 
 Klik **Bayar** pada pesanan yang *pending* dan Anda mendapat layar pembayaran.
 Klik **Bayar** pada pesanan yang sudah *dibayar* dan… apa? Inputnya identik;
-keluarannya bergantung pada **state** (keadaan) yang sedang ditempati sistem.
+output-nya bergantung pada **state** (keadaan) yang sedang ditempati sistem.
 
 Apa pun yang punya siklus hidup membutuhkan teknik ini: pesanan, langganan, akun
 pengguna, tiket, sesi, unggahan, alur persetujuan. Dalam pekerjaan sehari-hari,
@@ -93,7 +93,7 @@ ditolak dengan pesan kesalahan yang jelas, dan pesanannya tetap Dibatalkan.
 
 Tidak semua yang punya state berbentuk pesanan:
 
-- Sebuah **wizard formulir** — bisakah Anda melompat ke langkah 3 lewat URL
+- Sebuah **wizard form** — bisakah Anda melompat ke langkah 3 lewat URL
   tanpa menyelesaikan langkah 2?
 - **Autentikasi** — keluar, masuk, sesi kedaluwarsa, reset kata sandi tertunda,
   tantangan 2FA belum tuntas. Apa yang dilakukan tombol back setelah logout?
@@ -143,7 +143,7 @@ lain.
       id: "q3",
       stem: "Mana di antara ini yang layak diserang dengan state transition testing?",
       choices: [
-        { id: "a", text: "Sebuah wizard formulir banyak langkah" },
+        { id: "a", text: "Sebuah wizard form banyak langkah" },
         { id: "b", text: "Autentikasi: keluar, sesi kedaluwarsa, 2FA tertunda" },
         { id: "c", text: "Sebuah unggahan: antre, mengunggah, memproses, gagal" },
         { id: "d", text: "Halaman harga statis tanpa interaksi" },

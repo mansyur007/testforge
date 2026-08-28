@@ -9,7 +9,7 @@ export const flakyTestsId: LessonTranslation = {
 ## Pengujian termahal adalah yang tidak dipercaya siapa pun
 
 Pengujian labil lulus dan gagal terhadap kode yang sama. Ia lebih buruk daripada
-pengujian yang tidak ada, dan alasannya bukan pelaksanaan ulang yang terbuang:
+pengujian yang tidak ada, dan alasannya bukan rerun yang terbuang:
 
 **Suite dengan pengujian labil melatih orang mengabaikan warna merah.** Begitu
 "jalankan ulang saja" jadi refleks, regresi sungguhan berikutnya ikut dijalankan
@@ -37,9 +37,9 @@ dengan 2 flaky" bukan run yang hijau**, dan memperlakukannya begitu adalah cara
 sebuah suite membusuk cukup lambat sehingga tidak ada yang menyadari itu terjadi
 tahun mana.
 
-Kalau pelaksanaan Anda mendarat di TestForge, sinyal yang sama ada di riwayat
+Kalau run Anda mendarat di TestForge, sinyal yang sama ada di riwayat
 case-nya dan ia lebih baik, karena ia bertahan: case yang sama, build yang sama,
-lulus di satu run dan gagal di run berikutnya. Satu pelaksanaan ulang itu
+lulus di satu run dan gagal di run berikutnya. Satu rerun itu
 anekdot; tiga puluh run itu sebuah laju.
 
 ## Urutkan berdasarkan laju, bukan berdasarkan kejengkelan
@@ -51,13 +51,13 @@ pagi ini. Cara cepat mendapatkan angkanya:
 npx playwright test tests/checkout.spec.ts --repeat-each=20
 ~~~
 
-Dua puluh pelaksanaan satu berkas memberi tahu Anda jauh lebih banyak daripada
+Dua puluh run satu berkas memberi tahu Anda jauh lebih banyak daripada
 dua puluh tebakan. Tambahkan \`--workers=4\` untuk mereproduksi kegagalan yang
 hanya muncul saat paralel, dan \`--repeat-each\` plus \`--headed\` ketika Anda
 menduga soal waktu.
 
 Dua laju yang layak diketahui secara terpisah: **seberapa sering ia gagal
-sendirian**, dan **seberapa sering ia gagal dalam pelaksanaan suite penuh.**
+sendirian**, dan **seberapa sering ia gagal dalam run suite penuh.**
 Pengujian yang 100% andal sendirian dan 60% di dalam suite punya masalah state
 bersama, bukan masalah waktu, dan satu perbandingan itu mempersempit pencariannya
 lebih dari sebanyak apa pun membaca pengujiannya.
@@ -88,7 +88,7 @@ lebih dulu. Buktikan:
 npx playwright test --workers=1 --grep "adds a case"
 ~~~
 
-Kalau sebuah pengujian lulus dalam pelaksanaan penuh dan gagal sendirian, ia
+Kalau sebuah pengujian lulus dalam run penuh dan gagal sendirian, ia
 tidak mandiri — ia meminjam persiapan dari tetangganya.
 
 **4. Locator yang ambigu atau peka urutan.** \`.first()\` pada daftar yang
@@ -177,7 +177,7 @@ pengujian berarti menemukan setiap satunya dalam minggu yang sama.
 Kelabilan adalah sebuah angka, dan melaporkannya sebagai angka mengubah
 percakapannya:
 
-> Suite: 312 pengujian. Pass rate 98,1% selama 30 pelaksanaan terakhir. Empat
+> Suite: 312 pengujian. Pass rate 98,1% selama 30 run terakhir. Empat
 > pengujian menyumbang 80% kegagalannya; dua dikarantina dengan pemiliknya, dua
 > sedang diperbaiki sprint ini. Tidak ada pengujian yang dikarantina yang mencakup
 > jalur penghalang rilis.
@@ -192,7 +192,7 @@ terjadi berikutnya.
 
 Pelajaran inilah alasan karya penutupnya ada. Suite lokal memberi tahu Anda
 sebuah pengujian gagal hari ini; riwayat run yang menumpuk memberi tahu Anda ia
-sudah gagal 11 kali dari 30 pelaksanaan dan selalu pada dua case yang sama — dan
+sudah gagal 11 kali dari 30 run dan selalu pada dua case yang sama — dan
 itulah beda antara firasat dan sebuah item pekerjaan.
 
 Ia juga memungkinkan Anda menjawab pertanyaan yang menentukan bagaimana run merah
@@ -209,7 +209,7 @@ sesuatu yang dimiliki sebuah tim alih-alih sesuatu yang Anda rawat.
   selfCheck: [
     {
       id: "q1",
-      stem: "Sebuah pengujian lulus dengan andal ketika dijalankan sendirian tapi gagal sekitar 40% dari waktunya dalam pelaksanaan suite paralel penuh. Penyebab mana yang sebaiknya Anda curigai lebih dulu?",
+      stem: "Sebuah pengujian lulus dengan andal ketika dijalankan sendirian tapi gagal sekitar 40% dari waktunya dalam run suite paralel penuh. Penyebab mana yang sebaiknya Anda curigai lebih dulu?",
       choices: [
         {
           id: "a",
@@ -273,7 +273,7 @@ sesuatu yang dimiliki sebuah tim alih-alih sesuatu yang Anda rawat.
         },
         {
           id: "d",
-          text: "Laporkan pass rate selama 30 pelaksanaan terakhir beserta daftar karantina dan pemiliknya",
+          text: "Laporkan pass rate selama 30 run terakhir beserta daftar karantina dan pemiliknya",
         },
       ],
       explanation:

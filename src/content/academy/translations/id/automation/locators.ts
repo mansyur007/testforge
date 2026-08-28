@@ -43,7 +43,7 @@ Locator bawaan Playwright, yang terbaik lebih dulu:
 
 ~~~ts
 page.getByRole("button", { name: "Sign in" });   // 1. role + nama yang bisa diakses
-page.getByLabel("Email");                        // 2. kolom formulir, lewat label
+page.getByLabel("Email");                        // 2. kolom form, lewat label
 page.getByPlaceholder("Search cases");           // 3. ketika tidak ada label
 page.getByText("No results found");              // 4. konten statis
 page.getByTestId("case-row");                    // 5. pintu darurat yang eksplisit
@@ -171,10 +171,10 @@ menyebutnya regresi.
 ## Internasionalisasi, sekilas
 
 Kalau aplikasinya dikirim dalam lebih dari satu bahasa, locator berbasis nama
-yang bisa diakses akan terikat bahasa. Jawaban bakunya adalah memaku pelaksanaan
+yang bisa diakses akan terikat bahasa. Jawaban bakunya adalah memaku run
 pengujiannya ke satu locale di config lalu menulis locator dalam bahasa itu, dan
 menjangkau test id pada segelintir elemen yang teksnya memang berubah-ubah tiap
-pelaksanaan. Mengasersikan teks *terjemahan* adalah pekerjaan lain — itu
+run. Mengasersikan teks *terjemahan* adalah pekerjaan lain — itu
 pemeriksaan konten, dan tempatnya bersama berkas terjemahan alih-alih di suite
 E2E.
 

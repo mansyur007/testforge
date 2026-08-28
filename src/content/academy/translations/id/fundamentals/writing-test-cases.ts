@@ -24,7 +24,7 @@ yang baik. Semua yang di bawah ini mengabdi pada pertanyaan itu.
 | **Prioritas** | Yang dijalankan lebih dulu ketika waktu habis | *Tinggi* |
 
 TestForge memberi kolom untuk masing-masing bagian ini, dan langkahnya berupa
-pasangan aksi/harapan — jadi struktur di atas adalah formulir yang akan Anda isi.
+pasangan aksi/harapan — jadi struktur di atas adalah form yang akan Anda isi.
 
 ## Judul: bagian yang semua orang buru-buru
 
@@ -89,7 +89,7 @@ nyata di sini:
 | Anda jalankan sekali, hari ini, sendiri | Sebuah charter atau satu baris checklist. Jangan dipoles berlebihan |
 | Anggota baru akan menjalankannya | Langkah lengkap, data eksplisit |
 | Case regresi yang dijalankan tiap rilis | Langkah lengkap — ia akan hidup lebih lama dari Anda |
-| Diatur regulasi / bisa diaudit | Langkah lengkap, plus bukti pelaksanaannya |
+| Diatur regulasi / bisa diaudit | Langkah lengkap, plus bukti run-nya |
 | Akan Anda otomasi sprint depan | Data dan asersi yang presisi; lewati koreografi UI-nya |
 
 Cara khas QA junior tersandung adalah menulis 200 case rinci luar biasa yang tak

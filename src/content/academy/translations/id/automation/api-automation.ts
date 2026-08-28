@@ -229,7 +229,7 @@ sebelumnya dan yang ini berpasangan: API sekaligus hal yang diuji dan alat yang
 membuat pengujian UI jadi cepat dan mandiri.
 
 Arah sebaliknya juga layak diketahui — lakukan sebuah aksi di UI, lalu verifikasi
-lewat API bahwa state yang *tersimpan* sudah benar. Formulir yang tampak
+lewat API bahwa state yang *tersimpan* sudah benar. Form yang tampak
 menyimpan tapi menulis kolom yang keliru adalah bug yang akan dengan senang hati
 disembunyikan layar dari Anda.
 
@@ -325,7 +325,7 @@ sungguh-sungguh mau menunggunya.
         },
       ],
       explanation:
-        "Awalannya adalah kontrak yang dijanjikan aplikasinya; karakter tertentu sesudahnya adalah urutan basis data hari ini, jadi memakunya menulis pengujian yang gagal di pelaksanaan berikutnya tanpa alasan. Kesetaraan dalam terhadap seluruh payload punya masalah yang sama satu tingkat di atasnya — ia padanan API dari rantai selektor CSS, rusak setiap kali kolom baru ditambahkan meskipun tidak ada yang teregresi. toMatchObject dengan kolom yang benar-benar Anda pedulikan, plus pemeriksaan bentuk pada yang dibangkitkan, memberi Anda pengujian yang gagal ketika kontraknya rusak dan diam selebihnya. Melewatinya sama sekali menyerahkan pemeriksaan yang nyata: id dengan awalan yang keliru berarti jenis catatan yang keliru yang dibuat.",
+        "Awalannya adalah kontrak yang dijanjikan aplikasinya; karakter tertentu sesudahnya adalah urutan basis data hari ini, jadi memakunya menulis pengujian yang gagal di run berikutnya tanpa alasan. Kesetaraan dalam terhadap seluruh payload punya masalah yang sama satu tingkat di atasnya — ia padanan API dari rantai selektor CSS, rusak setiap kali kolom baru ditambahkan meskipun tidak ada yang teregresi. toMatchObject dengan kolom yang benar-benar Anda pedulikan, plus pemeriksaan bentuk pada yang dibangkitkan, memberi Anda pengujian yang gagal ketika kontraknya rusak dan diam selebihnya. Melewatinya sama sekali menyerahkan pemeriksaan yang nyata: id dengan awalan yang keliru berarti jenis catatan yang keliru yang dibuat.",
     },
     {
       id: "q3",

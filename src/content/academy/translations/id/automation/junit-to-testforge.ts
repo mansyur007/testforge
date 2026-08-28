@@ -25,8 +25,8 @@ reporter: [
 ],
 ~~~
 
-JUnit XML adalah format yang dipahami setiap alat CI dan sistem manajemen
-pengujian. Ia bukan khas Playwright — pytest, JUnit, NUnit, dan Jest semuanya
+JUnit XML adalah format yang dipahami setiap alat CI dan sistem test
+management. Ia bukan khas Playwright — pytest, JUnit, NUnit, dan Jest semuanya
 menghasilkannya, dan itulah sebabnya TestForge menelan ini alih-alih format
 milik satu vendor.
 
@@ -220,7 +220,7 @@ centang hijau:
 
 Ini hal yang nyata dan bisa diperagakan: sebuah repositori dengan sebuah suite,
 sebuah workflow yang menjalankannya di setiap pull request, dan sebuah proyek
-manajemen pengujian dengan riwayat yang menumpuk. Ia lebih meyakinkan daripada
+test management dengan riwayat yang menumpuk. Ia lebih meyakinkan daripada
 sertifikat apa pun, karena seorang hiring manager bisa membukanya.
 
 Pelajaran portofolio di track Beyond Functional melanjutkan ini secara langsung.
@@ -260,11 +260,11 @@ alih-alih mencoba ulang selamanya.
       choices: [
         {
           id: "a",
-          text: "Karena bawaannya melewati langkah itu ketika langkah sebelumnya gagal, jadi hanya pelaksanaan yang lulus yang akan pernah sampai ke TestForge",
+          text: "Karena bawaannya melewati langkah itu ketika langkah sebelumnya gagal, jadi hanya run yang lulus yang akan pernah sampai ke TestForge",
         },
         {
           id: "b",
-          text: "Karena unggahan dari pelaksanaan yang dibatalkan merusak riwayat case-nya",
+          text: "Karena unggahan dari run yang dibatalkan merusak riwayat case-nya",
         },
         {
           id: "c",
@@ -276,7 +276,7 @@ alih-alih mencoba ulang selamanya.
         },
       ],
       explanation:
-        "GitHub melewati langkah-langkah berikutnya begitu satu gagal, dan langkah pengujiannya gagal justru ketika ada pengujian yang gagal — hasil yang paling layak dicatat. Kalau dibiarkan pada bawaannya, riwayat Anda terisi tak lain dari run hijau, dan itu lebih buruk daripada tanpa riwayat karena ia tampak seperti bukti. !cancelled() mengirim hasil entah suite-nya lulus atau gagal sambil tetap melewati pelaksanaan yang memang dibatalkan. Endpoint-nya dengan senang hati mencatat kegagalan; justru itulah gunanya mencatatnya.",
+        "GitHub melewati langkah-langkah berikutnya begitu satu gagal, dan langkah pengujiannya gagal justru ketika ada pengujian yang gagal — hasil yang paling layak dicatat. Kalau dibiarkan pada bawaannya, riwayat Anda terisi tak lain dari run hijau, dan itu lebih buruk daripada tanpa riwayat karena ia tampak seperti bukti. !cancelled() mengirim hasil entah suite-nya lulus atau gagal sambil tetap melewati run yang memang dibatalkan. Endpoint-nya dengan senang hati mencatat kegagalan; justru itulah gunanya mencatatnya.",
     },
     {
       id: "q3",

@@ -107,7 +107,7 @@ nilai babnya berada:
 
 | Jenis | Dipimpin oleh | Ciri |
 |---|---|---|
-| **Review informal** | Tanpa proses formal | Tidak mensyaratkan keluaran terdokumentasi; murah, lazim, berguna |
+| **Review informal** | Tanpa proses formal | Tidak mensyaratkan output terdokumentasi; murah, lazim, berguna |
 | **Walkthrough** | **Penulisnya** | Penulis memandu kelompoknya menyusurinya; berbasis skenario; bisa mencakup persiapan |
 | **Technical review** | Seorang **moderator terlatih** (bukan penulisnya) | Rekan sejawat yang berkualifikasi teknis; menuju kesepakatan dan keputusan teknis |
 | **Inspection** | Seorang **moderator terlatih** (bukan penulisnya) | Paling formal: peran yang ditetapkan, entry dan exit criteria, metrik dikumpulkan, perbaikan proses |

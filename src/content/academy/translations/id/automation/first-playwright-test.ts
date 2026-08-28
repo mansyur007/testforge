@@ -53,8 +53,8 @@ npx playwright test tests/example.spec.ts:5    # satu pengujian, per baris
 ~~~
 
 **Tinggallah di \`--ui\` selagi Anda menulis.** Ia memberi Anda mode pantau,
-snapshot DOM di setiap langkah, pemilih locator, dan log jaringan, semuanya dalam
-satu jendela. Pelaksanaan headless untuk CI dan untuk saat Anda sudah memercayai
+snapshot DOM di setiap langkah, locator picker, dan log jaringan, semuanya dalam
+satu jendela. Run headless untuk CI dan untuk saat Anda sudah memercayai
 pengujiannya.
 
 ## Rekam draf pertama
@@ -159,7 +159,7 @@ export default defineConfig({
   Pelajaran tentang pengujian labil membahas persis itu.
 - **\`reporter\`** — entri \`junit\`-lah yang diunggah karya penutupnya ke
   TestForge. Tambahkan sekarang; ia berbiaya satu baris.
-- **\`projects\`** — browser-nya. Mulai dengan Chromium saja kalau pelaksanaannya
+- **\`projects\`** — browser-nya. Mulai dengan Chromium saja kalau run-nya
   terasa lambat, dan tambahkan yang lain ketika suite-nya sepadan dengan
   menit-menitnya.
 
@@ -170,7 +170,7 @@ npx playwright show-report      # laporan HTML-nya
 npx playwright show-trace trace.zip
 ~~~
 
-Sebuah trace adalah rekaman pelaksanaannya: filmstrip, DOM di setiap langkah,
+Sebuah trace adalah rekaman run-nya: filmstrip, DOM di setiap langkah,
 panggilan jaringan, console, dan baris sumber untuk setiap aksi. Anda bisa
 menyorot langkah mana pun dan melihat halamannya persis seperti keadaannya —
 termasuk sorotan locator yang menunjukkan apa yang *dikira* Playwright sedang ia
@@ -182,7 +182,7 @@ ada". Tester yang membaca trace memperbaiki bug otomasi dalam hitungan menit;
 yang menambahkan \`waitForTimeout\` sampai hijau sedang menulis kelabilan esok
 hari.
 
-## Masalah pelaksanaan pertama, dan artinya
+## Masalah run pertama, dan artinya
 
 | Gejala | Penyebab |
 |---|---|
@@ -217,7 +217,7 @@ disadari seorang pemberi kerja.
 ## Di mana TestForge berperan
 
 Sekarang Anda punya pengujian yang menghasilkan sebuah hasil di setiap
-pelaksanaan. Hasil itu lebih berharga bila terlekat pada case yang dijalankannya
+run. Hasil itu lebih berharga bila terlekat pada case yang dijalankannya
 daripada sekadar duduk di terminal, dan untuk itulah baris reporter \`junit\` di
 atas ada: ia menulis \`results.xml\`, dan karya penutupnya mengunggahnya ke
 \`/api/v1/junit\` sehingga proyek sandbox Anda memperoleh sebuah run dengan
@@ -262,7 +262,7 @@ setiap sprint.
       choices: [
         {
           id: "a",
-          text: "Browser meng-cache halamannya dari pelaksanaan sebelumnya",
+          text: "Browser meng-cache halamannya dari run sebelumnya",
         },
         {
           id: "b",

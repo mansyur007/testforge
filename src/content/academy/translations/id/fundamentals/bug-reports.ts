@@ -122,7 +122,7 @@ melokalisasi bug-nya untuk developer.
 > **Keterulangan:** 5/5. Juga terulang lewat API tanpa melibatkan UI sama sekali.
 >
 > **Severity:** Tinggi (checkout terhalang, kesalahan server tidak tertangani).
-> **Lampiran:** tangkapan layar, berkas HAR.
+> **Attachment:** tangkapan layar, berkas HAR.
 
 Yang kedua diperbaiki hari itu juga. Ia juga memperagakan sesuatu yang layak
 diperhatikan: laporannya lebih berharga *karena* tester-nya memeriksa API dan

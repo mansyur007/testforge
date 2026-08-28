@@ -140,7 +140,7 @@ kekeliruan yang begitu awet:
   ketika sedang sarat. Tiga detik yang bekerja sepanjang minggu gagal di pagi
   ketika semua orang mendorong kodenya.
 - **Terlalu panjang di setiap hari yang baik.** Tiga puluh sleep tiga detik
-  adalah sembilan puluh detik yang ditambahkan ke setiap pelaksanaan, selamanya,
+  adalah sembilan puluh detik yang ditambahkan ke setiap run, selamanya,
   untuk apa-apa.
 
 Perbaikannya tidak pernah berupa angka yang lebih besar. Perbaikannya adalah
@@ -230,7 +230,7 @@ await expect(page.getByRole("heading", { name: "Run summary" })).toBeVisible();
 ~~~
 
 Soft assertion mencatat kegagalannya lalu membiarkan pengujiannya lanjut,
-sehingga satu pelaksanaan memberi tahu Anda bahwa ketiga angkanya keliru
+sehingga satu run memberi tahu Anda bahwa ketiga angkanya keliru
 alih-alih hanya yang pertama. Berguna ketika memeriksa beberapa fakta independen
 tentang layar yang sama. Tidak berguna sebagai kebiasaan umum: kegagalan keras di
 awal mencegah pengujiannya menghasilkan air terjun error susulan yang menyesatkan,
@@ -254,12 +254,12 @@ asersi yang hendak Anda tulis adalah hiasan.
 Pengujian dengan asersi yang sungguhan menghasilkan hasil yang bisa Anda percaya;
 pengujian yang diganjal sleep menghasilkan riwayat hijau yang tidak berarti apa
 pun, dan pada hari ia akhirnya memerah tidak ada yang memercayainya. Ketika
-pelaksanaan Anda mendarat di TestForge, riwayat case-nya hanya sejujur asersinya.
+run Anda mendarat di TestForge, riwayat case-nya hanya sejujur asersinya.
 
 Ada juga versi terukur dari hal ini. Suite yang digerakkan sleep muncul sebagai
 run yang *durasinya* terus tumbuh sementara jumlah case-nya nyaris tidak bergerak
 — pelajaran metrik di track manual menyebut angka semacam itu layak diawasi.
-Sembilan puluh detik \`waitForTimeout\` per pelaksanaan, empat puluh pelaksanaan
+Sembilan puluh detik \`waitForTimeout\` per run, empat puluh run
 sehari, adalah satu jam CI sehari yang tidak membeli apa pun.
 
 **Selanjutnya:** page object — struktur yang menghentikan lima puluh pengujian
@@ -313,7 +313,7 @@ aplikasi kedua yang harus dirawat.
         },
       ],
       explanation:
-        "Sebuah sleep keliru di dua arah sekaligus, dan itulah yang membuatnya jadi kekeliruan yang begitu awet: tidak ada angka tetap yang cukup besar untuk hari CI terburuk, dan setiap angka terbuang di hari-hari biasa — tiga puluh sleep tiga detik adalah sembilan puluh detik yang ditambahkan ke setiap pelaksanaan selamanya. Menaikkannya membeli beberapa minggu sebelum kegagalan kadang-kadang yang sama kembali, dengan suite yang kini lebih lambat. Menyebut apa yang Anda tunggu memperbaiki kedua paruhnya: expect(alert).toBeVisible() kembali begitu alert-nya ada dan gagal dengan benar ketika ia tidak pernah tiba. Satu-satunya kekecualian yang jujur adalah jeda yang memang tidak bisa Anda amati, dan ia layak diberi komentar yang menyatakannya.",
+        "Sebuah sleep keliru di dua arah sekaligus, dan itulah yang membuatnya jadi kekeliruan yang begitu awet: tidak ada angka tetap yang cukup besar untuk hari CI terburuk, dan setiap angka terbuang di hari-hari biasa — tiga puluh sleep tiga detik adalah sembilan puluh detik yang ditambahkan ke setiap run selamanya. Menaikkannya membeli beberapa minggu sebelum kegagalan kadang-kadang yang sama kembali, dengan suite yang kini lebih lambat. Menyebut apa yang Anda tunggu memperbaiki kedua paruhnya: expect(alert).toBeVisible() kembali begitu alert-nya ada dan gagal dengan benar ketika ia tidak pernah tiba. Satu-satunya kekecualian yang jujur adalah jeda yang memang tidak bisa Anda amati, dan ia layak diberi komentar yang menyatakannya.",
     },
     {
       id: "q3",

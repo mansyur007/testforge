@@ -44,7 +44,7 @@ Keempatnya dipakai bergantian padahal tidak sama:
 
 **Soak adalah yang dilewati orang dan yang menemukan kebocoran memori**,
 habisnya connection pool, dan disk yang penuh oleh log. Semua itu tidak pernah
-muncul dalam pelaksanaan dua puluh menit — semuanya muncul pukul 3 pagi di hari
+muncul dalam run dua puluh menit — semuanya muncul pukul 3 pagi di hari
 keempat, dan itu juga saat tidak ada yang mengawasi.
 
 Stress testing punya tujuan kedua yang layak disebut: **bagaimana sebuah sistem
@@ -106,7 +106,7 @@ itu, Anda sedang menyimulasikan serangan denial-of-service, dan angka yang Anda
 dapat menggambarkan skenario yang tidak akan pernah terjadi.
 
 **\`check()\` bukan asersi.** Check yang gagal dicatat dan skripnya lanjut — ia
-tidak menggagalkan pelaksanaannya. Hanya threshold yang begitu. Ini menjegal
+tidak menggagalkan run-nya. Hanya threshold yang begitu. Ini menjegal
 semua orang sekali.
 
 ## Angka tanpa kondisinya hanyalah pendapat
@@ -165,7 +165,7 @@ basis data, jumlah koneksi. Tanpa itu Anda tahu *bahwa* ia melambat dan bukan
 - **Kumpulan data yang mungil.** Query yang seketika pada 500 baris dan
   bencana pada 5 juta adalah cacat performa produksi yang paling umum, dan basis
   data staging yang kosong dijamin melewatkannya.
-- **Mengabaikan cache.** Pelaksanaan kedua cepat karena sebuah cache, bukan
+- **Mengabaikan cache.** Run kedua cepat karena sebuah cache, bukan
   karena Anda memperbaiki sesuatu. Ubah-ubah parameternya, atau ukur dingin dan
   hangat secara terpisah lalu sebutkan yang mana yang Anda laporkan.
 - **Sekali jalan.** Jalankan tiga kali. Kalau angkanya berselisih jauh, keragaman
@@ -231,11 +231,11 @@ tester, dan pemeriksaan yang bisa Anda jalankan tanpa menjadi penetration tester
     },
     {
       id: "q2",
-      stem: "Sebuah skrip k6 punya beberapa panggilan check() yang gagal selama pelaksanaannya, tapi pelaksanaannya keluar dengan kode 0 dan CI tetap hijau. Kenapa?",
+      stem: "Sebuah skrip k6 punya beberapa panggilan check() yang gagal selama run-nya, tapi run-nya keluar dengan kode 0 dan CI tetap hijau. Kenapa?",
       choices: [
         {
           id: "a",
-          text: "Check hanya menggagalkan pelaksanaan ketika lebih dari 50% di antaranya gagal",
+          text: "Check hanya menggagalkan run ketika lebih dari 50% di antaranya gagal",
         },
         {
           id: "b",
@@ -247,7 +247,7 @@ tester, dan pemeriksaan yang bisa Anda jalankan tanpa menjadi penetration tester
         },
         {
           id: "d",
-          text: "Pelaksanaannya harus dipanggil dengan --strict supaya check-nya diperhitungkan",
+          text: "Run-nya harus dipanggil dengan --strict supaya check-nya diperhitungkan",
         },
       ],
       explanation:

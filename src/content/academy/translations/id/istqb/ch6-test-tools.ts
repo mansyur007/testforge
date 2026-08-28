@@ -28,11 +28,11 @@ pengelompokan itulah yang diminta sebuah pertanyaan K2 untuk Anda kenali:
 
 | Dukungan alat untuk | Contoh apa yang dilakukannya |
 |---|---|
-| **Manajemen pengujian dan testware** | Melacak case, run, hasil, cacat, kebutuhan, ketertelusuran |
+| **Test management dan testware** | Melacak case, run, hasil, cacat, kebutuhan, ketertelusuran |
 | **Pengujian statis** | Dukungan review, dan analisis statis atas kode serta artefak lain |
 | **Test design dan implementation** | Membangkitkan case, data uji, dan test procedure |
 | **Eksekusi pengujian dan cakupan** | Menjalankan pengujian secara otomatis, membandingkan hasil, mengukur cakupan |
-| **Pengujian non-fungsional** | Pembangkitan performa dan beban, pemindaian keamanan, pemantauan |
+| **Pengujian non-fungsional** | Pembangkitan performa dan beban, scanning keamanan, pemantauan |
 | **DevOps** | Pipeline, otomasi build dan deploy, pipa-pipa tempat pengujiannya berjalan |
 | **Kolaborasi** | Komunikasi dan pemahaman bersama lintas tim |
 | **Skalabilitas dan standardisasi** | Mesin virtual, kontainer, environment yang dibakukan |
@@ -44,7 +44,7 @@ table, atau klien basis data yang dipakai memverifikasi apa yang benar-benar
 tersimpan, adalah dukungan alat bagi pengujian persis dalam arti yang dimaksud
 silabusnya.
 
-TestForge sendiri duduk di baris pertama — manajemen pengujian dan testware — dan
+TestForge sendiri duduk di baris pertama — test management dan testware — dan
 itu juga sebabnya latihan-latihan di Academy ini memakainya dengan cara itu
 alih-alih sebagai alat eksekusi pengujian.
 
@@ -59,7 +59,7 @@ lalu menawarkan sisi yang lain sebagai pengecoh.
 | Waktu yang dihemat dengan menyingkirkan kerja manual berulang | Harapan terhadap alatnya bisa tidak realistis |
 | Konsistensi lebih besar — alatnya melakukan hal yang sama setiap kali | Waktu, biaya, dan usaha memperkenalkannya diremehkan |
 | Pengukuran yang objektif, misalnya cakupan | Usaha **merawat** aset pengujiannya diremehkan |
-| Akses lebih mudah ke informasi tentang pengujiannya — statistik dan laporan | Alatnya bisa diandalkan alih-alih berpikir, menggantikan test design dengan keluaran alatnya |
+| Akses lebih mudah ke informasi tentang pengujiannya — statistik dan laporan | Alatnya bisa diandalkan alih-alih berpikir, menggantikan test design dengan output alatnya |
 | | Kendali versi testware-nya bisa terabaikan |
 | | Hubungan dan interoperabilitas antaralat bisa terlewat |
 | | Vendornya bisa gagal, menarik dukungan, atau menjual produknya |
@@ -121,7 +121,7 @@ apa yang dilakukan dengan sepuluh menit terakhir.
         },
         {
           id: "b",
-          text: "Alatnya diandalkan alih-alih berpikir, sehingga test design digantikan keluaran alatnya",
+          text: "Alatnya diandalkan alih-alih berpikir, sehingga test design digantikan output alatnya",
         },
         {
           id: "c",

@@ -164,7 +164,7 @@ produknya.
 
 ## Tiga pemeriksaan yang bisa Anda jalankan pada apa saja, hari ini
 
-1. **Kirim sebuah formulir dan awasi request-nya.** Apakah payload-nya memuat apa
+1. **Kirim sebuah form dan awasi request-nya.** Apakah payload-nya memuat apa
    yang Anda ketik? Spasi, huruf besar-kecil, dan kosong-vs-null semuanya
    terlihat di sini dan tak terlihat di layar.
 2. **Langgar sebuah aturan lalu baca response-nya.** Kirim sesuatu yang tidak
@@ -179,7 +179,7 @@ produknya.
 Sebuah case yang hasil harapannya "sebuah pesan kesalahan ditampilkan" bisa lulus
 padahal server-nya mengembalikan 500 — layarnya memang menampilkan pesan
 kesalahan, kan. Tuliskan fakta yang bisa diamati saja: *"API mengembalikan 400
-dengan pesan yang menyebut kolomnya; formulir menampilkan pesan itu secara
+dengan pesan yang menyebut kolomnya; form menampilkan pesan itu secara
 inline."* Lalu tempelkan **Copy as cURL** dari request yang gagal ke dalam
 cacatnya, beserta status, isi response, dan trace id apa pun.
 

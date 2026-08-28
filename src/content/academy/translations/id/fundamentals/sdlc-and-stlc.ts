@@ -48,18 +48,18 @@ pekerjaan Anda sendiri. Enam fase, dan semuanya berulang mengikuti irama rilis
 tim Anda — sekali per rilis di waterfall, sekali per story di Agile.
 
 1. **Analisis kebutuhan.** Baca story-nya. Temukan yang hilang, rancu, atau
-   saling bertentangan. *Keluaran: pertanyaan, dan daftar hal yang bisa diuji.*
+   saling bertentangan. *Output: pertanyaan, dan daftar hal yang bisa diuji.*
 2. **Perencanaan pengujian.** Cakupan, risiko, apa yang akan diuji dan apa yang
    sengaja tidak, environment, siapa mengerjakan apa, kapan Anda berhenti.
-   *Keluaran: sebuah test plan — satu halaman sudah cukup.*
+   *Output: sebuah test plan — satu halaman sudah cukup.*
 3. **Perancangan pengujian.** Ubah kebutuhan menjadi test case memakai
-   teknik-teknik di track ini. *Keluaran: test case dan data uji.*
+   teknik-teknik di track ini. *Output: test case dan data uji.*
 4. **Penyiapan environment.** Tempat untuk menjalankan, dengan data yang
    menyerupai kenyataan. Sering kali justru inilah yang membuat Anda tertunda.
 5. **Eksekusi pengujian.** Jalankan; catat hasilnya; ajukan cacat; uji ulang
-   perbaikannya. *Keluaran: hasil, laporan bug.*
+   perbaikannya. *Output: hasil, laporan bug.*
 6. **Penutupan pengujian.** Apa yang kita pelajari? Apa yang lolos ke produksi
-   dan kenapa? *Keluaran: ringkasan dan, jujur saja, test case yang lebih baik
+   dan kenapa? *Output: ringkasan dan, jujur saja, test case yang lebih baik
    lain kali.*
 
 Dua gagasan entry/exit mengalir di keenam fase itu:

@@ -398,6 +398,27 @@ const RETIRED_TERMS = [
   // (`bug-reports` had `environment` in its prose and `lingkungan` in its
   // exercise). Found by the 2026-08-24 T4–T5 pair read.
   [/(?<!kondisi )\blingkungan\b/gi, '"environment"'],
+  // 2026-08-28, owner's correction. The rule these enforce is §1 itself — the
+  // one this file never checked — after the campaign screenshot put "alat
+  // manajemen pengujian" on the roadmap hero. Each entry below was in the tree
+  // competing with its English form, and `pelaksanaan` was almost exactly a
+  // coin flip against `run` (84 vs 87) with the whole imbalance inside one
+  // track. The test that decides these: is it a word the reader will see on a
+  // TestForge screen, in English? Then it stays English here too.
+  [/\balat manajemen pengujian\b/gi, '"tool test management"'],
+  [/\bmanajemen pengujian\b/gi, '"test management"'],
+  [/\bpelaksanaan\b/gi, '"run" — and "pelaksanaan ulang" is "rerun"'],
+  [/\bformulir\b/gi, '"form"'],
+  [/\bkeluaran\b/gi, '"output"'],
+  [/\btautan\b/gi, '"link"'],
+  [/\bpemindai(an)?\b/gi, '"scanner" / "scanning"'],
+  [/\blampiran\b/gi, '"attachment"'],
+  [/\bpenerima tugas\b/gi, '"assignee"'],
+  // Widget nouns only. `pemilihan` (selection, choice) is ordinary Indonesian
+  // and must keep passing, which is why this matches `pemilih` + a noun rather
+  // than the bare stem.
+  [/\bpemilih (tanggal|warna|locator)\b/gi, '"date picker" / "color picker" / "locator picker"'],
+  [/\bpapan klip\b/gi, '"clipboard"'],
 ];
 for (const file of everyTsFile(ID_TRACKS)) {
   const prose = stripComments(readFileSync(file, "utf8"));

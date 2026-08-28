@@ -191,7 +191,7 @@ keahlian timnya, domain bisnisnya, faktor teknis, kendala proyek (anggaran,
 waktu), organisasinya, dan lifecycle yang dipakai. Ini prinsip 6 sebagai
 pernyataan proses.
 
-**Testware adalah keluaran dari aktivitas-aktivitasnya**, dan mencocokkan setiap
+**Testware adalah output dari aktivitas-aktivitasnya**, dan mencocokkan setiap
 artefak dengan aktivitasnya langsung bisa diujikan — tabel di atas adalah tujuan
 pembelajaran itu. Perhatikan kerancuan yang mudah: **test case berasal dari
 design, test procedure dan test data berasal dari implementation.**
@@ -248,7 +248,7 @@ Semua di atas, dimampatkan ke apa yang sebenarnya sering salah:
 | Error / defect / failure | Kekeliruan manusia / kesalahan di work product / perilaku keliru yang teramati |
 | Verifikasi / validasi | Dibangun dengan benar / membangun hal yang benar |
 | Test analysis / test design | Apa yang diuji / bagaimana mengujinya |
-| Test case / test procedure | Keluaran design / keluaran implementation |
+| Test case / test procedure | Output design / output implementation |
 | Penggerombolan cacat / keausan pengujian | Di mana cacatnya / pengulangan yang kehilangan hasil |
 | Peran / gelar pekerjaan | Ada dua peran; satu orang bisa memegang keduanya |
 

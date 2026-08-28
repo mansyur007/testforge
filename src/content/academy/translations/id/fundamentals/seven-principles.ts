@@ -22,7 +22,7 @@ menjalankan X, menemukan Y, dan area-area ini tidak tercakup."
 
 ## 2. Pengujian menyeluruh itu mustahil
 
-Satu formulir dengan 10 isian yang masing-masing punya 10 nilai yang mungkin
+Satu form dengan 10 isian yang masing-masing punya 10 nilai yang mungkin
 berarti 10 miliar kombinasi. Tambahkan urutan dan waktu, dan keadaannya lebih
 buruk lagi. Jadi Anda mengambil sampel — dan seluruh keahlian ini adalah soal
 mengambil sampel dengan *baik*, memakai risiko dan teknik-teknik perancangan di

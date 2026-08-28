@@ -23,7 +23,7 @@ pun bisa — melainkan **"akankah pengujian ini membayar dirinya sendiri?"**
 Bukan rumus untuk dihitung; sekumpulan suku untuk disimpan di kepala.
 
 **Yang ia biayai:** menulisnya, ditambah perawatan setiap kali fiturnya berubah,
-ditambah waktu jalan di setiap pelaksanaan, ditambah waktu triase untuk setiap
+ditambah waktu jalan di setiap run, ditambah waktu triase untuk setiap
 kegagalan — *termasuk kegagalan palsu*.
 
 **Yang ia kembalikan:** berapa kali ia dijalankan, dikali ongkos bug yang akan
@@ -38,7 +38,7 @@ aktif dilihat manusia.
 
 Tiga pertanyaan sudah membawa Anda hampir sampai:
 
-1. **Akankah ia sering dijalankan?** Nilainya per pelaksanaan. Pengujian yang
+1. **Akankah ia sering dijalankan?** Nilainya per run. Pengujian yang
    berjalan dua kali itu skrip.
 2. **Akankah ia rusak karena alasan yang benar?** Pengujian yang memerah karena
    perubahan CSS adalah kontrak perawatan, bukan jaring pengaman.
@@ -104,11 +104,11 @@ Bentuknya, yang akan Anda temui di repositori sungguhan:
 
 ~~~
 12 pengujian UI untuk validasi kata sandi
-  - terlalu pendek     -> browser, isi formulir, tunggu, asersi
-  - tanpa angka        -> browser, isi formulir, tunggu, asersi
-  - tanpa huruf besar  -> browser, isi formulir, tunggu, asersi
+  - terlalu pendek     -> browser, isi form, tunggu, asersi
+  - tanpa angka        -> browser, isi form, tunggu, asersi
+  - tanpa huruf besar  -> browser, isi form, tunggu, asersi
   ...
-4 menit waktu jalan, 12 hal untuk diperbarui ketika markup formulirnya berubah
+4 menit waktu jalan, 12 hal untuk diperbarui ketika markup form-nya berubah
 ~~~
 
 Kedua belasnya menguji satu fungsi yang memutuskan apakah sebuah string adalah
@@ -117,7 +117,7 @@ justru lebih banyak:
 
 ~~~
 1 pengujian UI   -> kata sandi tidak valid menampilkan pesannya, inline, di
-                    formulir
+                    form
 N unit test      -> setiap aturan, setiap batas, dalam milidetik
 ~~~
 
@@ -129,7 +129,7 @@ percepatan terbesar yang tersedia bagi sebagian besar suite.
 ## Biaya perawatan yang tidak dianggarkan siapa pun
 
 - **Menulisnya kira-kira sepertiga dari biaya seumur hidupnya.** Sisanya adalah
-  perawatan, triase, dan pelaksanaan ulang.
+  perawatan, triase, dan rerun.
 - **Kelabilan berbunga.** Setiap kegagalan palsu berbiaya dua puluh menit
   seseorang dan sedikit kepercayaan, dan begitu sebuah suite melewati satu-dua
   persen hasil labil, orang berhenti memercayai warna merah sama sekali — dan
@@ -205,7 +205,7 @@ dan keahlian yang jauh lebih berguna yaitu membaca kode orang lain.
         },
       ],
       explanation:
-        "Kedua belasnya menjalankan satu fungsi lewat jalur paling lambat dan paling rapuh yang tersedia, jadi perbaikannya adalah mendorongnya turun: aturannya diuji dalam milidetik dan pengujian browser-nya hanya membuktikan aturan itu tersambung ke formulirnya. Paralelisme membeli waktu jam dinding sambil tetap menyisakan dua belas hal untuk diperbarui ketika markup-nya berubah. Menggabungkannya jadi satu pengujian mempertahankan biaya yang sama dan memperburuk pesan kegagalannya — Anda jadi tahu ada sesuatu tentang kata sandi yang rusak, bukan aturan mana. Dan menghapusnya sekaligus menghilangkan pemeriksaan sambungannya, dan itu satu hal yang tidak bisa diberikan unit test.",
+        "Kedua belasnya menjalankan satu fungsi lewat jalur paling lambat dan paling rapuh yang tersedia, jadi perbaikannya adalah mendorongnya turun: aturannya diuji dalam milidetik dan pengujian browser-nya hanya membuktikan aturan itu tersambung ke form-nya. Paralelisme membeli waktu jam dinding sambil tetap menyisakan dua belas hal untuk diperbarui ketika markup-nya berubah. Menggabungkannya jadi satu pengujian mempertahankan biaya yang sama dan memperburuk pesan kegagalannya — Anda jadi tahu ada sesuatu tentang kata sandi yang rusak, bukan aturan mana. Dan menghapusnya sekaligus menghilangkan pemeriksaan sambungannya, dan itu satu hal yang tidak bisa diberikan unit test.",
     },
     {
       id: "q2",
@@ -229,7 +229,7 @@ dan keahlian yang jauh lebih berguna yaitu membaca kode orang lain.
         },
       ],
       explanation:
-        "Imbal hasilnya per pelaksanaan dan biayanya sebagian besar perawatan, jadi rasio keduanya-lah yang menentukan: 300 pelaksanaan setahun di jalur yang stabil itu balik modal, sementara pengujian yang sama pada layar yang didesain ulang setiap sprint akan ditulis ulang empat kali dan tidak mengembalikan apa pun. Kesulitan manual adalah alasan untuk menginginkan otomasinya, bukan bukti ia akan balik modal. Kelayakan menjawab pertanyaan lain — hampir semuanya bisa diotomasi, dan itulah sebabnya \"bisakah kita\" berhenti menjadi pertanyaan yang berguna. Dan waktu menulis kira-kira sepertiga biaya seumur hidupnya, jadi mengoptimalkannya berarti mengoptimalkan angka yang lebih kecil.",
+        "Imbal hasilnya per run dan biayanya sebagian besar perawatan, jadi rasio keduanya-lah yang menentukan: 300 run setahun di jalur yang stabil itu balik modal, sementara pengujian yang sama pada layar yang didesain ulang setiap sprint akan ditulis ulang empat kali dan tidak mengembalikan apa pun. Kesulitan manual adalah alasan untuk menginginkan otomasinya, bukan bukti ia akan balik modal. Kelayakan menjawab pertanyaan lain — hampir semuanya bisa diotomasi, dan itulah sebabnya \"bisakah kita\" berhenti menjadi pertanyaan yang berguna. Dan waktu menulis kira-kira sepertiga biaya seumur hidupnya, jadi mengoptimalkannya berarti mengoptimalkan angka yang lebih kecil.",
     },
     {
       id: "q3",
@@ -253,7 +253,7 @@ dan keahlian yang jauh lebih berguna yaitu membaca kode orang lain.
         },
       ],
       explanation:
-        "Fitur yang sedang aktif didesain ulang menjamin penulisan ulang dan toh sudah dilihat orang; pertanyaan tentang bagaimana sesuatu terasa tidak punya hasil harapan untuk diasersikan; dan reproduksi sekali pakai berjalan sekali, dan itu skrip alih-alih pengujian. Pemeriksaan smoke adalah kasus sebaliknya dan hal paling jelas di daftar itu untuk diotomasi — stabil, bernilai tinggi, dan ia berjalan di setiap deploy, jadi imbal hasil per pelaksanaannya menumpuk. Layak dicatat tentang yang sekali pakai: kalau reproduksi yang sama ternyata risiko regresi yang ingin Anda periksa setiap rilis, ia naik kelas menjadi kandidat yang bagus, dan itulah beda antara berjalan sekali dan berjalan sering.",
+        "Fitur yang sedang aktif didesain ulang menjamin penulisan ulang dan toh sudah dilihat orang; pertanyaan tentang bagaimana sesuatu terasa tidak punya hasil harapan untuk diasersikan; dan reproduksi sekali pakai berjalan sekali, dan itu skrip alih-alih pengujian. Pemeriksaan smoke adalah kasus sebaliknya dan hal paling jelas di daftar itu untuk diotomasi — stabil, bernilai tinggi, dan ia berjalan di setiap deploy, jadi imbal hasil per run-nya menumpuk. Layak dicatat tentang yang sekali pakai: kalau reproduksi yang sama ternyata risiko regresi yang ingin Anda periksa setiap rilis, ia naik kelas menjadi kandidat yang bagus, dan itulah beda antara berjalan sekali dan berjalan sering.",
     },
   ],
 };

@@ -18,7 +18,7 @@ diri Anda yang informasinya lebih sedikit daripada sekarang.**
 Segala yang Anda pelajari selagi menguji — bahwa pesan kesalahannya berkelip lalu
 hilang, bahwa halamannya baik-baik saja sampai Anda memakai tombol Back browser,
 bahwa dua tab terbuka sekaligus merusak keranjang — tiba *selama* sesi dan tidak
-punya tempat tujuan dalam pelaksanaan berskrip selain catatan di pinggir halaman.
+punya tempat tujuan dalam run berskrip selain catatan di pinggir halaman.
 
 Pengujian eksploratori adalah praktik membiarkan apa yang baru Anda pelajari
 menentukan apa yang Anda lakukan berikutnya. Perancangan, eksekusi, dan
@@ -117,7 +117,7 @@ TIDAK TERCAPAI: menumpuk dua kode; kode pada item yang sudah didiskon
 
 **BUG**, **NOTE**, **Q**, dan **TEST** adalah seluruh kosakatanya. Yang orang
 lewatkan adalah **Q** — pertanyaan yang tidak bisa Anda jawab sendiri. Itulah
-keluaran bernilai tertinggi dari sebuah sesi, karena pertanyaan yang Anda bawa ke
+output bernilai tertinggi dari sebuah sesi, karena pertanyaan yang Anda bawa ke
 product owner ("apakah 10 karakter itu inklusif?") sering ternyata sebuah
 kebutuhan yang belum diputuskan siapa pun, dan menemukan kebutuhan yang belum
 diputuskan sebelum ia terkirim mengalahkan menemukan bug-nya setelah itu.
@@ -149,7 +149,7 @@ pertanyaan yang berbeda. Jangkau eksplorasi ketika:
 
 - kebutuhannya tipis, tidak ada, atau Anda menduga ia keliru
 - fiturnya baru dan belum ada yang memakainya sungguh-sungguh
-- pelaksanaan berskrip kembali serba hijau dan Anda tidak memercayainya
+- run berskrip kembali serba hijau dan Anda tidak memercayainya
 - Anda mewarisi sistem yang tidak Anda kenal
 - sebuah cacat baru saja diperbaiki dan Anda ingin tahu apa *lagi* yang
   dilakukan area itu (perbaikan adalah perubahan, dan perubahan menggerombolkan
@@ -168,7 +168,7 @@ kebutuhan semata.
 
 ## Di mana TestForge berperan
 
-Keluaran sebuah sesi bukan perasaan; ia baris-baris data. Bug-nya menjadi cacat,
+Output sebuah sesi bukan perasaan; ia baris-baris data. Bug-nya menjadi cacat,
 catatannya menjadi deskripsi cacat itu (sudah tertulis, saat itu juga, dengan
 input persis yang Anda pakai), dan temuan yang bisa diulang menjadi case di
 sebuah suite sehingga rilis berikutnya mendapatkannya cuma-cuma.

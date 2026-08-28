@@ -78,7 +78,7 @@ Academy ini membahas keduanya, dengan urutan seperti itu.
 ## Di mana TestForge berperan
 
 Semua yang di atas menghasilkan artefak: test case, run, hasil, cacat. Untuk
-itulah alat manajemen pengujian ada — termasuk TestForge. Sepanjang track ini
+itulah tool test management ada — termasuk TestForge. Sepanjang track ini
 Anda akan menulis test case sungguhan di proyek sungguhan, sehingga di akhir Anda
 punya keahliannya sekaligus sesuatu yang bisa ditunjukkan saat wawancara.
 

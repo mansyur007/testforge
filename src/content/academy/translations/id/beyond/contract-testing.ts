@@ -63,7 +63,7 @@ jalankan pengujian konsumen
 
 Pengujian konsumen sendirilah yang membangkitkan kontraknya sebagai hasil
 sampingan dari berjalan terhadap sebuah tiruan. Penyedianya lalu memutar ulang
-interaksi terekam itu terhadap dirinya sendiri. Tidak satu pun pelaksanaannya
+interaksi terekam itu terhadap dirinya sendiri. Tidak satu pun run-nya
 membutuhkan sisi yang lain menyala.
 
 **Sebuah pengujian konsumen dengan Pact, garis besarnya:**
@@ -178,8 +178,8 @@ interaksi.
 
 Ditandai \`contract\`, case-case itu menjawab pertanyaan yang hanya bisa dijawab
 riwayat run: **apakah kerusakan integrasinya tertangkap sebelum deploy atau
-setelahnya?** Sebulan pelaksanaan verifikasi yang memerah di branch penyedianya
-dan hijau di main adalah bukti bahwa gerbangnya bekerja. Satu pelaksanaan yang
+setelahnya?** Sebulan run verifikasi yang memerah di branch penyedianya
+dan hijau di main adalah bukti bahwa gerbangnya bekerja. Satu run yang
 lulus nyaris tidak membuktikan apa pun di sini.
 
 **Selanjutnya:** observabilitas dan pengujian di produksi — apa yang dilakukan

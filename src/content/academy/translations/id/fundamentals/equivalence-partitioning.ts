@@ -71,7 +71,7 @@ secara berbeda, berarti itu dua partisi.
 20%, karyawan 30%, selain itu 0%", maka *valid* adalah tiga partisi, bukan satu.
 
 **Menguji hanya satu nilai invalid per pengujian.** Masukkan satu kolom invalid
-dalam satu waktu. Kalau Anda mengirim formulir dengan empat kolom bermasalah dan
+dalam satu waktu. Kalau Anda mengirim form dengan empat kolom bermasalah dan
 hanya mendapat satu pesan kesalahan, Anda nyaris tidak belajar apa pun tentang
 tiga sisanya.
 

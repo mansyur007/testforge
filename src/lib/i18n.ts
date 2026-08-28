@@ -277,7 +277,7 @@ const en = {
 
 const id: typeof en = {
   landing: {
-    nav: { features: "Fitur", comparison: "Perbandingan", integrations: "Integrasi", academy: "Akademi", faq: "FAQ", login: "Masuk", dashboard: "Dashboard →", cta: "Mulai Gratis" },
+    nav: { features: "Fitur", comparison: "Perbandingan", integrations: "Integrasi", academy: "QA Academy", faq: "FAQ", login: "Masuk", dashboard: "Dashboard →", cta: "Mulai Gratis" },
     hero: {
       titlePre: "Test Management That",
       titleHighlight: "Doesn't Cost a Thing",
@@ -387,7 +387,7 @@ const id: typeof en = {
       features: "Fitur",
       comparison: "Perbandingan",
       selfHosting: "Self-Hosting",
-      academy: "Akademi QA",
+      academy: "QA Academy",
       signup: "Daftar Gratis",
       community: "Komunitas",
       docs: "Dokumentasi",

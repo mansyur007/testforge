@@ -62,13 +62,13 @@ Baris demi baris, bagian yang tidak kentara:
   langkah yang dilewati orang lalu menghabiskan satu sore mengurusi \`libnss3\`
   yang hilang.
 - **\`chromium\`** saja untuk awalnya. Memasang tiga browser berbiaya sekitar satu
-  menit di setiap pelaksanaan; tambahkan ketika Anda punya alasan.
+  menit di setiap run; tambahkan ketika Anda punya alasan.
 - **Rahasia di \`env\`, jangan pernah di berkasnya.** Repositori bukan penyimpanan
   rahasia, dan kata sandi yang ter-commit berarti rotasi dan laporan insiden.
 
-## Artifact adalah yang membuat pelaksanaan CI yang merah bisa di-debug
+## Artifact adalah yang membuat run CI yang merah bisa di-debug
 
-Pelaksanaan yang gagal yang keluarannya hanya "expected visible, got hidden"
+Run yang gagal yang output-nya hanya "expected visible, got hidden"
 membuat Anda menebak-nebak. Unggah laporan dan trace-nya:
 
 ~~~yaml
@@ -80,10 +80,10 @@ membuat Anda menebak-nebak. Unggah laporan dan trace-nya:
           retention-days: 7
 ~~~
 
-**\`if: !cancelled()\`** alih-alih \`if: failure()\` — trace dari pelaksanaan yang
+**\`if: !cancelled()\`** alih-alih \`if: failure()\` — trace dari run yang
 lulus adalah yang Anda inginkan pada hari sesuatu tampak mencurigakan padahal
-hijau, dan itu satu-satunya cara membandingkan pelaksanaan yang baik dengan yang
-buruk. Ia melewati pelaksanaan yang memang dibatalkan, yang tidak punya apa pun
+hijau, dan itu satu-satunya cara membandingkan run yang baik dengan yang
+buruk. Ia melewati run yang memang dibatalkan, yang tidak punya apa pun
 yang layak disimpan.
 
 Setel retensinya dengan sengaja. Bawaannya 90 hari, artifact diperhitungkan dalam
@@ -118,7 +118,7 @@ webServer: {
 lalu jalankan setelah deploy. Paling sederhana dikonfigurasi, dan ia
 memperkenalkan bahaya yang nyata: pengujian Anda kini berbagi environment dengan
 milik semua orang, dan itu persis masalah state bersama yang dijelaskan pelajaran
-data uji, satu tingkat di atasnya. Data yang unik per pelaksanaan justru lebih
+data uji, satu tingkat di atasnya. Data yang unik per run justru lebih
 penting di sini, bukan kurang.
 
 **3. Layanan yang dibutuhkan aplikasinya** — basis data, cache — sebagai service
@@ -146,7 +146,7 @@ dilangkahi saat merge. Kira-kira berurutan menurut hasil-gunanya:
 |---|---|
 | \`fullyParallel: true\` dan \`workers: 4\` di CI | Kemenangan tunggal terbesar |
 | Sharding lintas job (di bawah) | Nyaris linear dengan jumlah runner |
-| Cache biner browser-nya | 30–60 detik per pelaksanaan |
+| Cache biner browser-nya | 30–60 detik per run |
 | Satu browser di PR, matriks penuh tiap malam | Memotong waktu browser dua pertiga |
 | Persiapan lewat API alih-alih lewat UI | Detik per pengujian, berbunga |
 | \`storageState\` alih-alih masuk per pengujian | Detik per pengujian |
@@ -164,7 +164,7 @@ Sharding memecah suite-nya ke beberapa job paralel:
 
 **\`fail-fast: false\`** itu penting: bawaannya membatalkan shard yang lain begitu
 satu gagal, jadi Anda mengetahui satu kegagalan alih-alih semuanya dan butuh satu
-pelaksanaan penuh lagi untuk menemukan sisanya.
+run penuh lagi untuk menemukan sisanya.
 
 Sharding menghasilkan satu laporan per shard. Reporter \`blob\` milik Playwright
 plus \`npx playwright merge-reports\` merakitnya kembali menjadi satu, dan itu juga
@@ -179,7 +179,7 @@ JUnit, bukan empat**.
         browser: [chromium, firefox, webkit]
 ~~~
 
-Melipattigakan setiap pelaksanaan di setiap pull request biasanya pertukaran yang
+Melipattigakan setiap run di setiap pull request biasanya pertukaran yang
 keliru. Pola yang bertahan: **chromium di pull request, matriks penuh tiap malam
 atau sebelum rilis.** Cacat lintas browser itu nyata tapi jarang, dan ia jarang
 mendesak dalam sepuluh menit yang sedang ditunggu seseorang untuk merge.
@@ -222,7 +222,7 @@ sandbox TestForge Anda**:
 5. Perbaiki dan tonton check-nya berubah hijau.
 
 Langkah keempat lagi-lagi intinya. Workflow yang hanya pernah Anda lihat lulus
-belum mengajari Anda apa pun; keahliannya adalah mengubah pelaksanaan CI yang
+belum mengajari Anda apa pun; keahliannya adalah mengubah run CI yang
 merah menjadi sebuah diagnosis tanpa akses ke mesin tempat ia gagal.
 
 ## Di mana TestForge berperan
@@ -251,7 +251,7 @@ dan ia berikutnya.
         },
         {
           id: "b",
-          text: "Trace dari pelaksanaan yang lulus adalah yang memungkinkan Anda membandingkan pelaksanaan baik dengan yang buruk ketika sesuatu hijau tapi mencurigakan",
+          text: "Trace dari run yang lulus adalah yang memungkinkan Anda membandingkan run baik dengan yang buruk ketika sesuatu hijau tapi mencurigakan",
         },
         {
           id: "c",
@@ -263,7 +263,7 @@ dan ia berikutnya.
         },
       ],
       explanation:
-        "Menyimpan artifact dari pelaksanaan yang hijau berbiaya penyimpanan dan membelikan Anda garis dasarnya: ketika sebuah pengujian mulai berperilaku aneh tanpa gagal, satu-satunya cara melihat apa yang berubah adalah membandingkan trace-nya dengan trace dari saat semuanya baik. !cancelled() juga tetap melewati pelaksanaan yang memang dibatalkan, yang tidak punya apa pun yang layak disimpan. failure() valid dan memang bekerja di tingkat langkah — ia hanya membuang perbandingannya, dan justru itulah yang Anda inginkan pada hari suite yang hijau berhenti bisa dipercaya. Retensi layak disetel dengan sengaja di kedua kasus, karena bawaannya menyimpan semuanya selama 90 hari dengan beban tagihan penyimpanan Anda.",
+        "Menyimpan artifact dari run yang hijau berbiaya penyimpanan dan membelikan Anda garis dasarnya: ketika sebuah pengujian mulai berperilaku aneh tanpa gagal, satu-satunya cara melihat apa yang berubah adalah membandingkan trace-nya dengan trace dari saat semuanya baik. !cancelled() juga tetap melewati run yang memang dibatalkan, yang tidak punya apa pun yang layak disimpan. failure() valid dan memang bekerja di tingkat langkah — ia hanya membuang perbandingannya, dan justru itulah yang Anda inginkan pada hari suite yang hijau berhenti bisa dipercaya. Retensi layak disetel dengan sengaja di kedua kasus, karena bawaannya menyimpan semuanya selama 90 hari dengan beban tagihan penyimpanan Anda.",
     },
     {
       id: "q2",
@@ -271,7 +271,7 @@ dan ia berikutnya.
       choices: [
         {
           id: "a",
-          text: "Shard sisanya dibatalkan, jadi Anda melihat satu kegagalan dan butuh satu pelaksanaan penuh lagi untuk menemukan sisanya",
+          text: "Shard sisanya dibatalkan, jadi Anda melihat satu kegagalan dan butuh satu run penuh lagi untuk menemukan sisanya",
         },
         {
           id: "b",
@@ -303,7 +303,7 @@ dan ia berikutnya.
         },
         {
           id: "c",
-          text: "Kredensial yang di-commit ke berkas workflow-nya supaya pelaksanaannya bisa direproduksi",
+          text: "Kredensial yang di-commit ke berkas workflow-nya supaya run-nya bisa direproduksi",
         },
         {
           id: "d",
@@ -311,7 +311,7 @@ dan ia berikutnya.
         },
       ],
       explanation:
-        "npm ci memasang persis isi lockfile-nya, sehingga CI tidak mungkin diam-diam melenceng ke pohon dependensi yang berbeda dari yang Anda uji. --with-deps memasang pustaka sistem yang dibutuhkan browser-nya, dan melewatkannya menghasilkan kelas kegagalan libnss3-yang-hilang yang tampak seperti pengujian rusak padahal bukan. Timeout job mencegah pelaksanaan yang menggantung membakar enam jam penuh yang diizinkan GitHub. Kredensial tempatnya di repository secret dan dirujuk lewat env — repositori bukan penyimpanan rahasia, dan meng-commit login yang bekerja mengubah perubahan rutin menjadi rotasi dan laporan insiden, dan itu batas yang sama dengan yang digariskan pelajaran data uji.",
+        "npm ci memasang persis isi lockfile-nya, sehingga CI tidak mungkin diam-diam melenceng ke pohon dependensi yang berbeda dari yang Anda uji. --with-deps memasang pustaka sistem yang dibutuhkan browser-nya, dan melewatkannya menghasilkan kelas kegagalan libnss3-yang-hilang yang tampak seperti pengujian rusak padahal bukan. Timeout job mencegah run yang menggantung membakar enam jam penuh yang diizinkan GitHub. Kredensial tempatnya di repository secret dan dirujuk lewat env — repositori bukan penyimpanan rahasia, dan meng-commit login yang bekerja mengubah perubahan rutin menjadi rotasi dan laporan insiden, dan itu batas yang sama dengan yang digariskan pelajaran data uji.",
     },
   ],
 };

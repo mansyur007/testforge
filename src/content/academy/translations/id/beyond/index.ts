@@ -19,7 +19,7 @@ export const beyondId: TrackTranslation = {
   outcomes: [
     "Menjalankan load test dan menafsirkan angkanya dengan jujur",
     "Menemukan masalah keamanan yang paling mungkin ditemukan seorang tester",
-    "Memakai sinyal produksi sebagai masukan bagi pengujian",
+    "Memakai sinyal produksi sebagai input bagi pengujian",
     "Menilai di mana AI membantu di QA dan di mana ia diam-diam berbohong",
     "Membangun portofolio dan menjalani wawancara sebagai orang yang punya pertimbangan",
   ],

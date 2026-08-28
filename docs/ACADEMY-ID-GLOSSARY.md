@@ -34,6 +34,21 @@ Everything below is either an application of that rule or a deliberate exception
 | checklist | **checklist** | ~~daftar periksa~~ | One stray in `test-levels`, against ten English uses. |
 | sanity check | **sanity check** | ~~pemeriksaan penyehat~~ | An awkward coinage — *penyehat* means "one who makes healthy". Nobody says this. |
 | environment (the test environment) | **environment** | ~~lingkungan~~ | Already the tree's dominant form (79 uses). `bug-reports` used both *inside one file* — "environment (staging/prod)" in its prose, "Lingkungan:" as the field label of the worked report — and it is a field name the reader will meet in TestForge and in every tracker. **Exception:** ISTQB ch1's *kondisi lingkungan* (radiation, interference, pollution) is the physical world, not a test environment; the check's regex excludes that phrase. |
+| test management tool | **tool test management** | ~~alat manajemen pengujian~~, ~~sistem manajemen pengujian~~ | The category name of the product the whole Academy is taught inside. Owner's correction, 2026-08-28: *"jika itu sebuah penyebutan umum tidak perlu di-translate."* Also fixed in `chrome.ts`, where it was the first line of the roadmap hero and of the meta description. |
+| run (a test run, a CI run) | **run** | ~~pelaksanaan~~ | The split that best shows why this rule exists: 87 English against 84 calqued, and `automation` alone carried 56 of them while `fundamentals` and `istqb` carried none. **Run** is a button in TestForge; a learner taught *pelaksanaan* cannot connect the two. *pelaksanaan ulang* → **rerun**. |
+| form | **form** | ~~formulir~~ | 49 against 2. |
+| output | **output** | ~~keluaran~~ | 32 against 4. Includes the ISTQB work-product sense — the syllabus register does not buy back a word the reader meets in every console. |
+| link | **link** | ~~tautan~~ | 16 against 7, and *tautan cacat* was a calque of a calque — TestForge shows **defect links**. |
+| input | **input** | ~~masukan~~ | 51 English against 4. `cross-browser-mobile` wrote "Setiap input menerima masukan" — both spellings inside one clause. |
+| scanner | **scanner** | ~~pemindai~~ | 20 uses, no English competitor — the whole security lesson was calqued away from the word its tools are sold under. |
+| attachment | **attachment** | ~~lampiran~~ | A TestForge UI label. |
+| assignee | **assignee** | ~~penerima tugas~~ | A TestForge UI label. |
+| picker (date, colour, locator) | **picker** | ~~pemilih~~ | Widget nouns only. **Not** *pemilihan* (selection, choice), which is ordinary Indonesian and stays. |
+| clipboard | **clipboard** | ~~papan klip~~ | |
+
+> **The product's own name is not translated either.** The landing nav said *Akademi* and the footer
+> *Akademi QA* while the page they linked to branded itself **QA Academy**. Fixed in `src/lib/i18n.ts`.
+> This one is not in `RETIRED_TERMS` because it lives outside `translations/id`.
 
 ### 2.2 English, with an Indonesian gloss allowed after first use
 
