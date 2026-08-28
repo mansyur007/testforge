@@ -80,7 +80,7 @@ dengan Tab, sama sekali tidak bisa mereka jangkau.
 
 ### 2. Klik labelnya
 
-Klik *teks* yang terlihat dari sebuah kolom formulir — bukan kotaknya, tapi
+Klik *teks* yang terlihat dari sebuah kolom form — bukan kotaknya, tapi
 kata-kata di sebelahnya. Kolomnya seharusnya terfokus.
 
 Kalau tidak, labelnya tidak terkait dengan input-nya, artinya pembaca layar
@@ -116,7 +116,7 @@ Ambangnya, dan hanya inilah yang perlu Anda ingat:
 | Teks besar (≥24px, atau ≥18,7px tebal) | **3:1** |
 | Batas komponen UI, grafis bermakna, indikator fokus | **3:1** |
 
-Pemilih warna browser mana pun atau ekstensi pemeriksa kontras memberi Anda
+Color picker browser mana pun atau ekstensi pemeriksa kontras memberi Anda
 angkanya dalam hitungan detik. Di mana kegagalannya selalu berada: teks
 placeholder yang dipakai sebagai label, tombol "hantu" berwarna merek yang pucat,
 teks bantuan abu-abu terang di bawah kolom, teks yang duduk di atas foto, dan
@@ -136,10 +136,10 @@ Perbaikannya selalu menambahkan kanal kedua: teks, ikon, pola, label.
 
 ### 6. Pesan kesalahan yang bekerja (3.3.1, 3.3.3)
 
-Kirim sebuah formulir secara keliru dengan sengaja, lalu periksa empat hal:
+Kirim sebuah form secara keliru dengan sengaja, lalu periksa empat hal:
 pesannya **menyebut kolomnya** dan mengatakan cara membetulkannya; ia berupa
 **teks di dekat kolomnya**, bukan cuma garis merah; ia **terikat secara
-program** ke input-nya sehingga pembaca layar mengumumkannya; dan formulirnya
+program** ke input-nya sehingga pembaca layar mengumumkannya; dan form-nya
 tidak **membuang** apa yang sudah Anda ketik (3.3.7).
 
 Yang terakhir itu bukan kerewelan — pengguna pembaca layar yang harus mengisi
@@ -151,7 +151,7 @@ Sepuluh menit dengan pembaca layar sungguhan mengajarkan lebih banyak daripada
 satu jam membaca tentangnya. NVDA di Windows gratis; VoiceOver sudah tertanam di
 macOS dan iOS.
 
-Nyalakan lalu Tab menyusuri satu formulir dengan mata tetap di layar (tidak ada
+Nyalakan lalu Tab menyusuri satu form dengan mata tetap di layar (tidak ada
 yang meminta Anda bekerja dalam gelap). Untuk tiap kontrol, dengarkan tiga hal —
 **nama**-nya, **peran**-nya, dan **state**-nya: *"Email, edit, required,
 invalid"*. Kontrol yang mengumumkan peran tanpa nama, atau kotak tercentang yang
@@ -161,7 +161,7 @@ Anda tidak sedang menyimulasikan pengguna pembaca layar; mereka jauh lebih mahir
 daripada Anda. Anda sedang menangkap pengumuman yang **sama sekali hilang**, dan
 itu standar yang jauh lebih rendah namun tetap menemukan banyak.
 
-## Jalankan pemindainya terakhir, bukan pertama
+## Jalankan scanner-nya terakhir, bukan pertama
 
 axe DevTools, Lighthouse, dan WAVE sungguh berguna, cukup satu klik, dan
 sebaiknya ada di setiap rilis. Ketiganya juga sumber kesimpulan keliru yang
@@ -169,7 +169,7 @@ paling umum di seluruh bidang ini:
 
 | Alat otomatis menemukan | Hanya manusia yang menemukan |
 |---|---|
-| \`alt\` yang hilang, tombol kosong, label formulir yang hilang | Apakah \`alt\`-nya **menggambarkan gambarnya** |
+| \`alt\` yang hilang, tombol kosong, label form yang hilang | Apakah \`alt\`-nya **menggambarkan gambarnya** |
 | Kontras pada latar polos | Apakah urutan tab-nya **masuk akal** |
 | Bahasa halaman yang hilang, id ganda | Apakah pesan kesalahannya **bisa dipahami** |
 | ARIA tidak valid, penyarangan keliru | Apakah widget kustom itu **bisa dioperasikan** sama sekali |
@@ -200,7 +200,7 @@ WCAG:      2.1.1 Keyboard (A), 2.4.7 Focus Visible (AA)
 Dampak:    Pengguna keyboard dan pembaca layar tidak bisa membeli apa pun. Tidak
            ada jalan memutar.
 Langkah:   Keranjang -> Checkout, lalu Tab dari kolom Nomor kartu
-Sebenarnya: Fokus melompat dari Nomor kartu ke tautan footer; Bayar dilewati
+Sebenarnya: Fokus melompat dari Nomor kartu ke link footer; Bayar dilewati
 Diharapkan: Bayar menerima fokus sesuai urutan visual dan aktif dengan Enter atau
             Space
 Catatan:   Bayar berupa <div onclick>; sebuah <button> akan memenuhi kedua
@@ -249,15 +249,15 @@ yang menemukan yang memalukan.
         },
         {
           id: "d",
-          text: "Nilainya tidak bisa diandalkan karena berubah-ubah antar-pelaksanaan",
+          text: "Nilainya tidak bisa diandalkan karena berubah-ubah antar-run",
         },
       ],
       explanation:
-        "Pemindai bisa memberi tahu bahwa sebuah gambar punya atribut alt; ia tidak bisa memberi tahu bahwa alt-nya berbunyi \"image1.png\", bahwa urutan tab-nya melompat-lompat di layar, atau bahwa pesan kesalahannya tidak bisa dipahami. Berbagai studi menempatkan deteksi otomatis antara sepertiga sampai separuh isu yang sungguhan, jadi nilai penuh berarti \"tidak ada yang rusak secara kasatmata\", bukan \"bisa dipakai\". Poin per-halaman itu benar tapi jauh lebih lemah — ia menyiratkan halaman sisanya cukup dipindai dengan cara yang sama. Klaim soal tingkatnya semata-mata keliru, dan pemindaian aksesibilitas bersifat deterministik, tidak seperti nilai performa yang sering dikira orang sama.",
+        "Scanner bisa memberi tahu bahwa sebuah gambar punya atribut alt; ia tidak bisa memberi tahu bahwa alt-nya berbunyi \"image1.png\", bahwa urutan tab-nya melompat-lompat di layar, atau bahwa pesan kesalahannya tidak bisa dipahami. Berbagai studi menempatkan deteksi otomatis antara sepertiga sampai separuh isu yang sungguhan, jadi nilai penuh berarti \"tidak ada yang rusak secara kasatmata\", bukan \"bisa dipakai\". Poin per-halaman itu benar tapi jauh lebih lemah — ia menyiratkan halaman sisanya cukup dipindai dengan cara yang sama. Klaim soal tingkatnya semata-mata keliru, dan scanning aksesibilitas bersifat deterministik, tidak seperti nilai performa yang sering dikira orang sama.",
     },
     {
       id: "q2",
-      stem: "Anda mengeklik teks yang terlihat \"Alamat email\" di sebelah sebuah kolom formulir dan tidak terjadi apa-apa — fokusnya tetap di tempatnya. Apa artinya itu?",
+      stem: "Anda mengeklik teks yang terlihat \"Alamat email\" di sebelah sebuah kolom form dan tidak terjadi apa-apa — fokusnya tetap di tempatnya. Apa artinya itu?",
       choices: [
         {
           id: "a",

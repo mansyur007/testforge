@@ -30,7 +30,7 @@ hebat, melainkan bahwa ia memindahkan percakapannya dari *apa yang Anda klaim* k
 ## Tiga artefak, dan apa yang dibuktikan masing-masing
 
 **1. Suite pengujian untuk aplikasi publik yang sungguhan.** Pilih sesuatu yang
-bisa dibuka siapa pun — situs demo publik, alat sumber terbuka, formulir
+bisa dibuka siapa pun — situs demo publik, alat sumber terbuka, form
 pemerintah. Ini lebih penting daripada kedengarannya: seorang peninjau bisa
 menempelkan case Anda di sebelah benda aslinya lalu menilai apakah Anda
 memahaminya.
@@ -124,7 +124,7 @@ ingin ia muncul di hasil pencarian, itu sakelar terpisah yang Anda nyalakan
 dengan sengaja.
 
 Apa yang tidak pernah ia paparkan, apa pun yang Anda aktifkan: komentar,
-lampiran, penerima tugas, tautan cacat, catatan tester per hasil, nama anggota
+attachment, assignee, link cacat, catatan tester per hasil, nama anggota
 atau email. Run berupa daftar dengan statusnya dan tidak ada halaman per hasil
 yang bisa membocorkan apa pun, dan Reports hanya berupa agregat. Anda bisa
 menerbitkan pekerjaan Anda tanpa menerbitkan rekan-rekan Anda.
@@ -133,11 +133,11 @@ menerbitkan pekerjaan Anda tanpa menerbitkan rekan-rekan Anda.
 
 Satu baris, di bagian atas CV, bukan di footer: **Portofolio pengujian:
 \`<URL Anda>\`**. Baris yang sama di kolom headline LinkedIn atau di baris pertama
-bagian about. Di kotak "ada lagi?" sebuah formulir lamaran, tautan itu bernilai
+bagian about. Di kotak "ada lagi?" sebuah form lamaran, link itu bernilai
 lebih daripada paragraf yang hendak Anda tulis.
 
-Lalu periksa tiap beberapa bulan. Tautan mati di CV lebih buruk daripada tanpa
-tautan, dan portofolio yang run terakhirnya empat belas bulan lalu mengatakan
+Lalu periksa tiap beberapa bulan. Link mati di CV lebih buruk daripada tanpa
+link, dan portofolio yang run terakhirnya empat belas bulan lalu mengatakan
 sesuatu yang tidak Anda maksudkan.
 
 **Selanjutnya:** persiapan wawancara — pertanyaan yang selalu datang, dan cara
@@ -202,7 +202,7 @@ menjawabnya dengan bukti yang baru saja Anda terbitkan.
         },
         {
           id: "b",
-          text: "Ia publik di slug proyek Anda dan tiap bagiannya opt-in, dan ia tidak pernah memaparkan komentar, penerima tugas, tautan cacat, atau catatan tester per hasil",
+          text: "Ia publik di slug proyek Anda dan tiap bagiannya opt-in, dan ia tidak pernah memaparkan komentar, assignee, link cacat, atau catatan tester per hasil",
         },
         {
           id: "c",
@@ -214,7 +214,7 @@ menjawabnya dengan bukti yang baru saja Anda terbitkan.
         },
       ],
       explanation:
-        "URL-nya dibangun dari slug proyek Anda, dan itu membuatnya bisa ditebak — itulah beda yang disengaja antara public sharing dan tautan bertoken yang tak terdaftar, dan halaman pengaturannya menyatakannya. Apa yang muncul bersifat opt-in bagian demi bagian (Cases, Runs, Reports), dan hal-hal yang akan memaparkan orang alih-alih pekerjaan — komentar, lampiran, penerima tugas, tautan cacat, catatan per hasil, nama anggota — tidak pernah diterbitkan dengan pengaturan apa pun, jadi Anda tidak perlu menghapus apa pun untuk berbagi dengan aman. Pengindeksan adalah sakelar terpisah: halamannya noindex sampai Anda memutuskan lain.",
+        "URL-nya dibangun dari slug proyek Anda, dan itu membuatnya bisa ditebak — itulah beda yang disengaja antara public sharing dan link bertoken yang tak terdaftar, dan halaman pengaturannya menyatakannya. Apa yang muncul bersifat opt-in bagian demi bagian (Cases, Runs, Reports), dan hal-hal yang akan memaparkan orang alih-alih pekerjaan — komentar, attachment, assignee, link cacat, catatan per hasil, nama anggota — tidak pernah diterbitkan dengan pengaturan apa pun, jadi Anda tidak perlu menghapus apa pun untuk berbagi dengan aman. Pengindeksan adalah sakelar terpisah: halamannya noindex sampai Anda memutuskan lain.",
     },
   ],
 };

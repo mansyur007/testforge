@@ -81,7 +81,7 @@ Tiga hal yang dituntut flag sebagai gantinya:
   *hidup bersamaan* tetap sedikit dan ketahui mana yang saling berinteraksi.
 - **Ia utang.** Flag yang sudah menyala untuk semua orang selama enam bulan
   adalah konfigurasi mati dan cabang yang tak teruji. Menghapusnya adalah sebuah
-  tugas, dan tempatnya di papan pekerjaan.
+  tugas, dan tempatnya di job board.
 
 **Canary release** mengirim sebagian kecil trafik sungguhan ke versi barunya lalu
 membandingkan laju kesalahan dan latensinya dengan yang lama. Ini bisa diotomasi
@@ -133,7 +133,7 @@ pengujian berikutnya, pergilah dan bacalah:
 - **Kesalahan yang sudah terjadi.** Sebagian besar aplikasi mencatat kegagalan
   yang belum ditriase siapa pun. Membaca satu minggu isinya sering kali jam
   paling berhasil-guna dalam sebuah sprint.
-- **Pencarian yang tidak mengembalikan apa pun**, formulir yang ditinggalkan di
+- **Pencarian yang tidak mengembalikan apa pun**, form yang ditinggalkan di
   satu langkah tertentu, percobaan ulang.
 
 Dan setelah setiap insiden: **insiden yang tidak menghasilkan sebuah pengujian
@@ -143,14 +143,14 @@ kemudian.
 
 ## Di mana TestForge berperan
 
-Arahkan pelaksanaan sintetis terjadwalnya ke sebuah proyek tersendiri lalu unggah
+Arahkan run sintetis terjadwalnya ke sebuah proyek tersendiri lalu unggah
 tiap hasilnya lewat \`/api/v1/junit\` sebagaimana yang dilakukan karya penutup T3.
-Nilainya bukan pada satu pelaksanaannya, melainkan pada catatannya: sebuah suite
+Nilainya bukan pada satu run-nya, melainkan pada catatannya: sebuah suite
 yang dinamai menurut tiap perjalanan kritis, satu hasil per selang waktu,
 sehingga **"apakah checkout bekerja Selasa lalu pukul 03:00"** menjadi sebuah
 kueri alih-alih sebuah ingatan.
 
-Keterbatasan yang jujur: ini sistem manajemen pengujian, bukan platform
+Keterbatasan yang jujur: ini sistem test management, bukan platform
 peringatan. Ia akan menyimpan riwayatnya dan menunjukkan polanya kepada Anda; ia
 tidak akan membangunkan siapa pun pukul 3 pagi. Sambungkan peringatannya ke
 tumpukan pemantauan Anda dan simpan TestForge untuk catatan yang selamat dari
@@ -223,7 +223,7 @@ sekali.
         },
         {
           id: "c",
-          text: "Membersihkan data apa pun yang dibuat pelaksanaannya, dan menjaga pemeriksaannya hanya-baca sebisa mungkin",
+          text: "Membersihkan data apa pun yang dibuat run-nya, dan menjaga pemeriksaannya hanya-baca sebisa mungkin",
         },
         {
           id: "d",
@@ -231,7 +231,7 @@ sekali.
         },
       ],
       explanation:
-        "Tiga yang pertama adalah yang mencegah suite produksi menyebabkan masalah yang justru ingin ia deteksi: akun yang bisa dikenali berarti support dan tim data bisa mengenali aktivitasnya, penandaan menjaga pelaksanaan sintetis keluar dari angka konversi dan pendapatan, dan pembersihan mencegah suite-nya memenuhi produksi dengan puing yang harus ditriase orang lain. Pembayarannya adalah batasnya: transaksi sintetis lewat penyedia yang hidup adalah transaksi sungguhan dengan uang sungguhan dan pihak ketiga yang sungguhan, dan itu dikecualikan aturan mainnya — batas yang sama dengan yang digariskan pelajaran keamanan. Cakup perjalanannya sampai batas penyedianya lalu verifikasi integrasinya sendiri di environment sandbox yang dibangun untuk itu.",
+        "Tiga yang pertama adalah yang mencegah suite produksi menyebabkan masalah yang justru ingin ia deteksi: akun yang bisa dikenali berarti support dan tim data bisa mengenali aktivitasnya, penandaan menjaga run sintetis keluar dari angka konversi dan pendapatan, dan pembersihan mencegah suite-nya memenuhi produksi dengan puing yang harus ditriase orang lain. Pembayarannya adalah batasnya: transaksi sintetis lewat penyedia yang hidup adalah transaksi sungguhan dengan uang sungguhan dan pihak ketiga yang sungguhan, dan itu dikecualikan aturan mainnya — batas yang sama dengan yang digariskan pelajaran keamanan. Cakup perjalanannya sampai batas penyedianya lalu verifikasi integrasinya sendiri di environment sandbox yang dibangun untuk itu.",
     },
   ],
 };

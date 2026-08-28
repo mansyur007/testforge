@@ -10,8 +10,8 @@ export const aiInQaId: LessonTranslation = {
 
 Sebuah model bahasa menghasilkan teks yang **tampak seperti** teks yang
 dipelajarinya. Itulah seluruh triknya, dan ia sungguh berguna. Ia juga persis
-sifat yang seharusnya dicurigai seorang tester, karena keluaran jawaban yang
-buruk dan keluaran jawaban yang baik terlihat sama.
+sifat yang seharusnya dicurigai seorang tester, karena output jawaban yang
+buruk dan output jawaban yang baik terlihat sama.
 
 Pengujian yang jelas-jelas keliru dihapus dalam sepuluh detik. Pengujian yang
 **masuk akal** — bentuknya tepat, namanya wajar, asersinya percaya diri,
@@ -27,7 +27,7 @@ pengujian" melainkan **"ketika ini keliru, bagaimana ia gagalnya?"**
 
 Urutkan setiap usulan pemakaian AI menurut mana di antara keduanya yang ia
 hasilkan ketika modelnya keliru. Locator hasil pembangkitan yang tidak ada gagal
-di pelaksanaan pertama dan berbiaya satu menit Anda. Asersi hasil pembangkitan
+di run pertama dan berbiaya satu menit Anda. Asersi hasil pembangkitan
 yang mengodekan aturan yang keliru menjadi hijau selamanya dan berbiaya cacat
 yang seharusnya ia tangkap.
 
@@ -37,7 +37,7 @@ adalah mahal-ketika-keliru.
 ## Di mana ia sungguh membantu
 
 **Memperluas draf cakupan pertama.** Anda sudah menulis enam case untuk sebuah
-formulir. Mintalah nilai batas, case negatif, dan case yang dilewati orang pukul
+form. Mintalah nilai batas, case negatif, dan case yang dilewati orang pukul
 empat sore hari Jumat. Separuhnya tidak relevan, dan itu tidak apa-apa — Andalah
 penyaringnya. Saran yang keliru tidak berbiaya apa pun karena Anda tinggal tidak
 mengambilnya.

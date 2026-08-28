@@ -25,7 +25,7 @@ test("shows the project name", async ({ page }) => { /* mengharapkan "Demo" */ }
 Jalankan dalam urutan itu dan yang kedua gagal. Jalankan sebaliknya dan keduanya
 lulus. Playwright menjalankan berkas secara paralel secara bawaan, jadi urutannya
 bukan milik Anda untuk diandalkan — dan pengujian yang bergantung pada urutan
-pelaksanaan adalah pengujian yang cepat atau lambat akan gagal di mesin orang
+run adalah pengujian yang cepat atau lambat akan gagal di mesin orang
 lain, pada saat yang paling tidak nyaman.
 
 ## Aturan yang dilayani seluruh pelajaran ini
@@ -39,7 +39,7 @@ dengan salinan dirinya sendiri?* Kalau salah satu dari ketiganya tidak, pengujia
 itu punya masalah data.
 
 Ketiga pertanyaannya memetakan ke tiga kegagalan yang nyata — bergantung pada
-pengujian lain, meninggalkan residu yang merusak pelaksanaan keduanya sendiri,
+pengujian lain, meninggalkan residu yang merusak run keduanya sendiri,
 dan bertabrakan dengan worker paralel. Pengujian yang selamat dari ketiganya
 selamat di CI.
 
@@ -251,7 +251,7 @@ selama ini disandari pelajaran ini untuk persiapan.
         },
         {
           id: "d",
-          text: "Cache browser dipakai ulang antarpengujian dalam satu pelaksanaan suite",
+          text: "Cache browser dipakai ulang antarpengujian dalam satu run suite",
         },
       ],
       explanation:
@@ -287,7 +287,7 @@ selama ini disandari pelajaran ini untuk persiapan.
       choices: [
         {
           id: "a",
-          text: "Buat test case-nya lewat panggilan API di dalam sebuah fixture alih-alih mengeklik menembus formulir pembuatannya",
+          text: "Buat test case-nya lewat panggilan API di dalam sebuah fixture alih-alih mengeklik menembus form pembuatannya",
         },
         {
           id: "b",
@@ -303,7 +303,7 @@ selama ini disandari pelajaran ini untuk persiapan.
         },
       ],
       explanation:
-        "Menyiapkan lewat API lebih cepat dan menjaga pengujiannya gagal hanya karena alasan yang menjadi pokoknya — kliklah menembus formulirnya hanya di pengujian yang pokoknya adalah alur pembuatan itu. Membatasi asersi pada data Anda sendiri membuat suite-nya toleran terhadap sisa-sisa yang cepat atau lambat gagal disingkirkan pembersihannya, sementara hitungan global rusak oleh residu apa pun. Dan keterulangan adalah yang memisahkan laporan bug dari anekdot: pembangkit tanpa benih yang gagal sekali dengan nilai yang sudah tidak Anda punya tidak memberi siapa pun apa pun untuk ditindaklanjuti. Akun bersama itulah jebakannya — ia bekerja sampai satu pengujian mengubah sebuah pengaturan atau kata sandi, dan lalu ia menghasilkan persis kegagalan lulus-sendirian-gagal-bersama yang membuka pelajaran ini.",
+        "Menyiapkan lewat API lebih cepat dan menjaga pengujiannya gagal hanya karena alasan yang menjadi pokoknya — kliklah menembus form-nya hanya di pengujian yang pokoknya adalah alur pembuatan itu. Membatasi asersi pada data Anda sendiri membuat suite-nya toleran terhadap sisa-sisa yang cepat atau lambat gagal disingkirkan pembersihannya, sementara hitungan global rusak oleh residu apa pun. Dan keterulangan adalah yang memisahkan laporan bug dari anekdot: pembangkit tanpa benih yang gagal sekali dengan nilai yang sudah tidak Anda punya tidak memberi siapa pun apa pun untuk ditindaklanjuti. Akun bersama itulah jebakannya — ia bekerja sampai satu pengujian mengubah sebuah pengaturan atau kata sandi, dan lalu ia menghasilkan persis kegagalan lulus-sendirian-gagal-bersama yang membuka pelajaran ini.",
     },
   ],
 };

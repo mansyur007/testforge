@@ -166,7 +166,7 @@ meminta sebuah persentase.
 **Statement testing** menjalankan pernyataan yang bisa dieksekusi.
 **Cakupan = pernyataan yang dijalankan ÷ total pernyataan × 100%.**
 
-**Branch testing** menjalankan keluaran keputusan — setiap cabang yang diambil
+**Branch testing** menjalankan output keputusan — setiap cabang yang diambil
 dan yang tidak diambil. **Cakupan = cabang yang dijalankan ÷ total cabang ×
 100%.**
 
@@ -328,7 +328,7 @@ pembelajaran terbanyak di seluruh silabusnya.
         },
         {
           id: "b",
-          text: "Cakupan branch-nya bisa kurang dari 100% — sebuah `if` tanpa `else` menjangkau setiap pernyataan sambil tidak pernah mengambil keluaran false-nya",
+          text: "Cakupan branch-nya bisa kurang dari 100% — sebuah `if` tanpa `else` menjangkau setiap pernyataan sambil tidak pernah mengambil output false-nya",
         },
         {
           id: "c",
@@ -340,11 +340,11 @@ pembelajaran terbanyak di seluruh silabusnya.
         },
       ],
       explanation:
-        "Implikasinya berjalan satu arah saja: cakupan branch 100% menjamin cakupan statement 100%, tapi tidak sebaliknya. Sebuah `if` tanpa `else` adalah contoh tandingan bakunya — satu pengujian yang memenuhi kondisinya mengeksekusi setiap pernyataan di modul itu sementara keluaran false-nya tidak pernah dijalankan, sehingga cakupan branch-nya tinggal 50%. Itu penting karena cacat pada apa yang seharusnya terjadi ketika kondisinya false duduk di jalur yang sudah dinyatakan lengkap oleh cakupan statement. Hubungannya adalah implikasi yang tetap, bukan sebuah rasio, dan ia fakta yang paling sering diujikan di §4.3.",
+        "Implikasinya berjalan satu arah saja: cakupan branch 100% menjamin cakupan statement 100%, tapi tidak sebaliknya. Sebuah `if` tanpa `else` adalah contoh tandingan bakunya — satu pengujian yang memenuhi kondisinya mengeksekusi setiap pernyataan di modul itu sementara output false-nya tidak pernah dijalankan, sehingga cakupan branch-nya tinggal 50%. Itu penting karena cacat pada apa yang seharusnya terjadi ketika kondisinya false duduk di jalur yang sudah dinyatakan lengkap oleh cakupan statement. Hubungannya adalah implikasi yang tetap, bukan sebuah rasio, dan ia fakta yang paling sering diujikan di §4.3.",
     },
     {
       id: "q3",
-      stem: "Anda menguji sebuah formulir dengan tiga partisi input yang invalid. Kenapa tiap pengujian sebaiknya menjalankan hanya satu partisi invalid dalam satu waktu?",
+      stem: "Anda menguji sebuah form dengan tiga partisi input yang invalid. Kenapa tiap pengujian sebaiknya menjalankan hanya satu partisi invalid dalam satu waktu?",
       choices: [
         {
           id: "a",

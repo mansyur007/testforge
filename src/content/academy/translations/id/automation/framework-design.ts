@@ -115,7 +115,7 @@ TF_API_KEY=
 
 **Commit \`.env.example\`, jangan pernah \`.env\`.** Berkas contohnya adalah
 dokumentasi yang tidak bisa basi diam-diam: kalau variabel baru dibutuhkan dan
-tidak ditambahkan di sana, pelaksanaan pertama orang berikutnya gagal karena
+tidak ditambahkan di sana, run pertama orang berikutnya gagal karena
 variabel yang hilang alih-alih karena sesuatu yang misterius.
 
 Gagallah dengan berisik dan sejak awal ketika sebuah variabel hilang:
@@ -145,7 +145,7 @@ Empat, dan inilah yang paling cepat luruh tanpa aturan tertulis:
 Kalau dituliskan, keempatnya selamat dari sebuah serah terima. Sebagai cerita
 lisan, keempatnya bertahan sampai anggota baru yang kedua.
 
-## README adalah bagian dari keluarannya
+## README adalah bagian dari output-nya
 
 Berkas paling bernilai di repositori, dan yang paling sering tidak ada. Enam
 bagian:
@@ -178,7 +178,7 @@ asersinya.
 ~~~
 
 **"Ketika ada yang gagal" adalah bagian yang dilewati orang dan paling mereka
-butuhkan.** Anggota baru yang pelaksanaan pertamanya merah entah akan belajar
+butuhkan.** Anggota baru yang run pertamanya merah entah akan belajar
 membaca sebuah trace dalam dua menit entah menyimpulkan suite-nya rusak. Yang
 mana yang terjadi ditentukan oleh ada tidaknya bagian itu.
 
@@ -264,11 +264,11 @@ diam-diam dirakit track ini.
         },
         {
           id: "d",
-          text: "Direktori berdasarkan jenis merusak struktur keluaran reporter JUnit",
+          text: "Direktori berdasarkan jenis merusak struktur output reporter JUnit",
         },
       ],
       explanation:
-        "Pertanyaan penatanya adalah apa yang perlu ditemukan seseorang. Developer yang menyentuh checkout menginginkan setiap pengujian checkout di satu tempat; kalau terpisah antara folder smoke dan regression, yang mereka lewatkan itulah yang rusak belakangan. Dan klasifikasinya sendiri tidak stabil — pengujian yang sama adalah smoke bagi satu tim dan regression bagi tim lain, dan ia diklasifikasikan ulang tanpa perilakunya berubah, sementara fitur yang dicakupnya adalah fakta yang tahan lama. Tag plus --grep @smoke memenuhi kebutuhan pelaksanaan selektif tanpa pohon direktori kedua, jadi tidak ada yang hilang. Playwright menjalankan subset apa pun yang Anda tunjuk dan memparalelkan per berkas, bukan per folder.",
+        "Pertanyaan penatanya adalah apa yang perlu ditemukan seseorang. Developer yang menyentuh checkout menginginkan setiap pengujian checkout di satu tempat; kalau terpisah antara folder smoke dan regression, yang mereka lewatkan itulah yang rusak belakangan. Dan klasifikasinya sendiri tidak stabil — pengujian yang sama adalah smoke bagi satu tim dan regression bagi tim lain, dan ia diklasifikasikan ulang tanpa perilakunya berubah, sementara fitur yang dicakupnya adalah fakta yang tahan lama. Tag plus --grep @smoke memenuhi kebutuhan run selektif tanpa pohon direktori kedua, jadi tidak ada yang hilang. Playwright menjalankan subset apa pun yang Anda tunjuk dan memparalelkan per berkas, bukan per folder.",
     },
     {
       id: "q2",
@@ -292,7 +292,7 @@ diam-diam dirakit track ini.
         },
       ],
       explanation:
-        "Berkas contohnya adalah dokumentasi yang tidak bisa membusuk diam-diam: kalau variabel baru dibutuhkan dan tidak ada yang menambahkannya di sana, pelaksanaan pertama orang berikutnya gagal sambil menyebutkan variabel yang hilang alih-alih mati di tempat yang membingungkan dua puluh pengujian kemudian. Ia membawa kuncinya dan bukan nilainya, jadi tidak ada rahasia yang masuk ke repositori — dan itu batas yang sama yang digariskan pelajaran data uji dan pelajaran CI. Tidak ada yang memuatnya otomatis sebagai cadangan dan tidak ada yang mewajibkannya ada; seluruh nilainya bersifat sosial, dan justru karena itulah memasangkannya dengan pemeriksaan awal yang eksplisit yang melempar error pada variabel yang hilang sepadan dengan empat barisnya.",
+        "Berkas contohnya adalah dokumentasi yang tidak bisa membusuk diam-diam: kalau variabel baru dibutuhkan dan tidak ada yang menambahkannya di sana, run pertama orang berikutnya gagal sambil menyebutkan variabel yang hilang alih-alih mati di tempat yang membingungkan dua puluh pengujian kemudian. Ia membawa kuncinya dan bukan nilainya, jadi tidak ada rahasia yang masuk ke repositori — dan itu batas yang sama yang digariskan pelajaran data uji dan pelajaran CI. Tidak ada yang memuatnya otomatis sebagai cadangan dan tidak ada yang mewajibkannya ada; seluruh nilainya bersifat sosial, dan justru karena itulah memasangkannya dengan pemeriksaan awal yang eksplisit yang melempar error pada variabel yang hilang sepadan dengan empat barisnya.",
     },
     {
       id: "q3",

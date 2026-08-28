@@ -146,9 +146,9 @@ const id: typeof en = {
   roadmap: {
     metaTitle: "QA Academy — belajar software testing dari nol | TestForge",
     metaDescription:
-      "Peta belajar gratis dari nol sampai QA profesional: dasar-dasar pengujian, QA manual di dunia kerja, otomasi, dan persiapan ujian Foundation Level — dipraktikkan di alat manajemen pengujian sungguhan.",
+      "Peta belajar gratis dari nol sampai QA profesional: dasar-dasar pengujian, QA manual di dunia kerja, otomasi, dan persiapan ujian Foundation Level — dipraktikkan di tool test management sungguhan.",
     intro:
-      "Peta belajar dari nol sampai QA profesional — lalu berlanjut ke otomasi. Gratis, open source, dan dipraktikkan di tempat pekerjaannya benar-benar terjadi: di alat manajemen pengujian sungguhan, pada proyek sungguhan.",
+      "Peta belajar dari nol sampai QA profesional — lalu berlanjut ke otomasi. Gratis, open source, dan dipraktikkan di tempat pekerjaannya benar-benar terjadi: di tool test management sungguhan, pada proyek sungguhan.",
     availableNow: (n: number) => `${n} pelajaran tersedia sekarang`,
     betaTitle: "QA Academy masih dalam tahap beta.",
     betaBody:

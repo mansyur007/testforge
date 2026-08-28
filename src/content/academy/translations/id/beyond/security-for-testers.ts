@@ -39,7 +39,7 @@ melakukannya.**
 Sebagian besar cacat keamanan berdampak tertinggi tidak eksotis. Semuanya
 kegagalan logika bisnis dan otorisasi — seorang pengguna menjangkau data pengguna
 lain, sebuah langkah yang bisa dilewati, sebuah harga yang bisa disunting.
-Pemindai terkenal buruk untuk itu, karena pemindai tidak tahu bahwa proyek 7
+Scanner terkenal buruk untuk itu, karena scanner tidak tahu bahwa proyek 7
 milik orang lain. Anda tahu.
 
 ## Broken access control: mulai di sini, selalu
@@ -103,7 +103,7 @@ end me-render tiga kolom berarti membocorkan sisanya kepada siapa pun yang
 membuka devtools. Bacalah isi response-nya, selalu — ini kebiasaan dari pelajaran
 otomasi API diarahkan ke pertanyaan yang berbeda.
 
-**Desain yang tidak aman adalah yang sama sekali tidak bisa disentuh pemindai.**
+**Desain yang tidak aman adalah yang sama sekali tidak bisa disentuh scanner.**
 Tambahkan item ke keranjang, lanjut ke pembayaran, lalu ubah kuantitas atau
 harganya di dalam request-nya. Lompat dari langkah 1 ke langkah 4 sebuah wizard.
 Putar ulang request "konfirmasi pesanan" dua kali. Checkout yang memvalidasi
@@ -129,14 +129,14 @@ bentuk.
 ## Alat membantu, tapi ia paruh yang lebih kecil
 
 **OWASP ZAP** dalam mode pasif adalah hal berguna yang termurah: alirkan sesi
-eksploratori biasa Anda lewat ia lalu baca apa yang ia sadari. **Pemindaian
+eksploratori biasa Anda lewat ia lalu baca apa yang ia sadari. **Scanning
 dependensi** — \`npm audit\`, Dependabot, Snyk — tempatnya di CI, karena
 dependensi yang rentan adalah cara paling umum sebuah aplikasi mewarisi cacat
 yang tidak ditulis siapa pun.
 
-Tapi perlakukan seluruh keluaran pemindai sebagai **temuan untuk diverifikasi,
+Tapi perlakukan seluruh output scanner sebagai **temuan untuk diverifikasi,
 bukan cacat untuk diajukan.** Positif palsu adalah normanya, dan QA yang
-mengajukan tiga puluh tiket pemindai tanpa verifikasi mengajari tim keamanan
+mengajukan tiga puluh tiket scanner tanpa verifikasi mengajari tim keamanan
 untuk mengabaikannya.
 
 ## Melaporkan temuan keamanan
@@ -178,7 +178,7 @@ tanpa mendirikan environment end-to-end yang lengkap.
   selfCheck: [
     {
       id: "q1",
-      stem: "Kenapa tester sering lebih baik daripada pemindai dalam menemukan cacat keamanan berdampak tertinggi?",
+      stem: "Kenapa tester sering lebih baik daripada scanner dalam menemukan cacat keamanan berdampak tertinggi?",
       choices: [
         {
           id: "a",
@@ -186,19 +186,19 @@ tanpa mendirikan environment end-to-end yang lengkap.
         },
         {
           id: "b",
-          text: "Cacat terburuk biasanya kegagalan otorisasi dan logika bisnis, dan pemindai tidak tahu siapa yang seharusnya boleh melakukan apa",
+          text: "Cacat terburuk biasanya kegagalan otorisasi dan logika bisnis, dan scanner tidak tahu siapa yang seharusnya boleh melakukan apa",
         },
         {
           id: "c",
-          text: "Pemindai tidak bisa mengirim request yang terautentikasi",
+          text: "Scanner tidak bisa mengirim request yang terautentikasi",
         },
         {
           id: "d",
-          text: "Pemindai hanya memeriksa front end, tidak pernah API-nya",
+          text: "Scanner hanya memeriksa front end, tidak pernah API-nya",
         },
       ],
       explanation:
-        "Pemindai mencari hal-hal yang cacat bentuk — string injeksi, versi yang diketahui rentan, header yang hilang. Ia sama sekali tidak tahu bahwa proyek 109 milik organisasi yang berbeda, bahwa langkah sebuah wizard tidak seharusnya bisa dilewati, atau bahwa sebuah harga tidak seharusnya bisa disunting di dalam request-nya, karena tidak satu pun dari itu cacat bentuk. Semuanya request yang bentuknya sempurna yang melakukan sesuatu yang tidak pernah dimaksudkan bisnisnya. Keunggulan tester adalah pengetahuan domain: Anda tahu untuk apa aplikasinya dan siapa yang seharusnya boleh melakukan apa, dan persis itulah yang dikodekan sebuah matriks otorisasi. Pemindai memang melakukan autentikasi dan memang menguji API — bukan di situ celahnya.",
+        "Scanner mencari hal-hal yang cacat bentuk — string injeksi, versi yang diketahui rentan, header yang hilang. Ia sama sekali tidak tahu bahwa proyek 109 milik organisasi yang berbeda, bahwa langkah sebuah wizard tidak seharusnya bisa dilewati, atau bahwa sebuah harga tidak seharusnya bisa disunting di dalam request-nya, karena tidak satu pun dari itu cacat bentuk. Semuanya request yang bentuknya sempurna yang melakukan sesuatu yang tidak pernah dimaksudkan bisnisnya. Keunggulan tester adalah pengetahuan domain: Anda tahu untuk apa aplikasinya dan siapa yang seharusnya boleh melakukan apa, dan persis itulah yang dikodekan sebuah matriks otorisasi. Scanner memang melakukan autentikasi dan memang menguji API — bukan di situ celahnya.",
     },
     {
       id: "q2",
@@ -246,7 +246,7 @@ tanpa mendirikan environment end-to-end yang lengkap.
         },
       ],
       explanation:
-        "Tiga yang pertama semuanya pemeriksaan logika bisnis dan otorisasi yang tidak butuh apa pun selain devtools browser atau curl, dan ketiganya kelas yang paling buruk ditangani pemindai: hak akses yang ditegakkan hanya di UI, response yang membocorkan kolom yang disaring layar, dan alur yang aturannya hanya ada di urutan penyajian antarmukanya. Yang keempat adalah percobaan denial-of-service alih-alih pemeriksaan keamanan — ia eksplisit dikecualikan oleh aturan main di awal pelajaran ini, dan kalau Anda memang perlu tahu bagaimana sistemnya berperilaku di bawah beban, itu pengujian performa yang dijalankan di jendela waktu yang disepakati terhadap environment yang disepakati.",
+        "Tiga yang pertama semuanya pemeriksaan logika bisnis dan otorisasi yang tidak butuh apa pun selain devtools browser atau curl, dan ketiganya kelas yang paling buruk ditangani scanner: hak akses yang ditegakkan hanya di UI, response yang membocorkan kolom yang disaring layar, dan alur yang aturannya hanya ada di urutan penyajian antarmukanya. Yang keempat adalah percobaan denial-of-service alih-alih pemeriksaan keamanan — ia eksplisit dikecualikan oleh aturan main di awal pelajaran ini, dan kalau Anda memang perlu tahu bagaimana sistemnya berperilaku di bawah beban, itu pengujian performa yang dijalankan di jendela waktu yang disepakati terhadap environment yang disepakati.",
     },
   ],
 };

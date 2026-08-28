@@ -10,8 +10,8 @@ export const apiTestingId: LessonTranslation = {
 
 UI hanyalah satu klien dari API. Biasanya ada klien lain — aplikasi mobile,
 integrasi mitra, skrip CI — dan mereka tidak mendapat validasi milik UI. Jadi
-pertanyaan yang menarik bukan "apakah formulirnya jalan?" melainkan **"apa yang
-terjadi ketika aturannya tidak ditegakkan oleh formulir?"**
+pertanyaan yang menarik bukan "apakah form-nya jalan?" melainkan **"apa yang
+terjadi ketika aturannya tidak ditegakkan oleh form?"**
 
 Tiga hal yang hanya bisa Anda kerjakan dengan benar di lapisan ini:
 
@@ -137,7 +137,7 @@ Anda baru membangun ulang happy path front end di dalam alat yang lebih lambat.
 Nilainya ada pada request yang *tidak bisa* dibuat UI. Setelah Anda menyalin
 sebuah request, tiga suntingan pertama Anda sebaiknya: **hapus satu kolom
 wajib**, **ganti token-nya**, dan **isikan nilai di luar rentang pada kolom yang
-dibatasi formulir.**
+dibatasi form.**
 
 ## Di mana TestForge berperan
 
@@ -211,7 +211,7 @@ apa yang diklaim response-nya.
         },
       ],
       explanation:
-        "Setiap request salinan sudah lolos validasi front end sendiri, jadi collection-nya mereproduksi happy path di dalam alat yang lebih lambat. Keunggulan khas lapisan API justru pada segala yang dicegah formulir: kolom wajib yang hilang, nilai di luar rentang input, token pengguna lain. Kredensial yang kedaluwarsa dan parameterisasi sama-sama bisa diselesaikan dan bukan masalahnya, dan suite-nya juga bukan sekadar mubazir — dihadapkan pada klien kedua seperti aplikasi mobile atau sebuah integrasi, endpoint yang sama menghadapi input yang tidak akan pernah dihasilkan UI web.",
+        "Setiap request salinan sudah lolos validasi front end sendiri, jadi collection-nya mereproduksi happy path di dalam alat yang lebih lambat. Keunggulan khas lapisan API justru pada segala yang dicegah form: kolom wajib yang hilang, nilai di luar rentang input, token pengguna lain. Kredensial yang kedaluwarsa dan parameterisasi sama-sama bisa diselesaikan dan bukan masalahnya, dan suite-nya juga bukan sekadar mubazir — dihadapkan pada klien kedua seperti aplikasi mobile atau sebuah integrasi, endpoint yang sama menghadapi input yang tidak akan pernah dihasilkan UI web.",
     },
     {
       id: "q3",

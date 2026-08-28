@@ -84,7 +84,7 @@ Tiga tingkat itu disengaja. Dengan lima, orang berdebat dua puluh menit soal
 apakah sesuatu itu 3 atau 4 dan urutannya tidak berubah. Pengurutan itu untuk
 memutuskan urutan, dan urutan hanya butuh resolusi secukupnya untuk disortir.
 
-## Percakapannya adalah keluarannya
+## Percakapannya adalah output-nya
 
 Inilah bagian yang tidak dituliskan siapa pun: **analisis risiko lebih berharga
 sebagai rapat setengah jam daripada sebagai dokumen.** Kumpulkan satu developer,
@@ -140,7 +140,7 @@ Validasi kode diskon            H       M            regex berubah, 4 bug   2
                                                      di area ini tahun lalu
 Peringkat pencarian produk      M       H            ditulis ulang sprint   3
                                                      ini
-Pembaruan tautan footer         L       L            perubahan teks, tanpa  lewati
+Pembaruan link footer         L       L            perubahan teks, tanpa  lewati
                                                      logika
 
 Alokasi: 10j untuk guest checkout, 6j untuk kode diskon, 4j untuk pencarian
@@ -219,7 +219,7 @@ kebutuhannya terlalu tipis untuk diskrip — pengujian eksploratori bercharter.
     },
     {
       id: "q3",
-      stem: "Mana di antara ini yang benar-benar masukan bagi paruh kemungkinan pada skornya?",
+      stem: "Mana di antara ini yang benar-benar input bagi paruh kemungkinan pada skornya?",
       choices: [
         {
           id: "a",

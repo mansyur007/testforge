@@ -22,7 +22,7 @@ Dua hal yang salah di seluruh area ini dalam praktik:
    dilewati, jadi pengukuran pertama atas kecepatan halaman Anda adalah keluhan
    seorang pelanggan.
 2. **"Non-fungsional berarti alat spesialis, jadi bukan tugas saya."** Pembangkit
-   beban dan pemindai memang spesialisasi, dan Anda akan bertemu keduanya di
+   beban dan scanner memang spesialisasi, dan Anda akan bertemu keduanya di
    track senior. Tapi cacat non-fungsional yang *memalukan* — halaman delapan
    detik, URL yang menunjukkan pesanan pelanggan lain, tagihan ganda di koneksi
    labil — semuanya bisa ditemukan dengan dev tools, satu profil browser kedua,
@@ -44,7 +44,7 @@ adalah sebab tim melewatkan ketiganya:
 Yang ketiga adalah yang dimaksud orang, dan dua yang pertama justru tempat
 sebagian besar temuannya berada.
 
-**Pelaksanaan satu pengguna.** Buka tab network (semua kebiasaan dari pelajaran
+**Run satu pengguna.** Buka tab network (semua kebiasaan dari pelajaran
 dev tools berlaku) dan muat halamannya dari dingin:
 
 - **Total waktu, total terkirim, jumlah request.** Angka yang bisa Anda
@@ -62,9 +62,9 @@ dev tools berlaku) dan muat halamannya dari dingin:
 - **Cekik.** Pencekikan jaringan lambat dan CPU 4× di dev tools mengubah "terasa
   baik-baik saja di laptop saya" menjadi apa yang dialami ponsel kelas menengah.
 
-**Pelaksanaan volume data**, yang hampir tidak dijalankan siapa pun: semuanya
+**Run volume data**, yang hampir tidak dijalankan siapa pun: semuanya
 cepat dengan dua belas baris di data contoh. Buat akun dengan 10.000 pesanan,
-proyek dengan 5.000 case, nama pelanggan 300 karakter, lampiran 40MB, laporan
+proyek dengan 5.000 case, nama pelanggan 300 karakter, attachment 40MB, laporan
 lintas tiga tahun. Kotak pencarian, pengurutan, ekspor, dan layar apa pun yang
 punya angka total adalah tempat hal ini menggigit — dan mode kegagalannya
 biasanya bukan kelambatan melainkan timeout pada suatu ambang yang tidak
@@ -81,7 +81,7 @@ diketahui siapa pun ada.
 
 Anda bukan penetration tester, dan ini bukan pelajaran itu. Tapi **broken access
 control** sudah bertahun-tahun duduk di puncak atau dekat puncak OWASP Top Ten,
-ia kelas kelemahan yang paling buruk ditangani pemindai otomatis, dan
+ia kelas kelemahan yang paling buruk ditangani scanner otomatis, dan
 menemukannya butuh persis apa yang sudah Anda punya: dua akun dan kemampuan
 membaca sebuah URL.
 
@@ -95,7 +95,7 @@ tombolnya sementara endpoint-nya menjawab siapa saja adalah bug yang sama, satu
 lapis lebih dalam.
 
 **2. Paksa telusur.** Ketik \`/admin\` sebagai pengguna biasa. Tidak me-render
-sebuah tautan bukanlah kontrol akses. Coba juga metode lainnya: sumber daya yang
+sebuah link bukanlah kontrol akses. Coba juga metode lainnya: sumber daya yang
 tidak bisa Anda \`GET\` tapi bisa Anda \`DELETE\` adalah ketidaksimetrisan yang
 nyata dan lazim.
 
@@ -104,12 +104,12 @@ kirim ulang request yang tertangkap dengan cookie lama dan lihat. Apakah
 mengganti kata sandi mengakhiri sesi-sesi lain? Apakah ada timeout menganggur
 sama sekali?
 
-**4. Reset kata sandi.** Pakai tautan yang dikirim ke email dua kali. Pakai
+**4. Reset kata sandi.** Pakai link yang dikirim ke email dua kali. Pakai
 setelah satu jam. Mintakan satu untuk akun lain lalu periksa Anda berakhir di
 sesi siapa.
 
-**5. Validasi hanya di sisi klien.** Formulirnya membatasi kuantitas di 10; kirim
-10.000 ke API-nya. Formulirnya menonaktifkan tombol submit; endpoint-nya bisa
+**5. Validasi hanya di sisi klien.** Form-nya membatasi kuantitas di 10; kirim
+10.000 ke API-nya. Form-nya menonaktifkan tombol submit; endpoint-nya bisa
 jadi tidak peduli. Kasus terburuk di keluarga ini: total atau harga yang dikirim
 *dari* klien lalu dipercaya.
 
@@ -147,9 +147,9 @@ tinggi di seluruh pelajaran ini:
 - **Kirim ganda.** Klik ganda tombolnya, atau ketuk dua kali di koneksi lambat.
   Dua pesanan adalah klasiknya, dan Anda sudah tahu query yang menemukannya.
 - **Muat ulang dan back.** Muat ulang di tengah wizard, pakai tombol back setelah
-  pengiriman berhasil, kirim ulang formulirnya. Catatan ganda dan dialog
+  pengiriman berhasil, kirim ulang form-nya. Catatan ganda dan dialog
   "konfirmasi pengiriman ulang" sama-sama tinggal di sini.
-- **Kedaluwarsakan sesinya** dengan formulirnya terbuka, lalu kirim. Kehilangan
+- **Kedaluwarsakan sesinya** dengan form-nya terbuka, lalu kirim. Kehilangan
   satu jam ketikan karena sebuah redirect adalah cacat, bukan fitur keamanan.
 - **Buat ia timeout.** Buat server-nya lambat (cekik) lalu lihat apakah klien-nya
   mencoba ulang — dan apakah mencoba ulang itu *aman*. Retry pada pembayaran yang
@@ -178,7 +178,7 @@ itulah langkah yang gagal direproduksi orang.
 
 Buatlah sebuah **suite NFR** yang dijalankan sekali per rilis terhadap alur
 kritis Anda: tujuh pemeriksaan keamanan, pengaturan waktu satu pengguna,
-pelaksanaan volume, dan daftar keandalan di atas. Semuanya berubah lambat dan
+run volume, dan daftar keandalan di atas. Semuanya berubah lambat dan
 mudah dilupakan, dan persis untuk itulah suite tersimpan ada.
 
 Taruh *angkanya* di hasil run alih-alih sekadar lulus atau gagal — 6,2 detik,
@@ -217,7 +217,7 @@ dashboard yang akan dibaca orang di luar tim.
         },
       ],
       explanation:
-        "Broken access control sudah bertahun-tahun duduk di puncak atau dekat puncak OWASP Top Ten, ia kelas yang paling buruk ditangani pemindai otomatis, dan mengujinya tidak butuh apa pun selain dua akun dan sebuah URL yang disalin — termasuk terhadap API-nya, karena tombol tersembunyi dan endpoint yang terlindungi adalah dua hal berbeda. String injeksi dan input berukuran berlebih layak dicoba dan memang menemukan bug, tapi framework modern memparameterkan query secara bawaan, jadi hasil per jamnya jauh lebih rendah. Pemeriksaan HTTPS adalah tengokan sepuluh detik yang layak dikerjakan dan hampir selalu sudah benar. Perhatikan batasnya di keempatnya: ini pengujian yang diizinkan pada sistem yang Anda punya izin untuk diuji, dan temuan yang nyata pergi ke kanal keamanan alih-alih ke pengorekan lebih lanjut.",
+        "Broken access control sudah bertahun-tahun duduk di puncak atau dekat puncak OWASP Top Ten, ia kelas yang paling buruk ditangani scanner otomatis, dan mengujinya tidak butuh apa pun selain dua akun dan sebuah URL yang disalin — termasuk terhadap API-nya, karena tombol tersembunyi dan endpoint yang terlindungi adalah dua hal berbeda. String injeksi dan input berukuran berlebih layak dicoba dan memang menemukan bug, tapi framework modern memparameterkan query secara bawaan, jadi hasil per jamnya jauh lebih rendah. Pemeriksaan HTTPS adalah tengokan sepuluh detik yang layak dikerjakan dan hampir selalu sudah benar. Perhatikan batasnya di keempatnya: ini pengujian yang diizinkan pada sistem yang Anda punya izin untuk diuji, dan temuan yang nyata pergi ke kanal keamanan alih-alih ke pengorekan lebih lanjut.",
     },
     {
       id: "q2",
@@ -249,7 +249,7 @@ dashboard yang akan dibaca orang di luar tim.
       choices: [
         {
           id: "a",
-          text: "Mengirim formulir dengan jaringan disetel offline, lalu memeriksa apakah penulisannya tetap mendarat",
+          text: "Mengirim form dengan jaringan disetel offline, lalu memeriksa apakah penulisannya tetap mendarat",
         },
         {
           id: "b",
@@ -265,7 +265,7 @@ dashboard yang akan dibaca orang di luar tim.
         },
       ],
       explanation:
-        "Tiga yang pertama adalah kerja dev-tools-dan-kesabaran: mode offline, koneksi yang dicekik, dan tab kedua, masing-masing menyingkirkan satu asumsi yang menjadi fondasi happy path — dan masing-masing menemukan kelas cacat ber-severity tinggi, karena kasus offline memberi tahu Anda apakah UI dan data tersimpannya sepakat, dan kasus dua tab adalah pembaruan hilang yang tak terlihat oleh siapa pun yang menguji di satu jendela. Konkurensi 500 pengguna adalah kekecualiannya: ia butuh pembangkit beban dan environment sasaran yang sanggup menyerapnya, dan itu load test dengan perencanaannya sendiri, dan tempatnya di track senior alih-alih di pelaksanaan ini.",
+        "Tiga yang pertama adalah kerja dev-tools-dan-kesabaran: mode offline, koneksi yang dicekik, dan tab kedua, masing-masing menyingkirkan satu asumsi yang menjadi fondasi happy path — dan masing-masing menemukan kelas cacat ber-severity tinggi, karena kasus offline memberi tahu Anda apakah UI dan data tersimpannya sepakat, dan kasus dua tab adalah pembaruan hilang yang tak terlihat oleh siapa pun yang menguji di satu jendela. Konkurensi 500 pengguna adalah kekecualiannya: ia butuh pembangkit beban dan environment sasaran yang sanggup menyerapnya, dan itu load test dengan perencanaannya sendiri, dan tempatnya di track senior alih-alih di run ini.",
     },
   ],
 };

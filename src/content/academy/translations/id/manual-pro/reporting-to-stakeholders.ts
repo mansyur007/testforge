@@ -23,7 +23,7 @@ rapat lanjutan supaya berguna, yang Anda tulis itu catatan, bukan laporan.
 | Pembaca | Menginginkan | Panjang |
 |---|---|---|
 | **Product owner / manajer** | Bisakah kita kirim? Apa risikonya kalau iya? | Lima kalimat |
-| **Dev lead** | Di mana cacatnya menggerombol, apa yang terhambat, apa yang butuh keputusan | Daftar pendek, dengan tautan |
+| **Dev lead** | Di mana cacatnya menggerombol, apa yang terhambat, apa yang butuh keputusan | Daftar pendek, dengan link |
 | **Eksekutif / pelanggan** | Satu baris dan arah pergerakannya | Satu baris |
 
 Fakta di bawahnya identik. Yang berubah adalah seberapa banyak mesinnya Anda
@@ -124,7 +124,7 @@ berikutnya tetap ditanggapi serius.
 5. **Berikutnya**
 
 Apa pun yang tidak muat di salah satu dari kelimanya bukanlah status, ia detail,
-dan detail masuk ke dalam sebuah tautan.
+dan detail masuk ke dalam sebuah link.
 
 ## Mengeskalasi tanpa membakar apa pun
 
@@ -164,7 +164,7 @@ run dan cacatnya alih-alih menempelkan angka, sehingga siapa pun yang
 menginginkan detailnya bisa mendapat semuanya dan tak seorang pun harus
 membacanya untuk mendapat keputusannya.
 
-Dan tautan dashboard bukanlah laporan. Mengirimnya berarti meminta pembacanya
+Dan link dashboard bukanlah laporan. Mengirimnya berarti meminta pembacanya
 mengerjakan tugas Anda — melihat angka lalu mengira-ngira artinya. Nilai Anda ada
 pada kalimatnya.
 
@@ -255,7 +255,7 @@ menghabiskan waktu di bagian yang butuh manusia: track **QA Automation**, di
         },
       ],
       explanation:
-        "Keputusan di depan adalah yang membuat tugas pembacanya terlihat di baris pertama; menyebutkan pengecualiannya adalah yang mencegah sebuah ketidaktahuan terbaca sebagai kelulusan; dan nilai bawaan beserta tenggat mengubah kesunyian menjadi pilihan yang harus diambil seseorang, dan itulah mekanisme yang sungguh-sungguh menggerakkan penghalang yang tak bertuan. Daftar case lengkap adalah yang sebaiknya ditinggalkan — ia detail, tempatnya di balik sebuah tautan, dan mengubur empat kalimat konsekuensi di dalam 300 baris adalah cara paling andal untuk membuat semuanya tidak dibaca.",
+        "Keputusan di depan adalah yang membuat tugas pembacanya terlihat di baris pertama; menyebutkan pengecualiannya adalah yang mencegah sebuah ketidaktahuan terbaca sebagai kelulusan; dan nilai bawaan beserta tenggat mengubah kesunyian menjadi pilihan yang harus diambil seseorang, dan itulah mekanisme yang sungguh-sungguh menggerakkan penghalang yang tak bertuan. Daftar case lengkap adalah yang sebaiknya ditinggalkan — ia detail, tempatnya di balik sebuah link, dan mengubur empat kalimat konsekuensi di dalam 300 baris adalah cara paling andal untuk membuat semuanya tidak dibaca.",
     },
   ],
 };

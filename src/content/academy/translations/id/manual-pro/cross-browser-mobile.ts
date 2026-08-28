@@ -94,12 +94,12 @@ menggambar halamannya. Yang berbeda adalah segala hal di tepinya:
 
 | Area | Gejala yang akan Anda lihat |
 |---|---|
-| **Kontrol formulir** | Input tanggal, waktu, dan \`file\` digambar browser dan OS — picker yang bekerja di mana-mana menolak masukan keyboard di satu tempat |
+| **Kontrol form** | Input tanggal, waktu, dan \`file\` digambar browser dan OS — picker yang bekerja di mana-mana menolak input keyboard di satu tempat |
 | **Teks dan font** | Font cadangan yang berbeda 8% lebih lebar, sehingga labelnya membungkus dan mendorong tombol keluar dari kartu bertinggi tetap |
 | **Tata letak** | Header lengket, \`overflow\` pada wadah yang bisa digulir, dan apa pun bertinggi tetap adalah tersangka lazimnya |
 | **Satuan viewport** | \`100vh\` lebih tinggi daripada area yang terlihat di mobile, karena bilah URL menyembunyikan diri lalu muncul lagi — klasiknya "tombol submit di bawah lipatan yang tidak bisa dicapai siapa pun" |
 | **Penyimpanan** | Safari mengusir \`localStorage\` dan IndexedDB yang ditulis skrip setelah sekitar seminggu tanpa interaksi; "draf saya terlupakan" adalah cacat nyata di satu engine saja |
-| **Autoplay, papan klip, unduhan** | Digerbangi izin secara berbeda per browser; tombol "salin tautan" yang diam-diam tidak melakukan apa pun di salah satunya |
+| **Autoplay, clipboard, unduhan** | Dibatasi izin secara berbeda per browser; tombol "salin link" yang diam-diam tidak melakukan apa pun di salah satunya |
 | **Cetak / PDF** | Semua orang melupakannya, dan faktur itu dicetak |
 
 Dua kebiasaan yang lahir dari daftar ini: ketika bug tata letak muncul persis di
@@ -116,13 +116,13 @@ menemukan satu pun hal berikut, dan hal-hal inilah yang menghilangkan pesanan:
 - **Keyboard menutupi hal yang Anda butuhkan.** Kolomnya baik-baik saja;
   *tombol submit*-nya yang berada di balik keyboard layar, dan halamannya tidak
   mau menggulir ke sana.
-- **Rotasi di tengah alur.** Putar ponselnya di langkah 3 dari 4. Formulir
+- **Rotasi di tengah alur.** Putar ponselnya di langkah 3 dari 4. Form
   terisi separuh yang ter-mount ulang kehilangan state-nya, dan ini sepenuhnya
   tak terlihat di emulator perangkat.
 - **Interupsi.** Sebuah panggilan, sebuah notifikasi, atau berpindah aplikasi
   lalu kembali empat menit kemudian — di tengah pembayaran. Apakah aplikasinya
   melanjutkan, mengulang dari awal, atau menagih dua kali?
-- **Gestur yang dimiliki OS.** Tarik-untuk-muat-ulang pada formulir yang sudah
+- **Gestur yang dimiliki OS.** Tarik-untuk-muat-ulang pada form yang sudah
   dikirim, dan gestur usap-kembali sebagai *peristiwa navigasi yang tidak Anda
   rancang*.
 - **Area aman.** Poni, sudut membulat, dan indikator home memakan bagian atas dan
@@ -160,13 +160,13 @@ sepuluh kali. Itu sepuluh kali lipat pekerjaan demi tambahan informasi beberapa
 persen, dan itulah sebabnya pengujian lintas browser bereputasi sebagai tempat
 waktu pergi untuk mati.
 
-Logika sisi server identik di setiap browser. Jadi pelaksanaan lapis 2 adalah
+Logika sisi server identik di setiap browser. Jadi run lapis 2 adalah
 **smoke tipis atas hal-hal yang benar-benar diputuskan browser**:
 
 1. Halamannya ter-render — tidak ada yang tumpang tindih, terpotong, atau keluar
    layar
-2. Setiap input menerima masukan, termasuk pemilih tanggal dan kolom berkas
-3. Formulirnya terkirim dan keadaan berhasilnya muncul
+2. Setiap input bisa diisi, termasuk date picker dan kolom berkas
+3. Form-nya terkirim dan keadaan berhasilnya muncul
 4. Pembayaran atau redirect pihak ketiga apa pun tuntas dan kembali
 5. Satu cetakan atau unduhan, kalau produknya punya
 
@@ -268,7 +268,7 @@ sebagian besar hal yang mengecewakan mereka.
         },
         {
           id: "b",
-          text: "Formulir terisi separuh kehilangan state-nya ketika ponselnya diputar di tengah alur",
+          text: "Form terisi separuh kehilangan state-nya ketika ponselnya diputar di tengah alur",
         },
         {
           id: "c",

@@ -4,7 +4,7 @@ export const decisionTablesId: LessonTranslation = {
   slug: "decision-tables",
   title: "Decision table",
   summary:
-    "Ketika beberapa kondisi bergabung menghasilkan keluaran berbeda, sebuah tabel menemukan aturan yang tidak ditulis siapa pun.",
+    "Ketika beberapa kondisi bergabung menghasilkan output berbeda, sebuah tabel menemukan aturan yang tidak ditulis siapa pun.",
   body: `
 ## Kapan menjangkaunya
 
@@ -30,7 +30,7 @@ tidak punya jawaban yang terdefinisi, lalu Anda pergi bertanya.
 - C2: pelanggan adalah member?
 - C3: alamat internasional?
 
-**Langkah 2 — daftar aksinya** (keluarannya):
+**Langkah 2 — daftar aksinya** (output-nya):
 
 - A1: gratis ongkir
 - A2: bebankan ongkir Rp 20.000
@@ -50,7 +50,7 @@ adalah tanda tanya: seorang *member* dengan alamat *internasional*. "Member
 selalu mendapat gratis ongkir" dan "internasional tidak pernah mendapat gratis
 ongkir" saling bertentangan. Kebutuhannya tidak menyebutkan mana yang menang.
 
-**Itulah keluarannya.** Sebelum menulis satu pengujian pun Anda sudah menemukan
+**Itulah output-nya.** Sebelum menulis satu pengujian pun Anda sudah menemukan
 cacat sungguhan di spesifikasi — jenis yang tiga bulan kemudian terkirim sebagai
 perdebatan antara support dan keuangan. Bawa R1 dan R5 ke product owner.
 
@@ -65,11 +65,11 @@ mengecilkannya:
 **Tanda hubung untuk kondisi yang tidak relevan.** Kalau internasional selalu
 berarti ongkir dibayar terlepas dari yang lain, R3 dan R7 melebur jadi satu
 aturan dengan C1 dan C2 diisi "–" (tidak peduli). Lebih sedikit pengujian,
-cakupan *keluaran* yang sama.
+cakupan *output* yang sama.
 
 **Uji aksi yang berbeda, bukan setiap kombinasi.** Kalau delapan aturan hanya
-menghasilkan dua keluaran berbeda, prioritaskan setidaknya satu pengujian per
-keluaran, ditambah kombinasi yang melibatkan kondisi paling licin.
+menghasilkan dua output berbeda, prioritaskan setidaknya satu pengujian per
+output, ditambah kombinasi yang melibatkan kondisi paling licin.
 
 Hati-hati: meringkas mengandaikan Anda sudah tahu kondisi-kondisinya saling
 bebas. Andaian itu justru yang ingin diperiksa oleh decision table, jadi ringkas
@@ -105,7 +105,7 @@ diam-diam mengarang jawaban untuk R1/R5.
 ## Periksa pemahaman Anda
 
 - Empat kondisi biner. Berapa aturan sebelum diringkas?
-- Apa yang Anda lakukan pada sel yang keluarannya tidak didefinisikan
+- Apa yang Anda lakukan pada sel yang output-nya tidak didefinisikan
   kebutuhannya?
 - Kenapa "kami sudah menguji kombinasi utamanya" adalah jawaban yang lebih lemah
   daripada sebuah decision table?
@@ -133,7 +133,7 @@ apa yang terjadi *sebelumnya*.
         { id: "a", text: "Uji apa yang saat ini dilakukan kodenya lalu catat itu sebagai hasil yang diharapkan" },
         { id: "b", text: "Lewati aturan itu — di luar cakupan" },
         { id: "c", text: "Angkat sebagai celah di kebutuhannya sebelum memutuskan hasil yang diharapkan" },
-        { id: "d", text: "Pilih keluaran yang tampak paling masuk akal lalu lanjut" },
+        { id: "d", text: "Pilih output yang tampak paling masuk akal lalu lanjut" },
       ],
       explanation:
         "Kombinasi yang tidak terdefinisi adalah cacat di spesifikasi, dan menemukannya adalah hal paling berharga yang dilakukan sebuah decision table. Mencatat perilaku saat ini sebagai yang diharapkan diam-diam mengubah apa pun yang kebetulan dilakukan kodenya menjadi kebutuhan.",

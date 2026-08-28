@@ -22,7 +22,7 @@ test("creates a case", async ({ page }) => {
 ~~~
 
 Lima baris pertama itu kini ada di setiap berkas pengujian yang Anda miliki. Pada
-hari formulir login mendapat kolom "Workspace", Anda menyunting empat puluh
+hari form login mendapat kolom "Workspace", Anda menyunting empat puluh
 berkas. Itulah biaya yang menjadi alasan page object ada, dan layak dicermati apa
 biayanya sebenarnya: **bukan duplikasi demi duplikasi, melainkan jumlah tempat
 yang terpaksa Anda sentuh oleh satu perubahan UI.**
@@ -208,7 +208,7 @@ membuat data — dan di situlah pelajaran berikutnya melanjutkan.
 \`storageState\`: masuk sekali di sebuah setup project, simpan cookie-nya ke
 sebuah berkas, dan buat setiap pengujian dimulai dalam keadaan terautentikasi.
 Alur login-nya sendiri tetap mendapat satu pengujian sungguhan — yang benar-benar
-menjalankan formulirnya.
+menjalankan form-nya.
 
 ## Seberapa banyak struktur, dan kapan
 
@@ -223,7 +223,7 @@ Bawaan yang masuk akal, berurutan:
    beberapa berkas, atau ketika satu layar punya cukup banyak elemen sehingga
    locator inline mengubur pengujiannya.
 4. **Pecah lebih jauh hanya berdasarkan bukti**: sebuah component object untuk
-   widget yang memang dipakai ulang (pemilih tanggal, tabel data), bukan karena
+   widget yang memang dipakai ulang (date picker, tabel data), bukan karena
    sebuah folder terasa kosong.
 
 Struktur yang diperoleh dari pengulangan yang nyata hampir selalu tepat. Struktur
@@ -249,7 +249,7 @@ puluh pengujian merah setelah sebuah perubahan login memberi tahu Anda empat
 puluh hal rusak; dengan page object, perubahan yang sama merusak satu berkas dan
 riwayat run-nya menunjukkan satu perbaikan locator alih-alih sebuah tebing.
 
-Perbedaan itu penting ketika pelaksanaan Anda mendarat di TestForge, karena run
+Perbedaan itu penting ketika run Anda mendarat di TestForge, karena run
 yang separuh case-nya memerah sekaligus itu entah regresi sungguhan entah
 peristiwa perawatan suite, dan keduanya menuntut tanggapan yang sama sekali
 berbeda. Struktur yang memusatkan sebuah perubahan UI ke satu tempat adalah yang
@@ -288,7 +288,7 @@ urutan apa pun.
     },
     {
       id: "q2",
-      stem: "Sebuah suite masuk lewat formulir login di awal seluruh 60 pengujiannya, menambah sekitar empat detik masing-masing. Apa perbaikan bakunya?",
+      stem: "Sebuah suite masuk lewat form login di awal seluruh 60 pengujiannya, menambah sekitar empat detik masing-masing. Apa perbaikan bakunya?",
       choices: [
         {
           id: "a",
@@ -296,7 +296,7 @@ urutan apa pun.
         },
         {
           id: "b",
-          text: "Masuk sekali di sebuah setup project, simpan storageState, dan mulai setiap pengujian dalam keadaan terautentikasi — sambil mempertahankan satu pengujian sungguhan untuk formulir login-nya sendiri",
+          text: "Masuk sekali di sebuah setup project, simpan storageState, dan mulai setiap pengujian dalam keadaan terautentikasi — sambil mempertahankan satu pengujian sungguhan untuk form login-nya sendiri",
         },
         {
           id: "c",
@@ -304,11 +304,11 @@ urutan apa pun.
         },
         {
           id: "d",
-          text: "Ganti proses masuknya dengan waitForTimeout supaya pengujiannya tidak bergantung pada formulirnya",
+          text: "Ganti proses masuknya dengan waitForTimeout supaya pengujiannya tidak bergantung pada form-nya",
         },
       ],
       explanation:
-        "storageState menyingkirkan pekerjaan berulangnya alih-alih menyembunyikannya: autentikasi sekali, simpan cookie-nya, dan setiap pengujian dimulai dalam keadaan masuk — sementara alur login-nya tetap memegang satu pengujian yang sungguh-sungguh menjalankan formulirnya, karena itu fitur yang tetap perlu diverifikasi seseorang. Lebih banyak worker mengurangi waktu jam dinding tapi tetap membayar empat detik waktu mesin yang sama per pengujian dan menambah beban yang memperburuk pengujian yang peka waktu. BasePage memindahkan alur lambat yang sama ke dalam rantai pewarisan, dan itu gejala kelima di pelajaran ini alih-alih sebuah perbaikan. Dan pilihan terakhir menghapus proses masuknya tanpa menggantinya, meninggalkan pengujian di halaman yang tidak terautentikasi.",
+        "storageState menyingkirkan pekerjaan berulangnya alih-alih menyembunyikannya: autentikasi sekali, simpan cookie-nya, dan setiap pengujian dimulai dalam keadaan masuk — sementara alur login-nya tetap memegang satu pengujian yang sungguh-sungguh menjalankan form-nya, karena itu fitur yang tetap perlu diverifikasi seseorang. Lebih banyak worker mengurangi waktu jam dinding tapi tetap membayar empat detik waktu mesin yang sama per pengujian dan menambah beban yang memperburuk pengujian yang peka waktu. BasePage memindahkan alur lambat yang sama ke dalam rantai pewarisan, dan itu gejala kelima di pelajaran ini alih-alih sebuah perbaikan. Dan pilihan terakhir menghapus proses masuknya tanpa menggantinya, meninggalkan pengujian di halaman yang tidak terautentikasi.",
     },
     {
       id: "q3",

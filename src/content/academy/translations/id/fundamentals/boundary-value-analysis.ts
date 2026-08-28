@@ -4,7 +4,7 @@ export const boundaryValueAnalysisId: LessonTranslation = {
   slug: "boundary-value-analysis",
   title: "Boundary value analysis",
   summary:
-    "Bug tinggal di tepi. BVA adalah teknik dengan rasio cacat-per-pengujian terbaik dalam pengujian perangkat lunak.",
+    "Bug tinggal di tepi. BVA adalah teknik dengan rasio cacat-per-pengujian terbaik dalam software testing.",
   body: `
 ## Kenapa tepi itu rapuh
 
