@@ -95,15 +95,6 @@ const en = {
       kicker: "Integrations",
       title: "Works with the tools you already use",
     },
-    testimonials: {
-      kicker: "Testimonials",
-      title: "What early users say",
-      items: [
-        { quote: "Finally, test management that doesn't ask for a credit card. The Docker setup really is one command.", name: "Rian P.", role: "QA Engineer — Early Adopter" },
-        { quote: "Our Cypress results land straight into test runs. No more manual recaps in spreadsheets.", name: "Sarah K.", role: "SDET — Beta Tester" },
-        { quote: "The flaky test report saved us hours of debugging. And it's free. Hard to believe.", name: "Andi W.", role: "QA Lead — Beta Tester" },
-      ],
-    },
     openSource: {
       kicker: "Open Source",
       title: "MIT License. Forever.",
@@ -348,15 +339,6 @@ const id: typeof en = {
     integrations: {
       kicker: "Integrasi",
       title: "Terhubung dengan tools yang sudah kamu pakai",
-    },
-    testimonials: {
-      kicker: "Testimoni",
-      title: "Apa kata pengguna awal",
-      items: [
-        { quote: "Akhirnya ada test management yang tidak minta kartu kredit. Setup Docker-nya beneran satu perintah.", name: "Rian P.", role: "QA Engineer — Early Adopter" },
-        { quote: "Hasil Cypress kami langsung masuk sebagai test run. Tidak perlu lagi rekap manual di spreadsheet.", name: "Sarah K.", role: "SDET — Beta Tester" },
-        { quote: "Laporan flaky test-nya menghemat berjam-jam debugging. Dan ini gratis. Sulit dipercaya.", name: "Andi W.", role: "QA Lead — Beta Tester" },
-      ],
     },
     openSource: {
       kicker: "Open Source",

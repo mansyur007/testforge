@@ -379,6 +379,8 @@ export default async function HomePage() {
               <Link
                 href={academyHref}
                 data-testid="landing-academy-cta"
+                target="_blank"
+                rel="noopener noreferrer"
                 className={`rounded-lg bg-accent px-5 py-3 text-center font-medium text-white hover:bg-accent-hover ${CTA_MOTION}`}
               >
                 {t.academy.cta}
@@ -472,27 +474,6 @@ export default async function HomePage() {
               );
             })}
           </div>
-        </div>
-      </section>
-
-      {/* 8. Testimoni */}
-      <section className="mx-auto max-w-6xl px-4 py-16">
-        <SectionTitle kicker={t.testimonials.kicker} title={t.testimonials.title} />
-        <div className="grid gap-6 md:grid-cols-3">
-          {t.testimonials.items.map((tm) => (
-            <figure
-              key={tm.name}
-              className="rounded-xl border border-hairline p-6"
-            >
-              <blockquote className="text-sm text-content">
-                &ldquo;{tm.quote}&rdquo;
-              </blockquote>
-              <figcaption className="mt-4 text-sm">
-                <span className="font-semibold">{tm.name}</span>
-                <span className="block text-xs text-content-subtle">{tm.role}</span>
-              </figcaption>
-            </figure>
-          ))}
         </div>
       </section>
 
