@@ -295,6 +295,13 @@ export default async function SuperadminUsersPage({
               </code>
             </span>
             <Link
+              href="/superadmin/templates"
+              data-testid="superadmin-templates-link"
+              className="rounded-lg border border-hairline-strong px-3 py-1.5 text-sm font-medium text-content hover:bg-surface"
+            >
+              Case templates
+            </Link>
+            <Link
               href="/superadmin/export"
               prefetch={false}
               className="rounded-lg border border-hairline-strong px-3 py-1.5 text-sm font-medium text-content hover:bg-surface"
