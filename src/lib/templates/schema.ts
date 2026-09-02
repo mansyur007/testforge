@@ -3,8 +3,11 @@ import {
   LIMITS,
   TEMPLATE_CATEGORIES,
   coverageBreakdown as coverageBreakdownCore,
+  countPruned as countPrunedCore,
   countTemplate as countTemplateCore,
   parseTemplateContent as parseTemplateContentCore,
+  pruneToSelection as pruneToSelectionCore,
+  selectAll as selectAllCore,
   substituteVariables as substituteVariablesCore,
   walkTemplate as walkTemplateCore,
 } from "./content-core.mjs";
@@ -81,6 +84,31 @@ export const substituteVariables = substituteVariablesCore as (
   text: string,
   values: Record<string, string>,
 ) => string;
+
+export type TemplateSelection = {
+  suiteKeys: string[];
+  caseKeys: string[];
+};
+
+/** A suite pruned to the selection; `cases` are the ones that survived. */
+export type PrunedSuite = {
+  source: TemplateSuite;
+  cases: TemplateCase[];
+  children: PrunedSuite[];
+};
+
+export const pruneToSelection = pruneToSelectionCore as (
+  suites: TemplateSuite[],
+  selection: TemplateSelection,
+) => PrunedSuite[];
+
+export const countPruned = countPrunedCore as (
+  pruned: PrunedSuite[],
+) => { suites: number; cases: number };
+
+export const selectAll = selectAllCore as (
+  content: Pick<TemplateContent, "suites">,
+) => TemplateSelection;
 
 /**
  * Parse a stored `CaseTemplate.contentJson`. A row can only have been written

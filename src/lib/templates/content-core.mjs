@@ -133,6 +133,62 @@ export function coverageBreakdown(content) {
 }
 
 /**
+ * Prune a parsed tree to what the user checked.
+ *
+ * A suite survives if it was checked itself, if it directly holds a checked
+ * case, or if any descendant survives — that last clause is what stops a
+ * checked case from being orphaned when its parent suite was left unchecked.
+ *
+ * Returns `[{source, cases, children}]`, where `cases` are the surviving cases
+ * of that suite.
+ */
+export function pruneToSelection(suites, selection) {
+  const wantSuite = new Set(selection?.suiteKeys ?? []);
+  const wantCase = new Set(selection?.caseKeys ?? []);
+
+  const walk = (suite) => {
+    const cases = (suite.cases ?? []).filter((c) => wantCase.has(c.key));
+    const children = (suite.suites ?? []).map(walk).filter(Boolean);
+    if (cases.length === 0 && children.length === 0 && !wantSuite.has(suite.key)) {
+      return null;
+    }
+    return { source: suite, cases, children };
+  };
+
+  return (suites ?? []).map(walk).filter(Boolean);
+}
+
+/** Suite/case totals of a pruned tree — what the preview counts down to. */
+export function countPruned(pruned) {
+  let suites = 0;
+  let cases = 0;
+  const recurse = (list) => {
+    for (const s of list) {
+      suites++;
+      cases += s.cases.length;
+      recurse(s.children);
+    }
+  };
+  recurse(pruned ?? []);
+  return { suites, cases };
+}
+
+/** Everything selected — the default when the user applies without unchecking. */
+export function selectAll(content) {
+  const suiteKeys = [];
+  const caseKeys = [];
+  const recurse = (list) => {
+    for (const s of list) {
+      suiteKeys.push(s.key);
+      for (const c of s.cases ?? []) caseKeys.push(c.key);
+      recurse(s.suites ?? []);
+    }
+  };
+  recurse(content?.suites ?? []);
+  return { suiteKeys, caseKeys };
+}
+
+/**
  * Validate raw (already JSON.parse'd) content.
  *
  * @returns {{ok: true, content: object} | {ok: false, errors: string[]}}

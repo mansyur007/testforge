@@ -11,9 +11,12 @@ import {
   LIMITS,
   TEMPLATE_CASE_TYPES,
   TEMPLATE_PRIORITIES,
+  countPruned,
   countTemplate,
   coverageBreakdown,
   parseTemplateContent,
+  pruneToSelection,
+  selectAll,
   substituteVariables,
 } from "../src/lib/templates/content-core.mjs";
 import { BUILT_IN_TEMPLATES } from "../src/content/templates/index.mjs";
@@ -253,6 +256,85 @@ function assertRejects(name, content, needle) {
     "never leaves an unresolved placeholder in user data",
     substituteVariables("a {{MISSING}} b", {}) === "a  b",
   );
+}
+
+// ---------------------------------------------------------------------------
+// Selection pruning
+// ---------------------------------------------------------------------------
+
+// A two-level tree: parent "auth" holds case "a1" and child suite "login",
+// which holds "l1" and "l2".
+function tree() {
+  const r = parseTemplateContent({
+    suites: [
+      {
+        key: "auth",
+        name: "Auth",
+        cases: [{ key: "a1", title: "A1", coverage: "positive", priority: "LOW", type: "FUNCTIONAL", steps: [] }],
+        suites: [
+          {
+            key: "login",
+            name: "Login",
+            cases: [
+              { key: "l1", title: "L1", coverage: "positive", priority: "LOW", type: "FUNCTIONAL", steps: [] },
+              { key: "l2", title: "L2", coverage: "negative", priority: "LOW", type: "FUNCTIONAL", steps: [] },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+  if (!r.ok) throw new Error(`fixture invalid: ${r.errors.join(" | ")}`);
+  return r.content;
+}
+
+{
+  const content = tree();
+  const all = selectAll(content);
+  assert("selectAll picks up every suite", all.suiteKeys.length === 2);
+  assert("selectAll picks up every case", all.caseKeys.length === 3);
+
+  const full = countPruned(pruneToSelection(content.suites, all));
+  assert("select-all keeps the whole tree", full.suites === 2 && full.cases === 3);
+}
+
+{
+  // The orphan rule: a case is checked but neither its suite nor its ancestor
+  // is. Both suites must still be created or the case has nowhere to land.
+  const content = tree();
+  const pruned = pruneToSelection(content.suites, { suiteKeys: [], caseKeys: ["l2"] });
+  const { suites, cases } = countPruned(pruned);
+  assert("an unchecked ancestor is kept when a descendant case is checked", suites === 2, `got ${suites}`);
+  assert("only the checked case survives", cases === 1, `got ${cases}`);
+  assert("the surviving case is the checked one", pruned[0]?.children[0]?.cases[0]?.key === "l2");
+  assert("the ancestor keeps none of its own unchecked cases", pruned[0]?.cases.length === 0);
+}
+
+{
+  // Unchecking a whole branch drops it entirely.
+  const content = tree();
+  const pruned = pruneToSelection(content.suites, {
+    suiteKeys: ["auth"],
+    caseKeys: ["a1"],
+  });
+  const { suites, cases } = countPruned(pruned);
+  assert("an unselected child suite is dropped", suites === 1, `got ${suites}`);
+  assert("only the parent's own case survives", cases === 1, `got ${cases}`);
+}
+
+{
+  // A suite checked with none of its cases is still created — an empty suite is
+  // a legitimate thing to want out of a template.
+  const content = tree();
+  const pruned = pruneToSelection(content.suites, { suiteKeys: ["auth"], caseKeys: [] });
+  const { suites, cases } = countPruned(pruned);
+  assert("a checked suite with no checked cases is still created", suites === 1 && cases === 0);
+}
+
+{
+  const content = tree();
+  const pruned = pruneToSelection(content.suites, { suiteKeys: [], caseKeys: [] });
+  assert("an empty selection prunes to nothing", countPruned(pruned).suites === 0);
 }
 
 // ---------------------------------------------------------------------------
