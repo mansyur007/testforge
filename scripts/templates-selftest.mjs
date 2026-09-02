@@ -419,6 +419,38 @@ function tree() {
     };
     walkSuites(r.content.suites, []);
 
+    // No indefinite article immediately before a placeholder. "Create a
+    // {{ENTITY}}" reads fine against the default "Item" and turns into
+    // "Create a Invoice" the moment someone types a vowel — invisible in
+    // review, obvious to every reader of the applied suite. Test-case titles
+    // read perfectly well without the article, so the rule is: drop it.
+    const articled = [];
+    const scan = (text, where) => {
+      if (typeof text === "string" && /\b[Aa]n? \{\{/.test(text)) articled.push(where);
+    };
+    const walkArticles = (list) => {
+      for (const s of list) {
+        scan(s.name, `suite "${s.key}" name`);
+        scan(s.description, `suite "${s.key}" description`);
+        for (const c of s.cases ?? []) {
+          scan(c.title, `case "${c.key}" title`);
+          scan(c.preconditions, `case "${c.key}" preconditions`);
+          scan(c.expectedResult, `case "${c.key}" expectedResult`);
+          c.steps.forEach((st, i) => {
+            scan(st.action, `case "${c.key}" step ${i + 1} action`);
+            scan(st.expected, `case "${c.key}" step ${i + 1} expected`);
+          });
+        }
+        walkArticles(s.suites ?? []);
+      }
+    };
+    walkArticles(r.content.suites);
+    assert(
+      `${where}: no "a/an" immediately before a {{placeholder}}`,
+      articled.length === 0,
+      articled.join("; "),
+    );
+
     // Every case needs steps to be worth applying; an empty-step case is a
     // title someone still has to write.
     const emptySteps = [];

@@ -12,5 +12,14 @@
 // The superadmin console edits the resulting rows; it never owns them.
 
 import { LOGIN_AUTH_TEMPLATE } from "./login-auth.mjs";
+import { REGISTRATION_TEMPLATE } from "./registration.mjs";
+import { CRUD_TEMPLATE } from "./crud.mjs";
+import { CHECKOUT_TEMPLATE } from "./checkout.mjs";
 
-export const BUILT_IN_TEMPLATES = [LOGIN_AUTH_TEMPLATE];
+// Order here is incidental — the gallery sorts on each pack's `order` field.
+export const BUILT_IN_TEMPLATES = [
+  LOGIN_AUTH_TEMPLATE,
+  REGISTRATION_TEMPLATE,
+  CRUD_TEMPLATE,
+  CHECKOUT_TEMPLATE,
+];
