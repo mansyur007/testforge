@@ -18,7 +18,12 @@ npm run e2e            # starts the dev server (port 3456), seeds a fixture, run
 
 `globalSetup` ([global-setup.ts](global-setup.ts)) seeds a verified ADMIN account
 (`e2e@testforge.local` / `E2eDemo123`) and an `e2e` project whose cases (seq 1–4)
-map to the `TC-E2E-<n>` test names. It also settles the local API key — a fixed
+map to the `TC-E2E-<n>` test names. That project's cases, suites and runs are
+**hard-reset every run** before the fixture is re-seeded: the case list is shared
+state the whole suite reads by title and by position, so cases left behind by
+earlier runs used to duplicate the fixture titles and push rows off the first
+page. Anything a spec needs must therefore be created by that spec, not
+inherited from a previous run. It also settles the local API key — a fixed
 token (`E2E.apiKey`, upserted by its hash so concurrent runs converge on one row
 instead of revoking each other) which it writes to `e2e-results/.api-key` for
 the upload script. Specs read the token from `E2E.apiKey` directly.

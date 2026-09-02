@@ -46,6 +46,16 @@ export const E2E = {
   apiKey: "tf_56936734eb2c7a96814b2c9905af3fb40a85e9970ea356c3",
 };
 
+// The four rows the TC-E2E-1..4 smoke tests are named after, and the ones the
+// rest of the suite looks up by title. Array position is the seq, so reordering
+// this list renumbers them.
+const FIXTURE_CASES = [
+  { title: "Valid login redirects to dashboard", stepsJson: "[]", priority: "HIGH", type: "FUNCTIONAL", tags: "smoke,login" },
+  { title: "Language switcher on login", stepsJson: "[]", priority: "LOW", type: "FUNCTIONAL", tags: "i18n" },
+  { title: "Change password succeeds", stepsJson: "[]", priority: "MEDIUM", type: "FUNCTIONAL", tags: "account" },
+  { title: "Dashboard renders in English", stepsJson: "[]", priority: "LOW", type: "FUNCTIONAL", tags: "i18n" },
+];
+
 // Seed a deterministic fixture into the LOCAL dev.db before the suite runs:
 // a verified ADMIN account, an "e2e" project whose cases (seq 1..4) map to the
 // TC-E2E-<n> test names, and a fresh local API key written to e2e-results/.api-key
@@ -79,29 +89,46 @@ async function globalSetup() {
     },
   });
 
-  const existing = await db.project.findUnique({
+  const eProject = await db.project.upsert({
     where: { slug: E2E.projectSlug },
+    update: {},
+    create: {
+      name: "E2E",
+      slug: E2E.projectSlug,
+      description: "Playwright E2E fixture",
+      createdById: user.id,
+      members: { create: { userId: user.id, role: "OWNER" } },
+    },
+    select: { id: true },
   });
-  if (!existing) {
-    await db.project.create({
-      data: {
-        name: "E2E",
-        slug: E2E.projectSlug,
-        description: "Playwright E2E fixture",
-        createdById: user.id,
-        caseCounter: 4,
-        members: { create: { userId: user.id, role: "OWNER" } },
-        cases: {
-          create: [
-            { seq: 1, title: "Valid login redirects to dashboard", stepsJson: "[]", priority: "HIGH", type: "FUNCTIONAL", tags: "smoke,login" },
-            { seq: 2, title: "Language switcher on login", stepsJson: "[]", priority: "LOW", type: "FUNCTIONAL", tags: "i18n" },
-            { seq: 3, title: "Change password succeeds", stepsJson: "[]", priority: "MEDIUM", type: "FUNCTIONAL", tags: "account" },
-            { seq: 4, title: "Dashboard renders in English", stepsJson: "[]", priority: "LOW", type: "FUNCTIONAL", tags: "i18n" },
-          ],
-        },
-      },
-    });
-  }
+
+  // The case list is shared state the whole suite reads, and it used to be
+  // seeded once and never cleaned: the project was created with seq 1..4 on the
+  // first run and left alone on every run after, while the specs that create
+  // cases piled theirs on top. After enough runs the fixture titles existed
+  // four times over and the list paginated past row one, which is exactly the
+  // two things bulk-copy-reorder asserts on — TC-E2E-26 counted 5 rows titled
+  // "Valid login redirects to dashboard" where it wanted 2, and TC-E2E-25's
+  // drag target had fallen off the page. Every title lookup elsewhere
+  // (mute-flaky, run-comparison, share-links, search, saved-views) was reading
+  // an arbitrary one of the duplicates too.
+  //
+  // So hard-reset the case tree each run and re-seed the fixture, the way
+  // resetSandbox does for the Academy sandbox (src/lib/academy/sandbox.ts).
+  // Order matters: results reference cases, cases reference suites. Runs go
+  // with them — a run whose results were all just deleted is noise no spec
+  // wants, and no spec reads a run it didn't create itself.
+  await db.testRunResult.deleteMany({ where: { run: { projectId: eProject.id } } });
+  await db.testRun.deleteMany({ where: { projectId: eProject.id } });
+  await db.testCase.deleteMany({ where: { projectId: eProject.id } });
+  await db.testSuite.deleteMany({ where: { projectId: eProject.id } });
+  await db.project.update({
+    where: { id: eProject.id },
+    data: { caseCounter: FIXTURE_CASES.length },
+  });
+  await db.testCase.createMany({
+    data: FIXTURE_CASES.map((c, i) => ({ ...c, projectId: eProject.id, seq: i + 1 })),
+  });
 
   // F-24: empty project the e2e user owns, used as the "Copy to project…"
   // target so the copy e2e spec doesn't need a third account.
@@ -144,10 +171,6 @@ async function globalSetup() {
       onboardedAt: new Date(),
       organizationId: org.id,
     },
-  });
-  const eProject = await db.project.findUniqueOrThrow({
-    where: { slug: E2E.projectSlug },
-    select: { id: true },
   });
   await db.projectMember.upsert({
     where: { projectId_userId: { projectId: eProject.id, userId: teammate.id } },
@@ -222,12 +245,9 @@ async function globalSetup() {
   await db.issueLink.deleteMany({ where: { project: { slug: E2E.projectSlug } } });
   await db.integration.deleteMany({ where: { project: { slug: E2E.projectSlug } } });
 
-  // F-06: config groups are unique per (project, name) and plan child runs
-  // pile up across runs of the suite — start clean. Runs referencing a plan
-  // must go before the plan (the FK has no cascade).
-  await db.testRun.deleteMany({
-    where: { project: { slug: E2E.projectSlug }, planId: { not: null } },
-  });
+  // F-06: config groups are unique per (project, name) and plans pile up across
+  // runs of the suite — start clean. Runs referencing a plan must go first (the
+  // FK has no cascade); the case-tree reset above has already removed them all.
   await db.testPlan.deleteMany({ where: { project: { slug: E2E.projectSlug } } });
   await db.configGroup.deleteMany({
     where: { project: { slug: E2E.projectSlug } },
