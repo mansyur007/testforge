@@ -216,6 +216,15 @@ Qase.io, and Zephyr. Built from **TestForge PRD v1.0** (see
   version, so hue and brightness stay independent choices. Applied from the
   same cookie-and-boot-script path as the theme, and a custom colour is
   darkened automatically until white button text stays readable (F-46)
+- **Case templates** — start a suite from a curated pack instead of an empty
+  tree. Four built-in libraries (Login & Authentication, Registration &
+  Onboarding, CRUD, Checkout & Payment) totalling 124 cases, of which only 22
+  are happy-path: the rest are the negative, boundary, security and permission
+  cases teams usually add after an incident. Preview the tree, uncheck what you
+  do not need, pick the suite it lands in, and fill in placeholders like
+  `{{ENTITY}}` so one CRUD pack names itself after your records. Every case
+  carries a `coverage:*` tag, so the distribution is visible on the card before
+  you apply and filterable afterwards (F-47)
 - **Instance console** — a read-only `/superadmin` page listing every
   registered user across all organizations (name, email, role, org, projects,
   verification and 2FA status, signup date) with search and CSV export. It is

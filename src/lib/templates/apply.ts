@@ -16,11 +16,17 @@ import {
 // arbitrary nesting, an existing non-empty project, a partial selection, and a
 // caller-chosen target parent.
 //
-// It deliberately does NOT inherit that function's counter handling. seedSandbox
-// finishes with `data: { caseCounter: seq }` — an absolute write, safe only
-// because a sandbox is provably empty at that moment. Applying to a real project
-// has to reserve a range atomically or two concurrent applies collide on
-// `@@unique([projectId, seq])`. See `reserveSeqRange` below.
+// It deliberately does NOT inherit that function's counter handling.
+// `seedSandbox` finishes with `data: { caseCounter: seq }` — an absolute write,
+// which is correct there because both its callers guarantee an empty project
+// (`ensureSandbox` has just created one, `resetSandbox` sets the counter to 0
+// first). Applying to a project that already holds cases has no such guarantee,
+// so the range is reserved atomically instead — see `reserveSeqRange` below.
+//
+// The two are NOT worth collapsing into one implementation, despite the shape
+// they share: this engine requires a coverage tag per case, and forcing the
+// Academy's three reference cases through it would stamp `coverage:*` tags onto
+// the lesson content a learner is graded against, to fix nothing.
 
 export type ApplyResult = {
   suiteIds: string[];
