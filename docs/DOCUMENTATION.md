@@ -364,6 +364,7 @@ Legend: ✅ present · 🟡 partial/limited · ❌ absent · ➖ not relevant fo
 | **Case versioning / change history** | ✅ | ✅ | ✅ | ✅ | ➖ |
 | **Parameterisation / datasets** | ✅ | ✅ | ✅ | ❌ | ➖ |
 | **Case templates (text/BDD/exploratory)** | ✅ (BDD + exploratory session) | ✅ | 🟡 | ❌ | ➖ |
+| **Curated starter-suite library (apply a ready-made suite)** | ✅ (F-47, 4 packs / 124 cases, coverage-tagged) | ❌ | ❌ | ❌ | ➖ |
 | Rich text / markdown + inline images | ✅ (GFM) | ✅ | ✅ | 🟡 | ➖ |
 | Review/approval workflow for cases | ❌ | 🟡 | ✅ | ❌ | ➖ |
 | **Planning & execution** |
@@ -4294,6 +4295,131 @@ leak guard above; a pale custom accent staying legible under white text in *both
 custom accent surviving a reload, derived by the boot script. The seven cards are one
 `role="radiogroup"`, each card carrying an explicit `aria-label` — its label sits in a nested
 `<span>`, which a `role="radio"` does not take an accessible name from.
+
+#### F-47 — Case templates (curated starter library) `[x]`
+
+> **Status: DONE** (2026-09-02, branches `feat/case-templates`, `feat/case-templates-ui`,
+> `feat/case-template-packs`, `chore/console-library-view`, `feat/case-templates-finish`).
+> Asked for as "user tidak perlu buat dari 0" — a user who needs a login suite should not
+> hand-write thirty cases — with the explicit requirement that the packs cover more than the
+> happy path.
+
+**Goal.** Pick a curated pack from a gallery, choose where it lands, uncheck what you do not
+need, and get a populated suite tree in one action.
+
+**The coverage taxonomy is the feature.** Every template case declares exactly one of
+`positive | negative | boundary | security | permission | usability | compatibility`, and it is
+emitted onto the created case as a real `coverage:*` tag — so the taxonomy survives into the
+user's project and stays filterable with the existing tag filter rather than being a
+template-only concept. The gallery card renders the distribution as a stacked bar, which makes a
+thin pack visibly thin *before* anyone applies it. The four packs ship **124 cases across 20
+suites, of which 22 are positive**: 43 negative, 21 boundary, 25 security, 8 permission, 3
+usability, 2 compatibility.
+
+| Pack | Suites | Cases | Emphasis |
+|---|--:|--:|---|
+| Login & Authentication | 5 | 34 | User enumeration, token replay, lockout off-by-one, sessions surviving a password reset, 2FA bypass |
+| Registration & Onboarding | 5 | 28 | Validation boundaries, duplicate-address disclosure, a password silently truncated to its prefix |
+| CRUD (any entity) | 5 | 30 | Pagination edges, concurrent edits, cross-tenant access by id, permission revoked mid-session |
+| Checkout & Payment | 5 | 32 | Free-shipping threshold at the limit, discounts that must not go negative, double-charge across click/Back/refresh |
+
+##### Data model
+
+`CaseTemplate` (global — no `projectId`, no `organizationId`) plus `TemplateApplication` (one row
+per apply). The suite/case tree is a **validated JSON blob**, not two normalised tables: a
+template is authored, previewed and applied as a whole, nothing ever queries across templates,
+and the authoring path is a JSON import. Only `suiteCount`/`caseCount` are denormalised, for the
+gallery card.
+
+##### Where the packs live, and why
+
+In `src/content/templates/**` as plain ESM, synced into `CaseTemplate` by
+`syncBuiltInTemplates()`. **Not** authored through the instance console, because
+`/superadmin` 404s unless `TF_SUPERADMIN_USER` and a password are both configured — the default
+— so a library owned by that console would be empty on almost every instance. Same reasoning
+that put the Academy's ShopMini fixture in `src/content` (A-04): the production image ships no
+seed script. The sync runs from `prisma/seed.mjs` **and** lazily on the gallery's first render,
+which is how a deployed instance actually receives pack updates. It deliberately never writes
+`published` on update, so a superadmin unpublishing a pack is not silently reversed by the next
+deploy.
+
+##### The counter, which is the one place this needed care
+
+`applyTemplate` reserves case numbers atomically: `increment` returns the post-update value, so
+the block `[caseCounter - n + 1 … caseCounter]` is claimed before a single row is written.
+`seedSandbox` (A-04) does the same job with an absolute `caseCounter: seq` write, which is
+correct *there* because both its callers guarantee an empty project — but would hand two
+concurrent applies the same numbers here and collide on `@@unique([projectId, seq])`. Verified
+rather than assumed: three concurrent full applies produced 102 cases, `seq` contiguous, zero
+duplicates.
+
+The two were **not** collapsed into one implementation despite their shared shape: this engine
+requires a coverage tag per case, and forcing the Academy's three reference cases through it
+would stamp `coverage:*` tags onto lesson content a learner is graded against, to fix nothing.
+`seedSandbox`'s docstring now states the emptiness precondition explicitly instead.
+
+##### Selection, and the orphan rule
+
+Pruning lives in `content-core.mjs` alongside the validator, and the preview screen runs **the
+same function the server applies with** — a preview that re-implements its own counting is the
+classic way for the number on the button to drift from the number of rows created. A suite
+survives the prune if it was checked, holds a checked case, *or is an ancestor of one*; that
+last clause is what stops a checked case whose parent was left unchecked from having nowhere to
+land. Suite name collisions **create rather than merge**, with a warning on the preview — folding
+thirty cases into a suite the user did not pick is the more surprising outcome.
+
+##### Variables
+
+A template may declare `{{VAR}}` placeholders, resolved once at creation time. Deliberately not
+F-13 datasets, which parameterise a case at *execution* time and create one result row per data
+row: same syntax, different lifecycle. This is what lets one CRUD pack name itself after the
+reader's records.
+
+##### Validation
+
+`parseTemplateContent` (`src/lib/templates/content-core.mjs`) is the only door content enters
+by — the built-in packs, the superadmin import and the tests all go through it, so the apply
+engine may assume a parsed tree is well-formed. Plain ESM for the same reason as
+`exam-core.mjs`: `scripts/templates-selftest.mjs` runs it under bare `node` from `prebuild`.
+Caps (60 suites, 400 cases, 50 steps, depth 3, 256 KB) are what let the apply run in one
+transaction.
+
+Beyond unit tests the selftest guards three things a type cannot: **vocabulary drift** against
+`constants.ts` (which caught `E2E` being dropped by a too-strict matcher the first time it ran),
+the rule that **no suite in a built-in pack may be positive-only** (enforced per suite, since an
+overall ratio would let one rich suite hide four thin ones), and **no `a`/`an` immediately before
+a placeholder** — `"Create a {{ENTITY}}"` reads fine against the default `Item` and becomes
+"Create a Invoice" the moment someone types a vowel.
+
+##### Instance console
+
+`/superadmin/templates` is the **first write path into a console that was strictly read-only**.
+Every action calls `requireSuperadmin()` first, so mutations are unreachable in exactly the cases
+the read pages are; content only enters through the validator, so an operator cannot store a blob
+that breaks the apply engine for every project; and every mutation is audited under `instance.*`
+alongside the login actions. Authoring is a JSON paste box, not a nested form builder — the
+validator returns every error at once, since a paste-and-fix loop that surfaces one problem per
+attempt is why people give up on import screens. Built-ins can be unpublished but not deleted:
+the next deploy would recreate the row, which reads as the delete having silently failed.
+
+##### Deliberate deviation from §1 DoD
+
+**No per-case `case.created` webhook.** Bulk creation would fire one dispatch per case — 34 for
+the Login pack, each re-querying the project's hooks. The CSV importer
+(`src/lib/importers/commit.ts`), the other bulk-create path, is already audit-only, so this
+follows the existing precedent rather than inventing one. Recorded here rather than left to look
+like an oversight.
+
+##### Testing
+
+`e2e/templates.spec.ts` **TC-E2E-145 … 148** — the gallery lists the four packs with real
+counts; a partial selection creates only the suites it needs and lands on the filtered cases
+list with a confirmation banner; a checked case keeps its unchecked ancestor suite; variables
+rename the tree live and the substituted name is what persists; and a VIEWER may browse the
+library but finds Apply disabled. Two bugs the browser found that review would not have: the
+post-apply redirect went to `/projects/<slug>/cases`, which is a 404 (that directory holds only
+`new`, `[caseId]` and `shared-steps` — the cases list *is* the project page), and the count read
+"1 suites · 1 test cases".
 
 #### A-01 … A-10 — TestForge QA Academy (in progress)
 
