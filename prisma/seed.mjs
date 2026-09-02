@@ -2,6 +2,7 @@
 // padahal penting untuk first-run experience produk open source.
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { syncBuiltInTemplates } from "../src/lib/templates/sync-core.mjs";
 
 const db = new PrismaClient();
 
@@ -30,6 +31,16 @@ async function backfillCertificateHolders() {
 
 async function main() {
   await backfillCertificateHolders();
+
+  // F-47: keep the built-in template library in step with src/content/templates.
+  // Before the seeded-already early return, for the same reason the certificate
+  // backfill is: a live instance is always past that point, and a pack edited in
+  // a later release has to reach it. Idempotent — `version` only moves when the
+  // content actually changed.
+  const t = await syncBuiltInTemplates(db);
+  console.log(
+    `Template bawaan: ${t.created} dibuat, ${t.updated} diperbarui, ${t.unchanged} tidak berubah.`,
+  );
 
   const existing = await db.user.findUnique({
     where: { email: "admin@testforge.local" },

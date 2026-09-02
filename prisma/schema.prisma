@@ -56,6 +56,7 @@ model User {
   lessonProgress  LessonProgress[]
   examAttempts    ExamAttempt[]
   certificates    Certificate[]
+  templateApplications TemplateApplication[] @relation("TemplateApplier")
 }
 
 // F-20: single-use TOTP recovery codes. codeHash is the sha256 hex of the raw
@@ -121,6 +122,64 @@ model Project {
   importMapping ImportColumnMapping?
   apiKeys      ApiKey[] // F-33: keys scoped to this project only
   publicShare  PublicShare? // F-38: portfolio mode
+  templateApplications TemplateApplication[] // F-47
+}
+
+// F-47: a curated starter pack of suites + cases a project can apply in one
+// action. Global — no projectId, no organizationId — so there is one library
+// per instance.
+//
+// The suite/case tree is a validated JSON blob rather than two normalised
+// tables on purpose: a template is authored, previewed and applied as a whole,
+// nothing ever queries across templates ("every template case with priority
+// HIGH"), and the authoring path is a JSON import. Normalising it would buy
+// nothing and cost two models plus a tree-assembly read on every preview. Only
+// the counts the gallery card needs are denormalised out.
+//
+// Content is written ONLY through parseTemplateContent (src/lib/templates/
+// content-core.mjs), so a malformed blob cannot reach the apply engine.
+model CaseTemplate {
+  id          String   @id @default(cuid())
+  slug        String   @unique // "login-authentication" — stable, used in URLs
+  name        String
+  summary     String? // one line, shown on the gallery card
+  description String? // Markdown, shown on the preview page
+  category    String   @default("GENERAL") // AUTH | ONBOARDING | CRUD | COMMERCE | GENERAL
+  contentJson String   @default("{}") // TemplateContent
+  // Seeded from src/content/templates/**. A superadmin may edit and unpublish a
+  // built-in but may not delete it: the next deploy would resurrect the row and
+  // silently undo the deletion, which is worse than an explicit unpublish.
+  builtIn     Boolean  @default(false)
+  published   Boolean  @default(false) // drafts are invisible outside /superadmin
+  version     Int      @default(1) // bumped when the content changes
+  suiteCount  Int      @default(0) // denormalised for the gallery card
+  caseCount   Int      @default(0)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  applications TemplateApplication[]
+}
+
+// F-47: one row per apply. Powers the "you applied this on <date>" warning on
+// the preview screen — the cheapest guard against a user silently duplicating
+// thirty cases — and answers which packs are worth maintaining.
+model TemplateApplication {
+  id              String   @id @default(cuid())
+  projectId       String
+  templateId      String
+  templateVersion Int
+  targetSuiteId   String? // null = project root
+  suiteCount      Int
+  caseCount       Int
+  appliedById     String
+  appliedAt       DateTime @default(now())
+
+  project   Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  template  CaseTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  appliedBy User         @relation("TemplateApplier", fields: [appliedById], references: [id])
+
+  @@index([projectId])
 }
 
 // F-38: public read-only project sharing ("portfolio mode"). One row per

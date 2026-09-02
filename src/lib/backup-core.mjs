@@ -72,6 +72,13 @@ export const MODEL_ORDER = [
   "ShareLink",
   "BadgeToken",
   "PublicShare",
+  // F-47: CaseTemplate has no foreign keys (the library is global), so its only
+  // ordering constraint is that it precede TemplateApplication. Built-ins would
+  // be re-created by syncBuiltInTemplates on the next boot anyway, but a
+  // superadmin-authored template is real data that exists nowhere else.
+  "CaseTemplate",
+  // After Project, CaseTemplate and User — all three are foreign keys.
+  "TemplateApplication",
   "ReportSchedule",
   "Requirement",
   "RequirementCase",
