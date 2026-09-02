@@ -51,7 +51,17 @@ async function freeSlug(userId: string): Promise<string> {
   return `${base}-${Date.now().toString(36)}`;
 }
 
-/** Applies the ShopMini fixture to an (empty) sandbox project. */
+/**
+ * Applies the ShopMini fixture to an **empty** sandbox project.
+ *
+ * Emptiness is a precondition, not a hope: the closing `caseCounter: seq` is an
+ * absolute write, so calling this on a project that already holds cases would
+ * rewind the counter and collide on `@@unique([projectId, seq])`. Both callers
+ * guarantee it — `ensureSandbox` has just created the project, `resetSandbox`
+ * sets the counter to 0 first. A third caller would have to do the same, or use
+ * the F-47 apply engine (src/lib/templates/apply.ts), which reserves a range
+ * atomically precisely because it cannot assume this.
+ */
 export async function seedSandbox(projectId: string): Promise<void> {
   const suites = new Map<string, string>();
   for (let order = 0; order < SANDBOX_SUITES.length; order++) {
