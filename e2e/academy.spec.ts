@@ -2387,12 +2387,20 @@ test(`TC-${TC}-137 A reader's language survives crossing between the Academy and
   // the English tree, so they were the one English block on a translated page.
   await expect(page.locator("#academy")).toContainText("Dasar-Dasar QA");
 
-  await page.getByTestId("landing-academy-cta").click();
-  await page.waitForURL("**/id/academy");
-  await expect(page.locator("main")).toHaveAttribute("lang", "id");
+  // The CTA opens in a new tab (target=_blank, added in #252), so the click
+  // lands in a popup and this tab never navigates. Follow the tab the reader
+  // actually ends up in: what is under test is that the crossing carries the
+  // language, not which tab it happens in.
+  const [academyTab] = await Promise.all([
+    context.waitForEvent("page"),
+    page.getByTestId("landing-academy-cta").click(),
+  ]);
+  await academyTab.waitForURL("**/id/academy");
+  await expect(academyTab.locator("main")).toHaveAttribute("lang", "id");
   // Refreshing does not lose it — the language is in the URL.
-  await page.reload();
-  await expect(page.locator("main")).toHaveAttribute("lang", "id");
+  await academyTab.reload();
+  await expect(academyTab.locator("main")).toHaveAttribute("lang", "id");
+  await academyTab.close();
 
   // 2. The other direction: arrive on an Indonesian page with no cookie at all
   //    (a search result, a shared link) and the rest of the site follows.
