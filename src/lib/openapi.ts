@@ -44,6 +44,7 @@ export function openApiSpec() {
       { name: "Import" },
       { name: "My Work" },
       { name: "Case Dependencies" },
+      { name: "Templates" },
     ],
     paths: {
       "/projects/{slug}/cases": {
@@ -1972,6 +1973,136 @@ export function openApiSpec() {
           },
         },
       },
+      // F-47. The library is global — one per instance — so these two sit
+      // outside /projects, unlike everything above. Read-only: authoring is an
+      // instance-operator action and never reaches this API.
+      "/templates": {
+        get: {
+          tags: ["Templates"],
+          summary: "List published case templates",
+          description:
+            "Curated starter packs any project may apply. Unpaginated: the " +
+            "library is a hand-authored list, not a data set.",
+          responses: {
+            "200": {
+              description: "OK.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      data: {
+                        type: "array",
+                        items: { $ref: "#/components/schemas/Template" },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      "/templates/{templateSlug}": {
+        get: {
+          tags: ["Templates"],
+          summary: "Get one template with its full suite/case tree",
+          parameters: [
+            {
+              name: "templateSlug",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+              description: "Template slug, e.g. `login-authentication`.",
+            },
+          ],
+          responses: {
+            "200": { description: "OK." },
+            "404": err("Template not found, or not published."),
+          },
+        },
+      },
+      "/projects/{slug}/templates/{templateSlug}/apply": {
+        post: {
+          tags: ["Templates"],
+          summary: "Apply a template into a project",
+          description:
+            "Creates the template's suites and cases in the project. An absent " +
+            "body applies everything to the project root as DRAFT cases. Each " +
+            "created case carries a `coverage:*` tag.",
+          parameters: [
+            slugParam,
+            {
+              name: "templateSlug",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+            },
+          ],
+          requestBody: {
+            required: false,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    targetSuiteId: {
+                      type: ["string", "null"],
+                      description:
+                        "Suite to nest the template under. Null or absent = project root. Must belong to this project.",
+                    },
+                    selection: {
+                      type: "object",
+                      description:
+                        "Absent = the whole template. A suite is created if it is selected, holds a selected case, or is an ancestor of one.",
+                      properties: {
+                        suiteKeys: { type: "array", items: { type: "string" } },
+                        caseKeys: { type: "array", items: { type: "string" } },
+                      },
+                    },
+                    variables: {
+                      type: "object",
+                      additionalProperties: { type: "string" },
+                      description:
+                        "Values for the template's {{VAR}} placeholders. Absent keys fall back to their declared default.",
+                    },
+                    status: {
+                      type: "string",
+                      enum: ["DRAFT", "ACTIVE", "DEPRECATED"],
+                      default: "DRAFT",
+                      description: "Status the created cases start in.",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "201": {
+              description: "Applied.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      template: { type: "string" },
+                      templateVersion: { type: "integer" },
+                      suiteCount: { type: "integer" },
+                      caseCount: { type: "integer" },
+                      rootSuiteId: { type: ["string", "null"] },
+                      suiteIds: { type: "array", items: { type: "string" } },
+                      caseIds: { type: "array", items: { type: "string" } },
+                    },
+                  },
+                },
+              },
+            },
+            "403": err("API key is read-only, or lacks case.write."),
+            "404": err("Project or template not found."),
+            "422": err("Invalid targetSuiteId, status, or empty selection."),
+          },
+        },
+      },
     },
     components: {
       securitySchemes: {
@@ -2090,6 +2221,29 @@ export function openApiSpec() {
             description: { type: ["string", "null"] },
             parentId: { type: ["string", "null"] },
             order: { type: "integer" },
+          },
+        },
+        // F-47. `coverage` is the per-kind case count, which is what makes a
+        // positive-only pack visible without fetching the whole tree.
+        Template: {
+          type: "object",
+          properties: {
+            slug: { type: "string" },
+            name: { type: "string" },
+            summary: { type: ["string", "null"] },
+            category: {
+              type: "string",
+              enum: ["AUTH", "ONBOARDING", "CRUD", "COMMERCE", "GENERAL"],
+            },
+            version: { type: "integer" },
+            suiteCount: { type: "integer" },
+            caseCount: { type: "integer" },
+            coverage: {
+              type: "object",
+              additionalProperties: { type: "integer" },
+              description:
+                "Case count per coverage kind: positive, negative, boundary, security, permission, usability, compatibility.",
+            },
           },
         },
         Run: {
