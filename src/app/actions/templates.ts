@@ -111,9 +111,12 @@ export async function applyTemplateAction(
   // path, already sets the precedent of audit-only. Noted as a deliberate
   // deviation from DoD §1.4.
 
-  revalidatePath(`/projects/${project.slug}/cases`);
+  // The cases list is the project page itself — `/projects/<slug>/cases` holds
+  // only `new`, `[caseId]` and `shared-steps`, with no index route, so sending
+  // the user there after a successful apply lands them on a 404.
+  revalidatePath(`/projects/${project.slug}`);
   revalidatePath(`/projects/${project.slug}/templates`);
   redirect(
-    `/projects/${project.slug}/cases?suite=${result.rootSuiteId ?? ""}&applied=${result.caseCount}`,
+    `/projects/${project.slug}?suite=${result.rootSuiteId ?? ""}&applied=${result.caseCount}`,
   );
 }

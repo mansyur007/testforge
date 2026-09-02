@@ -137,6 +137,14 @@ export function coverageTag(coverage: Coverage): string {
   return `coverage:${coverage}`;
 }
 
+/**
+ * Why the apply screen defaults to DRAFT. A template is a starting point that
+ * still needs adapting to the product under test, and F-15 treats ACTIVE as
+ * runnable — thirty cases arriving runnable is a claim the team has not made.
+ */
+export const CASE_FORM_STATUS_HINT =
+  "Draft keeps them out of runs until you have adapted them to your product.";
+
 export const COVERAGE_LABELS: Record<Coverage, string> = {
   positive: "Positive",
   negative: "Negative",

@@ -26,7 +26,7 @@ export default async function ProjectPage({
   searchParams,
 }: {
   params: { slug: string };
-  searchParams: { suite?: string; priority?: string; type?: string; q?: string; tag?: string; v?: string; review?: string };
+  searchParams: { suite?: string; priority?: string; type?: string; q?: string; tag?: string; v?: string; review?: string; applied?: string };
 }) {
   const session = await requireSession();
   const project = await db.project.findFirst({
@@ -104,6 +104,9 @@ export default async function ProjectPage({
   // F-14: permission-derived (covers custom roles).
   const perms = await loadPerms(session.userId, project.id);
   const canWrite = perms.has("case.write");
+  // F-47: set by the template apply redirect. Parsed rather than trusted — it
+  // is a URL param anyone can hand-edit, and it only drives a count in prose.
+  const appliedCount = Number.parseInt(searchParams.applied ?? "", 10) || 0;
   // F-29: only offer AI generation when the org has a key configured.
   const orgId = await orgIdForUser(session.userId);
   const aiOn = canWrite && !!orgId && (await aiConfigured(orgId));
@@ -208,6 +211,20 @@ export default async function ProjectPage({
   return (
     <div className="space-y-6">
       <ProjectTabs slug={project.slug} name={project.name} active="cases" />
+
+      {/* F-47: confirmation after a template apply. The redirect also sets
+          ?suite= to the created root, so the list below is already filtered to
+          exactly what just arrived. */}
+      {appliedCount > 0 && (
+        <p
+          data-testid="template-applied-banner"
+          className="rounded-lg border border-success-border bg-success-soft px-4 py-3 text-sm text-success-soft-fg"
+        >
+          Added {appliedCount} test case{appliedCount === 1 ? "" : "s"} from the
+          template. They are listed below — review and adapt them to your product
+          before running them.
+        </p>
+      )}
 
       {/* Below md the suite rail stacks above the case list — side by side on a
           phone left the list ~60px wide. Desktop (≥md) is unchanged. */}
@@ -363,6 +380,15 @@ export default async function ProjectPage({
             >
               <span className="inline-flex items-center gap-1.5"><TFIcon name="upload" className="h-4 w-4" /> Import</span>
             </Link>
+            {canWrite && (
+              <Link
+                href={`/projects/${project.slug}/templates`}
+                data-testid="templates-link"
+                className="rounded-lg border border-hairline-strong px-3 py-2 text-sm hover:bg-surface-muted"
+              >
+                <span className="inline-flex items-center gap-1.5"><TFIcon name="checklist" className="h-4 w-4" /> Templates</span>
+              </Link>
+            )}
             {aiOn && <AiGenerateCases projectId={project.id} />}
             {canWrite && (
               <Link
