@@ -83,12 +83,22 @@ jobs:
 
       - name: Build & up on VPS
         run: |
-          ssh -i ~/.ssh/deploy "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" bash -se <<'EOF'
+          for attempt in 1 2 3 4 5; do
+            if ssh -o ConnectTimeout=30 \
+              -o ServerAliveInterval=15 -o ServerAliveCountMax=3 \
+              -i ~/.ssh/deploy "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" bash -se <<'EOF'
           set -e
           cd /opt/testforge
           docker compose -f docker-compose.prod.yml up -d --build
           docker image prune -f
           EOF
+            then
+              exit 0
+            fi
+            echo "SSH build connection failed (attempt $attempt/5); retrying in 10s..."
+            sleep 10
+          done
+          exit 1
 
       - name: Smoke test (testforge.emha.space via shared Caddy)
         run: |
