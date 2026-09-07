@@ -14,7 +14,7 @@ name: Deploy TestForge to VPS
 # the source tree — so rsync --delete is safe as long as the box's .env is kept.
 on:
   schedule:
-    - cron: '0 19 * * *' # 02:00 WIB (UTC+7)
+    - cron: '0 20 * * *' # 03:00 WIB (UTC+7)
   workflow_dispatch:
 
 concurrency:
